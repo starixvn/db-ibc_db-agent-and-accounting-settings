@@ -1,0 +1,434 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <PostUpgradeAddToSCC>;D:\WORK\PROJECT\IBC\6.Implementation\DB\AgentPT\AgentPT.dbproj;D:\WORK\PROJECT\IBC\6.Implementation\DB\AgentPT\Connections.txt;D:\WORK\PROJECT\IBC\6.Implementation\DB\AgentPT\Scripts\Post-Deployment\Script.PostDeployment.sql;D:\WORK\PROJECT\IBC\6.Implementation\DB\AgentPT\Scripts\Pre-Deployment\Script.PreDeployment.sql</PostUpgradeAddToSCC>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProjectName>SAK</SccProjectName>
+    <PreviousProjectVersion>4.0</PreviousProjectVersion>
+    <UpgradedFromDBP>True</UpgradedFromDBP>
+    <Name>dbpProjectName</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.0</ProjectVersion>
+    <ProjectGuid>{b7e25942-1135-49aa-bfca-be0556322e90}</ProjectGuid>
+    <DSP>Microsoft.Data.Schema.Sql.Sql100DatabaseSchemaProvider</DSP>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <ShowWizard>False</ShowWizard>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <IncludeSchemaNameInFileName>False</IncludeSchemaNameInFileName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchema</DefaultFileStructure>
+    <DeployToDatabaseAddToServerExplorer>True</DeployToDatabaseAddToServerExplorer>
+    <DeployToScript>True</DeployToScript>
+    <CatalogPropertiesFile>Properties\Database.sqlsettings</CatalogPropertiesFile>
+    <LoadSqlClrTypes>True</LoadSqlClrTypes>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>.\sql\release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TargetConnectionString>
+    </TargetConnectionString>
+    <TargetDatabase>
+    </TargetDatabase>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <SuppressWarnings>
+    </SuppressWarnings>
+    <DeploymentConfigFile>Properties\Database.sqldeployment</DeploymentConfigFile>
+    <SqlCommandVariablesFile>Properties\Database.sqlcmdvars</SqlCommandVariablesFile>
+    <DeployToDatabase>False</DeployToDatabase>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>.\sql\debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TargetConnectionString>
+    </TargetConnectionString>
+    <TargetDatabase>
+    </TargetDatabase>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <SuppressWarnings>
+    </SuppressWarnings>
+    <DeploymentConfigFile>Properties\Database.sqldeployment</DeploymentConfigFile>
+    <SqlCommandVariablesFile>Properties\Database.sqlcmdvars</SqlCommandVariablesFile>
+    <DeployToDatabase>False</DeployToDatabase>
+  </PropertyGroup>
+  <!--Import the settings-->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\TeamData\Microsoft.Data.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Scripts" />
+    <Folder Include="Scripts\Pre-Deployment" />
+    <Folder Include="Scripts\Post-Deployment" />
+    <Folder Include="Data Generation Plans" />
+    <Folder Include="Schema Comparisons" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\Bingo" />
+  </ItemGroup>
+  <ItemGroup>
+    <PropertiesFile Include="Properties\Database.sqlsettings">
+    </PropertiesFile>
+    <PropertiesFile Include="Properties\Database.sqldeployment">
+    </PropertiesFile>
+    <PropertiesFile Include="Properties\Database.sqlcmdvars">
+    </PropertiesFile>
+    <Build Include="Properties\Database.sqlpermissions">
+      <ModelBuilderType>Permissions</ModelBuilderType>
+    </Build>
+    <PreDeploy Include="Scripts\Pre-Deployment\Script.PreDeployment.sql">
+      <SubType>Code</SubType>
+    </PreDeploy>
+    <PostDeploy Include="Scripts\Post-Deployment\Script.PostDeployment.sql">
+      <SubType>Code</SubType>
+    </PostDeploy>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Schema Objects" />
+    <Folder Include="Schema Objects\Schemas" />
+    <Folder Include="Schema Objects\Schemas\dbo" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Defaults" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Functions" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Rules" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Stored Procedures" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Types" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Types\User Defined Data Types" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Types\User Defined Types CLR" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Types\User Defined Table Types" />
+    <Folder Include="Schema Objects\Schemas\dbo\Programmability\Types\XML Schema Collections" />
+    <Folder Include="Schema Objects\Schemas\dbo\Service Broker" />
+    <Folder Include="Schema Objects\Schemas\dbo\Service Broker\Queues" />
+    <Folder Include="Schema Objects\Schemas\dbo\Synonyms" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables\Constraints" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables\Indexes" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables\Keys" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables\Triggers" />
+    <Folder Include="Schema Objects\Schemas\dbo\Tables\Statistics" />
+    <Folder Include="Schema Objects\Schemas\dbo\Views" />
+    <Folder Include="Schema Objects\Schemas\dbo\Views\Indexes" />
+    <Folder Include="Schema Objects\Schemas\dbo\Views\Triggers" />
+    <Folder Include="Schema Objects\Schemas\dbo\Views\Statistics" />
+    <Folder Include="Schema Objects\Database Level Objects" />
+    <Folder Include="Schema Objects\Database Level Objects\Assemblies" />
+    <Folder Include="Schema Objects\Database Level Objects\Database Triggers" />
+    <Folder Include="Schema Objects\Database Level Objects\Security" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Schemas" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Users" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Certificates" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Asymmetric Keys" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Master Keys" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Signatures" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Symmetric Keys" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Database Encryption Keys" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Database Audit Specification" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Roles" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Roles\Application Roles" />
+    <Folder Include="Schema Objects\Database Level Objects\Security\Roles\Database Roles" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Broker Priorities" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Contracts" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Event Notifications" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Message Types" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Remote Service Binding" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Routes" />
+    <Folder Include="Schema Objects\Database Level Objects\Service Broker\Services" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Full Text Stoplists" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Filegroups" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Files" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Full Text Catalogs" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Partition Functions" />
+    <Folder Include="Schema Objects\Database Level Objects\Storage\Partition Schemes" />
+    <Folder Include="Customer-PositionTaking" />
+    <Folder Include="Customer-PositionTaking\CustOverride" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Select" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Select\FI" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Select\HR" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Upd" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Upd\FI" />
+    <Folder Include="Customer-PositionTaking\CustOverride\Upd\HR" />
+    <Folder Include="Customer-PositionTaking\CustSetting" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Ins" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Select" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Select\FI" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Select\HR" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\FI" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\HR" />
+    <Folder Include="Customer-PositionTaking\ListSelect" />
+    <Folder Include="NewBetTypes" />
+    <Folder Include="NewBetTypes\BetList" />
+    <Folder Include="TestPT" />
+    <Folder Include="Transfer" />
+    <Folder Include="Transfer\List" />
+    <Folder Include="Transfer\TransferCondition" />
+    <Folder Include="zzMisc" />
+    <Folder Include="Properties" />
+  </ItemGroup>
+  <ItemGroup>
+    <NotInBuild Include="Connections.txt" />
+    <NotInBuild Include="Age_CustomerSelCheckPermission.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\dbo.Acc_CustomerSelComEditOverride_Ag.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\dbo.Acc_CustomerSelComEditOverride_MAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\dbo.Acc_CustomerSelComEditOverride_SAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\FI\dbo.Acc_CustomerSelFIComEditOverride_Ag.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\FI\dbo.Acc_CustomerSelFIComEditOverride_MAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\FI\dbo.Acc_CustomerSelFIComEditOverride_SAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\HR\dbo.Acc_CustomerSelHRComEditOverride_Ag.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\HR\dbo.Acc_CustomerSelHRComEditOverride_MAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Select\HR\dbo.Acc_CustomerSelHRComEditOverride_SAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd_CheckParam.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd_CheckParam_Ag.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd_CheckParam_MAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd_CheckParam_SAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\dbo.Acc_CustOverrideUpd_CheckParam_V.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\FI\dbo.Acc_CustOverrideUpdFI.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustOverride\Upd\HR\dbo.Acc_CustOverrideUpdHR.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_Ag.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_Ag_CheckParam.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_Com.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_Com_CheckParam.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_MAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_MAg_CheckParam.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_SAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsMember_SAg_CheckParam.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsUserInfo.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\dbo.Acc_CustomerInsUserInfo_Rollback.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CheckAllowedShow.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelAgentInfo.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelByUserName.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelCEditCustomer.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelDisableOutright.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelEditCustomer.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelEditCustomer_MAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelEditCustomer_SAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelMAgentInfo.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelMAgentInfo_Multiple.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelMEditCustomer.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelMember_IsSimple.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelSAgentInfo.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelSAgentInfo_Multiple.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\dbo.Acc_CustomerSelSEditCustomer.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelDisableFI.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditCustomer_Ag.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditCustomer_Com.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditCustomer_MAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditCustomer_SAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditMember_MAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\FI\dbo.Acc_CustomerSelFIEditMember_SAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CheckHRAllowedCurrency.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelDisableHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHRAgent_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHRAgent_SAg.procedured.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHREditMember_MAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHREditMember_SAg.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHRMaster_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHRMember_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_CustomerSelHRSuper_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.Acc_SelHRAllowedCurrency.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\HR\dbo.f_GetHRAllowedCurr.function.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_AutoPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_Commission.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_MinMaxBet.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdAgent_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdClosed.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdCredit.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdDisableOutright.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_AutoPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_Commission.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_DisableAutoMPT.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_MinMaxBet.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaster_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMaxPerMatch.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_AutoMPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_AutoPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_Commission.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_Master.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_MinMaxBet.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdMember_Super.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_AutoPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_Commission.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_MinMaxBet.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_MinPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuper_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdSuspended.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\dbo.Acc_CustomerUpdUserInfo.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdAgentFI_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdAgentFI_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdAgentFI_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdAgentFI_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdCommissionFI.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdDisableFI.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMasterFI_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMasterFI_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMasterFI_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMasterFI_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMemberFI_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMemberFI_MAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMemberFI_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMemberFI_Positiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMemberFI_SAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdMinMaxBetFI.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdSuperFI_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdSuperFI_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdSuperFI_MinPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\FI\dbo.Acc_CustomerUpdSuperFI_Positiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgent_CommissionHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgent_MinMaxBetHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgent_MinMaxBetOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgentHR_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgentHR_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgentHR_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdAgentHR_PositionTaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdDisableHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdDisableHR_xtest.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdDisableOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaster_CommissionHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaster_MinMaxBetHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaster_MinMaxBetOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMasterHR_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMasterHR_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMasterHR_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMasterHR_Positiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaxPerMatchHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaxPerMatchHR_xtest.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMaxPerMatchOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMember_CommissionHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMember_MinMaxBetHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMember_MinMaxBetOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMemberHR_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMemberHR_MAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMemberHR_Positiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdMemberHR_SAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuper_CommissionHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuper_MinMaxBetHR.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuper_MinMaxBetOpenTote.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuperHR_All.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuperHR_MaxPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuperHR_MinPositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\HR\dbo.Acc_CustomerUpdSuperHR_Positiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\dbo.Acc_CustOverrideUpd_MaxPos.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\dbo.Acc_CustOverrideUpd_MinPos.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\dbo.CustAccountUpdCreditAmt.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\dbo.CustAccountUpdCreditAmt_MAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\dbo.CustAccountUpdCreditAmt_SAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelByAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelByMAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelBySAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelMAgByCom.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelMemberSearch_AutoSuspend.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelSAg.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustomerSelSAgList.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_CustSelAgentByMAg.StoredProcedure.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_OperatorSel.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_UserLogCreditSel.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\ListSelect\dbo.Acc_UserLogRunSPSel.proc.sql" />
+    <NotInBuild Include="dbo.Age_CustomerSelCheckBelonging.proc.sql" />
+    <NotInBuild Include="dbo.Age_CustomerSelCheckBelonging_ByUsername.proc.sql" />
+    <NotInBuild Include="dbo.Age_CustomerSelCheckBelonging_Old.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetList_Sag.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListByDay.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListDeleted.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListDeleted_Ag.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListDeleted_MAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListDeleted_SAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListEnglishAgent.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListEnglishAgent2.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListEnglishMAgent.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListEnglishMAgent2.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListEnglishSAgent2.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListM.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListM_MAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListM_SAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatch.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatch_MAg.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatch_SAg.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatchWinLoss_Ag.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatchWinLoss_MAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListMatchWinLoss_SAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelBetListRunningAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelMTeamList.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelMWinLoss.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetsSelMWinLossOld.StoredProcedure.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\BetTransSelBetSlip.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetList\f_GetChoice.function.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelBetListHTFT.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelBetListHTFT_MAg.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelBetListHTFT_SAg.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets20_Ag.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets20_MAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets20_SAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets25_Ag.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets25_MAg.sql" />
+    <NotInBuild Include="NewBetTypes\BetsSelTotalBets25_SAg.sql" />
+    <NotInBuild Include="NewBetTypes\dbo.Forecast_Sel14_Ag.proc.sql" />
+    <NotInBuild Include="NewBetTypes\dbo.Forecast_Sel14_MAg.proc.sql" />
+    <NotInBuild Include="NewBetTypes\dbo.Forecast_Sel14_SAg.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.DBA_DelCustomer.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.DBA_GetCSPT.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpMultiTest_Insert.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpMultiTest_InsWrongResult.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpMultiTest_Update.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerInsMember_Ag.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerInsMember_Com.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerInsMember_MAg.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerInsMember_SAg.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerSelEditCustomer_All.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerSelSEditCustomer.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdEditCustomer_Ag.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdEditCustomer_Com.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdEditCustomer_MAg.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdEditCustomer_SAg.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdMaster_Member.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustomerUpdSuper_Member.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_CustOverrideUpd.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_GetResult.proc.sql" />
+    <NotInBuild Include="TestPT\dbo.SpTest_PrintResult.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.BettransInsClearBalance_MAg.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.BettransInsClearBalance_SAg.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustaccountCheckForTransfer.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustAccountInsClearBalance.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustAccountInsTransfer.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustomerCheckTransferOption.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustomerSelBalance_Ag.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustomerSelBalance_MAg.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustomerSelBalance_SAg.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.CustomerSelUserName.proc.sql" />
+    <NotInBuild Include="Transfer\dbo.f_Binary_Decimal.function.sql" />
+    <NotInBuild Include="Transfer\dbo.f_Decimal_Binary.function.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustAccountSelCreditList_Ag.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustAccountSelCreditList_MAg.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustAccountSelCreditList_SAg.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustomerSelFinalBalance.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustomerSelFinalBalance_Yesterday.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustomerSelMultipleTransfer.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustomerSelMultipleTransfer_Joe.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.CustomerSelSAgBalance.proc.sql" />
+    <NotInBuild Include="Transfer\List\dbo.MasterAgentBalanceList.proc.sql" />
+    <NotInBuild Include="Transfer\TransferCondition\dbo.Admin_Tools_TransferAllMembers.proc.sql" />
+    <NotInBuild Include="zzMisc\dbo.f_GetSubUsername.func.sql" />
+    <NotInBuild Include="zzMisc\dbo.IsAllowChangePositiontaking.proc.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <BuildContributorArgument Include="OutDir=$(OutDir)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Bingo\Acc_CustomerUpdSyncBingo.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+  </ItemGroup>
+</Project>
