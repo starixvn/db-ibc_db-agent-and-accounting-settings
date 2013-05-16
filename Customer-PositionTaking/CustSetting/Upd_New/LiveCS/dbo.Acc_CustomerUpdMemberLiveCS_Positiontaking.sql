@@ -19,6 +19,7 @@ AS
 			- 20120913@Johnson: correct m1 when im2= 1 and n3 is set
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: write log on DBTXN if DBLOG failure
+			- 20130516@Lukas: allow PT = 100%
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON 
@@ -352,7 +353,6 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH
-
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [vnteam]

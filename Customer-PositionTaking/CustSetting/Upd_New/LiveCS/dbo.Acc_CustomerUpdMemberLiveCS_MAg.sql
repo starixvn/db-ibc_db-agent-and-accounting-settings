@@ -1,7 +1,5 @@
 ﻿
 
-
-
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
 	@custid									INT,		
 
@@ -30,6 +28,7 @@ AS
 	Revisions:
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+		- 20130516@Lukas: allow PT = 100%
 	Parameters Explanation:
 */
 BEGIN
@@ -68,8 +67,8 @@ BEGIN
 	select @UserName = username, @recommend = recommend, @mrecommend = mrecommend, @srecommend = srecommend 
 	from customer with (NOLOCK) where custid = @custid
 
-	IF (@v162mpositiontaking_1101 < 0 OR @v162mpositiontaking_1101 > 0.9
-		OR @auto_v162mpositiontaking_mem_1101 < 0 OR @auto_v162mpositiontaking_mem_1101 > 0.9)
+	IF (@v162mpositiontaking_1101 < 0 OR @v162mpositiontaking_1101 > 1
+		OR @auto_v162mpositiontaking_mem_1101 < 0 OR @auto_v162mpositiontaking_mem_1101 > 1)
 		AND @v162UpdatePositiontaking_1101 = 1
 	BEGIN
 		select @ErrCode_cur = 5
