@@ -19,12 +19,13 @@ SET NOCOUNT ON
 			rs.currency,
 			c.currency as currencyName,
 			CASE WHEN c.code = 'VND' THEN 'INH' ELSE c.code END as currencyCode,
-			rs.minbet
+			ISNULL(rs.minbet,0) as minbet
 	FROM RacingBetSetting rs WITH(NOLOCK)
-		INNER JOIN Exchange c WITH(NOLOCK) ON rs.currency = c.exchangeid
+		RIGHT JOIN Exchange c WITH(NOLOCK) ON rs.currency = c.exchangeid
 	WHERE sporttype = ISNULL(@sporttype,sporttype)
 		AND bettype = ISNULL(@bettype,bettype)
 		AND c.currency LIKE ISNULL(@currency,c.currency)
+		AND c.description <> 'Unused'
 		
 GO
 GRANT EXECUTE ON [dbo].[Acc_RacingBetSettingSel] TO [bodbAdminNet]
