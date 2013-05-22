@@ -27,7 +27,7 @@ SET NOCOUNT ON
 	
 	SET @Begin = GETDATE();
 	
-	EXEC DBPOLICY.bodb02.dbo.Acc_Con_CheckPermission @custid = @UserID, @funcname = 'RacingSetting', @System = @System, @ErrCode = @ErrCode OUTPUT, @ErrMsg = @ErrMsg OUTPUT;
+	EXEC DBPOLICY.bodb02.dbo.Acc_Con_CheckPermission @custid = @UserID, @funcname = '[RacingDefaultSetting]', @System = @System, @ErrCode = @ErrCode OUTPUT, @ErrMsg = @ErrMsg OUTPUT;
 	
 	IF @ErrCode <> 0
 		RETURN;
