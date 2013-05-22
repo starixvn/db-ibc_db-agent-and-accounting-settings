@@ -21,8 +21,8 @@ SET NOCOUNT ON
 			CASE WHEN c.code = 'VND' THEN 'INH' ELSE c.code END as currencyCode,
 			ISNULL(rs.minbet,0) as minbet
 	FROM RacingBetSetting rs WITH(NOLOCK)
-		RIGHT JOIN Exchange c WITH(NOLOCK) ON rs.currency = c.exchangeid
-	WHERE sporttype = ISNULL(@sporttype,sporttype)
+		INNER JOIN Exchange c WITH(NOLOCK) ON rs.currency = c.exchangeid 
+	WHERE sporttype = ISNULL(@sporttype,sporttype) 
 		AND bettype = ISNULL(@bettype,bettype)
 		AND c.currency LIKE ISNULL(@currency,c.currency)
 		AND c.description <> 'Unused'
