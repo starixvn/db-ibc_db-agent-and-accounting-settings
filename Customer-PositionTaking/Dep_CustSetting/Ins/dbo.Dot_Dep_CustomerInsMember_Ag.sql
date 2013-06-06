@@ -97,7 +97,9 @@ Revisions:
 	- 20130222@Lukas: Add  virtual racing setting (sporttype : 181 , bettype : 1231)
 	- 20130311@Kiwi: Hard code MaxBet/MaxperBall/MaxperMatch for SB and NG of Agent 12betUS$KR (10393717)
     - 20130329@Viet: remove hard code for 12betUS$KR (10393717)
-						
+	- 20130502@Kiwi: Sportsbook - hard code MaxBet and MaxperMatch for Soccer only for Livebet365 licensee
+	- 20130605@Johnson: check P2P status with upline
+					
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -626,6 +628,7 @@ declare @transcode bigint,
 	@Disable180_1201 bit , -- virtual soccer
 	@HideVirtualSports  BIT, -- virtual sports
 	@DoubleCommLosing BIT,-- double comm losing status
+	@DisableP2P BIT,-- P2P status
 	
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -700,6 +703,7 @@ select
 	@Disable152_51		= ISNULL(Disable152_AU,0),
 	@Disable153_51		= ISNULL(Disable153_AU,0),
 	@DisableFinancial	= DisableFinancial,
+	@DisableP2P			= isnull(DisableP2P,0),
 	--@DisableBingo		= DisableBingo,
 	@DisableNumber		= ISNULL(DisableNumber,0),
 	@Disable180_1201	= ISNULL(DisableVirtualSports,0),
@@ -833,6 +837,11 @@ BEGIN
 	IF @Currency = 51 SELECT @vMaxbet = 53000, @vMaxpermatch = 160000, @maxbetv161 = 10000, @maxperballv161 = 30000-- INH  
 END
 
+-- Kiwi@20130502: Sportsbook - hard code MaxBet and MaxperMatch for Soccer only.
+IF @site = 'LiveBet365'
+BEGIN
+	IF @Currency = 2 SELECT @vMaxbet = 10000, @vMaxpermatch = 50000 -- RM
+END
 
 /*Thien@2009117: comment out, to let MS88 handle by themselves.
 IF @site = 'mansion88'
@@ -1656,6 +1665,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@Disable152_41 = @Disable152_41,
 	@Disable152_51 = @Disable152_51,
 	@Disable153_51 = @Disable153_51,
+	@DisableP2P	= @DisableP2P,
 	@matchlimit = @matchlimit,
 	@virtualmultiplier = @virtualmultiplier,
 	@DisableFinancial = 0,
