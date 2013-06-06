@@ -629,6 +629,7 @@ declare @transcode bigint,
 	@HideVirtualSports  BIT, -- virtual sports
 	@DoubleCommLosing BIT,-- double comm losing status
 	@DisableP2P BIT,-- P2P status
+	@DisableFUNP2P BIT,
 	
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -704,6 +705,7 @@ select
 	@Disable153_51		= ISNULL(Disable153_AU,0),
 	@DisableFinancial	= DisableFinancial,
 	@DisableP2P			= isnull(DisableP2P,0),
+	@DisableFUNP2P		= ISNULL(DisableFUNP2P,0),
 	--@DisableBingo		= DisableBingo,
 	@DisableNumber		= ISNULL(DisableNumber,0),
 	@Disable180_1201	= ISNULL(DisableVirtualSports,0),
@@ -1666,6 +1668,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@Disable152_51 = @Disable152_51,
 	@Disable153_51 = @Disable153_51,
 	@DisableP2P	= @DisableP2P,
+	@DisableFUNP2P = @DisableFUNP2P,
 	@matchlimit = @matchlimit,
 	@virtualmultiplier = @virtualmultiplier,
 	@DisableFinancial = 0,
