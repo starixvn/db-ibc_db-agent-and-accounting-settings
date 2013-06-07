@@ -25,6 +25,7 @@ AS
 			- 20120928@Lukas: do not check max PT of super SLAM (8156203) - special requirement
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20130516@Lukas: allow PT = 100%
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON 
@@ -78,7 +79,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 IF @v162UpdatePositiontaking_1101 = 1
 BEGIN
-	IF @v162spositiontaking_1101 < 0 OR ( @v162spositiontaking_1101 > 0.9 AND @srecommend <> 8156203)
+	IF @v162spositiontaking_1101 < 0 OR ( @v162spositiontaking_1101 > 1 AND @srecommend <> 8156203)
 	BEGIN			
 			Select @ErrMsg_Cur = 	@UserName + ': '+
 				case @Language 

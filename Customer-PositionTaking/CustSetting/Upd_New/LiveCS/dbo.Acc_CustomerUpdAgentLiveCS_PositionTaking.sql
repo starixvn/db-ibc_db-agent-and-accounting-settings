@@ -1,6 +1,4 @@
-﻿
-
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking]
 (
 	@custid								INT,
 	
@@ -32,6 +30,7 @@ AS
 		- 20120405@Johnson: not check pt change for agent not synchronized
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: write log on DBTXN if DBLOG failure
+		- 20130516@Lukas: allow PT = 100%
 	Parameters Explanation:
 */
 BEGIN
@@ -76,7 +75,7 @@ BEGIN
 				
 	IF	@v162apositiontaking_1101 < 0	
 		OR @v162mpositiontaking_1101 < 0
-		OR @v162apositiontaking_1101 + @v162mpositiontaking_1101 > 0.9
+		OR @v162apositiontaking_1101 + @v162mpositiontaking_1101 > 1
 	BEGIN
 		SELECT @ErrCode = 100
 		SELECT @ErrMsg = 	@UserName + ': '+

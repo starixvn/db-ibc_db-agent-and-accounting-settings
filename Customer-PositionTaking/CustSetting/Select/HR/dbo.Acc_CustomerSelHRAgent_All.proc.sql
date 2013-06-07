@@ -15,6 +15,7 @@ Revisions:
     - 20100729@Henry: Grant permission for bodbExtAccNet
     - 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
     - 20130306@Johnson: Check bet setting with setting of 3rd
+    - 20130506@Johnson: check null bet setting of 3rd
 Param's Explanation:
 • @CustID: super ID
 */
@@ -272,12 +273,12 @@ Param's Explanation:
 	--END
 	
 	--Check bet setting with setting of 3rd
-	SELECT @v151MinBet3rd_31 = MAX(CASE WHEN sporttype = 151 and bettype = 31 THEN minbet ELSE 0 END),
-		@v151MinBet3rd_41 = MAX(CASE WHEN sporttype = 151 and bettype = 41 THEN minbet ELSE 0 END),
-		@v151MinBet3rd_51 = MAX(CASE WHEN sporttype = 151 and bettype = 51 THEN minbet ELSE 0 END),
-		@v152MinBet3rd_41 = MAX(CASE WHEN sporttype = 152 and bettype = 41 THEN minbet ELSE 0 END),
-		@v152MinBet3rd_51 = MAX(CASE WHEN sporttype = 152 and bettype = 51 THEN minbet ELSE 0 END),
-		@v153MinBet3rd_51 = MAX(CASE WHEN sporttype = 153 and bettype = 51 THEN minbet ELSE 0 END)
+	SELECT @v151MinBet3rd_31 = ISNULL(MAX(CASE WHEN sporttype = 151 and bettype = 31 THEN minbet ELSE 0 END),0),
+		@v151MinBet3rd_41 = ISNULL(MAX(CASE WHEN sporttype = 151 and bettype = 41 THEN minbet ELSE 0 END),0),
+		@v151MinBet3rd_51 = ISNULL(MAX(CASE WHEN sporttype = 151 and bettype = 51 THEN minbet ELSE 0 END),0),
+		@v152MinBet3rd_41 = ISNULL(MAX(CASE WHEN sporttype = 152 and bettype = 41 THEN minbet ELSE 0 END),0),
+		@v152MinBet3rd_51 = ISNULL(MAX(CASE WHEN sporttype = 152 and bettype = 51 THEN minbet ELSE 0 END),0),
+		@v153MinBet3rd_51 = ISNULL(MAX(CASE WHEN sporttype = 153 and bettype = 51 THEN minbet ELSE 0 END),0)
 	FROM RacingBetSetting WITH(NOLOCK)
 	WHERE currency = @currency
 	
