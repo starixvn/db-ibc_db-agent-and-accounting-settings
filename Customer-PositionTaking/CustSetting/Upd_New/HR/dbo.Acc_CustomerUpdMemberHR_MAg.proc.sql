@@ -99,6 +99,7 @@ Revisions:
 	- 20111017@TOM: Apply Multiple Edit Racing PT.	
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	- 20130610@Johnson: check m1 with valid range of m1
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -304,6 +305,7 @@ DECLARE
 	@max_v153spositiontaking_51 SMALLMONEY,
 	@max_v153spositiontaking_52 SMALLMONEY,
 	
+	--s1
 	@v151spositiontaking_31 SMALLMONEY,
 	@v151spositiontaking_32 SMALLMONEY,
 	@v151spositiontaking_41 SMALLMONEY,
@@ -400,6 +402,7 @@ DECLARE
 	@isauto_v153mpositiontaking_agent_52 bit
 
 DECLARE
+	--m3
 	@max_v151mapositiontaking_31 SMALLMONEY,
 	@max_v151mapositiontaking_32 SMALLMONEY,
 	@max_v151mapositiontaking_41 SMALLMONEY,
@@ -414,6 +417,7 @@ DECLARE
 	@max_v153mapositiontaking_52 SMALLMONEY
 	
 DECLARE
+	--n3
 	@min_v151mapositiontaking_31 SMALLMONEY,
 	@min_v151mapositiontaking_32 SMALLMONEY,
 	@min_v151mapositiontaking_41 SMALLMONEY,
@@ -425,7 +429,22 @@ DECLARE
 	@min_v152mapositiontaking_51 SMALLMONEY,
 	@min_v152mapositiontaking_52 SMALLMONEY,
 	@min_v153mapositiontaking_51 SMALLMONEY,
-	@min_v153mapositiontaking_52 SMALLMONEY
+	@min_v153mapositiontaking_52 SMALLMONEY,
+	
+	--max_m1
+	--max_m1 = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
+	@max_v151mp_31 smallmoney,
+	@max_v151mp_32 smallmoney,
+	@max_v151mp_41 smallmoney,
+	@max_v151mp_42 smallmoney,
+	@max_v151mp_51 smallmoney,
+	@max_v151mp_52 smallmoney,
+	@max_v152mp_41 smallmoney,
+	@max_v152mp_42 smallmoney,
+	@max_v152mp_51 smallmoney,
+	@max_v152mp_52 smallmoney,
+	@max_v153mp_51 smallmoney,
+	@max_v153mp_52 smallmoney
 
 
 
@@ -439,23 +458,6 @@ BEGIN
 	return
 END
 */
-
--- backup
-	SELECT 
-	@isauto_v151mpositiontaking_agent_31 = @isauto_v151mpositiontaking_31,
-	@isauto_v151mpositiontaking_agent_32 = @isauto_v151mpositiontaking_32,
-	@isauto_v151mpositiontaking_agent_41 = @isauto_v151mpositiontaking_41,
-	@isauto_v151mpositiontaking_agent_42 = @isauto_v151mpositiontaking_42,
-	@isauto_v151mpositiontaking_agent_51 = @isauto_v151mpositiontaking_51,
-	@isauto_v151mpositiontaking_agent_52 = @isauto_v151mpositiontaking_52,
-	@isauto_v152mpositiontaking_agent_41 = @isauto_v152mpositiontaking_41,
-	@isauto_v152mpositiontaking_agent_42 = @isauto_v152mpositiontaking_42,
-	@isauto_v152mpositiontaking_agent_51 = @isauto_v152mpositiontaking_51,
-	@isauto_v152mpositiontaking_agent_52 = @isauto_v152mpositiontaking_52,
-	@isauto_v153mpositiontaking_agent_51 = @isauto_v153mpositiontaking_51,
-	@isauto_v153mpositiontaking_agent_52 = @isauto_v153mpositiontaking_52
-
-
 
 --s1,a1,old_m1,u1,i1
 IF (@UpdatePositiontakingv151_31 = 1)
@@ -819,8 +821,60 @@ IF ( @UpdatePositiontakingv153_51 = 1 )
 		SELECT @max_v153spositiontaking_51 = spositiontaking FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=51 AND sporttype=153
 		SELECT @max_v153spositiontaking_52 = spositiontaking FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=52 AND sporttype=153
 	END
---um2
+
+	--calculate m1_max = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
+	Select
+	--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
+		@max_v151mp_31 = max(case when cs.bettype = 31 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_31 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_31 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v151mp_32 = max(case when cs.bettype = 32 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_32 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_32 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v151mp_41 = max(case when cs.bettype = 41 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_41 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_41 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v151mp_42 = max(case when cs.bettype = 42 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_42 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_42 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v151mp_51 = max(case when cs.bettype = 51 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_51 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_51 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v151mp_52 = max(case when cs.bettype = 52 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_52 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v151spositiontaking_52 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v152mp_41 = max(case when cs.bettype = 41 and cs.sporttype = 152 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v152spositiontaking_41 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v152spositiontaking_41 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v152mp_42 = max(case when cs.bettype = 42 and cs.sporttype = 152 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v152spositiontaking_42 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v152spositiontaking_42 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v152mp_51 = max(case when cs.bettype = 51 and cs.sporttype = 152 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_51 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v152spositiontaking_51 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v152mp_52 = max(case when cs.bettype = 52 and cs.sporttype = 152 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v151spositiontaking_52 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v152spositiontaking_52 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v153mp_51 = max(case when cs.bettype = 51 and cs.sporttype = 153 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v153spositiontaking_51 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v153spositiontaking_51 - cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		@max_v153mp_52 = max(case when cs.bettype = 52 and cs.sporttype = 153 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@max_v153spositiontaking_52 - cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @max_v153spositiontaking_52 - cs.spositiontaking-cs.apositiontaking end end else 0 end)
+	From CustSetting3rd as cs with (NOLOCK) 
+		inner join custinfo as c with (nolock) on cs.custid = c.custid
+		inner join CustSetting3rd as mcs with (nolock) on mcs.custid = c.mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype =cs.bettype
+	where cs.custid = @custid and cs.sporttype BETWEEN 151 AND 153
+	
+	--@max_mp = min[@max_mp,min(m3,l3)-a1]	
+	select @max_v151mp_31 = CASE WHEN @max_v151mp_31 < @max_v151mapositiontaking_31 - @v151apositiontaking_31 THEN @max_v151mp_31 ELSE @max_v151mapositiontaking_31 - @v151apositiontaking_31 END
+	select @max_v151mp_32 = CASE WHEN @max_v151mp_32 < @max_v151mapositiontaking_32 - @v151apositiontaking_32 THEN @max_v151mp_32 ELSE @max_v151mapositiontaking_32 - @v151apositiontaking_32 END
+	select @max_v151mp_41 = CASE WHEN @max_v151mp_41 < @max_v151mapositiontaking_41 - @v151apositiontaking_41 THEN @max_v151mp_41 ELSE @max_v151mapositiontaking_41 - @v151apositiontaking_41 END
+	select @max_v151mp_42 = CASE WHEN @max_v151mp_42 < @max_v151mapositiontaking_42 - @v151apositiontaking_42 THEN @max_v151mp_42 ELSE @max_v151mapositiontaking_42 - @v151apositiontaking_42 END
+	select @max_v151mp_51 = CASE WHEN @max_v151mp_51 < @max_v151mapositiontaking_51 - @v151apositiontaking_51 THEN @max_v151mp_51 ELSE @max_v151mapositiontaking_51 - @v151apositiontaking_51 END
+	select @max_v151mp_52 = CASE WHEN @max_v151mp_52 < @max_v151mapositiontaking_52 - @v151apositiontaking_52 THEN @max_v151mp_52 ELSE @max_v151mapositiontaking_52 - @v151apositiontaking_52 END
+	
+	select @max_v152mp_41 = CASE WHEN @max_v152mp_41 < @max_v152mapositiontaking_41 - @v152apositiontaking_41 THEN @max_v152mp_41 ELSE @max_v152mapositiontaking_41 - @v152apositiontaking_41 END
+	select @max_v152mp_42 = CASE WHEN @max_v152mp_42 < @max_v152mapositiontaking_42 - @v152apositiontaking_42 THEN @max_v152mp_42 ELSE @max_v152mapositiontaking_42 - @v152apositiontaking_42 END
+	select @max_v152mp_51 = CASE WHEN @max_v152mp_51 < @max_v152mapositiontaking_51 - @v152apositiontaking_51 THEN @max_v152mp_51 ELSE @max_v152mapositiontaking_51 - @v152apositiontaking_51 END
+	select @max_v152mp_52 = CASE WHEN @max_v152mp_52 < @max_v152mapositiontaking_52 - @v152apositiontaking_52 THEN @max_v152mp_52 ELSE @max_v152mapositiontaking_52 - @v152apositiontaking_52 END
+	
+	select @max_v153mp_51 = CASE WHEN @max_v153mp_51 < @max_v153mapositiontaking_51 - @v153apositiontaking_51 THEN @max_v153mp_51 ELSE @max_v153mapositiontaking_51 - @v153apositiontaking_51 END
+	select @max_v153mp_52 = CASE WHEN @max_v153mp_52 < @max_v153mapositiontaking_52 - @v153apositiontaking_52 THEN @max_v153mp_52 ELSE @max_v153mapositiontaking_52 - @v153apositiontaking_52 END
+	
+--um2,im2
 SELECT 
+	@isauto_v151mpositiontaking_31 = MAX(CASE WHEN acs.bettype = 31 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v151mpositiontaking_32 = MAX(CASE WHEN acs.bettype = 32 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v151mpositiontaking_41 = MAX(CASE WHEN acs.bettype = 41 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v151mpositiontaking_42 = MAX(CASE WHEN acs.bettype = 42 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v151mpositiontaking_51 = MAX(CASE WHEN acs.bettype = 51 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v151mpositiontaking_52 = MAX(CASE WHEN acs.bettype = 52 AND acs.sporttype=151 THEN acs.isautompositiontaking ELSE 0 END),
+	
+	@isauto_v152mpositiontaking_41 = MAX(CASE WHEN acs.bettype = 41 AND acs.sporttype=152 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v152mpositiontaking_42 = MAX(CASE WHEN acs.bettype = 42 AND acs.sporttype=152 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v152mpositiontaking_51 = MAX(CASE WHEN acs.bettype = 51 AND acs.sporttype=152 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v152mpositiontaking_52 = MAX(CASE WHEN acs.bettype = 52 AND acs.sporttype=152 THEN acs.isautompositiontaking ELSE 0 END),
+	
+	@isauto_v153mpositiontaking_51 = MAX(CASE WHEN acs.bettype = 51 AND acs.sporttype=153 THEN acs.isautompositiontaking ELSE 0 END),
+	@isauto_v153mpositiontaking_52 = MAX(CASE WHEN acs.bettype = 52 AND acs.sporttype=153 THEN acs.isautompositiontaking ELSE 0 END),
+	
 	@auto_v151mpositiontaking_31 = MAX(CASE WHEN acs.bettype = 31 AND acs.sporttype=151 THEN acs.autompositiontaking ELSE 0 END),
 	@auto_v151mpositiontaking_32 = MAX(CASE WHEN acs.bettype = 32 AND acs.sporttype=151 THEN acs.autompositiontaking ELSE 0 END),
 	@auto_v151mpositiontaking_41 = MAX(CASE WHEN acs.bettype = 41 AND acs.sporttype=151 THEN acs.autompositiontaking ELSE 0 END),
@@ -849,6 +903,21 @@ SELECT
 FROM CustSetting3rd acs WITH(NOLOCK)
 WHERE acs.custid = @recommend
 		and acs.sporttype in (151,152,153)
+
+-- backup
+	SELECT 
+	@isauto_v151mpositiontaking_agent_31 = @isauto_v151mpositiontaking_31,
+	@isauto_v151mpositiontaking_agent_32 = @isauto_v151mpositiontaking_32,
+	@isauto_v151mpositiontaking_agent_41 = @isauto_v151mpositiontaking_41,
+	@isauto_v151mpositiontaking_agent_42 = @isauto_v151mpositiontaking_42,
+	@isauto_v151mpositiontaking_agent_51 = @isauto_v151mpositiontaking_51,
+	@isauto_v151mpositiontaking_agent_52 = @isauto_v151mpositiontaking_52,
+	@isauto_v152mpositiontaking_agent_41 = @isauto_v152mpositiontaking_41,
+	@isauto_v152mpositiontaking_agent_42 = @isauto_v152mpositiontaking_42,
+	@isauto_v152mpositiontaking_agent_51 = @isauto_v152mpositiontaking_51,
+	@isauto_v152mpositiontaking_agent_52 = @isauto_v152mpositiontaking_52,
+	@isauto_v153mpositiontaking_agent_51 = @isauto_v153mpositiontaking_51,
+	@isauto_v153mpositiontaking_agent_52 = @isauto_v153mpositiontaking_52
 
 
 if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
@@ -912,7 +981,38 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			RETURN
 		END
-
+		
+		--check m1 <= m1_max
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		FROM 
+			(
+				SELECT 151 as sporttype, 31 as bettype, @isauto_v151mpositiontaking_31 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_31 as isautompositiontaking_mem, @v151mpositiontaking_31 as mpositiontaking, @max_v151mp_31 as mpositiontaking_max WHERE @UpdatePositiontakingv151_31 = 1
+				UNION ALL SELECT 151 as sporttype, 32 as bettype, @isauto_v151mpositiontaking_32 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_32 as isautompositiontaking_mem, @v151mpositiontaking_32 as mpositiontaking, @max_v151mp_32 as mpositiontaking_max WHERE @UpdatePositiontakingv151_31 = 1
+				UNION ALL SELECT 151 as sporttype, 41 as bettype, @isauto_v151mpositiontaking_41 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_41 as isautompositiontaking_mem, @v151mpositiontaking_41 as mpositiontaking, @max_v151mp_41 as mpositiontaking_max WHERE @UpdatePositiontakingv151_41 = 1
+				UNION ALL SELECT 151 as sporttype, 42 as bettype, @isauto_v151mpositiontaking_42 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_42 as isautompositiontaking_mem, @v151mpositiontaking_42 as mpositiontaking, @max_v151mp_42 as mpositiontaking_max WHERE @UpdatePositiontakingv151_41 = 1
+				UNION ALL SELECT 151 as sporttype, 51 as bettype, @isauto_v151mpositiontaking_51 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_51 as isautompositiontaking_mem, @v151mpositiontaking_51 as mpositiontaking, @max_v151mp_51 as mpositiontaking_max WHERE @UpdatePositiontakingv151_51 = 1
+				UNION ALL SELECT 151 as sporttype, 52 as bettype, @isauto_v151mpositiontaking_52 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_52 as isautompositiontaking_mem, @v151mpositiontaking_52 as mpositiontaking, @max_v151mp_52 as mpositiontaking_max WHERE @UpdatePositiontakingv151_51 = 1
+			) b
+			INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+			INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+		WHERE b.mpositiontaking > b.mpositiontaking_max and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 10,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT 
 			@v151mpositiontaking_31 = CASE WHEN @v151apositiontaking_31+@v151mpositiontaking_31>@max_v151mapositiontaking_31 THEN @max_v151mapositiontaking_31-@v151apositiontaking_31 ELSE @v151mpositiontaking_31 END,
