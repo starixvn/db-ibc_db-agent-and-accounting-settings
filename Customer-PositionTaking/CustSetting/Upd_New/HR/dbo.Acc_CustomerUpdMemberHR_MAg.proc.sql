@@ -1193,7 +1193,36 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositionta
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			RETURN
 		END
-
+		
+		--check m1 <= m1_max
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		FROM 
+			(
+				SELECT 152 as sporttype, 41 as bettype, @isauto_v152mpositiontaking_41 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_41 as isautompositiontaking_mem, @v152mpositiontaking_41 as mpositiontaking, @max_v152mp_41 as mpositiontaking_max WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL SELECT 152 as sporttype, 42 as bettype, @isauto_v152mpositiontaking_42 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_42 as isautompositiontaking_mem, @v152mpositiontaking_42 as mpositiontaking, @max_v152mp_42 as mpositiontaking_max WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL SELECT 152 as sporttype, 51 as bettype, @isauto_v152mpositiontaking_51 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_51 as isautompositiontaking_mem, @v152mpositiontaking_51 as mpositiontaking, @max_v152mp_51 as mpositiontaking_max WHERE @UpdatePositiontakingv152_51 = 1
+				UNION ALL SELECT 152 as sporttype, 52 as bettype, @isauto_v152mpositiontaking_52 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_52 as isautompositiontaking_mem, @v152mpositiontaking_52 as mpositiontaking, @max_v152mp_52 as mpositiontaking_max WHERE @UpdatePositiontakingv152_51 = 1
+			) b
+			INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+			INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+		WHERE b.mpositiontaking > b.mpositiontaking_max and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 10,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT 
 			@v152mpositiontaking_41 = CASE WHEN @v152apositiontaking_41+@v152mpositiontaking_41>@max_v152mapositiontaking_41 THEN @max_v152mapositiontaking_41-@v152apositiontaking_41 ELSE @v152mpositiontaking_41 END,
@@ -1328,7 +1357,34 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			RETURN
 		END
-
+		
+		--check m1 <= m1_max
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		FROM 
+			(
+				SELECT 153 as sporttype, 51 as bettype, @isauto_v153mpositiontaking_51 as isautomapositiontaking, @old_isauto_v153mpositiontaking_mem_51 as isautompositiontaking_mem, @v153mpositiontaking_51 as mpositiontaking, @max_v153mp_51 as mpositiontaking_max WHERE @UpdatePositiontakingv153_51 = 1
+				UNION ALL SELECT 153 as sporttype, 52 as bettype, @isauto_v153mpositiontaking_52 as isautomapositiontaking, @old_isauto_v153mpositiontaking_mem_52 as isautompositiontaking_mem, @v153mpositiontaking_52 as mpositiontaking, @max_v153mp_52 as mpositiontaking_max WHERE @UpdatePositiontakingv153_51 = 1
+			) b
+			INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+			INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+		WHERE b.mpositiontaking > b.mpositiontaking_max and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 10,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT 
 			@v153mpositiontaking_51 = CASE WHEN @v153apositiontaking_51+@v153mpositiontaking_51>@max_v153mapositiontaking_51 THEN @max_v153mapositiontaking_51-@v153apositiontaking_51 ELSE @v153mpositiontaking_51 END,
