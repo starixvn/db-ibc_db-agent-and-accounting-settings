@@ -32,6 +32,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend  
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20130527@Elodie: Change linked server DB053 to DBAGE for Acc_CustomerSelCheckAllowedDownlines
 	
 Param's Explanation:
 • @ErrCode:
@@ -89,7 +90,7 @@ from Custinfo with (nolock)
 where CustID = @CustID
 
 -- Check Allowed downlines during peak hour at weekend 
-EXEC DB053.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=0,
 											@Language=@Language,
