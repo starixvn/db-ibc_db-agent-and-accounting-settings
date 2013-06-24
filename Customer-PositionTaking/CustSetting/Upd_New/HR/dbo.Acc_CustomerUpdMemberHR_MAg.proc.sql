@@ -986,7 +986,7 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + sportname + '-'+
 		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10)) + '<br>'
 		FROM 
 			(
 				SELECT 151 as sporttype, 31 as bettype, @isauto_v151mpositiontaking_31 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_31 as isautompositiontaking_mem, @v151mpositiontaking_31 as mpositiontaking, @max_v151mp_31 as mpositiontaking_max WHERE @UpdatePositiontakingv151_31 = 1
@@ -1005,8 +1005,8 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 			SELECT @ErrCode_cur = 10,
   					@ErrMsg_cur = @UserName + ': '+
 						 CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+								WHEN 'E' THEN 'Wrong position taking. <br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
 						END
 			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
@@ -1198,7 +1198,7 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositionta
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + sportname + '-'+
 		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10)) + '<br>'
 		FROM 
 			(
 				SELECT 152 as sporttype, 41 as bettype, @isauto_v152mpositiontaking_41 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_41 as isautompositiontaking_mem, @v152mpositiontaking_41 as mpositiontaking, @max_v152mp_41 as mpositiontaking_max WHERE @UpdatePositiontakingv152_41 = 1
@@ -1215,8 +1215,8 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositionta
 			SELECT @ErrCode_cur = 10,
   					@ErrMsg_cur = @UserName + ': '+
 						 CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+								WHEN 'E' THEN 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
 						END
 			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
@@ -1362,7 +1362,7 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + sportname + '-'+
 		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10))
+		+ '-Max: '+ CAST((b.mpositiontaking_max) AS VARCHAR(10)) + '<br>'
 		FROM 
 			(
 				SELECT 153 as sporttype, 51 as bettype, @isauto_v153mpositiontaking_51 as isautomapositiontaking, @old_isauto_v153mpositiontaking_mem_51 as isautompositiontaking_mem, @v153mpositiontaking_51 as mpositiontaking, @max_v153mp_51 as mpositiontaking_max WHERE @UpdatePositiontakingv153_51 = 1
@@ -1377,8 +1377,8 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 			SELECT @ErrCode_cur = 10,
   					@ErrMsg_cur = @UserName + ': '+
 						 CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking (min/max set by upline) ('+@ErrType+').'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20028,@Language) + ' ('+@ErrType+').'
+								WHEN 'E' THEN 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
 						END
 			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)

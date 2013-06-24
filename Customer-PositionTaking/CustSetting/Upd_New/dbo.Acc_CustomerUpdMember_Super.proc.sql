@@ -2947,7 +2947,7 @@ BEGIN--Update Position Taking
 			--Check s1<=s1_max
 			SELECT @ErrType = ''
 			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((b.positiontaking_max) AS varchar(10))
-			+ CASE WHEN b.sporttype=1 and b.bettype in (1,3,7,8) THEN '-MaxLive: '+ cast((b.livepositiontaking_max) AS varchar(10)) ELSE '' END + '<br>'
+			+ CASE WHEN b.sporttype=161 and b.bettype in (85,86,87,89,90) THEN '-MaxLive: '+ cast((b.livepositiontaking_max) AS varchar(10)) ELSE '' END + '<br>'
 			from
 				(
 					SELECT 81 AS bettype, 161 AS sporttype, @v161spositiontaking_81 AS positiontaking, @isauto_v161spositiontaking_81 as isauto_spositiontaking, @isauto_v161smpositiontaking_81 as isauto_smpositiontaking, @v161mspositiontaking_81_max as positiontaking_max, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 as livepositiontaking_max
@@ -2961,7 +2961,7 @@ BEGIN--Update Position Taking
 				) b
 			INNER JOIN sports with (nolock) on b.sporttype = sports.sporttype
 			INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0) or (b.bettype in (1,3,7,8) and b.livepositiontaking > b.livepositiontaking_max and b.isauto_slivepositiontaking= 0 and b.isauto_smlivepositiontaking = 0)
+			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0) or (b.bettype in (85,86,87,89,90) and b.livepositiontaking > b.livepositiontaking_max and b.isauto_slivepositiontaking= 0 and b.isauto_smlivepositiontaking = 0)
 			
 			if @ErrType <>''
 			BEGIN

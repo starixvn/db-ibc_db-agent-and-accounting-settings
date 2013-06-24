@@ -617,8 +617,8 @@ END
 			select @ErrCode = 11
 			Select @ErrMsg = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
 			return
 		END
@@ -791,8 +791,8 @@ BEGIN --@@UpdatePositiontakingv152
 			select @ErrCode = 11
 			Select @ErrMsg = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
 			return
 		END
@@ -931,8 +931,8 @@ BEGIN --@@UpdatePositiontakingv153
 			select @ErrCode = 11
 			Select @ErrMsg = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking .<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
 			return
 		END
