@@ -33,6 +33,7 @@ Revisions:
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend  
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130527@Elodie: Change linked server DB053 to DBAGE for Acc_CustomerSelCheckAllowedDownlines
+	- 20130709@Jamie: Apply Exec Rep 
 	
 Param's Explanation:
 • @ErrCode:
@@ -92,7 +93,7 @@ where CustID = @CustID
 -- Check Allowed downlines during peak hour at weekend 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1, --Use Exec Rep for UPDATE 
 											@Language=@Language,
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -161,50 +162,17 @@ begin
 	return
 end
 
-if @RoleID = 4 
+--20130709@Jamie: Apply ExecRep 
+IF @RoleID BETWEEN 2 AND 4 
 BEGIN
-	update CustInfo with (ROWLOCK, UPDLOCK) set Reject = @Suspended where SRecommend = @CustID
-	if (@@error <> 0)
-	begin
-		
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 102
-	return
-	end
+	EXEC [Acc_ExecRep_04]
+		 @CustID		= @CustID
+		,@RoleID		= @RoleID
+		,@Action		= 'Suspended'
+		,@Suspended		= @Suspended
 END
 
-if @RoleID = 3 
-BEGIN
-	update CustInfo with (ROWLOCK, UPDLOCK) set Reject = @Suspended where MRecommend = @CustID
-	if (@@error <> 0)
-	begin
-		
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103
-	return
-	end
-END
 
-if @RoleID = 2 
-BEGIN
-	update CustInfo with (ROWLOCK, UPDLOCK) set Reject = @Suspended where Recommend = @CustID
-	if (@@error <> 0)
-	begin
-		
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 104
-	return
-	end
-END
 ---------------
 declare @LogSPData varchar(8000)
 
