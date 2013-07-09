@@ -40,6 +40,8 @@ Original:
 	- 20130124@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130128@Scott : add more parameter  @ErrCode  
 	- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	- 20130709@Jamie: Apply Exec Rep 
+	
 */
 SET NOCOUNT ON
 declare @startRun datetime
@@ -66,20 +68,6 @@ BEGIN
 	RETURN
 END
 
--- Check Allowed downlines during peak hour at weekend
-IF @disabledCS = 1 OR @enableDownline = 1
-BEGIN
-	
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
-											@roleid=@roleid,
-											@isExecRep=0,
-											@Language=@Language,
-											@ErrMsg=@ErrMsg output,
-											@ErrCode=@ErrCode output
-	IF @ErrCode <>0 RETURN
-END
---End 
-
 
 IF @SyncCasino = 0  AND @syncCS = 0 AND @disabledCS = 0
 BEGIN
@@ -87,6 +75,21 @@ BEGIN
 												ELSE [dbo].[f_Get_MsgNamebyMsgID](60026,@Language) END					
 	RETURN
 END
+
+
+-- Check Allowed downlines during peak hour at weekend
+IF @disabledCS = 1 OR @enableDownline = 1
+BEGIN
+	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+											@roleid=@roleid,
+											@isExecRep=1, -- Apply Exec Rep 
+											@Language=@Language,
+											@ErrMsg=@ErrMsg output,
+											@ErrCode=@ErrCode output
+	IF @ErrCode <>0 RETURN
+END
+--End 
 
 IF(@roleid = 4)
 	SELECT @Allow2Udpate=1
@@ -122,27 +125,15 @@ UPDATE CustInfo WITH (ROWLOCK, UPDLOCK) SET
 	SyncCasino = @syncCS --CASE @syncCS WHEN 1 THEN 1 ELSE SyncCasino END
 WHERE custid=@custid
 
--- Update downline
-IF @disabledCS = 1 OR @enableDownline = 1
+--	Update downline
+--	20130709@Jamie: Apply ExecRep 
+IF (@disabledCS = 1 OR @enableDownline = 1) AND @RoleID BETWEEN 2 AND 4 
 BEGIN
-	if @RoleID = 4
-	BEGIN
-		UPDATE CustInfo WITH (ROWLOCK, UPDLOCK) SET
-			DisableCasino = @disabledCS
-		WHERE SyncCasino=1 AND srecommend=@custid and roleid in (1,2,3)
-	END
-	if @RoleID = 3
-	BEGIN
-		UPDATE CustInfo WITH (ROWLOCK, UPDLOCK) SET
-			DisableCasino = @disabledCS
-		WHERE SyncCasino=1 AND mrecommend=@custid and roleid in (1,2)
-	END
-	if @RoleID = 2
-	BEGIN
-		UPDATE CustInfo WITH (ROWLOCK, UPDLOCK) SET
-			DisableCasino = @disabledCS
-		WHERE SyncCasino=1 AND recommend=@custid and roleid = 1
-	END
+	EXEC [Acc_ExecRep_04]
+		 @CustID		= @CustID
+		,@RoleID		= @RoleID
+		,@Action		= 'disabledCS'
+		,@disabledCS	= @disabledCS
 END 
 
 SELECT @status = 1
