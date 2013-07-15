@@ -189,6 +189,13 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerInsMember_SAg.sql"
                Script = "dbo.Acc_CustomerInsUserInfo.sql"
             End
+            Begin Folder = "Virtual HR"
+               Script = "Acc_CustomerInsMember_Ag.sql"
+               Script = "Acc_CustomerInsMember_Com.sql"
+               Script = "Acc_CustomerInsMember_MAg.sql"
+               Script = "Acc_CustomerInsMember_SAg.sql"
+               Script = "Acc_CustomerUserInfo.sql"
+            End
          End
          Begin Folder = "Select"
             Begin Folder = "BK"
