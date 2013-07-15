@@ -34,6 +34,7 @@ Revisions:
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend  
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130410@Elodie: Only update 'closed' status if values are different
+	- 20130709@Jamie: Apply ExecRep 
 	
 Param's Explanation:
 • @custid: custid that need to be viewed.   
@@ -89,7 +90,7 @@ IF @closed = 1
 BEGIN
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1,  --Apply Exec Rep 
 											@Language=@Language,
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -131,8 +132,6 @@ BEGIN
 END
 
 
-BEGIN TRANSACTION
-
 update custinfo with (ROWLOCK, UPDLOCK) set Closed = @Closed
 where custid = @custid
 
@@ -142,7 +141,6 @@ IF (@Old_Closed = 1 and @Closed = 0 and @LoginCount > 5) or (@Old_Closed = 1 and
 
 if (@@error <> 0)
 begin
-	ROLLBACK TRANSACTION
 	Select @ErrMsg =
 					case @Language 
 						when 'E' then 'Update process is unsuccessful !'
@@ -151,52 +149,19 @@ begin
 	return
 end
 
-if @closed = 1 and @roleid = 4
-begin
-	update custinfo with (ROWLOCK, UPDLOCK) set closed = @closed where srecommend = @custid
-	if (@@error <> 0)
-	begin
-		ROLLBACK TRANSACTION
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 102
-	return
-	end
-end
+--20130709@Jamie: Apply Exec Rep SP 
+IF @Closed = 1 AND @RoleID BETWEEN 2 AND 4
+BEGIN
+	EXEC [Acc_ExecRep_04]
+		 @CustID		= @CustID
+		,@RoleID		= @RoleID
+		,@Action		= 'Closed'
+		,@Closed		= @Closed
 
-if @closed = 1 and @roleid = 3
-begin
-	update custinfo with (ROWLOCK, UPDLOCK) set closed = @closed where mrecommend = @custid
-	if (@@error <> 0)
-	begin
-		ROLLBACK TRANSACTION
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103
-	return
-	end
-end
+END
 
-if @closed = 1 and @roleid = 2
-begin
-	update custinfo with (ROWLOCK, UPDLOCK) set closed = @closed where recommend = @custid
-	if (@@error <> 0)
-	begin
-		ROLLBACK TRANSACTION
-		Select @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 104
-	return
-	end
-end
 
-COMMIT TRANSACTION
+-- WRITE LOG 
 
 declare @LogSPData varchar(8000)
 

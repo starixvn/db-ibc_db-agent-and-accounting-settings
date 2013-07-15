@@ -614,12 +614,14 @@ END
 	
 	if @ErrType <>''
 		BEGIN
-			select @ErrCode = 11
-			Select @ErrMsg = 	@UserName + ': '+
+			select @ErrCode_Cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			return
 		END
 			
@@ -788,12 +790,14 @@ BEGIN --@@UpdatePositiontakingv152
 	
 	if @ErrType <>''
 		BEGIN
-			select @ErrCode = 11
-			Select @ErrMsg = 	@UserName + ': '+
+			select @ErrCode_cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			return
 		END
 			
@@ -928,12 +932,14 @@ BEGIN --@@UpdatePositiontakingv153
 	
 	if @ErrType <>''
 		BEGIN
-			select @ErrCode = 11
-			Select @ErrMsg = 	@UserName + ': '+
+			select @ErrCode_Cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
 				case @Language 
-								when 'E' then 'Wrong position taking (max set by upline).<br>'+@ErrType
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + '<br>' + @ErrType
+								when 'E' then 'Wrong position taking .<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			return
 		END
 		
