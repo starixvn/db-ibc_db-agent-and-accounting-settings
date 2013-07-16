@@ -122,7 +122,7 @@ Revisions:
 	- 20110719@thien: temporarily bypass the racing checking for these sites below
 	- 20110719@Jamie: temporarily do not update Min/MaxBet if Member's MinBet is less than Agent's MinBet for Mansion88  
 	- 20120321@Kiwi: Change to use Dep_CustSetting/Dep_CustSetting3rd
-	- 20130716@Elodie: Update bet setting for Virtual HR
+	- 20130716@Elodie: Update bet setting for Virtual Soccer
 Param's Explanation:
 */
 

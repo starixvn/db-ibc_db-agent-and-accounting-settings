@@ -14,7 +14,7 @@ Revisions:
 	- 20110620@Henry: support MaxPerBall + support input AGENT LEVEL
 	- 20120321@Kiwi: - Change to use Dep_CustSetting/Dep_CustSetting3rd
 					 - Remove Ficancials setting (201)
-	- 20130716@Elodie: retrieve bet setting for Virtual HR
+	- 20130716@Elodie: retrieve bet setting for Virtual Soccer
 						
 Param's Explanation:
 */
@@ -103,8 +103,8 @@ DECLARE
 	@MaxPerBallv161_Max MONEY,
 	
 	--Virtual soccer
-	@MinBetv180_Min MONEY, 
-	@MaxBetv180_Max MONEY, 
+	@MinBetv180_Max MONEY, 
+	@MaxBetv180_Min MONEY, 
 	@MaxPerMatchv180_Min MONEY, 
 	@MaxPerMatchv180_Max MONEY	
        
@@ -261,8 +261,8 @@ WHERE ci.custid = @custid
     
 --Virtual Soccer
 SELECT 
-	@MinBetv180_Min = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
-	@MaxBetv180_Max = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+	@MinBetv180_Max = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv180_Min = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
 FROM
 	Dep_CustSetting3rd AS cs WITH (NOLOCK)
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
@@ -488,8 +488,8 @@ SELECT
 	ISNULL(@MaxPerMatchv161_Max, 0) AS MaxPerMatchv161_Max,
 	ISNULL(@MaxPerBallv161_Max, 0)	AS MaxPerBallv161_Max,
 	
-	ISNULL(@MinBetv180_Min, 0) AS MinBetv180_Min,     
-	ISNULL(@MaxBetv180_Max, 0) AS MaxBetv180_Max,     
+	ISNULL(@MinBetv180_Max, 0) AS MinBetv180_Min,     
+	ISNULL(@MaxBetv180_Min, 0) AS MaxBetv180_Max,     
 	ISNULL(@MaxPerMatchv180_Min, 0) AS MaxPerMatchv180_Min,     
 	ISNULL(@MaxPerMatchv180_Max, 0) AS MaxPerMatchv180_Max	   
 FROM     
