@@ -14,6 +14,8 @@ Revisions:
 	- 20110620@Henry: support MaxPerBall + support input AGENT LEVEL
 	- 20120321@Kiwi: - Change to use Dep_CustSetting/Dep_CustSetting3rd
 					 - Remove Ficancials setting (201)
+	- 20130716@Elodie: retrieve bet setting for Virtual HR
+						
 Param's Explanation:
 */
 SET NOCOUNT ON
