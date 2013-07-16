@@ -98,12 +98,16 @@ DECLARE
 	@MaxBetv161_Min MONEY, 
 	@MaxPerMatchv161_Min MONEY, 
 	@MaxPerMatchv161_Max MONEY,
-	@MaxPerBallv161_Max MONEY
-   
-    
+	@MaxPerBallv161_Max MONEY,
+	
+	--Virtual soccer
+	@MinBetv180_Min MONEY, 
+	@MaxBetv180_Max MONEY, 
+	@MaxPerMatchv180_Min MONEY, 
+	@MaxPerMatchv180_Max MONEY	
+       
   
 ------------------------------------------------------------------------------------------------------------------------------------------
-  
              
 SELECT    
 	@MinBet_Min = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),     
@@ -253,6 +257,16 @@ FROM
 	AND cs.sporttype = 161 AND cs.bettype = 81
 WHERE ci.custid = @custid	
     
+--Virtual Soccer
+SELECT 
+	@MinBetv180_Min = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv180_Max = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
+	AND cs.sporttype = 180 AND cs.bettype = 1201
+WHERE ci.custid = @custid
+    
 SELECT     
 	@MaxPerMatch_Min = 0,     
 	@MaxperMatch_Max = MIN(CASE WHEN cs.MaxPerMatch = 0 THEN NULL ELSE cs.MaxPerMatch END),     
@@ -294,8 +308,12 @@ SELECT
 	
 	
 	@MaxPerMatchv161_Min = 0,
-	@MaxPerMatchv161_Max = MIN(CASE WHEN cs.MaxPerMatch161 = 0 THEN NULL ELSE cs.MaxPerMatch161 END)	,
-	@MaxPerBallv161_Max = MIN(CASE WHEN cs.MaxPerBall161 = 0  THEN NULL ELSE cs.MaxPerBall161 END)
+	@MaxPerMatchv161_Max = MIN(CASE WHEN cs.MaxPerMatch161 = 0 THEN NULL ELSE cs.MaxPerMatch161 END),
+	@MaxPerBallv161_Max = MIN(CASE WHEN cs.MaxPerBall161 = 0  THEN NULL ELSE cs.MaxPerBall161 END),
+	
+	@MaxPerMatchv180_Min = 0,
+	@MaxPerMatchv180_Max = MIN(CASE WHEN cs.maxpermatch180 = 0 THEN NULL ELSE cs.maxpermatch180 END)
+
 FROM     
  custinfo AS cs WITH (NOLOCK)     
  INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)    
@@ -325,7 +343,9 @@ SELECT
 	
 	ISNULL(ci.maxpermatch161,0) AS maxpermatchv161,
 	ISNULL(ci.maxperball161,0)	AS maxperballv161, 
-     
+    
+    isnull(ci.maxpermatch180,0) AS maxpermatchv180,
+    
 	ISNULL(MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 AND cs.isLive=0 THEN cs.minbet ELSE 0 END), 0) AS minbet,    
 	ISNULL(MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 AND cs.isLive=0 THEN cs.maxbet ELSE 0 END), 0) AS maxbet,    
 	 
@@ -379,6 +399,9 @@ SELECT
 
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 161 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv161,
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 161 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv161,
+	
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 180 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv180,
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 180 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv180,
 	
 	ISNULL(@MinBet_Min, 0) AS MinBet_Min,    
 	ISNULL(@MaxBet_Max, 0) AS MaxBet_Max,    
@@ -461,7 +484,12 @@ SELECT
 	
 	ISNULL(@MaxPerMatchv161_Min, 0) AS MaxPerMatchv161_Min,     
 	ISNULL(@MaxPerMatchv161_Max, 0) AS MaxPerMatchv161_Max,
-	ISNULL(@MaxPerBallv161_Max, 0)	AS MaxPerBallv161_Max	   
+	ISNULL(@MaxPerBallv161_Max, 0)	AS MaxPerBallv161_Max,
+	
+	ISNULL(@MinBetv180_Min, 0) AS MinBetv180_Min,     
+	ISNULL(@MaxBetv180_Max, 0) AS MaxBetv180_Max,     
+	ISNULL(@MaxPerMatchv180_Min, 0) AS MaxPerMatchv180_Min,     
+	ISNULL(@MaxPerMatchv180_Max, 0) AS MaxPerMatchv180_Max	   
 FROM     
 	CustInfo ci WITH (NOLOCK)  
 	INNER JOIN Dep_CustSetting cs WITH (NOLOCK) ON ci.custid = cs.custid    
@@ -487,8 +515,8 @@ GROUP BY
 	ci.maxpermatch151_AU,
 	ci.maxpermatch152_UK,
 	ci.maxpermatch152_AU,
-	ci.maxpermatch153_AU
-
+	ci.maxpermatch153_AU,
+	ci.maxpermatch180
 
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [Dot_Admin]
