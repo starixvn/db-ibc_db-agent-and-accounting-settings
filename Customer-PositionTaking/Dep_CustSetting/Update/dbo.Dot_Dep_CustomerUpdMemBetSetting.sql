@@ -1,8 +1,4 @@
-﻿set ANSI_NULLS ON
-set QUOTED_IDENTIFIER ON
-go
-
-ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting]
+﻿ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting]
 	@CustId INT, --MemberID
 	
 	@UpdateMinMaxBet BIT = 1,	
@@ -24,6 +20,7 @@ ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting]
 	@UpdateMinMaxBetv152_51 BIT = 0,
 	@UpdateMinMaxBetv153_51 BIT = 0,
 	@UpdateMinMaxBetv161 BIT = 0,
+	@UpdateMinMaxBetv180 BIT = 0,
  
 	@MinBet MONEY,
 	@MaxBet MONEY,
@@ -94,6 +91,10 @@ ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting]
 	@MaxPerMatchv161 MONEY =0,
 	@MaxPerBallv161 MONEY = 0,
 	
+	@MinBetv180 MONEY,
+	@MaxBetv180 MONEY,
+	@MaxPerMatchv180 MONEY,
+	
 	@userid INT, --updater Id	
 	@language VARCHAR(2) = 'E',
 	@IP VARCHAR(15)='',	
@@ -121,6 +122,7 @@ Revisions:
 	- 20110719@thien: temporarily bypass the racing checking for these sites below
 	- 20110719@Jamie: temporarily do not update Min/MaxBet if Member's MinBet is less than Agent's MinBet for Mansion88  
 	- 20120321@Kiwi: Change to use Dep_CustSetting/Dep_CustSetting3rd
+	- 20130716@Elodie: Update bet setting for Virtual HR
 Param's Explanation:
 */
 
@@ -150,7 +152,8 @@ DECLARE @MinMinBet MONEY, @MaxMaxBet MONEY,	@MaxMaxPerMatch MONEY,
 	@MinMinBetv152_41 MONEY, @MaxMaxBetv152_41 MONEY, @MaxMaxPerMatchv152_41 MONEY,
 	@MinMinBetv152_51 MONEY, @MaxMaxBetv152_51 MONEY, @MaxMaxPerMatchv152_51 MONEY,
 	@MinMinBetv153_51 MONEY, @MaxMaxBetv153_51 MONEY, @MaxMaxPerMatchv153_51 MONEY,
-	@MinMinBetv161 MONEY, @MaxMaxBetv161 MONEY, @MaxMaxPerMatchv161 MONEY, @MaxMaxPerBallv161 MONEY
+	@MinMinBetv161 MONEY, @MaxMaxBetv161 MONEY, @MaxMaxPerMatchv161 MONEY, @MaxMaxPerBallv161 MONEY,
+	@MinMinBetv180 MONEY, @MaxMaxBetv180 MONEY, @MaxMaxPerMatchv180 MONEY
 	
 Declare 
 	@Old_MinBet money, @Old_MaxBet money,	@Old_MaxPerMatch money,
@@ -169,7 +172,8 @@ Declare
 	@Old_MinBetv151_51 MONEY, @Old_MaxBetv151_51 MONEY, @Old_MaxPerMatchv151_51 MONEY, 
 	@Old_MinBetv152_41 MONEY, @Old_MaxBetv152_41 MONEY, @Old_MaxPerMatchv152_41 MONEY, 
 	@Old_MinBetv152_51 MONEY, @Old_MaxBetv152_51 MONEY, @Old_MaxPerMatchv152_51 MONEY, 
-	@Old_MinBetv153_51 MONEY, @Old_MaxBetv153_51 MONEY, @Old_MaxPerMatchv153_51 MONEY
+	@Old_MinBetv153_51 MONEY, @Old_MaxBetv153_51 MONEY, @Old_MaxPerMatchv153_51 MONEY,
+	@Old_MinBetv180 money, @Old_MaxBetv180 money, @Old_MaxPerMatchv180 money
 	
 DECLARE @ErrAcc VARCHAR(4000), @ErrType VARCHAR(4000),
 		@UserName VARCHAR(30), @recommend INT, @roleid TINYINT
@@ -192,8 +196,8 @@ WHERE CustID = @CustID
    @old_MinBetv11 output, @old_MaxBetv11 output, @old_MaxPerMatchv11 output,  
    @old_MinBetv99 output, @old_MaxBetv99 output, @old_MaxPerMatchv99 output,  
    @old_MinBetv99MP output, @old_MaxBetv99MP output, @old_MaxPerMatchv99MP output,  
-   @old_MinBetv161 output, @old_MaxBetv161 output, @old_MaxPerMatchv161 output, @old_MaxPerBallv161 output  
-
+   @old_MinBetv161 output, @old_MaxBetv161 output, @old_MaxPerMatchv161 output, @old_MaxPerBallv161 output 
+	
 --select min max bet of Racing
 Select     
 	@Old_MinBetv151 = isnull(MinBet ,0),
@@ -239,12 +243,21 @@ from
 	Dep_CustSetting3rd WITH (NOLOCK)    
 where custid = @CustID and bettype = 51 and sporttype=153 
 
+--v153_51
+Select     
+	@Old_MinBetv180 = isnull(MinBet ,0),
+	@Old_MaxBetv180 = isnull(MaxBet ,0) 
+from     
+	Dep_CustSetting3rd WITH (NOLOCK)    
+where custid = @CustID and bettype = 1201 and sporttype=180
+
 select @Old_MaxPerMatchv151 =isnull(MaxPerMatch151,0),
 	@Old_MaxPerMatchv151OT = isnull(MaxPerMatch151_OT,0),
 	@Old_MaxPerMatchv151_51 = isnull(MaxPerMatch151_AU,0), 
 	@Old_MaxPerMatchv152_41 = isnull(MaxPerMatch152_UK,0), 
 	@Old_MaxPerMatchv152_51 = isnull(MaxPerMatch152_AU,0), 
-	@Old_MaxPerMatchv153_51 = isnull(MaxPerMatch153_AU,0) 
+	@Old_MaxPerMatchv153_51 = isnull(MaxPerMatch153_AU,0),
+	@Old_MaxPerMatchv180 = isnull(MaxPerMatch180,0) 
 from custinfo with (nolock)
 where custid=@Custid
 ----------------------------------
@@ -264,7 +277,8 @@ IF 	@Old_MinBet = @MinBet AND @Old_MaxBet = @MaxBet AND	@Old_MaxPerMatch = @MaxP
 	@Old_MinBetv151_51 = @MinBetv151_51 AND @Old_MaxBetv151_51 = @MaxBetv151_51 AND @Old_MaxPerMatchv151_51 = @MaxPerMatchv151_51 AND 
 	@Old_MinBetv152_41 = @MinBetv152_41 AND @Old_MaxBetv152_41 = @MaxBetv152_41 AND @Old_MaxPerMatchv152_41 = @MaxPerMatchv152_41 AND 
 	@Old_MinBetv152_51 = @MinBetv152_51 AND @Old_MaxBetv152_51 = @MaxBetv152_51 AND @Old_MaxPerMatchv152_51 = @MaxPerMatchv152_51 AND 
-	@Old_MinBetv153_51 = @MinBetv153_51 AND @Old_MaxBetv153_51 = @MaxBetv153_51 AND @Old_MaxPerMatchv153_51 = @MaxPerMatchv153_51 
+	@Old_MinBetv153_51 = @MinBetv153_51 AND @Old_MaxBetv153_51 = @MaxBetv153_51 AND @Old_MaxPerMatchv153_51 = @MaxPerMatchv153_51 AND
+	@Old_MinBetv180 = @MinBetv180 AND @Old_MaxBetv180 = @MaxBetv180 AND @Old_MaxPerMatchv180 = @MaxPerMatchv180
 RETURN
 
 
@@ -650,6 +664,26 @@ BEGIN
 	END
 END
 
+IF @UpdateMinMaxBetv180 = 1 
+BEGIN
+	IF 
+		@MinBetv180<0
+		OR @MaxBetv180 < 0
+		OR @MaxPerMatchv180 <0		
+	BEGIN
+		SELECT @ErrCode = 3
+		SELECT @ErrMsg = 	CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
+							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
+							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
+							WHEN 'TH' THEN N'การกำหนดจำนวนเงินสำหรับการวางเดิมพันต่ำสุด/ สูงสุด/สูงสดต่อรายการไม่ถูกต้อง.'
+							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
+							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Horse Racing).'
+							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
+					END
+		RETURN
+	END
+END
 
 SELECT
 	@MinMinBet = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
@@ -797,6 +831,15 @@ FROM
 WHERE ci.custid = @recommend	
 	
 SELECT 
+	@MinMinBetv180 = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
+	@MaxMaxBetv180 = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM 
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
+	AND cs.bettype = 1201 AND cs.sporttype=180
+WHERE ci.custid = @recommend
+	
+SELECT 
 	@MaxMaxperMatch = MIN(CASE WHEN cs.MaxPerMatch = 0 THEN NULL ELSE cs.MaxPerMatch END), 
 	@MaxMaxPerMatchv2 = MIN(CASE WHEN cs.MaxPerMatch2 = 0 THEN NULL ELSE cs.MaxPerMatch2 END), 
 	@MaxMaxPerMatchv3 = MIN(CASE WHEN cs.MaxPerMatch3 = 0 THEN NULL ELSE cs.MaxPerMatch3 END), 
@@ -814,7 +857,8 @@ SELECT
 	@MaxMaxPerMatchv152_51 = MIN(CASE WHEN cs.MaxPerMatch152_AU = 0 THEN NULL ELSE cs.MaxPerMatch152_AU END),
 	@MaxMaxPerMatchv153_51 = MIN(CASE WHEN cs.MaxPerMatch153_AU = 0 THEN NULL ELSE cs.MaxPerMatch153_AU END),
 	@MaxMaxPerMatchv161 = MIN(CASE WHEN cs.MaxPerMatch161 = 0 THEN NULL ELSE cs.MaxPerMatch161 END),
-	@MaxMaxPerBallv161 = MIN(CASE WHEN cs.MaxPerBall161 =0 THEN NULL ELSE cs.MaxPerBall161 END)
+	@MaxMaxPerBallv161 = MIN(CASE WHEN cs.MaxPerBall161 =0 THEN NULL ELSE cs.MaxPerBall161 END),
+	@MaxMaxperMatchv180 = MIN(CASE WHEN cs.MaxPerMatch180 = 0 THEN NULL ELSE cs.MaxPerMatch180 END)
 FROM 
 	custinfo AS cs WITH (NOLOCK) 
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
@@ -2001,6 +2045,75 @@ BEGIN
 	END
 END
 
+IF @UpdateMinMaxBetv180 = 1
+BEGIN
+	IF ((@MinBetv180<>0 OR @MaxBetv180<>0 OR @MaxPerMatchv180<>0) AND (@MinBetv180>@MaxBetv180 OR @MaxBetv180>@MaxPerMatchv180))
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Horse Racing)'
+							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
+							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดที่วางเดิมพันได้ต้องน้อยกว่าจำนวนเงินสูงสุดในการวางเดิมพันและจำนวนเงินสูงสุดในการวางเดิมพันต้องน้อยกว่าจำนวนเงินสูงสุดของเงินเดิมพันต่อเกม (for Virtual Horse Racing)'
+							WHEN 'J' THEN N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Horse Racing)'
+							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
+							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Horse Racing)'
+						END						
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv180) + '-' + CONVERT(VARCHAR(20), @MaxBetv180) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv180), @ErrCode = 111
+				
+		RETURN
+	END
+	
+	IF (@MinMinBetv180>0 AND @MinBetv180>0 AND @MinBetv180<@MinMinBetv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet (for Virtual Horse Racing)'
+							WHEN 'CS' THEN N'最低投注需相等于或少于代理最低投注'
+							WHEN 'CT' THEN N'最低投注需相等於或少於代理最低投注'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดในการเล่นต้องเท่ากับหรือมากกว่าจำนวนเงินขั้นต่ำในการเล่นที่กำหนดไว้ของตัวแทน (for Virtual Horse Racing)'
+							WHEN 'J' THEN N'Min bet must be equal to or greater than Agent min bet (for Virtual Horse Racing)'
+							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
+							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Horse Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv180) + ').', @ErrCode = 112
+				
+		RETURN
+	END	
+	IF (@MaxMaxBetv180>0 AND @MaxBetv180>0 AND @MaxBetv180>@MaxMaxBetv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet (for Virtual Horse Racing)'
+							WHEN 'CS' THEN N'最高投注需相等于或少于代理最高投注'
+							WHEN 'CT' THEN N'最高投注需相等於或少於代理最高投注'
+							WHEN 'TH' THEN N'จำนวนการวางเดิมพันสูงสุดต้องเท่ากับ หรือ น้อยกว่าราคาเดิมพันสูงสุดของตัวแทน (for Virtual Horse Racing)'
+							WHEN 'J' THEN N'Max bet must be equal to or less than Agent max bet (for Virtual Horse Racing)'
+							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
+							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Horse Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv180) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+	
+	IF (@MaxMaxPerMatchv180>0 AND @MaxPerMatchv180>0 AND @MaxPerMatchv180>@MaxMaxPerMatchv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Horse Racing)'
+							WHEN 'CS' THEN N'单场最高投注需相等于或少于代理单场最高投注'
+							WHEN 'CT' THEN N'單場最高投注需相等於或少於代理單場最高投注'
+							WHEN 'TH' THEN N'จำนวนเงินสูงสุดในการเล่นต่อรายการต้องเท่ากับหรือน้อยกว่าจำนวนเงินสูงสุดต่อรายการที่กำหนดไว้ของตัวแทน (for Virtual Horse Racing) '
+							WHEN 'J' THEN N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Horse Racing)'
+							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
+							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Horse Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv180) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+END
 ----------
 UPDATE Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET
@@ -2036,6 +2149,7 @@ SET
 				WHEN (@UpdateMinMaxBetv153_51 = 1 AND sporttype=153 AND bettype IN(51,52)) THEN @MinBetv153_51
 				
 				WHEN (@UpdateMinMaxBetv161 = 1 AND sporttype = 161) THEN @MinBetv161
+				WHEN (@UpdateMinMaxBetv180 = 1 AND sporttype = 180) THEN @MinBetv180
 			ELSE minbet END,
 	MaxBet = CASE WHEN (@UpdateMinMaxBetv151 = 1 AND sporttype=151 AND bettype IN(31,32)) THEN @MaxBetv151
 				WHEN (@UpdateMinMaxBetv151OT = 1 AND sporttype=151 AND bettype IN(41,42)) THEN @MaxBetv151OT
@@ -2045,6 +2159,7 @@ SET
 				WHEN (@UpdateMinMaxBetv153_51 = 1 AND sporttype=153 AND bettype IN(51,52)) THEN @MaxBetv153_51
 				
 				WHEN (@UpdateMinMaxBetv161 = 1 AND sporttype = 161) THEN @MaxBetv161
+				WHEN (@UpdateMinMaxBetv180 = 1 AND sporttype = 180) THEN @MaxBetv180
 			ELSE MaxBet END
 WHERE custid=@custid
 
@@ -2084,7 +2199,8 @@ SET
 	MaxPerMatch153_AU = CASE WHEN @UpdateMinMaxBetv153_51 = 1 THEN @MaxPerMatchv153_51 ELSE MaxPerMatch153_AU END,
 	
 	MaxPerMatch161 = CASE WHEN @UpdateMinMaxBetv161 = 1 THEN @MaxPerMatchv161 ELSE MaxPerMatch161 END,
-	MaxPerBall161 = CASE WHEN @UpdateMinMaxBetv161 = 1 THEN @MaxPerBallv161 ELSE MaxPerBall161 END
+	MaxPerBall161 = CASE WHEN @UpdateMinMaxBetv161 = 1 THEN @MaxPerBallv161 ELSE MaxPerBall161 END,
+	MaxPerMatch180 = CASE WHEN @UpdateMinMaxBetv180 = 1 THEN @MaxPerMatchv180 ELSE MaxPerMatch180 END
 WHERE custid = @custid 
 
 IF (@@ERROR <> 0)
@@ -2161,6 +2277,10 @@ SELECT @LogSPData ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(CAST(@
 'MPMv161="'+ COALESCE(CAST(@maxpermatchv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPBv161="'+ COALESCE(CAST(@maxperballv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'MinBv180="'+ COALESCE(CAST(@minbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv180="'+ COALESCE(CAST(@maxbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv180="'+ COALESCE(CAST(@maxpermatchv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'UMMB="'+ COALESCE(CAST(@UpdateMinMaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv2="'+ COALESCE(CAST(@UpdateMinMaxBetv2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv3="'+ COALESCE(CAST(@UpdateMinMaxBetv3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2177,6 +2297,7 @@ SELECT @LogSPData ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(CAST(@
 'UMMBv152_51="'+ COALESCE(CAST(@UpdateMinMaxBetv152_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv153_51="'+ COALESCE(CAST(@UpdateMinMaxBetv153_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv161="'+ COALESCE(CAST(@UpdateMinMaxBetv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv180="'+ COALESCE(CAST(@UpdateMinMaxBetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -2238,6 +2359,10 @@ SELECT @TrackingValue2 ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(C
 'MPMv161="'+ COALESCE(CAST(@Old_maxpermatchv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPBv161="'+ COALESCE(CAST(@Old_maxperballv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'MinBv180="'+ COALESCE(CAST(@Old_minbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv180="'+ COALESCE(CAST(@Old_maxbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv180="'+ COALESCE(CAST(@Old_maxpermatchv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'UMMB="'+ COALESCE(CAST(@UpdateMinMaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv2="'+ COALESCE(CAST(@UpdateMinMaxBetv2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv3="'+ COALESCE(CAST(@UpdateMinMaxBetv3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2254,6 +2379,7 @@ SELECT @TrackingValue2 ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(C
 'UMMBv152_51="'+ COALESCE(CAST(@UpdateMinMaxBetv152_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv153_51="'+ COALESCE(CAST(@UpdateMinMaxBetv153_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv161="'+ COALESCE(CAST(@UpdateMinMaxBetv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv180="'+ COALESCE(CAST(@UpdateMinMaxBetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
