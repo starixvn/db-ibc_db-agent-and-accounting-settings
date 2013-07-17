@@ -1268,6 +1268,7 @@ if	@UpdatePositiontaking   = 1  or
 
 
 	DECLARE
+		--min(m3,m4,l3)
 		@max_mapositiontaking_1 SMALLMONEY,
 		@max_mapositiontaking_2 SMALLMONEY,
 		@max_mapositiontaking_3 SMALLMONEY,
@@ -1395,6 +1396,74 @@ if	@UpdatePositiontaking   = 1  or
 		@min_v161malivepositiontaking_87 SMALLMONEY,
 		@min_v161malivepositiontaking_89 SMALLMONEY,
 		@min_v161malivepositiontaking_90 SMALLMONEY
+			
+	--maxpos_1=min[@max_mp,min(m3,l3)-a1]
+	--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
+	DECLARE 
+		@max_mp_1 smallmoney,
+		@max_mp_2 smallmoney,
+		@max_mp_3 smallmoney,
+		@max_mp_4 smallmoney,
+		@max_mp_5 smallmoney,
+		@max_mp_6 smallmoney,
+		@max_mp_7 smallmoney,
+		@max_mp_8 smallmoney,
+		@max_mp_9 smallmoney,
+		@max_mp_10 smallmoney,
+		
+		@max_mlp_1 smallmoney,
+		@max_mlp_3 smallmoney,
+		@max_mlp_7 smallmoney,
+		@max_mlp_8 smallmoney,
+		
+		@max_v2mp_1 smallmoney,
+		@max_v2mp_2 smallmoney,
+		@max_v2mp_3 smallmoney,
+		@max_v2mp_7 smallmoney,
+		@max_v2mp_8 smallmoney,
+	--	@max_v2mp_9 smallmoney,
+		@max_v2mp_20 smallmoney,
+
+		@max_v3mp_1 smallmoney,
+		@max_v3mp_2 smallmoney,
+		@max_v3mp_3 smallmoney,
+		@max_v3mp_20 smallmoney,
+
+		@max_v5mp_1 smallmoney,
+		@max_v5mp_2 smallmoney,
+		@max_v5mp_3 smallmoney,
+		@max_v5mp_20 smallmoney,
+
+		@max_v8mp_1 smallmoney,
+		@max_v8mp_3 smallmoney,
+		@max_v8mp_20 smallmoney,
+
+		@max_v10mp_1 smallmoney,
+		@max_v10mp_2 smallmoney,
+		@max_v10mp_3 smallmoney,
+		@max_v10mp_20 smallmoney,
+
+		@max_v11mp_1 smallmoney,
+		@max_v11mp_20 smallmoney,
+
+		@max_v99mp_1 smallmoney,
+		@max_v99mp_2 smallmoney,
+		@max_v99mp_3 smallmoney,
+		@max_v99mp_20 smallmoney,
+
+		-- mixed sports
+		@max_v99mp_9 smallmoney,
+		-- number game
+		@max_v161mp_81 smallmoney,
+		@max_v161mp_83 smallmoney,
+		@max_v161mp_86 smallmoney,
+		@max_v161mp_88 smallmoney,
+		@max_v161mlp_85 smallmoney,
+		@max_v161mlp_86 smallmoney,
+		@max_v161mlp_87 smallmoney,
+		@max_v161mlp_89 smallmoney,
+		@max_v161mlp_90 smallmoney
+	
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		DECLARE @IsValid BIT
 		SELECT @isvalid = 1 
@@ -1748,8 +1817,63 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v99apositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=99 THEN acs.apositiontaking ELSE 0 END),
 
 			-- mixed sports
-			@max_v99apositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.apositiontaking ELSE 0 END)
-		FROM custsetting acs WITH(NOLOCK)
+			@max_v99apositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.apositiontaking ELSE 0 END),
+			
+			--im2
+			@isauto_mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_4 = MAX(CASE WHEN acs.bettype = 4 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_5 = MAX(CASE WHEN acs.bettype = 5 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_6 = MAX(CASE WHEN acs.bettype = 6 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_7 = MAX(CASE WHEN acs.bettype = 7 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_8 = MAX(CASE WHEN acs.bettype = 8 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_mpositiontaking_10 = MAX(CASE WHEN acs.bettype = 10 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_mlivepositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=1 THEN acs.isautolivempositiontaking ELSE 0 END),			
+			@isauto_mlivepositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=1 THEN acs.isautolivempositiontaking ELSE 0 END),
+			@isauto_mlivepositiontaking_7 = MAX(CASE WHEN acs.bettype = 7 AND acs.sporttype=1 THEN acs.isautolivempositiontaking ELSE 0 END),
+			@isauto_mlivepositiontaking_8 = MAX(CASE WHEN acs.bettype = 8 AND acs.sporttype=1 THEN acs.isautolivempositiontaking ELSE 0 END),
+			
+			@isauto_v2mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v2mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v2mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v2mpositiontaking_7 = MAX(CASE WHEN acs.bettype = 7 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v2mpositiontaking_8 = MAX(CASE WHEN acs.bettype = 8 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			--@isauto_v2mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v2mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=2 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v3mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=3 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v3mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=3 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v3mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=3 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v3mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=3 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v5mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=5 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v5mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=5 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v5mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=5 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v5mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=5 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v8mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=8 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v8mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=8 THEN acs.isautompositiontaking ELSE 0 END),			
+			@isauto_v8mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=8 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v10mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=10 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v10mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=10 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v10mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=10 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v10mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=10 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v11mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=11 THEN acs.isautompositiontaking ELSE 0 END),			
+			@isauto_v11mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=11 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v99mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v99mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v99mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
+			@isauto_v99mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v99mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END)
+			
+		FROM custsetting acs WITH(NOLOCK)		
 		WHERE acs.custid = @recommend
 
 		-- um2 number game
@@ -1772,10 +1896,194 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v161alivepositiontaking_86 = MAX(CASE WHEN acs3.bettype = 86 AND acs3.sporttype=161 THEN acs3.alivepositiontaking ELSE 0 END),
 			@max_v161alivepositiontaking_87 = MAX(CASE WHEN acs3.bettype = 87 AND acs3.sporttype=161 THEN acs3.alivepositiontaking ELSE 0 END),
 			@max_v161alivepositiontaking_89 = MAX(CASE WHEN acs3.bettype = 89 AND acs3.sporttype=161 THEN acs3.alivepositiontaking ELSE 0 END),
-			@max_v161alivepositiontaking_90 = MAX(CASE WHEN acs3.bettype = 90 AND acs3.sporttype=161 THEN acs3.alivepositiontaking ELSE 0 END)
+			@max_v161alivepositiontaking_90 = MAX(CASE WHEN acs3.bettype = 90 AND acs3.sporttype=161 THEN acs3.alivepositiontaking ELSE 0 END),
+			
+			--im2
+			@isauto_v161mpositiontaking_81 = MAX(CASE WHEN acs3.bettype = 81 AND acs3.sporttype=161 THEN acs3.isautompositiontaking ELSE 0 END),
+			@isauto_v161mpositiontaking_83 = MAX(CASE WHEN acs3.bettype = 83 AND acs3.sporttype=161 THEN acs3.isautompositiontaking ELSE 0 END),
+			@isauto_v161mpositiontaking_86 = MAX(CASE WHEN acs3.bettype = 86 AND acs3.sporttype=161 THEN acs3.isautompositiontaking ELSE 0 END),
+			@isauto_v161mpositiontaking_88 = MAX(CASE WHEN acs3.bettype = 88 AND acs3.sporttype=161 THEN acs3.isautompositiontaking ELSE 0 END),
+			
+			@isauto_v161mlivepositiontaking_85 = MAX(CASE WHEN acs3.bettype = 85 AND acs3.sporttype=161 THEN acs3.isautolivempositiontaking ELSE 0 END),
+			@isauto_v161mlivepositiontaking_86 = MAX(CASE WHEN acs3.bettype = 86 AND acs3.sporttype=161 THEN acs3.isautolivempositiontaking ELSE 0 END),
+			@isauto_v161mlivepositiontaking_87 = MAX(CASE WHEN acs3.bettype = 87 AND acs3.sporttype=161 THEN acs3.isautolivempositiontaking ELSE 0 END),
+			@isauto_v161mlivepositiontaking_89 = MAX(CASE WHEN acs3.bettype = 89 AND acs3.sporttype=161 THEN acs3.isautolivempositiontaking ELSE 0 END),
+			@isauto_v161mlivepositiontaking_90 = MAX(CASE WHEN acs3.bettype = 90 AND acs3.sporttype=161 THEN acs3.isautolivempositiontaking ELSE 0 END)			
 		from custsetting3rd acs3 with(nolock)
 		where acs3.custid = @recommend
+		
+		Select
+			--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
+			@max_mp_1 = max(case when cs.bettype = 1 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_2 = max(case when cs.bettype = 2 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_3 = max(case when cs.bettype = 3 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_4 = max(case when cs.bettype = 4 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_5 = max(case when cs.bettype = 5 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_6 = max(case when cs.bettype = 6 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_7 = max(case when cs.bettype = 7 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_8 = max(case when cs.bettype = 8 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_9 = max(case when cs.bettype = 9 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_mp_10 = max(case when cs.bettype = 10 and cs.sporttype=1 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			
+			@max_mlp_1 = max(case when cs.bettype = 1 and cs.sporttype=1 then case when not (cs.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0) then mcs.mlivepositiontaking-cs.alivepositiontaking else case when mcs.mlivepositiontaking-cs.alivepositiontaking<=scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking then  mcs.mlivepositiontaking-cs.alivepositiontaking else scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking end end else 0 end),
+			@max_mlp_3 = max(case when cs.bettype = 3 and cs.sporttype=1 then case when not (cs.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0) then mcs.mlivepositiontaking-cs.alivepositiontaking else case when mcs.mlivepositiontaking-cs.alivepositiontaking<=scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking then  mcs.mlivepositiontaking-cs.alivepositiontaking else scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking end end else 0 end),
+			@max_mlp_7 = max(case when cs.bettype = 7 and cs.sporttype=1 then case when not (cs.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0) then mcs.mlivepositiontaking-cs.alivepositiontaking else case when mcs.mlivepositiontaking-cs.alivepositiontaking<=scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking then  mcs.mlivepositiontaking-cs.alivepositiontaking else scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking end end else 0 end),
+			@max_mlp_8 = max(case when cs.bettype = 8 and cs.sporttype=1 then case when not (cs.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0) then mcs.mlivepositiontaking-cs.alivepositiontaking else case when mcs.mlivepositiontaking-cs.alivepositiontaking<=scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking then  mcs.mlivepositiontaking-cs.alivepositiontaking else scs.slivepositiontaking-cs.slivepositiontaking-cs.alivepositiontaking end end else 0 end),
+			
+			--v2
+			@max_v2mp_1 = max(case when cs.bettype = 1 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v2mp_2 = max(case when cs.bettype = 2 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v2mp_3 = max(case when cs.bettype = 3 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v2mp_7 = max(case when cs.bettype = 7 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v2mp_8 = max(case when cs.bettype = 8 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+		--	@max_v2mp_9 = max(case when cs.bettype = 9 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@v2sp_9-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v2mp_20 = max(case when cs.bettype = 20 and cs.sporttype=2 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
 
+			--v3
+			@max_v3mp_1 = max(case when cs.bettype = 1 and cs.sporttype=3 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v3mp_2 = max(case when cs.bettype = 2 and cs.sporttype=3 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v3mp_3 = max(case when cs.bettype = 3 and cs.sporttype=3 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v3mp_20 = max(case when cs.bettype = 20 and cs.sporttype=3 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			--v5
+			@max_v5mp_1 = max(case when cs.bettype = 1 and cs.sporttype=5 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v5mp_2 = max(case when cs.bettype = 2 and cs.sporttype=5 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v5mp_3 = max(case when cs.bettype = 3 and cs.sporttype=5 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v5mp_20 = max(case when cs.bettype = 20 and cs.sporttype=5 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			--v8
+			@max_v8mp_1 = max(case when cs.bettype = 1 and cs.sporttype=8 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v8mp_3 = max(case when cs.bettype = 3 and cs.sporttype=8 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v8mp_20 = max(case when cs.bettype = 20 and cs.sporttype=8 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			--v10
+			@max_v10mp_1 = max(case when cs.bettype = 1 and cs.sporttype=10 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v10mp_2 = max(case when cs.bettype = 2 and cs.sporttype=10 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v10mp_3 = max(case when cs.bettype = 3 and cs.sporttype=10 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v10mp_20 = max(case when cs.bettype = 20 and cs.sporttype=10 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			--v11
+			@max_v11mp_1 = max(case when cs.bettype = 1 and cs.sporttype=11 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v11mp_20 = max(case when cs.bettype = 20 and cs.sporttype=11 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			--v99
+			@max_v99mp_1 = max(case when cs.bettype = 1 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v99mp_2 = max(case when cs.bettype = 2 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v99mp_3 = max(case when cs.bettype = 3 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+			@max_v99mp_20 = max(case when cs.bettype = 20 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
+
+			-- mixed sports
+			@max_v99mp_9 = max(case when cs.bettype = 9 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end)
+			
+		From CustSetting as cs with (NOLOCK) 			
+			inner join custsetting as mcs with (nolock) on mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
+			inner join custsetting as scs with (nolock) on scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype
+		where cs.custid = @custid
+		
+		SELECT
+		-- number game
+			@max_v161mp_81 = max(case when cs3.bettype = 81 and cs3.sporttype=161 then case when not (cs3.isautopositiontaking=0 and mcs3.isautopositiontaking=0) then mcs3.mpositiontaking-cs3.apositiontaking else case when mcs3.mpositiontaking-cs3.apositiontaking<=scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking then  mcs3.mpositiontaking-cs3.apositiontaking else scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking end end else 0 end),
+			@max_v161mp_83 = max(case when cs3.bettype = 83 and cs3.sporttype=161 then case when not (cs3.isautopositiontaking=0 and mcs3.isautopositiontaking=0) then mcs3.mpositiontaking-cs3.apositiontaking else case when mcs3.mpositiontaking-cs3.apositiontaking<=scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking then  mcs3.mpositiontaking-cs3.apositiontaking else scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking end end else 0 end),	
+			@max_v161mp_86 = max(case when cs3.bettype = 86 and cs3.sporttype=161 then case when not (cs3.isautopositiontaking=0 and mcs3.isautopositiontaking=0) then mcs3.mpositiontaking-cs3.apositiontaking else case when mcs3.mpositiontaking-cs3.apositiontaking<=scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking then  mcs3.mpositiontaking-cs3.apositiontaking else scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking end end else 0 end),
+			@max_v161mp_88 = max(case when cs3.bettype = 88 and cs3.sporttype=161 then case when not (cs3.isautopositiontaking=0 and mcs3.isautopositiontaking=0) then mcs3.mpositiontaking-cs3.apositiontaking else case when mcs3.mpositiontaking-cs3.apositiontaking<=scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking then  mcs3.mpositiontaking-cs3.apositiontaking else scs3.spositiontaking-cs3.spositiontaking-cs3.apositiontaking end end else 0 end),
+
+			@max_v161mlp_85 = max(case when cs3.bettype = 85 and cs3.sporttype=161 then case when not (cs3.isautolivepositiontaking=0 and mcs3.isautolivepositiontaking=0) then mcs3.mlivepositiontaking-cs3.alivepositiontaking else case when mcs3.mlivepositiontaking-cs3.alivepositiontaking<=scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking then  mcs3.mlivepositiontaking-cs3.alivepositiontaking else scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking end end else 0 end),
+			@max_v161mlp_86 = max(case when cs3.bettype = 86 and cs3.sporttype=161 then case when not (cs3.isautolivepositiontaking=0 and mcs3.isautolivepositiontaking=0) then mcs3.mlivepositiontaking-cs3.alivepositiontaking else case when mcs3.mlivepositiontaking-cs3.alivepositiontaking<=scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking then  mcs3.mlivepositiontaking-cs3.alivepositiontaking else scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking end end else 0 end),
+			@max_v161mlp_87 = max(case when cs3.bettype = 87 and cs3.sporttype=161 then case when not (cs3.isautolivepositiontaking=0 and mcs3.isautolivepositiontaking=0) then mcs3.mlivepositiontaking-cs3.alivepositiontaking else case when mcs3.mlivepositiontaking-cs3.alivepositiontaking<=scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking then  mcs3.mlivepositiontaking-cs3.alivepositiontaking else scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking end end else 0 end),
+			@max_v161mlp_89 = max(case when cs3.bettype = 89 and cs3.sporttype=161 then case when not (cs3.isautolivepositiontaking=0 and mcs3.isautolivepositiontaking=0) then mcs3.mlivepositiontaking-cs3.alivepositiontaking else case when mcs3.mlivepositiontaking-cs3.alivepositiontaking<=scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking then  mcs3.mlivepositiontaking-cs3.alivepositiontaking else scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking end end else 0 end),
+			@max_v161mlp_90 = max(case when cs3.bettype = 90 and cs3.sporttype=161 then case when not (cs3.isautolivepositiontaking=0 and mcs3.isautolivepositiontaking=0) then mcs3.mlivepositiontaking-cs3.alivepositiontaking else case when mcs3.mlivepositiontaking-cs3.alivepositiontaking<=scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking then  mcs3.mlivepositiontaking-cs3.alivepositiontaking else scs3.slivepositiontaking-cs3.slivepositiontaking-cs3.alivepositiontaking end end else 0 end)
+		FROM 
+			custsetting3rd cs3 with(nolock) 
+			inner join custsetting3rd mcs3 with(nolock) on mcs3.custid = @mrecommend AND mcs3.sporttype = cs3.sporttype AND mcs3.bettype = cs3.bettype
+			inner join custsetting3rd scs3 with(nolock) on scs3.custid = @srecommend AND scs3.sporttype = cs3.sporttype AND scs3.bettype = cs3.bettype
+		WHERE cs3.custid = @custid
+		
+		--max_m1
+		--maxpos_1=min[@max_mp,min(m3,l3)-a1]
+		SELECT 
+			@max_mp_1 = case when isnull(@max_mp_1, 0)  < @max_mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_1, 0)  else @max_mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_2 = case when isnull(@max_mp_2, 0)  < @max_mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_2, 0)  else @max_mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end, 
+			@max_mp_3 = case when isnull(@max_mp_3, 0)  < @max_mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_3, 0)  else @max_mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_4 = case when isnull(@max_mp_4, 0)  < @max_mapositiontaking_4 - max(case when cs.bettype = 4 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_4, 0)  else @max_mapositiontaking_4 - max(case when cs.bettype = 4 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_5 = case when isnull(@max_mp_5, 0)  < @max_mapositiontaking_5 - max(case when cs.bettype = 5 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_5, 0)  else @max_mapositiontaking_5 - max(case when cs.bettype = 5 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_6 = case when isnull(@max_mp_6, 0)  < @max_mapositiontaking_6 - max(case when cs.bettype = 6 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_6, 0)  else @max_mapositiontaking_6 - max(case when cs.bettype = 6 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_7 = case when isnull(@max_mp_7, 0)  < @max_mapositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_7, 0)  else @max_mapositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_8 = case when isnull(@max_mp_8, 0)  < @max_mapositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_8, 0)  else @max_mapositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_9 = case when isnull(@max_mp_9, 0)  < @max_mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_9, 0)  else @max_mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			@max_mp_10 = case when isnull(@max_mp_10, 0)  < @max_mapositiontaking_10 - max(case when cs.bettype = 10 and cs.sporttype=1 then cs.apositiontaking else 0 end)  then isnull(@max_mp_10, 0)  else @max_mapositiontaking_10 - max(case when cs.bettype = 10 and cs.sporttype=1 then cs.apositiontaking else 0 end)  end,
+			
+			@max_mlp_1 = case when isnull(@max_mlp_1, 0)  < @max_malivepositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  then isnull(@max_mlp_1, 0)  else @max_malivepositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  end,
+			@max_mlp_3 = case when isnull(@max_mlp_3, 0)  < @max_malivepositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  then isnull(@max_mlp_3, 0)  else @max_malivepositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  end,
+			@max_mlp_7 = case when isnull(@max_mlp_7, 0)  < @max_malivepositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  then isnull(@max_mlp_7, 0)  else @max_malivepositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  end,
+			@max_mlp_8 = case when isnull(@max_mlp_8, 0)  < @max_malivepositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  then isnull(@max_mlp_8, 0)  else @max_malivepositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=1 then cs.alivepositiontaking else 0 end)  end,
+			
+			--v2
+			@max_v2mp_1 = case when isnull(@max_v2mp_1, 0)  < @max_v2mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_1, 0)  else @max_v2mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			@max_v2mp_2 = case when isnull(@max_v2mp_2, 0)  < @max_v2mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_2, 0)  else @max_v2mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			@max_v2mp_3 = case when isnull(@max_v2mp_3, 0)  < @max_v2mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_3, 0)  else @max_v2mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			@max_v2mp_7 = case when isnull(@max_v2mp_7, 0)  < @max_v2mapositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_7, 0)  else @max_v2mapositiontaking_7 - max(case when cs.bettype = 7 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			@max_v2mp_8 = case when isnull(@max_v2mp_8, 0)  < @max_v2mapositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_8, 0)  else @max_v2mapositiontaking_8 - max(case when cs.bettype = 8 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			--@max_v2mp_9 = case when isnull(@max_v2mp_9, 0)  < @max_v2mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_9, 0)  else @max_v2mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			@max_v2mp_20 = case when isnull(@max_v2mp_20, 0)  < @max_v2mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=2 then cs.apositiontaking else 0 end)  then isnull(@max_v2mp_20, 0)  else @max_v2mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=2 then cs.apositiontaking else 0 end)  end,
+			
+			--v3
+			@max_v3mp_1 = case when isnull(@max_v3mp_1, 0)  < @max_v3mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=3 then cs.apositiontaking else 0 end)  then isnull(@max_v3mp_1, 0)  else @max_v3mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=3 then cs.apositiontaking else 0 end)  end,
+			@max_v3mp_2 = case when isnull(@max_v3mp_2, 0)  < @max_v3mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=3 then cs.apositiontaking else 0 end)  then isnull(@max_v3mp_2, 0)  else @max_v3mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=3 then cs.apositiontaking else 0 end)  end,
+			@max_v3mp_3 = case when isnull(@max_v3mp_3, 0)  < @max_v3mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=3 then cs.apositiontaking else 0 end)  then isnull(@max_v3mp_3, 0)  else @max_v3mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=3 then cs.apositiontaking else 0 end)  end,
+			@max_v3mp_20 = case when isnull(@max_v3mp_20, 0)  < @max_v3mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=3 then cs.apositiontaking else 0 end)  then isnull(@max_v3mp_20, 0)  else @max_v3mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=3 then cs.apositiontaking else 0 end)  end,
+			
+			--v5
+			@max_v5mp_1 = case when isnull(@max_v5mp_1, 0)  < @max_v5mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=5 then cs.apositiontaking else 0 end)  then isnull(@max_v5mp_1, 0)  else @max_v5mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=5 then cs.apositiontaking else 0 end)  end,
+			@max_v5mp_2 = case when isnull(@max_v5mp_2, 0)  < @max_v5mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=5 then cs.apositiontaking else 0 end)  then isnull(@max_v5mp_2, 0)  else @max_v5mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=5 then cs.apositiontaking else 0 end)  end,
+			@max_v5mp_3 = case when isnull(@max_v5mp_3, 0)  < @max_v5mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=5 then cs.apositiontaking else 0 end)  then isnull(@max_v5mp_3, 0)  else @max_v5mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=5 then cs.apositiontaking else 0 end)  end,
+			@max_v5mp_20 = case when isnull(@max_v5mp_20, 0)  < @max_v5mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=5 then cs.apositiontaking else 0 end)  then isnull(@max_v5mp_20, 0)  else @max_v5mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=5 then cs.apositiontaking else 0 end)  end,
+			
+			--v8
+			@max_v8mp_1 = case when isnull(@max_v8mp_1, 0)  < @max_v8mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=8 then cs.apositiontaking else 0 end)  then isnull(@max_v8mp_1, 0)  else @max_v8mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=8 then cs.apositiontaking else 0 end)  end,			
+			@max_v8mp_3 = case when isnull(@max_v8mp_3, 0)  < @max_v8mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=8 then cs.apositiontaking else 0 end)  then isnull(@max_v8mp_3, 0)  else @max_v8mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=8 then cs.apositiontaking else 0 end)  end,
+			@max_v8mp_20 = case when isnull(@max_v8mp_20, 0)  < @max_v8mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=8 then cs.apositiontaking else 0 end)  then isnull(@max_v8mp_20, 0)  else @max_v8mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=8 then cs.apositiontaking else 0 end)  end,
+
+			--v10
+			@max_v10mp_1 = case when isnull(@max_v10mp_1, 0)  < @max_v10mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=10 then cs.apositiontaking else 0 end)  then isnull(@max_v10mp_1, 0)  else @max_v10mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=10 then cs.apositiontaking else 0 end)  end,
+			@max_v10mp_2 = case when isnull(@max_v10mp_2, 0)  < @max_v10mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=10 then cs.apositiontaking else 0 end)  then isnull(@max_v10mp_2, 0)  else @max_v10mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=10 then cs.apositiontaking else 0 end)  end,
+			@max_v10mp_3 = case when isnull(@max_v10mp_3, 0)  < @max_v10mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=10 then cs.apositiontaking else 0 end)  then isnull(@max_v10mp_3, 0)  else @max_v10mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=10 then cs.apositiontaking else 0 end)  end,
+			@max_v10mp_20 = case when isnull(@max_v10mp_20, 0)  < @max_v10mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=10 then cs.apositiontaking else 0 end)  then isnull(@max_v10mp_20, 0)  else @max_v10mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=10 then cs.apositiontaking else 0 end)  end,
+
+			--v11
+			@max_v11mp_1 = case when isnull(@max_v11mp_1, 0)  < @max_v11mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=11 then cs.apositiontaking else 0 end)  then isnull(@max_v11mp_1, 0)  else @max_v11mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=11 then cs.apositiontaking else 0 end)  end,
+			@max_v11mp_20 = case when isnull(@max_v11mp_20, 0)  < @max_v11mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=11 then cs.apositiontaking else 0 end)  then isnull(@max_v11mp_20, 0)  else @max_v11mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=11 then cs.apositiontaking else 0 end)  end,
+		
+			--v99
+			@max_v99mp_1 = case when isnull(@max_v99mp_1, 0)  < @max_v99mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_1, 0)  else @max_v99mapositiontaking_1 - max(case when cs.bettype = 1 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
+			@max_v99mp_2 = case when isnull(@max_v99mp_2, 0)  < @max_v99mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_2, 0)  else @max_v99mapositiontaking_2 - max(case when cs.bettype = 2 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
+			@max_v99mp_3 = case when isnull(@max_v99mp_3, 0)  < @max_v99mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_3, 0)  else @max_v99mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
+			@max_v99mp_20 = case when isnull(@max_v99mp_20, 0)  < @max_v99mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_20, 0)  else @max_v99mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
+
+			@max_v99mp_9 = case when isnull(@max_v99mp_9, 0)  < @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_9, 0)  else @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end
+			
+		FROM 
+			CustSetting cs WITH(NOLOCK) 
+		WHERE 
+			cs.custid = @custid
+		
+		SELECT 	
+			-- number game
+			@max_v161mp_81 = case when isnull(@max_v161mp_81, 0)  < @max_v161mapositiontaking_81 - max(case when cs3.bettype = 81 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  then isnull(@max_v161mp_81, 0)  else @max_v161mapositiontaking_81 - max(case when cs3.bettype = 81 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  end,
+			@max_v161mp_83 = case when isnull(@max_v161mp_83, 0)  < @max_v161mapositiontaking_83 - max(case when cs3.bettype = 83 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  then isnull(@max_v161mp_83, 0)  else @max_v161mapositiontaking_83 - max(case when cs3.bettype = 83 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  end,
+			@max_v161mp_86 = case when isnull(@max_v161mp_86, 0)  < @max_v161mapositiontaking_86 - max(case when cs3.bettype = 86 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  then isnull(@max_v161mp_86, 0)  else @max_v161mapositiontaking_86 - max(case when cs3.bettype = 86 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  end,
+			@max_v161mp_88 = case when isnull(@max_v161mp_88, 0)  < @max_v161mapositiontaking_88 - max(case when cs3.bettype = 88 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  then isnull(@max_v161mp_88, 0)  else @max_v161mapositiontaking_88 - max(case when cs3.bettype = 88 and cs3.sporttype=161 then cs3.apositiontaking else 0 end)  end,
+			
+			@max_v161mlp_85 = case when isnull(@max_v161mlp_85, 0)  < @max_v161malivepositiontaking_85 - max(case when cs3.bettype = 85 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  then isnull(@max_v161mlp_85, 0)  else @max_v161malivepositiontaking_85 - max(case when cs3.bettype = 85 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  end,
+			@max_v161mlp_86 = case when isnull(@max_v161mlp_86, 0)  < @max_v161malivepositiontaking_86 - max(case when cs3.bettype = 86 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  then isnull(@max_v161mlp_86, 0)  else @max_v161malivepositiontaking_86 - max(case when cs3.bettype = 86 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  end,
+			@max_v161mlp_87 = case when isnull(@max_v161mlp_87, 0)  < @max_v161malivepositiontaking_87 - max(case when cs3.bettype = 87 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  then isnull(@max_v161mlp_87, 0)  else @max_v161malivepositiontaking_87 - max(case when cs3.bettype = 87 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  end,
+			@max_v161mlp_89 = case when isnull(@max_v161mlp_89, 0)  < @max_v161malivepositiontaking_89 - max(case when cs3.bettype = 89 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  then isnull(@max_v161mlp_89, 0)  else @max_v161malivepositiontaking_89 - max(case when cs3.bettype = 89 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  end,
+			@max_v161mlp_90 = case when isnull(@max_v161mlp_90, 0)  < @max_v161malivepositiontaking_90 - max(case when cs3.bettype = 90 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  then isnull(@max_v161mlp_90, 0)  else @max_v161malivepositiontaking_90 - max(case when cs3.bettype = 90 and cs3.sporttype=161 then cs3.alivepositiontaking else 0 end)  end
+		FROM 
+			CustSetting3rd cs3 WITH(NOLOCK) 
+		WHERE 
+			cs3.custid = @custid
+					
+			
 		--Check if old_PT = new_PT return
 		IF @mpositiontaking_1 = @old_mpositiontaking_1 AND
 			@mpositiontaking_2 = @old_mpositiontaking_2 AND
@@ -2142,7 +2450,43 @@ if	@UpdatePositiontaking   = 1  or
 				   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 			RETURN
 		END
-
+		
+		--check m1<=m1_max
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
+		+ CASE WHEN b.sporttype in (1) AND b.bettype IN (1,3,7,8) THEN '-MaxLive: '+ CAST((b.maxmlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
+		FROM
+			(
+					SELECT 1 AS sporttype	,	 1 AS bettype	,	 @mpositiontaking_1 AS mpositiontaking	,@max_mp_1 as maxmpositiontaking, @isauto_mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_1 as isauto_mpositiontaking, @mlivepositiontaking_1 AS mlivepositiontaking ,@max_mlp_1 as maxmlivepositiontaking, @isauto_mlivepositiontaking_mem_1 as isauto_mlivepositiontaking_mem, @isauto_mlivepositiontaking_1 as isauto_mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 3 AS bettype	,	 @mpositiontaking_3 AS mpositiontaking	,	 @max_mp_3 as maxmpositiontaking, @isauto_mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_3 as isauto_mpositiontaking, @mlivepositiontaking_3 AS mlivepositiontaking, @max_mlp_3 as maxmlivepositiontaking, @isauto_mlivepositiontaking_mem_3 as isauto_mlivepositiontaking_mem, @isauto_mlivepositiontaking_3 as isauto_mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 7 AS bettype	,	 @mpositiontaking_7 AS mpositiontaking	,	 @max_mp_7 as maxmpositiontaking, @isauto_mpositiontaking_mem_7 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_7 as isauto_mpositiontaking, @mlivepositiontaking_7 AS mlivepositiontaking, @max_mlp_7 as maxmlivepositiontaking, @isauto_mlivepositiontaking_mem_7 as isauto_mlivepositiontaking_mem, @isauto_mlivepositiontaking_7 as isauto_mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 8 AS bettype	,	 @mpositiontaking_8 AS mpositiontaking	,	 @max_mp_8 as maxmpositiontaking, @isauto_mpositiontaking_mem_8 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_8 as isauto_mpositiontaking, @mlivepositiontaking_8 AS mlivepositiontaking, @max_mlp_8 as maxmlivepositiontaking, @isauto_mlivepositiontaking_mem_8 as isauto_mlivepositiontaking_mem, @isauto_mlivepositiontaking_8 as isauto_mlivepositiontaking
+												
+				UNION ALL		SELECT 1 AS sporttype	,	 2 AS bettype	,	 @mpositiontaking_2 AS mpositiontaking	,	 @max_mp_2 as maxmpositiontaking, @isauto_mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_2 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 4 AS bettype	,	 @mpositiontaking_4 AS mpositiontaking	,	 @max_mp_4 as maxmpositiontaking, @isauto_mpositiontaking_mem_4 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_4 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 5 AS bettype	,	 @mpositiontaking_5 AS mpositiontaking	,	 @max_mp_5 as maxmpositiontaking, @isauto_mpositiontaking_mem_5 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_5 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 6 AS bettype	,	 @mpositiontaking_6 AS mpositiontaking	,	 @max_mp_6 as maxmpositiontaking, @isauto_mpositiontaking_mem_6 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_6 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 9 AS bettype	,	 @mpositiontaking_9 AS mpositiontaking	,	 @max_mp_9 as maxmpositiontaking, @isauto_mpositiontaking_mem_9 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_9 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+				UNION ALL		SELECT 1 AS sporttype	,	 10 AS bettype	,	 @mpositiontaking_10 AS mpositiontaking	,	 @max_mp_10 as maxmpositiontaking, @isauto_mpositiontaking_mem_10 as isauto_mpositiontaking_mem, @isauto_mpositiontaking_10 as isauto_mpositiontaking, 0 as maxmlivepositiontaking, 0 as isauto_mlivepositiontaking_mem, 0 as isauto_mlivepositiontaking, 0 AS mlivepositiontaking
+			) b
+			INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+			INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+		WHERE (b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0) OR (b.bettype IN (1,3,7,8) and b.mlivepositiontaking > maxmlivepositiontaking and isauto_mlivepositiontaking_mem = 0 and isauto_mlivepositiontaking = 0)
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 10,
+					@ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+								END							
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				
+			RETURN
+		END
+		
 	END--@UpdatePositiontaking 
 
 
@@ -2230,6 +2574,7 @@ if	@UpdatePositiontaking   = 1  or
 											
 				RETURN
 			END	
+			
 			--Check m1<=min(m3,m4)
 			SELECT @ErrType = ''
 			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
@@ -2290,6 +2635,37 @@ if	@UpdatePositiontaking   = 1  or
 							END
 				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				RETURN
+			END
+			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 2 AS sporttype	,	 1 AS bettype	,	 @v2mpositiontaking_1 AS mpositiontaking	,@max_v2mp_1 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 2 AS sporttype	,	 2 AS bettype	,	 @v2mpositiontaking_2 AS mpositiontaking	,	 @max_v2mp_2 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_2 as isauto_mpositiontaking
+					UNION ALL		SELECT 2 AS sporttype	,	 3 AS bettype	,	 @v2mpositiontaking_3 AS mpositiontaking	,	 @max_v2mp_3 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 2 AS sporttype	,	 7 AS bettype	,	 @v2mpositiontaking_7 AS mpositiontaking	,	 @max_v2mp_7 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_7 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_7 as isauto_mpositiontaking
+					UNION ALL		SELECT 2 AS sporttype	,	 8 AS bettype	,	 @v2mpositiontaking_8 AS mpositiontaking	,	 @max_v2mp_8 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_8 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_8 as isauto_mpositiontaking
+					--UNION ALL		SELECT 2 AS sporttype	,	 9 AS bettype	,	 @v2mpositiontaking_9 AS mpositiontaking	,	 @max_v2mp_9 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_9 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_9 as isauto_mpositiontaking
+					UNION ALL		SELECT 2 AS sporttype	,	 20 AS bettype	,	 @v2mpositiontaking_20 AS mpositiontaking	,	 @max_v2mp_20 as maxmpositiontaking, @isauto_v2mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v2mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
 				RETURN
 			END
 
@@ -2431,6 +2807,34 @@ if	@UpdatePositiontaking   = 1  or
 					   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				RETURN
 			END		
+			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 3 AS sporttype	,	 1 AS bettype	,	 @v3mpositiontaking_1 AS mpositiontaking	,@max_v3mp_1 as maxmpositiontaking, @isauto_v3mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v3mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 3 AS sporttype	,	 2 AS bettype	,	 @v3mpositiontaking_2 AS mpositiontaking	,	 @max_v3mp_2 as maxmpositiontaking, @isauto_v3mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_v3mpositiontaking_2 as isauto_mpositiontaking
+					UNION ALL		SELECT 3 AS sporttype	,	 3 AS bettype	,	 @v3mpositiontaking_3 AS mpositiontaking	,	 @max_v3mp_3 as maxmpositiontaking, @isauto_v3mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v3mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 3 AS sporttype	,	 20 AS bettype	,	 @v3mpositiontaking_20 AS mpositiontaking	,	 @max_v3mp_20 as maxmpositiontaking, @isauto_v3mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v3mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 				
 		END --@UpdatePositiontakingv3 
 
@@ -2566,7 +2970,35 @@ if	@UpdatePositiontaking   = 1  or
 				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				RETURN
-			END			
+			END	
+			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 5 AS sporttype	,	 1 AS bettype	,	 @v5mpositiontaking_1 AS mpositiontaking	,@max_v5mp_1 as maxmpositiontaking, @isauto_v5mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v5mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 5 AS sporttype	,	 2 AS bettype	,	 @v5mpositiontaking_2 AS mpositiontaking	,	 @max_v5mp_2 as maxmpositiontaking, @isauto_v5mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_v5mpositiontaking_2 as isauto_mpositiontaking
+					UNION ALL		SELECT 5 AS sporttype	,	 3 AS bettype	,	 @v5mpositiontaking_3 AS mpositiontaking	,	 @max_v5mp_3 as maxmpositiontaking, @isauto_v5mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v5mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 5 AS sporttype	,	 20 AS bettype	,	 @v5mpositiontaking_20 AS mpositiontaking	,	 @max_v5mp_20 as maxmpositiontaking, @isauto_v5mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v5mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END		
 		END --@UpdatePositiontakingv5
 
 		--Baseball
@@ -2696,6 +3128,33 @@ if	@UpdatePositiontaking   = 1  or
 						   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					RETURN
 				END		
+				
+				--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 8 AS sporttype	,	 1 AS bettype	,	 @v8mpositiontaking_1 AS mpositiontaking	,@max_v8mp_1 as maxmpositiontaking, @isauto_v8mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v8mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 8 AS sporttype	,	 3 AS bettype	,	 @v8mpositiontaking_3 AS mpositiontaking	,	 @max_v8mp_3 as maxmpositiontaking, @isauto_v8mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v8mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 8 AS sporttype	,	 20 AS bettype	,	 @v8mpositiontaking_20 AS mpositiontaking	,	 @max_v8mp_20 as maxmpositiontaking, @isauto_v8mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v8mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 			END --@UpdatePositiontakingv8 
 			
 		--Golf
@@ -2832,6 +3291,34 @@ if	@UpdatePositiontaking   = 1  or
 					   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				RETURN
 			END	
+			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 10 AS sporttype	,	 1 AS bettype	,	 @v10mpositiontaking_1 AS mpositiontaking	,@max_v10mp_1 as maxmpositiontaking, @isauto_v10mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v10mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 10 AS sporttype	,	 2 AS bettype	,	 @v10mpositiontaking_2 AS mpositiontaking	,	 @max_v10mp_2 as maxmpositiontaking, @isauto_v10mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_v10mpositiontaking_2 as isauto_mpositiontaking
+					UNION ALL		SELECT 10 AS sporttype	,	 3 AS bettype	,	 @v10mpositiontaking_3 AS mpositiontaking	,	 @max_v10mp_3 as maxmpositiontaking, @isauto_v10mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v10mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 10 AS sporttype	,	 20 AS bettype	,	 @v10mpositiontaking_20 AS mpositiontaking	,	 @max_v10mp_20 as maxmpositiontaking, @isauto_v10mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v10mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 		END -- @UpdatePositiontakingv10
 
 		--Motorsports
@@ -2959,6 +3446,31 @@ if	@UpdatePositiontaking   = 1  or
 				RETURN
 			END
 			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 11 AS sporttype	,	 1 AS bettype	,	 @v11mpositiontaking_1 AS mpositiontaking	,@max_v11mp_1 as maxmpositiontaking, @isauto_v11mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v11mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 11 AS sporttype	,	 20 AS bettype	,	 @v11mpositiontaking_20 AS mpositiontaking	,	 @max_v11mp_20 as maxmpositiontaking, @isauto_v11mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v11mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 
 		END --@UpdatePositiontakingv11
 
@@ -3094,6 +3606,34 @@ if	@UpdatePositiontaking   = 1  or
 					   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				RETURN
 			END
+			
+			--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 99 AS sporttype	,	 1 AS bettype	,	 @v99mpositiontaking_1 AS mpositiontaking	,@max_v99mp_1 as maxmpositiontaking, @isauto_v99mpositiontaking_mem_1 as isauto_mpositiontaking_mem, @isauto_v99mpositiontaking_1 as isauto_mpositiontaking
+					UNION ALL		SELECT 99 AS sporttype	,	 2 AS bettype	,	 @v99mpositiontaking_2 AS mpositiontaking	,	 @max_v99mp_2 as maxmpositiontaking, @isauto_v99mpositiontaking_mem_2 as isauto_mpositiontaking_mem, @isauto_v99mpositiontaking_2 as isauto_mpositiontaking
+					UNION ALL		SELECT 99 AS sporttype	,	 3 AS bettype	,	 @v99mpositiontaking_3 AS mpositiontaking	,	 @max_v99mp_3 as maxmpositiontaking, @isauto_v99mpositiontaking_mem_3 as isauto_mpositiontaking_mem, @isauto_v99mpositiontaking_3 as isauto_mpositiontaking
+					UNION ALL		SELECT 99 AS sporttype	,	 20 AS bettype	,	 @v99mpositiontaking_20 AS mpositiontaking	,	 @max_v99mp_20 as maxmpositiontaking, @isauto_v99mpositiontaking_mem_20 as isauto_mpositiontaking_mem, @isauto_v99mpositiontaking_20 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 		
 		END	--@UpdatePositiontakingv99
 			
@@ -3216,7 +3756,32 @@ if	@UpdatePositiontaking   = 1  or
 					SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 						   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					RETURN
-				END				
+				END		
+				
+				--check m1<=m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM
+				(
+						SELECT 99 AS sporttype	,	 9 AS bettype	,	 @v99mpositiontaking_9 AS mpositiontaking	,@max_v99mp_9 as maxmpositiontaking, @isauto_v99mpositiontaking_mem_9 as isauto_mpositiontaking_mem, @isauto_v99mpositiontaking_9 as isauto_mpositiontaking
+				) b
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE b.mpositiontaking > maxmpositiontaking and isauto_mpositiontaking_mem = 0 and isauto_mpositiontaking = 0 
+			
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END		
 				
 			END--@UpdatePositiontakingv99MP
 		
@@ -3248,7 +3813,7 @@ if	@UpdatePositiontaking   = 1  or
 				--Check um1<=l3
 				SELECT @ErrType = ''
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((co3.maxpositiontaking) AS VARCHAR(10))
-				+ CASE WHEN b.sporttype=161 AND b.bettype IN (85,86,87) THEN '-MaxLive: '+ CAST((co3.maxlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
+				+ CASE WHEN b.sporttype=161 AND b.bettype IN (85,86,87,89,90) THEN '-MaxLive: '+ CAST((co3.maxlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
 				FROM custoverride3rd AS co3 WITH (NOLOCK) INNER JOIN
 					(
 										SELECT 161 AS sporttype, 81 AS bettype, @auto_v161mpositiontaking_mem_81 AS autopositiontaking, @isauto_v161mpositiontaking_mem_81 AS isautopositiontaking, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking							
@@ -3264,7 +3829,7 @@ if	@UpdatePositiontaking   = 1  or
 				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
 				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
 
-				WHERE co3.custid = @mrecommend AND ((b.isautopositiontaking>0 AND b.autopositiontaking>co3.maxpositiontaking) OR (b.isautolivepositiontaking>0 AND b.sporttype=161 AND b.bettype IN (85,86,87) AND b.autolivepositiontaking>co3.maxlivepositiontaking))
+				WHERE co3.custid = @mrecommend AND ((b.isautopositiontaking>0 AND b.autopositiontaking>co3.maxpositiontaking) OR (b.isautolivepositiontaking>0 AND b.sporttype=161 AND b.bettype IN (85,86,87,89,90) AND b.autolivepositiontaking>co3.maxlivepositiontaking))
 
 				IF @ErrType <>''
 				BEGIN
@@ -3297,7 +3862,7 @@ if	@UpdatePositiontaking   = 1  or
 					) AS b 
 				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
 				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
-				WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>b.maxmpositiontaking) OR (b.isautolivepositiontaking>0 AND b.sporttype=161 AND b.bettype IN (85,86,87) AND b.autolivepositiontaking>b.maxmlivepositiontaking)
+				WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>b.maxmpositiontaking) OR (b.isautolivepositiontaking>0 AND b.sporttype=161 AND b.bettype IN (85,86,87,89,90) AND b.autolivepositiontaking>b.maxmlivepositiontaking)
 
 				IF @ErrType <>''
 				BEGIN
@@ -3316,7 +3881,7 @@ if	@UpdatePositiontaking   = 1  or
 			--Check m1<=min(m3,m4)
 			SELECT @ErrType = ''
 			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
-			+ CASE WHEN b.sporttype in (1,161) AND b.bettype IN (1,3,7,8,85,86,87) THEN '-MaxLive: '+ CAST((b.maxmlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
+			+ CASE WHEN b.sporttype in (1,161) AND b.bettype IN (1,3,7,8,85,86,87,89,90) THEN '-MaxLive: '+ CAST((b.maxmlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
 			FROM (
 									SELECT 161 AS sporttype	,	 81 AS bettype	,	 @v161mpositiontaking_81 AS mpositiontaking	,	 @max_v161mapositiontaking_81 AS maxmpositiontaking	,	 0 AS mlivepositiontaking	,	 0 AS maxmlivepositiontaking
 					UNION ALL		SELECT 161 AS sporttype	,	 83 AS bettype	,	 @v161mpositiontaking_83 AS mpositiontaking	,	 @max_v161mapositiontaking_83 AS maxmpositiontaking	,	 0 AS mlivepositiontaking	,	 0 AS maxmlivepositiontaking
@@ -3331,7 +3896,7 @@ if	@UpdatePositiontaking   = 1  or
 				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
 				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
 			WHERE (b.mpositiontaking>b.maxmpositiontaking) 
-				OR (b.sporttype in (1,161) AND b.bettype IN (1,3,7,8,85,86,87) AND b.mlivepositiontaking>b.maxmlivepositiontaking)
+				OR (b.sporttype in (1,161) AND b.bettype IN (1,3,7,8,85,86,87,89,90) AND b.mlivepositiontaking>b.maxmlivepositiontaking)
 
 			IF @ErrType <>''
 			BEGIN
@@ -3379,6 +3944,39 @@ if	@UpdatePositiontaking   = 1  or
 				RETURN
 			END
 				
+			--check m1 <= m1_max
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
+			+ CASE WHEN b.sporttype in (161) AND b.bettype IN (85,86,87,89,90) THEN '-MaxLive: '+ CAST((b.maxmlivepositiontaking) AS VARCHAR(10)) ELSE '' END + '<br>'
+			FROM (
+									SELECT 161 AS sporttype	,	 81 AS bettype	,	 @v161mpositiontaking_81 AS mpositiontaking	,	 @max_v161mp_81 AS maxmpositiontaking,	 @isauto_v161mpositiontaking_mem_81 as isauto_mpositiontaking_mem, @isauto_v161mpositiontaking_81 as isauto_mpositiontaking, 0							AS mlivepositiontaking	,	 0				 AS maxmlivepositiontaking,	0										as isauto_mlivepositiontaking_mem, 0									as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 83 AS bettype	,	 @v161mpositiontaking_83 AS mpositiontaking	,	 @max_v161mp_83 AS maxmpositiontaking,	 @isauto_v161mpositiontaking_mem_83 as isauto_mpositiontaking_mem, @isauto_v161mpositiontaking_83 as isauto_mpositiontaking, 0							AS mlivepositiontaking	,	 0				 AS maxmlivepositiontaking,	0										as isauto_mlivepositiontaking_mem, 0									as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 88 AS bettype	,	 @v161mpositiontaking_88 AS mpositiontaking	,	 @max_v161mp_88 AS maxmpositiontaking,	 @isauto_v161mpositiontaking_mem_88 as isauto_mpositiontaking_mem, @isauto_v161mpositiontaking_88 as isauto_mpositiontaking, 0							AS mlivepositiontaking	,	 0				 AS maxmlivepositiontaking,	0										as isauto_mlivepositiontaking_mem, 0									as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 85 AS bettype	,	 0						 AS mpositiontaking	,	 0				AS maxmpositiontaking,	 0									as isauto_mpositiontaking_mem, 0							  as isauto_mpositiontaking, @v161mlivepositiontaking_85 AS mlivepositiontaking	,	 @max_v161mlp_85 AS maxmlivepositiontaking,	@isauto_v161mlivepositiontaking_mem_85  as isauto_mlivepositiontaking_mem, @isauto_v161mlivepositiontaking_85   as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 86 AS bettype	,	 @v161mpositiontaking_86 AS mpositiontaking	,	 @max_v161mp_86 AS maxmpositiontaking,	 @isauto_v161mpositiontaking_mem_86 as isauto_mpositiontaking_mem, @isauto_v161mpositiontaking_86 as isauto_mpositiontaking, @v161mlivepositiontaking_86 AS mlivepositiontaking	,	 @max_v161mlp_86 AS maxmlivepositiontaking,	@isauto_v161mlivepositiontaking_mem_86  as isauto_mlivepositiontaking_mem, @isauto_v161mlivepositiontaking_86   as isauto_mlivepositiontaking		
+					UNION ALL		SELECT 161 AS sporttype	,	 87 AS bettype	,	 0						 AS mpositiontaking,	 0				AS maxmpositiontaking, 	 0									as isauto_mpositiontaking_mem, 0							  as isauto_mpositiontaking, @v161mlivepositiontaking_87 AS mlivepositiontaking	,	 @max_v161mlp_87 AS maxmlivepositiontaking,	@isauto_v161mlivepositiontaking_mem_87  as isauto_mlivepositiontaking_mem, @isauto_v161mlivepositiontaking_87   as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 89 AS bettype	,	 0						 AS mpositiontaking,	 0				AS maxmpositiontaking, 	 0									as isauto_mpositiontaking_mem, 0							  as isauto_mpositiontaking, @v161mlivepositiontaking_89 AS mlivepositiontaking	,	 @max_v161mlp_89 AS maxmlivepositiontaking,	@isauto_v161mlivepositiontaking_mem_89  as isauto_mlivepositiontaking_mem, @isauto_v161mlivepositiontaking_89   as isauto_mlivepositiontaking
+					UNION ALL		SELECT 161 AS sporttype	,	 90 AS bettype	,	 0						 AS mpositiontaking,	 0				AS maxmpositiontaking, 	 0									as isauto_mpositiontaking_mem, 0							  as isauto_mpositiontaking, @v161mlivepositiontaking_90 AS mlivepositiontaking	,	 @max_v161mlp_90 AS maxmlivepositiontaking,	@isauto_v161mlivepositiontaking_mem_90  as isauto_mlivepositiontaking_mem, @isauto_v161mlivepositiontaking_90   as isauto_mlivepositiontaking
+
+				)b 	
+				INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
+				INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			WHERE (b.mpositiontaking>b.maxmpositiontaking and b.isauto_mpositiontaking_mem = 0 and b.isauto_mpositiontaking = 0) 
+				OR (b.sporttype in (161) AND b.bettype IN (85,86,87,89,90) AND b.mlivepositiontaking>b.maxmlivepositiontaking and b.isauto_mlivepositiontaking_mem = 0 and b.isauto_mlivepositiontaking = 0)
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 8,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END
 				
 		END --@UpdatePositiontakingv161
 

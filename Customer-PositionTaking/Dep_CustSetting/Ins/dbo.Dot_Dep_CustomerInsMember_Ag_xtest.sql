@@ -1,7 +1,11 @@
-﻿
-
-
-ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_xtest]	
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_production]    Script Date: 06/14/2013 10:38:19 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -23,7 +27,7 @@ AS
 /*
 Created: 
 Task : Create a 12 bet player account for this Affiliate on IBC system
-DB: DBTRANS.bodb02
+DB: DBTXN/bodb02
 Original:
 
 Revisions:
@@ -87,8 +91,19 @@ Revisions:
 					 - Remove Financials (201)
 	- 20120815@Jamie: Hard code max bet and max per match for 12bet (AUD, IDR, MYR, VND)
 	- 20120831@Henry: Terminate the transfer of all players to BA for ZZun
-	- 20120910@Dan: Add virtual soccer
+	- 20120910@Dan: Add virtual soccer	
+	- 20121001@Dan: fix wrong comission for  parlay mixed sport
+	- 20121015@Dan: add win limit setting for live casino	
+	- 20121017@Johnson:check double comm losing status by upline
 	- 20121129@Lukas: merge select statements together to reduce I/O resource
+	- 20121227@henry: Set Default Player Comm for new created member
+	- 20121015@Dan: merge from production
+	- 20130111@Lukas: hardcode for doublecommLosing = 0 when create new member
+    - 20130204@Daniel: Change link server alias & failover writelog to DBTXN
+    - 20130311@Kiwi: Hard code MaxBet/MaxperBall/MaxperMatch for SB and NG of Agent 12betUS$KR (10393717)
+    - 20130329@Viet: remove hard code for 12betUS$KR (10393717)
+    - 20130502@Kiwi: Sportsbook - hard code MaxBet and MaxperMatch for Soccer only for Livebet365 licensee
+	- 20130605@Johnson: check P2P status with upline
 						
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -237,6 +252,9 @@ declare @currency int,
 	@minbetv180 money,
 	@maxbetv180 money,	
 	@maxpermatchv180 money,
+
+	@isAutoResetLiveCasino BIT , 
+	@MaxWinLiveCasino SMALLMONEY ,
 	
 	@Success bit
 
@@ -592,6 +610,9 @@ declare @transcode bigint,
 	@DisableNumber bit,-- for number game
 	@Disable180_1201 bit , -- virtual soccer
 	@HideVirtualSports  BIT, -- virtual sports
+	@DoubleCommLosing BIT,-- double comm losing status
+	@DisableP2P BIT,-- P2P status
+	@DisableFUNP2P BIT,
 	
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -611,7 +632,7 @@ select @ErrCode = 0,
 ----------------Affiliate Bonus Code---------------------
 IF (isnull(@AffiliateID, 0) = 0 AND @BonusCode is not null) 
 BEGIN	
-	select @AffiliateID = AffID from DB052.[Affiliate_12Bet].dbo.AffDetail with(nolock) where bonuscode = @BonusCode	
+	select @AffiliateID = AffID from DBAFF12BET.[Affiliate_12Bet].dbo.AffDetail with(nolock) where bonuscode = @BonusCode	
 	if isnull(@AffiliateID,0) > 0 -- @bonuscode is valid, change currency agent from [..]01 --> [..]02
 	BEGIN
 		declare @_currAgentName varchar(20)
@@ -663,10 +684,15 @@ select
 	@Disable152_51		= ISNULL(Disable152_AU,0),
 	@Disable153_51		= ISNULL(Disable153_AU,0),
 	@DisableFinancial	= DisableFinancial,
+	@DisableP2P			= isnull(DisableP2P,0),
+	@DisableFUNP2P		= ISNULL(DisableFUNP2P,0),
 	--@DisableBingo		= DisableBingo,
 	@DisableNumber		= ISNULL(DisableNumber,0),
 	@Disable180_1201	= ISNULL(DisableVirtualSports,0),
-	@HideVirtualSports	= HideVirtualSports
+	@HideVirtualSports	= HideVirtualSports,
+	@MaxWinLiveCasino = MaxWinLiveCasino,
+	@isAutoResetLiveCasino = isAutoResetLiveCasino,
+	@DoubleCommLosing = DoubleCommLosing
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -776,8 +802,9 @@ TB          20000               50000
 IF @site = '12Bet'
 BEGIN  
 	IF @Currency = 6 SELECT @vMaxbet = 350, @vMaxpermatch = 1150 -- EURO  
-	IF @Currency= 12 SELECT @vMaxbet = 250, @vMaxpermatch = 750 -- GBP  
-	IF @Currency = 3  SELECT @vMaxbet = 350, @vMaxpermatch = 1150 -- USD  
+	IF @Currency= 12 SELECT @vMaxbet = 250, @vMaxpermatch = 750 -- GBP  	
+	IF (@Currency = 3 and  @AgentID <> 10393717) SELECT @vMaxbet = 350, @vMaxpermatch = 1150 -- USD
+	--IF (@Currency = 3 and  @AgentID = 10393717) SELECT @vMaxbet = 2000, @vMaxpermatch = 6000, @maxbetv161 = 750, @maxperballv161 = 1500, @maxpermatchv161 = 8000 -- USD
 	IF @Currency = 9 SELECT @vMaxbet = 700, @vMaxpermatch = 2000 -- AUD   
 	IF @Currency = 13 SELECT @vMaxbet = 20000, @vMaxpermatch = 60000, @maxbetv161 = 3000, @maxperballv161 = 10000  -- RMB  
 	IF @Currency = 2 SELECT @vMaxbet = 8000, @vMaxpermatch = 24000, @maxbetv161 = 2000, @maxperballv161 = 5000  -- RM  
@@ -786,6 +813,12 @@ BEGIN
 	IF @Currency = 1 SELECT @vMaxbet = 1500, @vMaxpermatch = 4500 -- SD$  
 	IF @Currency = 15 SELECT @vMaxbet = 33000, @vMaxpermatch = 100000, @maxbetv161 = 5000, @maxperballv161 = 15000  -- IN (Indo rupiah)  
 	IF @Currency = 51 SELECT @vMaxbet = 53000, @vMaxpermatch = 160000, @maxbetv161 = 10000, @maxperballv161 = 30000-- INH  
+END
+
+-- Kiwi@20130502: Sportsbook - hard code MaxBet and MaxperMatch for Soccer only.
+IF @site = 'LiveBet365'
+BEGIN
+	IF @Currency = 2 SELECT @vMaxbet = 10000, @vMaxpermatch = 50000 -- RM
 END
 
 
@@ -850,7 +883,7 @@ select
 --Position Taking get from Affilate Account
 if isnull(@AffiliateID,0) > 0
 BEGIN
-	if NOT exists(select 1 from DB052.[Affiliate_12Bet].dbo.AffInfo with(nolock) where AffID = @AffiliateID)		
+	if NOT exists(select 1 from DBAFF12BET.[Affiliate_12Bet].dbo.AffInfo with(nolock) where AffID = @AffiliateID)		
 	BEGIN
 		Select @ErrMsg = 'Invalid Affiliate agent.', @ErrCode = 12
 		return
@@ -1256,6 +1289,13 @@ FROM Dep_CustSetting3rd cs WITH (NOLOCK)
 	INNER JOIN custinfo ci WITH (NOLOCK) on (cs.CustID = ci.CustID or cs.CustID = ci.MRecommend or cs.CustID = ci.SRecommend) 
 WHERE ci.custid = @recommend AND cs.bettype IN (31,41,51,81,1201) and cs.sporttype IN (151,152,153,161,180)
 
+-- VS
+-- auto correct min maxbet of customer based on min/max bet of upline (SMA) if breaking rule
+IF @MinMinBetv180>0 and @minbetv180>0 and @minbetv180<@MinMinBetv180
+	SET @minbetv180 = @MinMinBetv180
+	
+IF @MaxMaxBetv180>0 and @maxbetv180>0 and @maxbetv180>@MaxMaxBetv180
+	SET @maxbetv180 = @MaxMaxBetv180
 
 Select	
 	@MaxMaxperMatch = IsNull(Min(case when cs.MaxPerMatch = 0 then NULL else cs.MaxPerMatch end),0), 
@@ -1293,6 +1333,19 @@ from
 where ci.custid = @Recommend
 SET ANSI_WARNINGS ON
 
+-- VS
+-- auto correct maxpermatch of customer based on maxpermatch of upline (SMA) if breaking rule
+IF @MaxMaxPerMatchv180>0 and @MaxPerMatchv180>0 and @MaxPerMatchv180>@MaxMaxPerMatchv180
+	SET @MaxPerMatchv180 = @MaxMaxPerMatchv180
+
+-- auto correct bet setting of customer to 0 if breaking rule (0 means this bet setting based on upline setting)
+IF (@minbetv180<>0 and @maxbetv180 <> 0 and  @minbetv180>@maxbetv180) 
+	or (@maxbetv180<> 0 and @MaxPerMatchv180 <> 0 and @maxbetv180>@MaxPerMatchv180) 
+	or (@minbetv180 <> 0 and @MaxPerMatchv180 <> 0 and @minbetv180>@MaxPerMatchv180)	
+BEGIN
+	SELECT @minbetv180=0, @maxbetv180 = 0, @MaxPerMatchv180 = 0 
+END	
+
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
 from sports with (NOLOCK) inner join
@@ -1324,9 +1377,6 @@ from sports with (NOLOCK) inner join
 	
 	--number game
 	union all select 161 as sporttype, @MinBetv161 as MinBet, @MinMinBetv161 as MinMinBet
-	
-	--VS
-	union all select 180 as sporttype, @MinBetv180 as MinBet, @MinMinBetv180 as MinMinBet
 			 
 ) as b on sports.sporttype = b.sporttype
 where MinMinBet>0 and MinBet>0 and MinBet<MinMinBet
@@ -1371,9 +1421,6 @@ from sports with (NOLOCK) inner join
 	
 	--number game 
 	union all select 161 as sporttype, @MaxBetv161 as MaxBet, @MaxMaxBetv161 as MaxMaxBet
-	
-	--VS
-	union all select 180 as sporttype, @MaxBetv180 as MaxBet, @MaxMaxBetv180 as MaxMaxBet
 ) as b on sports.sporttype = b.sporttype
 where MaxMaxBet>0 and MaxBet>0 and MaxBet>MaxMaxBet
 if @ErrType <>''
@@ -1414,9 +1461,7 @@ from sports with (NOLOCK) inner join
 	--mixed sports
 	union all select 99 as sporttype, @MaxPerMatchv99MP as MaxPerMatch, @MaxMaxPerMatchv99MP as MaxMaxPerMatch
 	--number game
-	union all select 161 as sporttype, @MaxPerMatchv161 as MaxPerMatch, @MaxMaxPerMatchv161 as MaxMaxPerMatch	 
-	--VS
-	union all select 180 as sporttype, @MaxPerMatchv180 as MaxPerMatch, @MaxMaxPerMatchv180 as MaxMaxPerMatch	 		
+	union all select 161 as sporttype, @MaxPerMatchv161 as MaxPerMatch, @MaxMaxPerMatchv161 as MaxMaxPerMatch	 	
 ) as b on sports.sporttype = b.sporttype
 where MaxMaxPerMatch>0 and MaxPerMatch>0 and MaxPerMatch>MaxMaxPerMatch
 if @ErrType <>''
@@ -1542,14 +1587,19 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@Disable152_41 = @Disable152_41,
 	@Disable152_51 = @Disable152_51,
 	@Disable153_51 = @Disable153_51,
+	@DisableP2P	= @DisableP2P,
+	@DisableFUNP2P = @DisableFUNP2P,
 	@matchlimit = @matchlimit,
 	@virtualmultiplier = @virtualmultiplier,
 	@DisableFinancial = 0,
 	--@DisableBingo = @DisableBingo,
 	@DisableNumber = @DisableNumber,
 	@Disable180_1201 = @Disable180_1201,
-	@HideVirtualSports = @HideVirtualSports,
-		
+	@HideVirtualSports = @HideVirtualSports,	
+	@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
+	@MaxWinLiveCasino = @MaxWinLiveCasino,
+	@DoubleCommLosing = 0, ----@DoubleCommLosing, 20130111@Lukas: hardcode
+			
 	@MaxPerMatch = @MaxPerMatch,
 	@MaxPerMatchv2 = @MaxPerMatchv2,
 	@MaxPerMatchv3 = @MaxPerMatchv3,
@@ -1862,6 +1912,60 @@ BEGIN
 	return
 END
 ---------------------------------------------------------------------------------
+---- Create default balance for Live casino for new customer
+DECLARE @today smalldatetime
+SET @today = convert(nvarchar(10), current_timestamp,120)
+
+INSERT INTO BalanceCreditGame (CustID, winlostdate, Balance )
+VALUES (@CustID, @today, 0)
+
+IF @@error <> 0
+BEGIN 
+	--Error occurs
+	SELECT 
+		@ErrMsg = 'Add member fail. Please try again',
+		@ErrCode= 219
+	
+	-- MANUALLY ROLLBACK
+	DELETE Dep_CustSetting WHERE CustID = @CustID
+	DELETE Dep_CustSetting3rd WHERE CustID = @CustID
+	DELETE P2PGameSetting WHERE CustID = @CustID
+	DELETE P2PGroupComm WHERE CustID = @CustID
+	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid
+	DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid
+	DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
+	
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	return
+END
+
+INSERT INTO BalanceDebitGame (CustID, winlostdate, Balance )
+VALUES (@CustID, @today, 0)
+
+IF @@error <> 0
+BEGIN 
+	--Error occurs
+	SELECT 
+		@ErrMsg = 'Add member fail. Please try again',
+		@ErrCode= 220
+	
+	-- MANUALLY ROLLBACK
+	DELETE Dep_CustSetting WHERE CustID = @CustID
+	DELETE Dep_CustSetting3rd WHERE CustID = @CustID
+	DELETE P2PGameSetting WHERE CustID = @CustID
+	DELETE P2PGroupComm WHERE CustID = @CustID
+	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid
+	DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid
+	DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
+	DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid
+	
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	return
+END
+
+---------------------------------------------------------------------------------
 
 Update customer with (ROWLOCK, UPDLOCK) set		
 	username2 = @DepositUserName,
@@ -1876,7 +1980,7 @@ BEGIN
 	SET @ErrMsg=''
 	SET @ErrCode=0
 	
-	IF (SELECT EnableBA FROM DB052.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
+	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
 	BEGIN
 				EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=7,--Dela
@@ -1896,7 +2000,7 @@ BEGIN
 	SET @ErrMsg=''
 	SET @ErrCode=0
 	
-	IF (SELECT EnableBA FROM DB052.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 10) = 1
+	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 10) = 1
 	BEGIN
 				EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=10,--Zzun88
@@ -1913,7 +2017,7 @@ END
 		
 
 IF @AffiliateID is not NULL
-EXEC DB052.Affiliate_12BET.dbo.Aff_CustomerInsMember 
+EXEC DBAFF12BET.Affiliate_12BET.dbo.Aff_CustomerInsMember 
 	@IbcCustID = @CustID,
 	@AffID = @AffiliateID,
 	@Username = @DepositUserName,
@@ -1925,13 +2029,20 @@ EXEC DB052.Affiliate_12BET.dbo.Aff_CustomerInsMember
 	@Recommend = @recommend,
 	@Email = @Email
 
---Copy Customer Info to DB052.bodb_Licensee.dbo.LicenseeCustinfo
-EXEC DB052.bodb_Licensee.dbo.Lrf_CustomerInfoIns
+--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
+EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
 	@CustID = @CustID,
 	@Recommend = @AgentID,
 	@Username = @Username,
 	@Username2=@DepositUserName,
 	@Currency = @currency
+
+--Set default player comm
+EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
+	@LicenseeName=@site,
+	@CustID = @CustID,
+	@ErrCode = @ErrCode OUTPUT,
+	@ErrMsg = @ErrMsg OUTPUT	
 
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
@@ -1955,44 +2066,84 @@ Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@cus
 'success="'+ coalesce(cast(@success as varchar(50)),space(1)) + '" ' +
 'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
 'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1)) + '" />'
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-	@UserID = @CustID,
-	@CustID = @CustID,
-	@ActionID = 617,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
-	
+BEGIN TRY
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 617,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END TRY
+BEGIN CATCH
+	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 617,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END CATCH
+
 --Write commission log
 Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'discount="'+ coalesce(cast(@discount as varchar(50)),space(1)) + '" />'
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-	@UserID = @CustID,
-	@CustID = @CustID,
-	@ActionID = 216,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
+BEGIN TRY
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 216,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END TRY
+BEGIN CATCH
+	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 216,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END CATCH
 	
 --Write betsetting log
 Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'MinBet="'+ coalesce(cast(@MinBet as varchar(50)),space(1)) + '" ' +
 'MaxBet="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
 'MaxPerMatch="'+ coalesce(cast(@MaxPerMatch as varchar(50)),space(1)) + '" />'
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-	@UserID = @CustID,
-	@CustID = @CustID,
-	@ActionID = 315,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
+BEGIN TRY
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 315,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END TRY
+BEGIN CATCH
+	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 315,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END CATCH
 	
 --Write PT log
 Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'AgentPT="'+ coalesce(cast(@apositiontaking_1 as varchar(50)),space(1)) + '" />'
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-	@UserID = @CustID,
-	@CustID = @CustID,
-	@ActionID = 422,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
+BEGIN TRY
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 422,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END TRY
+BEGIN CATCH
+	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 422,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END CATCH
 
 --Write Statuses log	
 Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
@@ -2006,9 +2157,28 @@ Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@cus
 'DisableNumber="' + coalesce(cast(@DisableNumber as varchar(1)),space(1)) + '" ' +
 'DisableVirtualSports="' + coalesce(cast(@Disable180_1201 as varchar(1)),space(1)) + '" ' +
 'DisableFinancial="'+ coalesce(cast(@DisableFinancial as varchar(1)),space(1)) + '" />'
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
-	@UserID = @CustID,
-	@CustID = @CustID,
-	@ActionID = 1118,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
+BEGIN TRY
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 1118,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END TRY
+BEGIN CATCH
+	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		@UserID = @CustID,
+		@CustID = @CustID,
+		@ActionID = 1118,
+		@TrackingValue = @LogSPData,
+		@duration = @duration
+END CATCH
+
+
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member]
+GO

@@ -189,6 +189,13 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerInsMember_SAg.sql"
                Script = "dbo.Acc_CustomerInsUserInfo.sql"
             End
+            Begin Folder = "Virtual HR"
+               Script = "Acc_CustomerInsMember_Ag.sql"
+               Script = "Acc_CustomerInsMember_Com.sql"
+               Script = "Acc_CustomerInsMember_MAg.sql"
+               Script = "Acc_CustomerInsMember_SAg.sql"
+               Script = "Acc_CustomerUserInfo.sql"
+            End
          End
          Begin Folder = "Select"
             Begin Folder = "BK"
@@ -504,6 +511,7 @@ Begin DataProject = "AgentPT"
             Script = "dbo.Acc_Dep_CustomerInsMember_SAg_CheckParam.StoredProcedure.sql"
             Script = "dbo.Acc_Dep_CustomerInsUserInfo.StoredProcedure.sql"
             Script = "dbo.Dot_Dep_CustomerInsMember_Ag.sql"
+            Script = "dbo.Dot_Dep_CustomerInsMember_Ag_xtest.sql"
             Script = "dbo.Dot_Member_InsertBet_MixParlay.sql"
             Script = "dbo.Dot_Member_PlaceBet3rd.sql"
          End

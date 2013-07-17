@@ -31,11 +31,12 @@ SET NOCOUNT ON
 		MAX( CASE WHEN cs.sporttype = 186 AND cs.bettype = 1220 THEN cs.apositiontaking ELSE 0 END) as v186apositiontaking_1220
 	FROM CustInfo ci WITH(NOLOCK)
 		INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON ci.custid = @custid AND roleid = 1 AND cs.custid = ci.custid		
-	GROUP BY ci.MaxPerMatch180, ci.MaxPerMatch180, MaxPerMatch186
+	GROUP BY ci.MaxPerMatch180, ci.MaxPerMatch181, MaxPerMatch186
 	
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE On [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [bodbDownlineNetView] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [bodbDownlineNetView]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelVSCloneSetting_Ag] TO [vnteam] AS [dbo]

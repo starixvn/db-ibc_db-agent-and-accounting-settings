@@ -99,6 +99,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto positiontaking negative
+	- 20130607@Johnson: check s1 with max_s1
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -134,6 +135,7 @@ BEGIN
 END
 --end 
 declare 
+	--m1
 	@v151mpositiontaking_31 smallmoney,
 	@v151mpositiontaking_32 smallmoney,
 	@v151mpositiontaking_41 smallmoney,
@@ -163,7 +165,7 @@ declare
 	@mrecommend int,
 	@recommend int,
 	@srecommend int,
-
+	--a1
 	@v151apositiontaking_31 smallmoney,
 	@v151apositiontaking_32 smallmoney,
 	@v151apositiontaking_41 smallmoney,
@@ -176,7 +178,7 @@ declare
 	@v152apositiontaking_52 smallmoney,
 	@v153apositiontaking_51 smallmoney,
 	@v153apositiontaking_52 smallmoney,
-
+	--s4
 	@v151spositiontaking_31_max smallmoney,
 	@v151spositiontaking_32_max smallmoney,
 	@v151spositiontaking_41_max smallmoney,
@@ -189,7 +191,48 @@ declare
 	@v152spositiontaking_52_max smallmoney,
 	@v153spositiontaking_51_max smallmoney,
 	@v153spositiontaking_52_max smallmoney,
-
+	--s1_max=min(s4,l4)-m3
+	 --min(s4,l4) 
+	@v151mspos_31_max smallmoney,  
+	@v151mspos_32_max smallmoney,  
+	@v151mspos_41_max smallmoney,  
+	@v151mspos_42_max smallmoney,  
+	@v151mspos_51_max smallmoney,  
+	@v151mspos_52_max smallmoney,
+	@v152mspos_41_max smallmoney,  
+	@v152mspos_42_max smallmoney,
+	@v152mspos_51_max smallmoney,  
+	@v152mspos_52_max smallmoney,
+	@v153mspos_51_max smallmoney,  
+	@v153mspos_52_max smallmoney,
+	--m3
+	@v151mpos_31 smallmoney,
+	@v151mpos_32 smallmoney,
+	@v151mpos_41 smallmoney,
+	@v151mpos_42 smallmoney,
+	@v151mpos_51 smallmoney,
+	@v151mpos_52 smallmoney,
+	@v152mpos_41 smallmoney,
+	@v152mpos_42 smallmoney,
+	@v152mpos_51 smallmoney,
+	@v152mpos_52 smallmoney,
+	@v153mpos_51 smallmoney,
+	@v153mpos_52 smallmoney,
+	
+	--s1_max
+	@v151spos_31_max smallmoney,
+	@v151spos_32_max smallmoney,
+	@v151spos_41_max smallmoney,
+	@v151spos_42_max smallmoney,
+	@v151spos_51_max smallmoney,
+	@v151spos_52_max smallmoney,
+	@v152spos_41_max smallmoney,
+	@v152spos_42_max smallmoney,
+	@v152spos_51_max smallmoney,
+	@v152spos_52_max smallmoney,
+	@v153spos_51_max smallmoney,
+	@v153spos_52_max smallmoney,
+	
 	@old_auto_v151spositiontaking_31 smallmoney ,
 	@old_auto_v151spositiontaking_32 smallmoney ,
 	@old_auto_v151spositiontaking_41 smallmoney ,
@@ -498,17 +541,90 @@ END
 		begin
 			select @v151spositiontaking_31_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=31 and sporttype=151
 			select @v151spositiontaking_32_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=32 and sporttype=151
+			
+			--min(s4,l4) 
+			SELECT @v151mspos_31_max = CASE WHEN @v151spositiontaking_31_max < co.maxpositiontaking THEN @v151spositiontaking_31_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 31 and sporttype = 151
+			SELECT @v151mspos_32_max = CASE WHEN @v151spositiontaking_32_max < co.maxpositiontaking THEN @v151spositiontaking_32_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 32 and sporttype = 151
+			
+			--m3
+			SELECT @v151mpos_31 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 31
+			SELECT @v151mpos_32 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 32
+			--s1_max = min(s4,l4)-m3
+			SELECT @v151spos_31_max = @v151mspos_31_max - @v151mpos_31 
+			SELECT @v151spos_32_max = @v151mspos_32_max - @v151mpos_32 
 		end
 	if (@UpdatePositiontakingv151_41 = 1 )
 		begin
 			select @v151spositiontaking_41_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=41 and sporttype=151
 			select @v151spositiontaking_42_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=42 and sporttype=151
+			
+			--min(s4,l4) 
+			SELECT @v151mspos_41_max = CASE WHEN @v151spositiontaking_41_max < co.maxpositiontaking THEN @v151spositiontaking_31_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 41 and sporttype = 151
+			SELECT @v151mspos_42_max = CASE WHEN @v151spositiontaking_42_max < co.maxpositiontaking THEN @v151spositiontaking_32_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 42 and sporttype = 151
+			
+			--m3
+			SELECT @v151mpos_41 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 41
+			SELECT @v151mpos_42 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 42
+			--s1_max = min(s4,l4)-m3
+			SELECT @v151spos_41_max = @v151mspos_41_max - @v151mpos_41 
+			SELECT @v151spos_42_max = @v151mspos_42_max - @v151mpos_42 
 		end
 	if (@UpdatePositiontakingv151_51 = 1 )
 		begin
 			select @v151spositiontaking_51_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=51 and sporttype=151
 			select @v151spositiontaking_52_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=52 and sporttype=151
+			
+			--min(s4,l4) 
+			SELECT @v151mspos_51_max = CASE WHEN @v151spositiontaking_51_max < co.maxpositiontaking THEN @v151spositiontaking_51_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 51 and sporttype = 151
+			SELECT @v151mspos_52_max = CASE WHEN @v151spositiontaking_52_max < co.maxpositiontaking THEN @v151spositiontaking_52_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 52 and sporttype = 151
+			
+			--m3
+			SELECT @v151mpos_51 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 51
+			SELECT @v151mpos_52 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 151 and bettype = 52
+			--s1_max = min(s4,l4)-m3
+			SELECT @v151spos_51_max = @v151mspos_51_max - @v151mpos_51 
+			SELECT @v151spos_52_max = @v151mspos_52_max - @v151mpos_52 
 		end
+
+	select @ErrType = ''
+	SELECT @ErrType = @ErrType + s.SportName + ' - ' +
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		 + '-Max: '+ cast((t.spositiontaking_max) as varchar(10)) + '<br>'			
+	FROM 	
+		(
+			SELECT 151 as sporttype, 31 as bettype, @v151spositiontaking_31 as spositiontaking, @isauto_v151spositiontaking_31 as isautopositiontaking, @isauto_v151smpositiontaking_31 as isauto_smpositiontaking  WHERE @UpdatePositiontakingv151_31 = 1 
+			UNION ALL SELECT 151 as sporttype, 32 as bettype, @v151spositiontaking_32 as spositiontaking, @isauto_v151spositiontaking_32 as isautopositiontaking, @isauto_v151smpositiontaking_32 as isautosmpositiontaking WHERE @UpdatePositiontakingv151_31 = 1 
+			UNION ALL SELECT 151 as sporttype, 41 as bettype, @v151spositiontaking_41 as spositiontaking, @isauto_v151spositiontaking_41 as isautopositiontaking, @isauto_v151smpositiontaking_41 as isauto_smpositiontaking  WHERE @UpdatePositiontakingv151_41 = 1 
+			UNION ALL SELECT 151 as sporttype, 42 as bettype, @v151spositiontaking_42 as spositiontaking, @isauto_v151spositiontaking_42 as isautopositiontaking, @isauto_v151smpositiontaking_42 as isauto_smpositiontaking  WHERE @UpdatePositiontakingv151_41 = 1 
+			UNION ALL SELECT 151 as sporttype, 51 as bettype, @v151spositiontaking_51 as spositiontaking, @isauto_v151spositiontaking_51 as isautopositiontaking, @isauto_v151smpositiontaking_51 as isauto_smpositiontaking  WHERE @UpdatePositiontakingv151_51 = 1 
+			UNION ALL SELECT 151 as sporttype, 52 as bettype, @v151spositiontaking_52 as spositiontaking, @isauto_v151spositiontaking_52 as isautopositiontaking, @isauto_v151smpositiontaking_52 as isauto_smpositiontaking  WHERE @UpdatePositiontakingv151_51 = 1 
+		)b
+		INNER JOIN
+		(
+			SELECT 151 as sporttype, 31 as bettype, @v151spos_31_max as spositiontaking_max
+			UNION ALL SELECT 151 as sporttype, 32 as bettype, @v151spos_32_max as spositiontaking_max
+			UNION ALL SELECT 151 as sporttype, 41 as bettype, @v151spos_41_max as spositiontaking_max
+			UNION ALL SELECT 151 as sporttype, 42 as bettype, @v151spos_42_max as spositiontaking_max
+			UNION ALL SELECT 151 as sporttype, 51 as bettype, @v151spos_51_max as spositiontaking_max
+			UNION ALL SELECT 151 as sporttype, 52 as bettype, @v151spos_52_max as spositiontaking_max
+		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
+		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
+	
+	if @ErrType <>''
+		BEGIN
+			select @ErrCode_Cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
+				case @Language 
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
+			
 	select 
 		@v151spositiontaking_31 = case when @v151mpositiontaking_31+@v151spositiontaking_31+@v151apositiontaking_31>@v151spositiontaking_31_max then @v151spositiontaking_31_max-@v151mpositiontaking_31-@v151apositiontaking_31 else @v151spositiontaking_31 end,
 		@v151spositiontaking_32 = case when @v151mpositiontaking_32+@v151spositiontaking_32+@v151apositiontaking_32>@v151spositiontaking_32_max then @v151spositiontaking_32_max-@v151mpositiontaking_32-@v151apositiontaking_32 else @v151spositiontaking_32 end,
@@ -621,12 +737,70 @@ BEGIN --@@UpdatePositiontakingv152
 		begin
 			select @v152spositiontaking_41_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=41 and sporttype=152
 			select @v152spositiontaking_42_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=42 and sporttype=152
+			
+			--min(s4,l4) 
+			SELECT @v152mspos_41_max = CASE WHEN @v152spositiontaking_41_max < co.maxpositiontaking THEN @v152spositiontaking_41_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 41 and sporttype = 152
+			SELECT @v152mspos_42_max = CASE WHEN @v152spositiontaking_42_max < co.maxpositiontaking THEN @v152spositiontaking_42_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 42 and sporttype = 152
+			
+			--m3
+			SELECT @v152mpos_41 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 152 and bettype = 41
+			SELECT @v152mpos_42 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 152 and bettype = 42
+			--s1_max = min(s4,l4)-m3
+			SELECT @v152spos_41_max = @v152mspos_41_max - @v152mpos_41 
+			SELECT @v152spos_42_max = @v152mspos_42_max - @v152mpos_42 
 		end
 	if  @UpdatePositiontakingv152_51 = 1
 		begin
 			select @v152spositiontaking_51_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=51 and sporttype=152
 			select @v152spositiontaking_52_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=52 and sporttype=152
+			
+			--min(s4,l4) 
+			SELECT @v152mspos_51_max = CASE WHEN @v152spositiontaking_51_max < co.maxpositiontaking THEN @v152spositiontaking_51_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 51 and sporttype = 152
+			SELECT @v152mspos_52_max = CASE WHEN @v152spositiontaking_52_max < co.maxpositiontaking THEN @v152spositiontaking_52_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 52 and sporttype = 152
+			
+			--m3
+			SELECT @v152mpos_51 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 152 and bettype = 51
+			SELECT @v152mpos_52 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 152 and bettype = 52
+			--s1_max = min(s4,l4)-m3
+			SELECT @v152spos_51_max = @v152mspos_51_max - @v152mpos_51 
+			SELECT @v152spos_52_max = @v152mspos_52_max - @v152mpos_52
 		end
+		
+	select @ErrType = ''
+	SELECT @ErrType = @ErrType + s.SportName + ' - ' +
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		 + '-Max: '+ cast((t.spositiontaking_max) as varchar(10)) + '<br>'			
+	FROM 	
+		(			
+			SELECT 152 as sporttype, 41 as bettype, @v152spositiontaking_41 as spositiontaking, @isauto_v152spositiontaking_41 as isautopositiontaking, @isauto_v152smpositiontaking_41 as isauto_smpositiontaking WHERE @UpdatePositiontakingv152_41 = 1 
+			UNION ALL SELECT 152 as sporttype, 42 as bettype, @v152spositiontaking_42 as spositiontaking, @isauto_v152spositiontaking_42 as isautopositiontaking, @isauto_v152smpositiontaking_42 as isauto_smpositiontaking WHERE @UpdatePositiontakingv152_41 = 1 
+			UNION ALL SELECT 152 as sporttype, 51 as bettype, @v152spositiontaking_51 as spositiontaking, @isauto_v152spositiontaking_51 as isautopositiontaking, @isauto_v152smpositiontaking_51 as isauto_smpositiontaking WHERE @UpdatePositiontakingv152_51 = 1 
+			UNION ALL SELECT 152 as sporttype, 52 as bettype, @v152spositiontaking_52 as spositiontaking, @isauto_v152spositiontaking_52 as isautopositiontaking, @isauto_v152smpositiontaking_52 as isauto_smpositiontaking WHERE @UpdatePositiontakingv152_51 = 1 
+		)b
+		INNER JOIN
+		(
+			SELECT 152 as sporttype, 41 as bettype, @v152spos_41_max as spositiontaking_max
+			UNION ALL SELECT 152 as sporttype, 42 as bettype, @v152spos_42_max as spositiontaking_max
+			UNION ALL SELECT 152 as sporttype, 51 as bettype, @v152spos_51_max as spositiontaking_max
+			UNION ALL SELECT 152 as sporttype, 52 as bettype, @v152spos_52_max as spositiontaking_max
+		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
+		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
+	
+	if @ErrType <>''
+		BEGIN
+			select @ErrCode_cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
+				case @Language 
+								when 'E' then 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
+			
 	select 
 		@v152spositiontaking_41 = case when @v152mpositiontaking_41+@v152spositiontaking_41+@v152apositiontaking_41>@v152spositiontaking_41_max then @v152spositiontaking_41_max-@v152mpositiontaking_41-@v151apositiontaking_41 else @v152spositiontaking_41 end,
 		@v152spositiontaking_42 = case when @v152mpositiontaking_42+@v152spositiontaking_42+@v152apositiontaking_42>@v152spositiontaking_42_max then @v152spositiontaking_42_max-@v152mpositiontaking_42-@v151apositiontaking_42 else @v152spositiontaking_42 end,
@@ -725,7 +899,50 @@ BEGIN --@@UpdatePositiontakingv153
 		begin
 			select @v153spositiontaking_51_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=51 and sporttype=153
 			select @v153spositiontaking_52_max = spositiontaking from CustSetting3rd with (NOLOCK) where custid = @srecommend and bettype=52 and sporttype=153
+			
+			--min(s4,l4) 
+			SELECT @v153mspos_51_max = CASE WHEN @v153spositiontaking_51_max < co.maxpositiontaking THEN @v153spositiontaking_51_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 51 and sporttype = 153
+			SELECT @v153mspos_52_max = CASE WHEN @v153spositiontaking_52_max < co.maxpositiontaking THEN @v153spositiontaking_52_max ELSE co.maxpositiontaking END FROM CustOverride3rd co WITH(NOLOCK) WHERE custid = @srecommend and bettype = 52 and sporttype = 153
+			
+			--m3
+			SELECT @v153mpos_51 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 153 and bettype = 51
+			SELECT @v153mpos_52 = mpositiontaking FROM custsetting3rd WITH(NOLOCK) WHERE custid = @mrecommend and sporttype = 153 and bettype = 52
+			--s1_max = min(s4,l4)-m3
+			SELECT @v153spos_51_max = @v153mspos_51_max - @v153mpos_51 
+			SELECT @v153spos_52_max = @v153mspos_52_max - @v153mpos_52
 		end
+	
+	select @ErrType = ''
+	SELECT @ErrType = @ErrType + s.SportName + ' - ' +
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		 + '-Max: '+ cast((t.spositiontaking_max) as varchar(10)) + '<br>'			
+	FROM 	
+		(			
+			SELECT 153 as sporttype, 51 as bettype, @v153spositiontaking_51 as spositiontaking, @isauto_v153spositiontaking_51 as isautopositiontaking, @isauto_v153smpositiontaking_51 as isauto_smpositiontaking WHERE @UpdatePositiontakingv153_51 = 1 
+			UNION ALL SELECT 153 as sporttype, 52 as bettype, @v153spositiontaking_52 as spositiontaking, @isauto_v153spositiontaking_52 as isautopositiontaking, @isauto_v153smpositiontaking_52 as isauto_smpositiontaking WHERE @UpdatePositiontakingv153_51 = 1 
+		)b
+		INNER JOIN
+		(
+			SELECT 153 as sporttype, 51 as bettype, @v153spos_51_max as spositiontaking_max
+			UNION ALL SELECT 153 as sporttype, 52 as bettype, @v153spos_52_max as spositiontaking_max
+		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
+		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
+	
+	if @ErrType <>''
+		BEGIN
+			select @ErrCode_Cur = 11
+			Select @ErrMsg_Cur = 	@UserName + ': '+
+				case @Language 
+								when 'E' then 'Wrong position taking .<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			Select  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
+		
 	select 
 		@v153spositiontaking_51 = case when @v153mpositiontaking_51+@v153spositiontaking_51+@v153apositiontaking_51>@v153spositiontaking_51_max then @v153spositiontaking_51_max-@v153mpositiontaking_51-@v151apositiontaking_41 else @v153spositiontaking_51 end,
 		@v153spositiontaking_52 = case when @v153mpositiontaking_52+@v153spositiontaking_52+@v153apositiontaking_52>@v153spositiontaking_52_max then @v153spositiontaking_52_max-@v153mpositiontaking_52-@v151apositiontaking_42 else @v153spositiontaking_52 end
