@@ -16,6 +16,7 @@ Revisions:
     - 20120327@Dan: add roleid to output parameter
     - 20120731@Johnson: Expand length of param username
     - 20130121@Dan: change linked server DB06 to DBARC
+    - 20130719@Elodie: Correct link server DBACC instead of DBARC
 Param's Explanation:
 • @uplineID: user who is logging.
 • @userName: userName to check belong.
@@ -56,7 +57,7 @@ ELSE
 BEGIN
 	--Check valid downline by @Username
 	DECLARE @AccID INT
-	Exec @AccID = DBARC.bodb02.dbo.f_GetCustIDFromUsername @username
+	Exec @AccID = DBACC.bodb02.dbo.f_GetCustIDFromUsername @username
 	--Check valid downline by @Username
 	SELECT @custID = custID, @roleID = roleid
 	FROM CustInfo WITH (NOLOCK)
