@@ -132,6 +132,7 @@ Revisions:
 	- 20130219@Johnson: Add virtual horse racing setting (sporttype : 181, bettype : 1321)
 	- 20130328@Jamie: Add CustLoginInfo 
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
+	- 20130731@Elodie: Apply progressive bonus
 Param's Explanation:
 • @ErrCode:
     = 0: Insert successfully.
@@ -272,13 +273,13 @@ INSERT INTO [dbo].[custinfo](
 	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
 	,DisableHorseRacing,DisableOpenTote,Disable151_AU,Disable152_UK,Disable152_AU,Disable153_AU,DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo
 	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161, MaxPerMatch180, MaxPerMatch181, MaxPerMatch186, danger,danger2,danger3,Abnormal,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports, HideVirtualSports, DoubleCommLosing
-	,isAutoResetLiveCasino, MaxWinLiveCasino )
+	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus )
 VALUES(
 	@custid, @currency, @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31, @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
 	,@roleid, @srecommend, @mrecommend, @recommend, 0, 0, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
 	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181, @MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino)
+	,@isAutoResetLiveCasino, @MaxWinLiveCasino, 1)
 
 IF @@ERROR <> 0
 BEGIN 
