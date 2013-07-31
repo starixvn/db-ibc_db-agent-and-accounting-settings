@@ -183,7 +183,7 @@ if @roleid = 2
 BEGIN	
 	EXEC dbo.Acc_CustomerUpdAgentVS_MinMaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 	-- The minimum position taking value of agent was modified by agent's upline
-	EXEC DB03.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID	
+	EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID	
 END
 ELSE IF @roleid = 3
 BEGIN	
