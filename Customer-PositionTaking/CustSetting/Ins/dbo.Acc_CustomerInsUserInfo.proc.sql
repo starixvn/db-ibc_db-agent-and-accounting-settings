@@ -38,7 +38,7 @@
 	@Disable152_41 BIT = 0,-- @Disable152_UK -> @Disable152_41
 	@Disable152_51 BIT = 0,-- @Disable152_AU -> @Disable152_51
 	@Disable153_51 BIT = 0,-- @Disable153_AU -> @Disable153_51
-	@DisableOutright BIT = 0,
+	@DisableOutright BIT = 0,	
 	@matchlimit SMALLMONEY,
 	@virtualmultiplier SMALLMONEY,
 	@DisableFinancial BIT = 0,
@@ -88,6 +88,7 @@
 	@DoubleCommLosing BIT = 0,
 	@isAutoResetLiveCasino BIT = 0, 
 	@MaxWinLiveCasino SMALLMONEY = 0,
+	@DisableCasinoBonus BIT = 1,
 	
 	@credit MONEY,
 	@maxcredit MONEY = 0,
@@ -279,7 +280,7 @@ VALUES(
 	,@roleid, @srecommend, @mrecommend, @recommend, 0, 0, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
 	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181, @MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino, 1)
+	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus)
 
 IF @@ERROR <> 0
 BEGIN 
