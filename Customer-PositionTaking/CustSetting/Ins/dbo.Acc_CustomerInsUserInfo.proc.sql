@@ -88,7 +88,7 @@
 	@DoubleCommLosing BIT = 0,
 	@isAutoResetLiveCasino BIT = 0, 
 	@MaxWinLiveCasino SMALLMONEY = 0,
-	@DisableCasinoBonus BIT = 1,
+	@DisableCasinoBonus BIT = 0,
 	
 	@credit MONEY,
 	@maxcredit MONEY = 0,

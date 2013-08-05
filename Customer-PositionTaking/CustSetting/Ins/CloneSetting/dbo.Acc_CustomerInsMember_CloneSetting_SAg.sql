@@ -38,6 +38,7 @@ AS
 	- 20130220@Johnson: Add virtual horse racing setting (sporttype : 181 , bettype : 1231)
 	- 20130328@Jamie: Add CustLoginInfo 
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
+	- 20130731@Elodie: Apply progressive bonus
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -315,6 +316,7 @@ BEGIN
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
 			,DoubleCommLosing
+			,DisableCasinoBonus
 			)
      SELECT
 			@custid
@@ -378,6 +380,7 @@ BEGIN
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
 			,@doubleCommLosingUpline as doubleCommLosing
+			,1
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         

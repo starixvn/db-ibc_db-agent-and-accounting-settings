@@ -99,6 +99,7 @@ Revisions:
     - 20130329@Viet: remove hard code for 12betUS$KR (10393717)
 	- 20130502@Kiwi: Sportsbook - hard code MaxBet and MaxperMatch for Soccer only for Livebet365 licensee
 	- 20130605@Johnson: check P2P status with upline
+	- 20130731@Elodie: Apply progressive bonus
 					
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -628,6 +629,7 @@ declare @transcode bigint,
 	@Disable180_1201 bit , -- virtual soccer
 	@HideVirtualSports  BIT, -- virtual sports
 	@DoubleCommLosing BIT,-- double comm losing status
+	@DisableCasinoBonus BIT,
 	@DisableP2P BIT,-- P2P status
 	@DisableFUNP2P BIT,
 	
@@ -712,7 +714,8 @@ select
 	@HideVirtualSports	= HideVirtualSports,
 	@MaxWinLiveCasino = MaxWinLiveCasino,
 	@isAutoResetLiveCasino = isAutoResetLiveCasino,
-	@DoubleCommLosing = DoubleCommLosing
+	@DoubleCommLosing = DoubleCommLosing,
+	@DisableCasinoBonus = 0 -- 20130805@Elodie: hardcode
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -1679,7 +1682,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
 	@MaxWinLiveCasino = @MaxWinLiveCasino,
 	@DoubleCommLosing = 0, ----@DoubleCommLosing, 20130111@Lukas: hardcode
-			
+	@DisableCasinoBonus = @DisableCasinoBonus,			
 	@MaxPerMatch = @MaxPerMatch,
 	@MaxPerMatchv2 = @MaxPerMatchv2,
 	@MaxPerMatchv3 = @MaxPerMatchv3,
