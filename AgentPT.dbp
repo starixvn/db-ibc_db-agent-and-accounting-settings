@@ -300,6 +300,7 @@ Begin DataProject = "AgentPT"
          End
          Begin Folder = "Upd_New"
             Begin Folder = "BK"
+               Script = "dbo.Acc_CustomerSyncUpd.proc.sql"
                Script = "dbo.Acc_CustomerUpdDisableHR.proc.sql"
             End
             Script = "dbo.Acc_CustomerUpdAgent_All.proc.sql"
