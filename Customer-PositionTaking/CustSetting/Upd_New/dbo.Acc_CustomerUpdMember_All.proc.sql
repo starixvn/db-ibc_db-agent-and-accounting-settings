@@ -1,4 +1,5 @@
 ﻿
+
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
  @custid INT,--memberid  
    
@@ -766,6 +767,7 @@ BEGIN
   Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)  
  END  
 END  
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet]
