@@ -1,9 +1,9 @@
 ﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
-	@custid									int OUTPUT,
-	@creator								int,
-	@username								varchar(30),
-	@userpwd								varchar(40) = '123qwe',
-	@recommend								int, -- Agent ID
+	@custid		int OUTPUT,
+	@creator	int,
+	@username	varchar(30),
+	@userpwd	varchar(40) = '123qwe',
+	@recommend	int, -- Agent ID
 
 	@Disable151_31 bit = 0,-- @DisableHorseRacing -> @Disable151_31
 	@Disable151_41 bit = 0,-- @DisableOpenTote -> @Disable151_41
@@ -197,6 +197,8 @@ Original:
 
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+    - 20130731@Elodie: Apply progressive bonus
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Create agent successfully.
@@ -230,6 +232,7 @@ declare
 	@DisableOutright bit,
 	@DisableVirtualSport bit,
 	@UplineSyncLiveCasino bit,
+	@DisableCasinoBonus BIT,
 	
 	@v1mpositiontaking_1 smallmoney,
 	@v1mpositiontaking_2 smallmoney,
@@ -440,6 +443,7 @@ select
 	@Disable153_51 = case when Disable153_AU = 1 then 1 else @Disable153_51 end,
 	@DisableOutright = DisableOutright,
 	@DisableVirtualSport = ci.DisableVirtualSports,
+	@DisableCasinoBonus = 1,
 	@DisableNumber = case when DisableNumber = 1 then 1 else @DisableNumber end
 from CustInfo as ci with (NOLOCK) 
 where CustID = @recommend
@@ -828,6 +832,7 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@DisableOutright = @DisableOutright,
 	@Disable162_1101 = 0,
 	@DisableVirtualSports = @DisableVirtualSport,
+	@DisableCasinoBonus = @DisableCasinoBonus,
 	@matchlimit = @matchlimit,
 	@virtualmultiplier = 1,
 	@DisableFinancial = 0,
@@ -1491,4 +1496,3 @@ GO
 GRANT EXECUTE ON [Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
 GO
 GRANT VIEW DEFINITION ON [Acc_Dep_CustomerInsMember_Ag] TO [vnteam]
-GO
