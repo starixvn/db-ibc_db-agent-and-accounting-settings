@@ -787,6 +787,8 @@ Begin DataProject = "AgentPT"
    Begin Folder = "Splitting DB"
       Begin Folder = "IBC"
          Script = "Script1.sql"
+         Script = "Script2.sql"
+         Script = "Script3.sql"
       End
       Begin Folder = "Licensee"
          Script = "Script1.sql"
