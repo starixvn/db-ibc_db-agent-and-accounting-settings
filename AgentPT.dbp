@@ -784,6 +784,14 @@ Begin DataProject = "AgentPT"
    Script = "dbo.Age_CustomerSelCheckBelonging_ByUsername.proc.sql"
    Script = "dbo.Age_CustomerSelCheckBelonging_MultiCust.proc.sql"
    Script = "dbo.Age_CustomerSelCheckBelonging_Old.proc.sql"
+   Begin Folder = "Splitting DB"
+      Begin Folder = "IBC"
+         Script = "Script1.sql"
+      End
+      Begin Folder = "Licensee"
+         Script = "Script1.sql"
+      End
+   End
    Begin Folder = "TestPT"
       Script = "dbo.DBA_DelCustomer.proc.sql"
       Script = "dbo.DBA_GetCSPT.proc.sql"
