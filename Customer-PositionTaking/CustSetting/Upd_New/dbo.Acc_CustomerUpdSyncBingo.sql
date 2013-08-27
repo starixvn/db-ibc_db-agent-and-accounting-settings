@@ -21,6 +21,7 @@ Revisions:
 	- 20120730@Johnson: Correct action id from 1505 to 1122
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20130827@Johnson: Check enabled status on DBTXN instead of DBAGE
 Param's Explanation:
 • @custid: customer id.   
 • @SyncBingo: status
@@ -33,7 +34,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 Declare @RoleID tinyint

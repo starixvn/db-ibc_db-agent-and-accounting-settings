@@ -41,6 +41,7 @@ Original:
 	- 20130128@Scott : add more parameter  @ErrCode  
 	- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130709@Jamie: Apply Exec Rep 
+	- 20130827@Johnson: check enabled status on DBTXN instead of DBAGE
 	
 */
 SET NOCOUNT ON
@@ -51,7 +52,7 @@ set @startRun = getdate()
 
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
