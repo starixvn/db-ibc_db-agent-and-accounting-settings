@@ -1,4 +1,5 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
+﻿
+ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -690,7 +691,7 @@ select
 	@MaxWinLiveCasino = MaxWinLiveCasino,
 	@isAutoResetLiveCasino = isAutoResetLiveCasino,
 	@DoubleCommLosing = DoubleCommLosing,
-	@DisableCasinoBonus = 0 --20130805@Elodie hardcode
+	@DisableCasinoBonus = 1 --20130805@Elodie hardcode
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -2216,7 +2217,6 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-
 
 
 GO
