@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
 	@custid		int OUTPUT,
 	@creator	int,
 	@username	varchar(30),
@@ -197,6 +197,7 @@ Original:
 
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+    - 20130604@Daniel: Change default P2P param value to "Disable P2P"
     - 20130731@Elodie: Apply progressive bonus
     
 Param's Explanation:
@@ -869,8 +870,8 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 
 	@credit = 0,
 	@maxcredit = 0,
-	@DisableP2P = 0,
-	@DisableFUNP2P = 0,
+	@DisableP2P = 1,
+	@DisableFUNP2P = 1,
 	@IP = @IP,
 	@TransferOption_dec = 0,
 	@Language = @Language,
@@ -1492,7 +1493,13 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 	
+
+
 GO
-GRANT EXECUTE ON [Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [Acc_Dep_CustomerInsMember_Ag] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]

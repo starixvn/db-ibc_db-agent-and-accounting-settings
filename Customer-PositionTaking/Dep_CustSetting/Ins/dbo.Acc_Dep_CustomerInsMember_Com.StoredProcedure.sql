@@ -365,6 +365,7 @@ DB: DBTRANS.bodb02
 Original:
 Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+	- 20130604@Daniel: Change default P2P param value to "Disable P2P"
 	- 20130731@Elodie: Apply progressive bonus
 Param's Explanation:
 • @ErrCode:
@@ -751,8 +752,8 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@DisableBingo = 0,
 	@DisableNumber = @DisableNumber,
 	@DisableCasino = 0,
-	@DisableP2P = 0,
-	@DisableFUNP2P = 0,
+	@DisableP2P = 1,
+	@DisableFUNP2P = 1,
 	@ISAUTORESETP2P = 1,
 	@Disable162_1101 = 0,
 	@DisableVirtualSports = @DisableVirtualSports,
@@ -1447,8 +1448,6 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@ActionID = 2701,
 	@TrackingValue = @LogSPData,
 	@duration = @duration
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [bodbAdminNet] AS [dbo]
