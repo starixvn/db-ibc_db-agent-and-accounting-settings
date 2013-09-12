@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam]
 	
 	@recommend int,
 	@MinBetv1 money,
@@ -144,6 +144,7 @@ Original:
 
 Revisions:
    - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+   - 20130912@Don: Extend value range for Number Game PT from 0.9 to 1
 
 Param's Explanation:
 • @ErrCode:
@@ -354,15 +355,15 @@ if
 	or @v99apositiontaking_20  >0.9	
 	
 	
-	or @v161apositiontaking_81 >0.9
-	or @v161apositiontaking_83 >0.9
-	or @v161apositiontaking_86 >0.9
-	or @v161apositiontaking_88 >0.9
-	or @v161alivepositiontaking_87 >0.9
-	or @v161alivepositiontaking_85 >0.9
-	or @v161alivepositiontaking_86 >0.9
-	or @v161alivepositiontaking_89 >0.9
-	or @v161alivepositiontaking_90 >0.9
+	or @v161apositiontaking_81 >1
+	or @v161apositiontaking_83 >1
+	or @v161apositiontaking_86 >1
+	or @v161apositiontaking_88 >1
+	or @v161alivepositiontaking_87 >1
+	or @v161alivepositiontaking_85 >1
+	or @v161alivepositiontaking_86 >1
+	or @v161alivepositiontaking_89 >1
+	or @v161alivepositiontaking_90 >1
 	
 	
 BEGIN
