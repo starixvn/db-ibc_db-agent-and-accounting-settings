@@ -21,6 +21,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20130926@Kathy: Apply exec rep
 	
 Param's Explanation:
 • @custid: customer id.   
@@ -59,7 +60,7 @@ IF (@DisableNumber = 1 or (@DisableNumber = 0 and @DisableDownline = 0))
 BEGIN
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1,
 											@Language=@Language,
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -110,53 +111,28 @@ begin
 	return
 end
 --Check condition for update all downline
-if (@DisableNumber = 1 or (@DisableNumber = 0 and @DisableDownline = 0)) --Disable all downline or enable all downline
-begin
-	if @RoleID = 4 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) set DisableNumber = @DisableNumber where SRecommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
+IF (@DisableNumber = 1 or (@DisableNumber = 0 and @DisableDownline = 0)) --Disable all downline or enable all downline
+BEGIN TRY
+	--20130926@Kathy: Apply ExecRep 
+	EXEC [Acc_ExecRep_04]
+		@CustID		= @CustID,
+		@RoleID		= @RoleID,
+		@Action		= 'DisableNumberGame',
+		@DisableNumberGame = @DisableNumber     
+END TRY
+BEGIN CATCH
+	SELECT @ErrMsg = 	case @Language 
 							when 'E' then 'Update process is unsuccessful.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 102
-		return
-		end
-	END
-
-	if @RoleID = 3 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) set DisableNumber = @DisableNumber where MRecommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
-							when 'E' then 'Update process is unsuccessful.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 103
-		return
-		end
-	END
-
-	if @RoleID = 2 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) set DisableNumber = @DisableNumber where Recommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
-							when 'E' then 'Update process is unsuccessful.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 104
-		return
-		end
-	END
-End
+						end	
+	IF @RoleID = 4 
+		SELECT @ErrCode = 102
+	ELSE IF @RoleID = 3
+		SELECT @ErrCode = 103
+	ELSE IF @RoleID = 2
+		SELECT @ErrCode = 104
+	RETURN
+END CATCH
 
 declare @LogSPData varchar(8000)
 

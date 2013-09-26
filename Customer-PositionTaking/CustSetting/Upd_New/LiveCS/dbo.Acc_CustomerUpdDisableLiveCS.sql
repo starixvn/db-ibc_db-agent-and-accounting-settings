@@ -22,6 +22,7 @@ AS
 			- 20121206@Scott : Check Allowed downlines during peak hour at weekend
 			- 20130124@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20130924@Kathy: Apply Exec Rep 
 		Parameters Explanation:
 	*/ 
 SET NOCOUNT ON
@@ -61,7 +62,7 @@ SET NOCOUNT ON
 	BEGIN
 		EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1,
 											@Language=@Language,
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -90,7 +91,7 @@ SET NOCOUNT ON
 	
 	IF @Allow2Update = 0
 	BEGIN
-		SELECT @status=0,@ErrMsg = CASE @Language WHEN 'E' THEN ' Cannot enable Live Casino because the upline either has Live Casino disaled or does not have any settings.'
+		SELECT @status=0,@ErrMsg = CASE @Language WHEN 'E' THEN 'Cannot enable Live Casino because the upline either has Live Casino disabled or does not have any settings.'
 											ELSE [dbo].[f_Get_MsgNamebyMsgID](60023,@Language) END,
 						 @ErrCode = 102	
 		RETURN
@@ -107,20 +108,15 @@ BEGIN TRY
 	--Update Downline
 	IF @DisabledLiveCS = 1 OR @EnableDownlinesLiveCS = 1
 	BEGIN
-		IF @roleid = 4
-			UPDATE CustInfo WITH(ROWLOCK, UPDLOCK)
-			SET DisableLiveCasino = ISNULL(@DisabledLiveCS, DisableLiveCasino)
-			WHERE srecommend = @custid 
-		
-		IF @roleid = 3 
-			UPDATE CustInfo WITH(ROWLOCK, UPDLOCK)
-			SET DisableLiveCasino = ISNULL(@DisabledLiveCS, DisableLiveCasino)
-			WHERE mrecommend = @custid 
-		
-		IF @roleid =2
-			UPDATE CustInfo WITH(ROWLOCK, UPDLOCK) 
-			SET DisableLiveCasino = ISNULL(@DisabledLiveCS, DisableLiveCasino)
-			WHERE recommend = @custid 	
+		--20130924@Kathy: Apply ExecRep 
+		IF @RoleID BETWEEN 2 AND 4 
+		BEGIN
+			EXEC [Acc_ExecRep_04]
+				 @CustID		= @CustID,
+				 @RoleID		= @RoleID,
+				 @Action		= 'DisableLiveCasino',
+				 @DisableLiveCasino = @DisabledLiveCS
+		END
 	END
 	
 	SELECT @status = 1

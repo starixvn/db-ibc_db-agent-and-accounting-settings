@@ -20,6 +20,7 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
     - 20121206@Scott : Check Allowed downlines during peak hour at weekend
     - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	- 20130926@Kathy: Apply execRep
 Param's Explanation:
 • @custid: customer id.   
 • @Disable: status
@@ -81,7 +82,7 @@ IF (@Disable = 1 or (@Disable = 0 and @DisableDownlines = 0))
 BEGIN
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1,
 											@Language=@Language,
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -94,7 +95,6 @@ update CustInfo with (ROWLOCK, UPDLOCK) set DisableVirtualSports = @Disable
 where CustID = @CustID
 if (@@error <> 0)
 begin
-
 	Select @ErrMsg =
 					case @Language 
 						when 'E' then 'Update process is unsuccessful.'
@@ -104,58 +104,27 @@ begin
 end
 --Check condition for update all downline
 if (@Disable = 1 or (@Disable = 0 and @DisableDownlines = 0)) --Disable all downline or enable all downline
-begin
-	if @RoleID = 4 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) 
-		set DisableVirtualSports = @Disable 
-		where SRecommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
-							when 'E' then 'Update process is unsuccessful.'
+BEGIN TRY
+	--20130924@Kathy: Apply ExecRep 
+	EXEC [Acc_ExecRep_04]
+			@CustID		= @CustID,
+			@RoleID		= @RoleID,
+			@Action		= 'DisableVS',
+			@DisableVS = @Disable
+END TRY
+BEGIN CATCH
+	Select @ErrMsg = case @Language when 'E' then 'Update process is unsuccessful.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 102
-		return
-		end
-	END
+					 end
+	IF @RoleID = 4
+		SELECT 	@ErrCode = 102
+	ELSE IF @RoleID = 3
+		SELECT 	@ErrCode = 103	
+	ELSE IF @RoleID = 2
+		SELECT 	@ErrCode = 104
 
-	if @RoleID = 3 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) 
-		set DisableVirtualSports = @Disable 
-		where MRecommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
-							when 'E' then 'Update process is unsuccessful.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 103
-		return
-		end
-	END
-
-	if @RoleID = 2 
-	BEGIN
-		update CustInfo with (ROWLOCK, UPDLOCK) 
-		set DisableVirtualSports = @Disable 
-		where Recommend = @CustID
-		if (@@error <> 0)
-		begin
-			
-			Select @ErrMsg = 
-						case @Language 
-							when 'E' then 'Update process is unsuccessful.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						end	, @ErrCode = 104
-		return
-		end
-	END
-End
+	RETURN
+END CATCH
 
 declare @LogSPData varchar(2000)
 
@@ -199,6 +168,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	 ,
 		@duration = @duration
 END CATCH
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbAdminNet]

@@ -1,4 +1,4 @@
-ALTER PROCEDURE Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]
 	@custid		INT,
 	@v162discount_1101		DECIMAL(9,8),
 	@IP			VARCHAR(50)='',	
@@ -13,6 +13,7 @@ DB: DBTXN/bodb02
 Original:
 
 Revisions:	
+	20130926@Kathy: Apply Exec Rep
 
 Param's Explanation:
 	• @custid: super id.   
@@ -58,7 +59,7 @@ END
 -- Check Allowed downlines during peak hour at weekend 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
-											@isExecRep=0,
+											@isExecRep=1,
 											@Language='E',
 											@ErrMsg=@ErrMsg output,
 											@ErrCode=@ErrCode output
@@ -72,62 +73,19 @@ SELECT @db_v162discount_1101 = sdiscount
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
--- update commission for super
-UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-SET sdiscount = @v162discount_1101
-WHERE custid = @custid 
+BEGIN TRY
+	--20130924@Kathy: Apply ExecRep 
+	EXEC [Acc_ExecRep_04]
+				@CustID		= @CustID,
+				@RoleID		= @RoleID,
+				@Action		= 'UpdateLiveCasinoComm',
+				@UpdateLiveCasinoComm = @v162discount_1101
+END TRY
+BEGIN CATCH
+	SELECT @ErrMsg = 'Update process is unsuccessful!', @ErrCode = 102
+	RETURN
+END CATCH
 
-IF @@ERROR <> 0
-BEGIN
-		SELECT @ErrMsg = 'Update process is unsuccessful !'
-				, @ErrCode = 102
-		RETURN
-END
-
--- update commission for master
-UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-SET adiscount = @v162discount_1101
-WHERE custid IN (SELECT custid 
-				FROM custinfo WITH (NOLOCK)
-				WHERE srecommend = @custid and roleid=3) 
-
-IF @@ERROR <> 0
-BEGIN
-		SELECT @ErrMsg = 'Update process is unsuccessful !'
-				, @ErrCode = 103
-		RETURN
-END
-
--- update commission for agents
-UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-SET discount = @v162discount_1101
-WHERE custid IN (SELECT custid 
-				FROM custinfo WITH (NOLOCK)
-				WHERE srecommend = @custid and roleid=2) -- agent
-
-IF @@ERROR <> 0
-BEGIN
-		SELECT @ErrMsg = 'Update process is unsuccessful !'
-				, @ErrCode = 104
-		RETURN
-END
-
--- update commission for members
-UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-SET sdiscount = @v162discount_1101,
-    adiscount = @v162discount_1101,
-    discount = @v162discount_1101,
-    playerdiscount = @v162discount_1101
-WHERE custid IN (SELECT custid 
-				FROM custinfo WITH (NOLOCK)
-				WHERE srecommend = @custid and roleid=1) 
-
-IF @@ERROR <> 0
-BEGIN
-		SELECT @ErrMsg = 'Update process is unsuccessful !'
-				, @ErrCode = 105
-		RETURN
-END
 
 -- write log
 Declare @LogSPData varchar(8000),
@@ -185,7 +143,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH				
+END CATCH					
 
 GO
 GRANT VIEW DEFINITION ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [vnteam]
