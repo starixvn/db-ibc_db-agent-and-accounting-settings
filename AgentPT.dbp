@@ -281,6 +281,9 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerSelSuperLiveCS_Commission.sql"
                Script = "dbo.Acc_CustomerSelWinLimitLiveCS.sql"
             End
+            Begin Folder = "Opus Casino"
+               Script = "dbo.Acc_CustomerSelEditSuperOpusCS.sql"
+            End
             Begin Folder = "P2P"
                Script = "dbo.Acc_CustomerSelP2PAgent_All.proc.sql"
                Script = "dbo.Acc_CustomerSelP2PMaster_All.proc.sql"
@@ -449,6 +452,9 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels.sql"
                Script = "dbo.Acc_CustomerUpdSuperLiveCS_MinPositiontaking.sql"
                Script = "dbo.Acc_CustomerUpdSuperLiveCS_Positiontaking.sql"
+            End
+            Begin Folder = "Opus Casino"
+               Script = "dbo.Acc_CustomerUpdOpusCS_StakeLevel.sql"
             End
             Begin Folder = "P2P"
                Script = "dbo.Acc_CustomerUpdDisableP2P.sql"
