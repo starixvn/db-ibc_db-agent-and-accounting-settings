@@ -198,7 +198,9 @@ Original:
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
     - 20130604@Daniel: Change default P2P param value to "Disable P2P"
+    - 20130607@Daniel: Exclude created member from Balance checking
     - 20130731@Elodie: Apply progressive bonus
+	- 20130919@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
     
 Param's Explanation:
 • @ErrCode:
@@ -653,7 +655,7 @@ WHERE cs3.custid = @recommend
 Select @ErrCode = 0
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 declare @IsValid bit
-EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam 
+EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 	
 	@recommend				= @recommend,
 	@MinBetv1				= @MinBetv1,
@@ -1143,6 +1145,19 @@ BEGIN
 	RETURN
 END
 
+--Exclude created member from Balance checking
+INSERT INTO dbo.Task_Cust_CheckBalance_Exception(custid, remark) values(@custid, @username)
+if @@error <> 0
+BEGIN
+	--Error occur
+	SELECT @ErrMsg = case @Language 
+							when 'E' then 'Exclude customer from balance checking failed.'
+							else N'Exclude customer from balance checking failed.'
+						end,
+		@ErrCode = 211		
+	RETURN
+END
+
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
 
@@ -1312,15 +1327,15 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v99spt_9="'+ COALESCE(CAST(@v99spositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99spt_20="'+ COALESCE(CAST(@v99spositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
-'v161spt_81="'+ COALESCE(CAST(@v161spositiontaking_81 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161spt_83="'+ COALESCE(CAST(@v161spositiontaking_83 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161spt_86="'+ COALESCE(CAST(@v161spositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161spt_88="'+ COALESCE(CAST(@v161spositiontaking_88 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161slivept_85="'+ COALESCE(CAST(@v161slivepositiontaking_85 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161slivept_86="'+ COALESCE(CAST(@v161slivepositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161slivept_87="'+ COALESCE(CAST(@v161slivepositiontaking_87 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161slivept_89="'+ COALESCE(CAST(@v161slivepositiontaking_89 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161slivept_90="'+ COALESCE(CAST(@v161slivepositiontaking_90 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v161spt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_81,2),SPACE(1)) + '" ' +
+'v161spt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_83,2),SPACE(1)) + '" ' +
+'v161spt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_86,2),SPACE(1)) + '" ' +
+'v161spt_88="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_88,2),SPACE(1)) + '" ' +
+'v161slivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_85,2),SPACE(1)) + '" ' +
+'v161slivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_86,2),SPACE(1)) + '" ' +
+'v161slivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_87,2),SPACE(1)) + '" ' +
+'v161slivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_89,2),SPACE(1)) + '" ' +
+'v161slivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_90,2),SPACE(1)) + '" ' +
 
 'v151spt_31="'+ COALESCE(CAST(@v151spositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151spt_32="'+ COALESCE(CAST(@v151spositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1386,15 +1401,15 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v99mpt_9="'+ COALESCE(CAST(@v99mpositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_20="'+ COALESCE(CAST(@v99mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
-'v161mpt_81="'+ COALESCE(CAST(@v161mpositiontaking_81 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_83="'+ COALESCE(CAST(@v161mpositiontaking_83 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_86="'+ COALESCE(CAST(@v161mpositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_88="'+ COALESCE(CAST(@v161mpositiontaking_88 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_85="'+ COALESCE(CAST(@v161mlivepositiontaking_85 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_86="'+ COALESCE(CAST(@v161mlivepositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_87="'+ COALESCE(CAST(@v161mlivepositiontaking_87 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_89="'+ COALESCE(CAST(@v161mlivepositiontaking_89 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_90="'+ COALESCE(CAST(@v161mlivepositiontaking_90 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v161mpt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_81,2),SPACE(1)) + '" ' +
+'v161mpt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_83,2),SPACE(1)) + '" ' +
+'v161mpt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_86,2),SPACE(1)) + '" ' +
+'v161mpt_88="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_88,2),SPACE(1)) + '" ' +
+'v161mlivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_85,2),SPACE(1)) + '" ' +
+'v161mlivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_86,2),SPACE(1)) + '" ' +
+'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
+'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
+'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
 
 'v151mpt_31="'+ COALESCE(CAST(@v151mpositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151mpt_32="'+ COALESCE(CAST(@v151mpositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1460,15 +1475,15 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v99apt_9="'+ COALESCE(CAST(@v99apositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99apt_20="'+ COALESCE(CAST(@v99apositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
-'v161apt_81="'+ COALESCE(CAST(@v161apositiontaking_81 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_83="'+ COALESCE(CAST(@v161apositiontaking_83 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_86="'+ COALESCE(CAST(@v161apositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_88="'+ COALESCE(CAST(@v161apositiontaking_88 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_85="'+ COALESCE(CAST(@v161alivepositiontaking_85 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_86="'+ COALESCE(CAST(@v161alivepositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_87="'+ COALESCE(CAST(@v161alivepositiontaking_87 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_89="'+ COALESCE(CAST(@v161alivepositiontaking_89 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_90="'+ COALESCE(CAST(@v161alivepositiontaking_90 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v161apt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_81,2),SPACE(1)) + '" ' +
+'v161apt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_83,2),SPACE(1)) + '" ' +
+'v161apt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_86,2),SPACE(1)) + '" ' +
+'v161apt_88="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_88,2),SPACE(1)) + '" ' +
+'v161alivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_85,2),SPACE(1)) + '" ' +
+'v161alivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_86,2),SPACE(1)) + '" ' +
+'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
+'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
+'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
 
 'v151apt_31="'+ COALESCE(CAST(@v151apositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151apt_32="'+ COALESCE(CAST(@v151apositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1492,14 +1507,13 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@ActionID = 2704,
 	@TrackingValue = @LogSPData,
 	@duration = @duration
-	
 
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbExtAccNet]
+GO 

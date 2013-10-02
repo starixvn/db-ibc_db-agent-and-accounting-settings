@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -101,6 +100,10 @@ Revisions:
 	- 20130730@Viet: check valid agentID.
 	- 20130805@Lukas: set betlimit default for 12bet on virtual soccer
 	- 20130731@Elodie: Apply progressive bonus
+	- 20130827@Kiwi: Hard code MaxBet/MaxperMatch for SB:
+					+ Existing members under Agent 12betUS$KR (10393717)
+					+ Currencies EURO, GBP, USD
+	- 20130830@Jery: Hard code MaxBet/MaxperMatch for SB of Agent 12betUS$KR05 (10842822)
 	
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -803,16 +806,16 @@ IF @site = '12Bet'
 BEGIN  
 	IF @Currency = 6 -- EURO  
 	BEGIN 
-		SELECT @vMaxbet = 350, @vMaxpermatch = 1150 
+		SELECT @vMaxbet = 200, @vMaxpermatch = 500 
 	END
 	IF @Currency= 12 -- GBP  	
 	BEGIN
-		SELECT @vMaxbet = 250, @vMaxpermatch = 750 
+		SELECT @vMaxbet = 200, @vMaxpermatch = 500 
 	END
-	IF (@Currency = 3 and  @AgentID <> 10393717) -- USD
+	IF (@Currency = 3) -- USD
 	BEGIN
-		SELECT @vMaxbet = 350, @vMaxpermatch = 1150 
-		--IF (@Currency = 3 and  @AgentID = 10393717) SELECT @vMaxbet = 2000, @vMaxpermatch = 6000, @maxbetv161 = 750, @maxperballv161 = 1500, @maxpermatchv161 = 8000 -- USD
+		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 1000, @vMaxpermatch = 3000 -- 12BETUS$KR
+		ELSE SELECT @vMaxbet = 200, @vMaxpermatch = 500
 	END		
 	IF @Currency = 9 -- AUD   
 	BEGIN 
@@ -2218,18 +2221,18 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
-
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [ITVivi] AS [dbo]
-GO
-GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GO 
+ GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [ITVivi]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet]
+GO 
