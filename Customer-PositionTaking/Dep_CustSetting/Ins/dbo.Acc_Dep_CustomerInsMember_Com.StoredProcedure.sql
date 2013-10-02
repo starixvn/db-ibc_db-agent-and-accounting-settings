@@ -389,7 +389,7 @@ DECLARE @transcode BIGINT
 DECLARE @isvalid BIT
 SELECT @ErrCode = 0
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam 
+EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@custid						= @custid OUTPUT,
 			@currency					= @currency,
 			
@@ -1450,7 +1450,9 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [vnteam] AS [dbo]
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [bodbAdminNet]
+GO 

@@ -198,6 +198,7 @@ Original:
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
     - 20130604@Daniel: Change default P2P param value to "Disable P2P"
+    - 20130607@Daniel: Exclude created member from Balance checking
     - 20130731@Elodie: Apply progressive bonus
 	- 20130919@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
     
@@ -654,7 +655,7 @@ WHERE cs3.custid = @recommend
 Select @ErrCode = 0
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 declare @IsValid bit
-EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam 
+EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 	
 	@recommend				= @recommend,
 	@MinBetv1				= @MinBetv1,
@@ -1144,6 +1145,19 @@ BEGIN
 	RETURN
 END
 
+--Exclude created member from Balance checking
+INSERT INTO dbo.Task_Cust_CheckBalance_Exception(custid, remark) values(@custid, @username)
+if @@error <> 0
+BEGIN
+	--Error occur
+	SELECT @ErrMsg = case @Language 
+							when 'E' then 'Exclude customer from balance checking failed.'
+							else N'Exclude customer from balance checking failed.'
+						end,
+		@ErrCode = 211		
+	RETURN
+END
+
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
 
@@ -1493,14 +1507,13 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@ActionID = 2704,
 	@TrackingValue = @LogSPData,
 	@duration = @duration
-	
 
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbExtAccNet]
+GO 
