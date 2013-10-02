@@ -341,6 +341,7 @@ DB: DBTrans.bodb02
 
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+	- 20130918@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
 	
 Param's Explanation:
 • @ErrCode:
@@ -2546,15 +2547,15 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Ag><info custid="'+ coalesce(cas
 'v99mpt_9="'+ COALESCE(CAST(@v99mpositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_20="'+ COALESCE(CAST(@v99mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
-'v161mpt_81="'+ COALESCE(CAST(@v161mpositiontaking_81 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_83="'+ COALESCE(CAST(@v161mpositiontaking_83 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_86="'+ COALESCE(CAST(@v161mpositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mpt_88="'+ COALESCE(CAST(@v161mpositiontaking_88 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_85="'+ COALESCE(CAST(@v161mlivepositiontaking_85 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_86="'+ COALESCE(CAST(@v161mlivepositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_87="'+ COALESCE(CAST(@v161mlivepositiontaking_87 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_89="'+ COALESCE(CAST(@v161mlivepositiontaking_89 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161mlivept_90="'+ COALESCE(CAST(@v161mlivepositiontaking_90 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v161mpt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_81,2),SPACE(1)) + '" ' +
+'v161mpt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_83,2),SPACE(1)) + '" ' +
+'v161mpt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_86,2),SPACE(1)) + '" ' +
+'v161mpt_88="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_88,2),SPACE(1)) + '" ' +
+'v161mlivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_85,2),SPACE(1)) + '" ' +
+'v161mlivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_86,2),SPACE(1)) + '" ' +
+'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
+'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
+'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
 'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + 
 '" />' +
 
@@ -2608,15 +2609,15 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Ag><info custid="'+ coalesce(cas
 'v99apt_9="'+ COALESCE(CAST(@v99apositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99apt_20="'+ COALESCE(CAST(@v99apositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
-'v161apt_81="'+ COALESCE(CAST(@v161apositiontaking_81 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_83="'+ COALESCE(CAST(@v161apositiontaking_83 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_86="'+ COALESCE(CAST(@v161apositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161apt_88="'+ COALESCE(CAST(@v161apositiontaking_88 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_85="'+ COALESCE(CAST(@v161alivepositiontaking_85 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_86="'+ COALESCE(CAST(@v161alivepositiontaking_86 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_87="'+ COALESCE(CAST(@v161alivepositiontaking_87 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_89="'+ COALESCE(CAST(@v161alivepositiontaking_89 AS VARCHAR(50)),SPACE(1)) + '" ' +
-'v161alivept_90="'+ COALESCE(CAST(@v161alivepositiontaking_90 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v161apt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_81,2),SPACE(1)) + '" ' +
+'v161apt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_83,2),SPACE(1)) + '" ' +
+'v161apt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_86,2),SPACE(1)) + '" ' +
+'v161apt_88="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_88,2),SPACE(1)) + '" ' +
+'v161alivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_85,2),SPACE(1)) + '" ' +
+'v161alivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_86,2),SPACE(1)) + '" ' +
+'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
+'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
+'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
 
 '<m v151mpt_31="'+ coalesce(cast(@v151mpositiontaking_31 as varchar(50)),space(1)) + '" ' +

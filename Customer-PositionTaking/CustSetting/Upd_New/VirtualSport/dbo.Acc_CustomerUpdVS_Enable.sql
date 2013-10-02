@@ -17,6 +17,7 @@ AS
       
   Revisions:       
 	- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure  
+	- 20130926@Kathy: Apply exec rep
   Parameters Explanation:  
   
  */   
@@ -49,7 +50,7 @@ DECLARE @startRun DATETIME,
  BEGIN  
   EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid=@custid,  
            @roleid=@roleid,  
-           @isExecRep=0,  
+           @isExecRep=1,  
            @Language=@Language,  
            @ErrMsg=@ErrMsg output,  
            @ErrCode=@ErrCode output  
@@ -75,70 +76,32 @@ DECLARE @startRun DATETIME,
    
  IF @DisableVS = 0  
  BEGIN  
-  UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
 	SET DisableVirtualSports = @DisableVS,  
 		HideVirtualSports = CASE WHEN HideVirtualSports = 1 THEN 0 ELSE HideVirtualSports END
-  WHERE custid = @custid  
+	WHERE custid = @custid  
     
-  IF (@@ERROR <> 0)  
-  BEGIN     
-   SELECT	@ErrMsg = 'Update process is unsuccessful.',  
-			@ErrCode = 201  
-   RETURN  
-  END 
+	IF (@@ERROR <> 0)  
+	BEGIN     
+		SELECT	@ErrMsg = 'Update process is unsuccessful.',  
+				@ErrCode = 201  
+		RETURN  
+	END 
  
---check conditions update downline  
- IF @DisableVS = 0 and @DisableDownlinesVS = 0  
- BEGIN 
-	IF @roleid = 4
-	BEGIN
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET DisableVirtualSports = @DisableVS,  
-				HideVirtualSports = CASE WHEN HideVirtualSports = 1 THEN 0 ELSE HideVirtualSports END 
-		WHERE srecommend = @custid 
-		
-		IF (@@ERROR <> 0)  
-		BEGIN     
-			SELECT @ErrMsg = 'Update process is unsuccessful.',  
-			@ErrCode = 201  
-			
-			RETURN  
-		END
-	END 
-	
-	IF @roleid = 3
-	BEGIN
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET DisableVirtualSports = @DisableVS,  
-				HideVirtualSports = CASE WHEN HideVirtualSports = 1 THEN 0 ELSE HideVirtualSports END
-		WHERE mrecommend = @custid 
-		
-		IF (@@ERROR <> 0)  
-		BEGIN     
-			SELECT @ErrMsg = 'Update process is unsuccessful.',  
-			@ErrCode = 201  
-			
-			RETURN  
-		END
-	END 
-	IF @roleid = 2
-	BEGIN
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET DisableVirtualSports = @DisableVS,  
-				HideVirtualSports = CASE WHEN HideVirtualSports = 1 THEN 0 ELSE HideVirtualSports END 
-		WHERE recommend = @custid 
-		
-		IF (@@ERROR <> 0)  
-		BEGIN     
-			SELECT @ErrMsg = 'Update process is unsuccessful.',  
-			@ErrCode = 201  
-			
-			RETURN  
-		END
-	END 
-      
- END  
-   
+	--check conditions update downline  
+	IF @DisableVS = 0 and @DisableDownlinesVS = 0  
+	BEGIN TRY
+		--20130926@Kathy: Apply ExecRep 
+		EXEC [Acc_ExecRep_04]
+			@CustID		= @CustID,
+			@RoleID		= @RoleID,
+			@Action		= 'EnableVS',
+			@EnableVS = @DisableVS      
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = 'Update process is unsuccessful.', @ErrCode = 201  
+		RETURN  
+	END CATCH   
  END  
   
     
@@ -156,8 +119,8 @@ DECLARE @startRun DATETIME,
   
  SET @endRun = GETDATE()  
  SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)  
-  
-BEGIN TRY  
+
+BEGIN TRY
 	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
 	@UserID = @UserID,  
 	@CustID = @CustID,  
@@ -182,6 +145,7 @@ BEGIN CATCH
 	@TrackingValue = @LogSPData  ,  
 	@duration = @duration
 END CATCH		   
+   
 
 
 GO
