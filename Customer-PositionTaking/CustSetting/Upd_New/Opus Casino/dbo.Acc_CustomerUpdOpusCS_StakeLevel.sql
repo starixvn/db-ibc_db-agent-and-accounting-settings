@@ -18,8 +18,7 @@
 	*/
 BEGIN
 	SET NOCOUNT ON
-	---------------------------
-	-- ***Check Downline Belonging***
+	
 	declare @roleid tinyint
 			,@CustGameTypeID int
 			,@OldStakeLevelList nvarchar(100)	
@@ -32,8 +31,10 @@ BEGIN
 			,@DownlineStakeLevelList nvarchar(100)
 			,@DownlineStakeLevelList_new nvarchar(100)
 			,@UplineStakeLevelList nvarchar(100)
-			,@UplineLowestStakeLevel nvarchar(100)
+			,@UplineLowestStakeLevelList nvarchar(100)
 			
+	---------------------------
+	-- ***Check Downline Belonging***		
 	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,		
@@ -71,7 +72,7 @@ BEGIN
 			--Get stake level is unchecked
 			IF OBJECT_ID('tempdb..#temp_DelStakeLevelList') IS NOT NULL DROP TABLE #temp_DelStakeLevelList
 			IF EXISTS ( SELECT ISNULL(val,'')
-						FROM dbo.strSplit(@OldStakeLeveList,',')
+						FROM dbo.strSplit(@OldStakeLevelList,',')
 						WHERE val NOT IN (SELECT val FROM strSplit(@StakeLevelList,','))	
 						)
 			BEGIN
@@ -90,24 +91,24 @@ BEGIN
 			
 			IF @roleid = 4
 			BEGIN
-				INSERT INTO #CustGameTypeDownlines (CustID, sreommend, mrecommend, recommend, roleid ,StakeLevelList ,CustGameTypeID)
-				SELECT ci.custid, sreommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
+				INSERT INTO #CustGameTypeDownlines (CustID, srecommend, mrecommend, recommend, roleid ,StakeLevelList ,CustGameTypeID)
+				SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
 				FROM custinfo ci WITH(NOLOCK)
 					INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
 				WHERE srecommend = @custid AND roleid < 4		
 			END
 			IF @roleid = 3
 			BEGIN
-				INSERT INTO #CustGameTypeDownlines (CustID ,sreommend, mrecommend, recommend, roleid ,StakeLevelList ,CustGameTypeID)
-				SELECT ci.custid, sreommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
+				INSERT INTO #CustGameTypeDownlines (CustID ,srecommend, mrecommend, recommend, roleid ,StakeLevelList ,CustGameTypeID)
+				SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
 				FROM custinfo ci WITH(NOLOCK)
 					INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
 				WHERE mrecommend = @custid AND roleid < 3
 			END
 			IF @roleid = 2
 			BEGIN
-				INSERT INTO #CustGameTypeDownlines (CustID, sreommend, mrecommend, recommend,roleid ,StakeLevelList ,CustGameTypeID)
-				SELECT ci.custid, sreommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
+				INSERT INTO #CustGameTypeDownlines (CustID, srecommend, mrecommend, recommend,roleid ,StakeLevelList ,CustGameTypeID)
+				SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList, CustGameTypeID
 				FROM custinfo ci WITH(NOLOCK)
 					INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
 				WHERE recommend = @custid AND roleid = 1
@@ -161,13 +162,30 @@ BEGIN
 							
 							SET @DownlineStakeLevelList_new = @UplineLowestStakeLevelList
 						END
-						
-						
 					END
 				END
+				--check if old stake level list is empty and update stake level list then copy all stake level list to master if update super and 
+				--copy lowest stake level to agent/member if update master/agent
+				IF RTRIM(ISNULL(@OldStakeLevelList,'')) = '' AND RTRIM(ISNULL(@StakeLevelList,'')) <> ''
+				BEGIN
+					IF @DownLineRoleID = 1 or @DownLineRoleID = 2 
+						SET @DownlineStakeLevelList_new = @LowestStakeLevelList
+					ELSE IF @DownLineRoleID = 3
+						SET @DownlineStakeLevelList_new = @StakeLevelList
+				END
+				
+				UPDATE CustGameType WITH(ROWLOCK)
+				SET StakeLevelList = @DownlineStakeLevelList_new
+				WHERE CustGameTypeID = @CustGameTypeID
+				
+				IF (@ErrMsg <> '') RAISERROR(@ErrMsg,16,1)
+				
+				DELETE #CustGameTypeDownlines WHERE CustID = @DownLineID
 			END
 		END
 	END
+	IF OBJECT_ID('tempdb..#temp_DelStakeLevelList') IS NOT NULL DROP TABLE #temp_DelStakeLevelList
+	IF OBJECT_ID('tempdb..#CustGameTypeDownlines') IS NOT NULL DROP TABLE #CustGameTypeDownlines
 END
 
 
@@ -175,5 +193,3 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdOpusCS_StakeLevel] TO [bodbAdminNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdOpusCS_StakeLevel] TO [bodbDownlineNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdOpusCS_StakeLevel] TO [bodbDownlineNetView]
