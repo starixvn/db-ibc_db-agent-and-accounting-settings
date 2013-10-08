@@ -282,6 +282,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerSelWinLimitLiveCS.sql"
             End
             Begin Folder = "Opus Casino"
+               Script = "dbo.Acc_CustomerSelEditAgentOpusCS.sql"
                Script = "dbo.Acc_CustomerSelEditMasterOpusCS.sql"
                Script = "dbo.Acc_CustomerSelEditSuperOpusCS.sql"
             End
