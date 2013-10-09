@@ -465,6 +465,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerUpdSuperOpusCS_Commission.sql"
                Script = "dbo.Acc_CustomerUpdSuperOpusCS_MinPositiontaking.sql"
                Script = "dbo.Acc_CustomerUpdSuperOpusCS_Positiontaking.sql"
+               Script = "dbo.Acc_CustOverrideUpdOpusCS.sql"
                Script = "dbo.ACC_UpdateMaxTransferOpusCS.sql"
             End
             Begin Folder = "P2P"
