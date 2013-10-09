@@ -42,7 +42,9 @@ BEGIN
 			,@v163spt_1401 SMALLMONEY
 			,@v163apt_1401 SMALLMONEY			
 			
-	SELECT @recommend = recommend FROM custinfo WITH(NOLOCK) WHERE custid = @custid
+	SELECT @srecommend = srecommend	,@mrecommend = mrecommend ,@recommend = recommend
+	FROM custinfo WITH(NOLOCK) 
+	WHERE custid = @custid
 	
 	INSERT INTO @GameType (GameTypeID,StakeLevelID,UplineStakeLevelList)
 	SELECT cg.GameTypeID, cg.StakeLevelList, upline.StakeLevelList
@@ -100,7 +102,7 @@ BEGIN
 	--s4
 	SELECT	@v163spt_1401 = spositiontaking
 	FROM custsettingGame WITH(NOLOCK)
-	WHERE custid = @recommend AND sporttype = 163 AND bettype = 1401
+	WHERE custid = @srecommend AND sporttype = 163 AND bettype = 1401
 	
 	--max_a1=iif(im=1,a2,iif(i1|i3,m3-m1,min(m3-m1,s4-m1-s1)
 	SELECT @v163apt_1401 = CASE WHEN (acs.isautompositiontaking = 1 OR cs.isautompositiontaking = 1) THEN acs.apositiontaking 
@@ -138,6 +140,7 @@ BEGIN
 		INNER JOIN custsettinggame cg WITH(NOLOCK) ON cg.custid = ci.custid AND cg.sporttype = 163 AND cg.bettype = 1401
 	WHERE ci.custid = @custid
 	
+	SELECT * FROM @CustGameType
 END 
 
 
