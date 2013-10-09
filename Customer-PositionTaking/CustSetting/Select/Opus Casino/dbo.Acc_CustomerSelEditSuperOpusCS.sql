@@ -17,7 +17,8 @@ BEGIN
 	DECLARE @CustGameType TABLE (
 		GameTypeID INT,
 		IBCBetType INT,
-		StakeLevelName VARCHAR(100)
+		StakeLevelName VARCHAR(100),
+		isChecked BIT
 	)		
 	
 	DECLARE @GameType TABLE(
@@ -31,7 +32,10 @@ BEGIN
 			,@StakeLevelList VARCHAR(100)
 			,@GameTypeID INT
 			,@IBCBetTypeID INT
-			
+			,@currency INT
+
+	SELECT @currency = currency  FROM CustInfo WITH(NOLOCK) WHERE custid = @custid
+				
 	INSERT INTO @GameType (GameTypeID,StakeLevelList)
 	SELECT GameTypeID, StakeLevelList
 	FROM CustGameType WITH(NOLOCK)
@@ -39,9 +43,9 @@ BEGIN
 	
 	WHILE (1=1)
 	BEGIN
-		UPDATE TOP 1 @GameType
+		UPDATE TOP (1) @GameType
 		SET isUpdated = 1
-			,@GameTypeID = GameTypeID,
+			,@GameTypeID = GameTypeID
 			,@StakeLevelList = StakeLevelList
 		WHERE isUpdated = 0
 		
@@ -52,24 +56,30 @@ BEGIN
 		FROM GameType WITH(NOLOCK)
 		WHERE GameTypeID = @GameTypeID
 		
-		INSERT INTO @CustGameType (GameTypeID, IBCBetType, StakeLevelName)
-		SELECT @GameTypeID, @IBCBetTypeID, B.MinLabel + '-' + B.MaxLabel 
+		INSERT INTO @CustGameType (GameTypeID, IBCBetType, StakeLevelName, isChecked)
+		SELECT @GameTypeID, @IBCBetTypeID, B.MinLabel + '-' + B.MaxLabel, CASE WHEN A.StakeLevelID IS NULL THEN 0 ELSE 1 END 
 		FROM (
-				SELECT	StakeLevelID,MinLabel,MaxLabel,MinStake 
+				SELECT	StakeLevelID
 				FROM	dbo.StakeLevel WITH (NOLOCK) 
 				WHERE	 CHARINDEX('"' + convert(varchar(20),StakeLevelID) + '"','"' + replace(@StakeLevelList,',','","') + '"',0) > 0  
-		) B
-		ORDER BY B.MinStake		
+		) A
+		RIGHT JOIN 
+			(
+				SELECT	StakeLevelID,MinLabel,MaxLabel,MinStake 
+				FROM	dbo.StakeLevel WITH (NOLOCK)
+				WHERE exchangeid = @currency AND GameTypeID = @GameTypeID
+			) B ON A.StakeLevelID = B.StakeLevelID 
+		ORDER BY B.MinStake
 	END
 	
 	SELECT @min_spositiontaking = minpositiontaking
 	FROM CustOverrideGame WITH(NOLOCK)
 	WHERE custid = @custid AND sporttype = 163 AND bettype = 1401
 	
-	SELECT @DisableOpusCasinoDownlines = ISNULL(MAX(DisableOpusCasino),0)
+	SELECT top 1 @DisableOpusCasinoDownlines = isnull(DisableOpusCasino,0)
 	FROM custinfo WITH(NOLOCK)
-	WHERE srecommend = @custid AND roleid < 4
-	
+	WHERE srecommend = @custid AND roleid < 4 AND DisableOpusCasino = 1
+		
 	SELECT c.username
 		,c.username2
 		,c.firstname
@@ -81,6 +91,7 @@ BEGIN
 		,CASE WHEN ci.DisableOpusCasino = 1 THEN 1 ELSE @DisableOpusCasinoDownlines END as DisableOpusCasinoDownlines
 		,ci.isAutoResetOpusCasino
 		,ci.MaxTransferOpusCasino
+		,isnull(e.MaxTransferOpusCasino,0) as MaxTransferOpusCasino_max
 		,@min_spositiontaking as v163_spositiontaking_1401_min
 		,cg.spositiontaking as v163_spositiontaking_1401
 		,0.9 as v163_spositiontaking_1401_max
@@ -89,6 +100,7 @@ BEGIN
 	FROM custinfo ci with(NOLOCK)
 		INNER JOIN customer c WITH(NOLOCK) ON ci.custid = c.custid
 		INNER JOIN custsettinggame cg WITH(NOLOCK) ON cg.custid = ci.custid AND cg.sporttype = 163 AND cg.bettype = 1401
+		INNER JOIN exchange e WITH(NOLOCK) ON ci.currency = e.currency 
 	WHERE ci.custid = @custid
 	
 	SELECT * FROM @CustGameType	
