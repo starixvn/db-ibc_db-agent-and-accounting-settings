@@ -105,6 +105,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto positiontaking negative
+	- 20131010@Johnson: fix wrong call table custoverride3rd instead of custoverride
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -191,7 +192,7 @@ BEGIN --@UpdatePositiontakingv151
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10))+ '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 31 as bettype, 151 as sporttype, @v151spositiontaking_31 as spositiontaking, @v151mpositiontaking_31 as mpositiontaking, @isauto_v151spositiontaking_31 as isauto_spositiontaking, @auto_v151spositiontaking_31 as auto_spositiontaking WHERE @UpdatePositiontakingv151_31 = 1
 			union all	select 32 as bettype, 151 as sporttype, @v151spositiontaking_32 as spositiontaking, @v151mpositiontaking_32 as mpositiontaking, @isauto_v151spositiontaking_32 as isauto_spositiontaking, @auto_v151spositiontaking_32 as auto_spositiontaking WHERE @UpdatePositiontakingv151_31 = 1
@@ -222,7 +223,7 @@ BEGIN --@UpdatePositiontakingv151
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 31 as bettype, 151 as sporttype, @v151spositiontaking_31 as spositiontaking, @v151mpositiontaking_31 as mpositiontaking, @isauto_v151spositiontaking_31 as isauto_spositiontaking WHERE @UpdatePositiontakingv151_31 = 1
 			union all	select 32 as bettype, 151 as sporttype, @v151spositiontaking_32 as spositiontaking, @v151mpositiontaking_32 as mpositiontaking, @isauto_v151spositiontaking_32 as isauto_spositiontaking WHERE @UpdatePositiontakingv151_31 = 1
@@ -474,7 +475,7 @@ BEGIN --@UpdatePositiontakingv152
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10))+ '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 41 as bettype, 152 as sporttype, @v152spositiontaking_41 as spositiontaking, @v152mpositiontaking_41 as mpositiontaking, @isauto_v152spositiontaking_41 as isauto_spositiontaking, @auto_v152spositiontaking_41 as auto_spositiontaking WHERE @UpdatePositiontakingv152_41 = 1
 			union all	select 42 as bettype, 152 as sporttype, @v152spositiontaking_42 as spositiontaking, @v152mpositiontaking_42 as mpositiontaking, @isauto_v152spositiontaking_42 as isauto_spositiontaking, @auto_v152spositiontaking_42 as auto_spositiontaking WHERE @UpdatePositiontakingv152_41 = 1
@@ -503,7 +504,7 @@ BEGIN --@UpdatePositiontakingv152
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 41 as bettype, 152 as sporttype, @v152spositiontaking_41 as spositiontaking, @v152mpositiontaking_41 as mpositiontaking, @isauto_v152spositiontaking_41 as isauto_spositiontaking WHERE @UpdatePositiontakingv152_41 = 1
 			union all	select 42 as bettype, 152 as sporttype, @v152spositiontaking_42 as spositiontaking, @v152mpositiontaking_42 as mpositiontaking, @isauto_v152spositiontaking_42 as isauto_spositiontaking WHERE @UpdatePositiontakingv152_41 = 1
@@ -732,7 +733,7 @@ BEGIN --@UpdatePositiontakingv153
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10))+ '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 51 as bettype, 153 as sporttype, @v153spositiontaking_51 as spositiontaking, @v153mpositiontaking_51 as mpositiontaking, @isauto_v153spositiontaking_51 as isauto_spositiontaking, @auto_v153spositiontaking_51 as auto_spositiontaking WHERE @UpdatePositiontakingv153_51 = 1
 			union all	select 52 as bettype, 153 as sporttype, @v153spositiontaking_52 as spositiontaking, @v153mpositiontaking_52 as mpositiontaking, @isauto_v153spositiontaking_52 as isauto_spositiontaking, @auto_v153spositiontaking_52 as auto_spositiontaking WHERE @UpdatePositiontakingv153_51 = 1
@@ -759,7 +760,7 @@ BEGIN --@UpdatePositiontakingv153
 	select @ErrType = @ErrType + s.SportName + ' - ' + 
 	case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
 	+ '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
-	from custoverride as co with (NOLOCK) inner join
+	from custoverride3rd as co with (NOLOCK) inner join
 		(
 			 			select 51 as bettype, 153 as sporttype, @v153spositiontaking_51 as spositiontaking, @v153mpositiontaking_51 as mpositiontaking, @isauto_v153spositiontaking_51 as isauto_spositiontaking WHERE @UpdatePositiontakingv153_51 = 1
 			union all	select 52 as bettype, 153 as sporttype, @v153spositiontaking_52 as spositiontaking, @v153mpositiontaking_52 as mpositiontaking, @isauto_v153spositiontaking_52 as isauto_spositiontaking WHERE @UpdatePositiontakingv153_51 = 1

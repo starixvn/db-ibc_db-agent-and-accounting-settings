@@ -34,6 +34,11 @@ BEGIN
 			,@srecommend INT
 			,@mrecommend INT
 			,@recommend INT
+			,@UplineMaxTransferOpusCasino MONEY
+			,@v163spositiontaking_1401 SMALLMONEY--s4
+			,@v163spositiontaking_1401_min SMALLMONEY--n4
+			,@v163mpositiontaking_1401 SMALLMONEY--m3
+			,@isauto_v163spositiontaking_1401 BIT--i3
 	
 	SELECT @srecommend = srecommend	,@mrecommend = mrecommend ,@recommend = recommend
 	FROM custinfo WITH(NOLOCK) 
@@ -76,7 +81,58 @@ BEGIN
 		) B ON A.StakeLevelID = B.StakeLevelID
 		ORDER BY A.MinStake	
 	END		
+	
+	SELECT @UplineMaxTransferOpusCasino = MaxTransferOpusCasino
+	FROM CustInfo WITH(NOLOCK)
+	WHERE custid = @recommend
+	
+	--s4
+	SELECT @v163spositiontaking_1401 = spositiontaking
+	FROM CustSettingGame WITH(NOLOCK)
+	WHERE custid = @srecommend AND sporttype = 163 AND bettype = 1401
+	
+	--n4
+	SELECT @v163spositiontaking_1401_min = minpositiontaking
+	FROM CustOverrideGame WITH(NOLOCK)	
+	WHERE custid = @srecommend AND sporttype = 163 AND bettype = 1401
+	
+	--i3,m3
+	SELECT @v163mpositiontaking_1401 = mpositiontaking, @isauto_v163spositiontaking_1401 = isautopositiontaking
+	FROM CustSettingGame WITH(NOLOCK)
+	WHERE custid = @mrecommend AND sporttype = 163 AND bettype = 1401 
+	
+	SELECT
+		c.username
+		,c.username2
+		,c.firstname
+		,c.lastname
+		,c.phone 
+		,c.mobilephone
+		,c.fax		
+		,ci.isAutoResetOpusCasino
+		,ci.MaxTransferOpusCasino
+		,isnull(@UplineMaxTransferOpusCasino,0) as MaxTransferOpusCasino_max
 		
+		,cg.apositiontaking as v163apositiontaking_1401--a1
+		,cg.mpositiontaking as v163mpositiontaking_1401--m1
+		,cg.spositiontaking as v163spositiontaking_1401--s1
+		,cg.autopositiontaking as auto_v163spositiontaking_1401_mem--i1
+		,cg.isautopositiontaking as isauto_v163spositiontaking_1401_mem--u1
+		
+		,ISNULL(@isauto_v163spositiontaking_1401,0) as isauto_v163spositiontaking_1401--i3
+		,ISNULL(@v163spositiontaking_1401,0) as auto_v163spositiontaking_1401_max--u1_max
+		
+		--s1_max= s4- m3
+		,ISNULL(@v163spositiontaking_1401,0) - ISNULL(@v163mpositiontaking_1401,0) as v163spositiontaking_1401_max--s1_max
+		-- s1_min 
+		,CASE WHEN ISNULL(@v163spositiontaking_1401_min,0) - (mpositiontaking + apositiontaking) > 0 THEN ISNULL(@v163spositiontaking_1401_min,0) - (mpositiontaking + apositiontaking) ELSE 0 END v163spositiontaking_1401_min	
+	FROM custinfo ci with(NOLOCK)
+		INNER JOIN customer c WITH(NOLOCK) ON ci.custid = c.custid
+		INNER JOIN custsettinggame cg WITH(NOLOCK) ON cg.custid = ci.custid AND cg.sporttype = 163 AND cg.bettype = 1401
+	WHERE ci.custid = @custid	
+	
+	SELECT * FROM @CustGameType
+	
 END 
 
 GO

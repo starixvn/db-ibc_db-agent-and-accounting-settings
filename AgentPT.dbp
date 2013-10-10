@@ -286,6 +286,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerSelEditMasterOpusCS.sql"
                Script = "dbo.Acc_CustomerSelEditMemberOpusCS.sql"
                Script = "dbo.Acc_CustomerSelEditSuperOpusCS.sql"
+               Script = "dbo.Acc_CustomerSelMEditCustomerOpusCS.sql"
                Script = "dbo.Acc_CustomerSelSEditCustomerOpusCS.sql"
             End
             Begin Folder = "P2P"
