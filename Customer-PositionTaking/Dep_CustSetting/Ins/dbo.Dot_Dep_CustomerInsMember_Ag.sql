@@ -104,6 +104,7 @@ Revisions:
 					+ Existing members under Agent 12betUS$KR (10393717)
 					+ Currencies EURO, GBP, USD
 	- 20130830@Jery: Hard code MaxBet/MaxperMatch for SB of Agent 12betUS$KR05 (10842822)
+	- 20131009@Viet: Sportsbook - hardcode maxbet and maxpermatch for sportbooks.
 	
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -814,7 +815,7 @@ BEGIN
 	END
 	IF (@Currency = 3) -- USD
 	BEGIN
-		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 1000, @vMaxpermatch = 3000 -- 12BETUS$KR
+		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 1000, @vMaxpermatch = 3000 -- 12BETUS$KR, 12betUS$KR05
 		ELSE SELECT @vMaxbet = 200, @vMaxpermatch = 500
 	END		
 	IF @Currency = 9 -- AUD   
@@ -867,6 +868,11 @@ BEGIN
 	IF @Currency = 2 SELECT @vMaxbet = 10000, @vMaxpermatch = 50000 -- RM
 END
 
+-- Viet@20131009: Sportsbook - hardcode maxbet and maxpermatch for sportbooks.
+IF @site = 'i668bet'
+BEGIN
+	IF @Currency = 3 SELECT @vMaxbet = 3000, @vMaxpermatch = 6000 -- US$
+END
 
 /*Thien@2009117: comment out, to let MS88 handle by themselves.
 IF @site = 'mansion88'
@@ -2220,6 +2226,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
 
 GO 
  GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
