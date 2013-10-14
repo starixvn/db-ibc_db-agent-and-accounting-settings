@@ -37,9 +37,9 @@
 	@MaxBetv99MP money,
 	@MaxPerMatchv99MP money,	
 	
-	@MinBetv154 money,
-	@MaxBetv154 money,
-	@MaxPerMatchv154 money,
+	@MinBetv154 MONEY = 0,
+	@MaxBetv154 MONEY = 0,
+	@MaxPerMatchv154 MONEY = 0,
 	
 	@MinBetv161 money,
 	@MaxBetv161 money,
