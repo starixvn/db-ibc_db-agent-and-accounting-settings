@@ -67,6 +67,9 @@
 	--v153
 	@MaxPerMatchv153_51 MONEY =0,-- @MaxPerMatchv153_AU -> @MaxPerMatchv153_51
 	
+	--HRFixedOdds
+	@MaxPerMatchv154 MONEY =0,
+	
 	@MaxPerMatchv99 MONEY,
 	@MaxPerMatchv99MP MONEY,	
 	@MaxPerMatchv161 MONEY,	
@@ -89,6 +92,7 @@
 	@isAutoResetLiveCasino BIT = 0, 
 	@MaxWinLiveCasino SMALLMONEY = 0,
 	@DisableCasinoBonus BIT = 0,
+	@DisableHRFixedOdds BIT = 0,
 	
 	@credit MONEY,
 	@maxcredit MONEY = 0,
@@ -105,7 +109,7 @@ AS
 Created: 20090121@Phuc
 Task :	Insert general customer's Informatioin.
 		Table related: customer, custinfo
-DB: DBTRANS.bodb02
+DB: DBTXN/bodb02
 Original:
 
 Revisions:
@@ -134,6 +138,7 @@ Revisions:
 	- 20130328@Jamie: Add CustLoginInfo 
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Insert successfully.
@@ -274,13 +279,13 @@ INSERT INTO [dbo].[custinfo](
 	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
 	,DisableHorseRacing,DisableOpenTote,Disable151_AU,Disable152_UK,Disable152_AU,Disable153_AU,DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo
 	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161, MaxPerMatch180, MaxPerMatch181,MaxPerMatch186, danger,danger2,danger3,Abnormal,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports, HideVirtualSports, DoubleCommLosing
-	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus )
+	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus, MaxPerMatch154, DisableHRFixedOdds )
 VALUES(
 	@custid, @currency, @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31, @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
 	,@roleid, @srecommend, @mrecommend, @recommend, 0, 0, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
 	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181,@MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus)
+	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds)
 
 IF @@ERROR <> 0
 BEGIN 
@@ -315,6 +320,6 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW definition ON [dbo].[Acc_CustomerInsUserInfo] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsUserInfo] TO [vnteam] AS [dbo]
