@@ -47,12 +47,17 @@
 	@MaxBetv99MP money ,
 	@MaxPerMatchv99MP money,
 	
+	--HR Fixed Odds
+	@MinBetv154 MONEY,
+	@MaxBetv154 MONEY,
+	@MaxPerMatchv154 MONEY,
+	
 	@MinBetv161 money ,
 	@MaxBetv161 money ,
 	@MaxPerMatchv161 money,
 
 	@MaxPerBallv161 money = 0,
-	
+		
 	@credit money,
 	@Language varchar(2),
 	
@@ -107,6 +112,9 @@
 	@v99spositiontaking_3 smallmoney,
 	@v99spositiontaking_9 smallmoney,
 	@v99spositiontaking_20 smallmoney,
+	
+	--HR Fixed Odds
+	@v154spositiontaking_20 SMALLMONEY = 0,
 	
 	@v161spositiontaking_81 smallmoney,
 	@v161spositiontaking_83 smallmoney,
@@ -173,6 +181,9 @@
 	@v99mpositiontaking_20 smallmoney = 0.7,
 	@v99mpositiontaking_9 smallmoney = 0.7,
 	
+	--HR Fixed Odds
+	@v154mpositiontaking_20 SMALLMONEY = 0,
+	
 	@v161mpositiontaking_81 smallmoney = 0.7,
 	@v161mpositiontaking_83 smallmoney = 0.7,
 	--@v161mpositiontaking_85 smallmoney = 0.7,
@@ -237,6 +248,9 @@
 	@v99apositiontaking_9 smallmoney = 0.7,
 	@v99apositiontaking_20 smallmoney = 0.7,
 	
+	--HR Fixed Odds
+	@v154apositiontaking_20 SMALLMONEY = 0,
+	
 	@v161apositiontaking_81 smallmoney = 0.7,
 	@v161apositiontaking_83 smallmoney = 0.7,
 	--@v161apositiontaking_85 smallmoney = 0.7,
@@ -256,6 +270,7 @@
 	@discountcs decimal(9,8),
 	@discount1x2 decimal(9,8)=0,
 	@discountnumber decimal(9,8)=0,
+	@discountHRFixedOdds DECIMAL(9,8)=0,
 
 	@IP varchar(15)='',
 	@UserID int = 0,	
@@ -286,6 +301,7 @@ Revisions:
 						- add more bettype for nubmer game Warrior,  Next combo and Number Group
 	- 20110709@Johnson: Change to use new server BD053 instead DB052
 	- 20130218@Dan: Change linked server DB053 to DBAGE
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -423,7 +439,8 @@ Declare @groupa_old decimal(9,8),
     @groupd_old decimal(9,8),
     @discountcs_old decimal(9,8),
    	@discount1x2_old decimal(9,8),
-   	@discountnumber_old decimal(9,8)
+   	@discountnumber_old decimal(9,8),
+   	@discountHRFixedOdds_old decimal(9,8)
 
 
 select @groupa_old = groupa, @groupb_old = groupb, @groupc_old = groupc, @groupd_old = groupd
@@ -436,13 +453,17 @@ from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype =
 select @discount1x2_old = sdiscount
 from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 5
 
+--v154
+select @discountHRFixedOdds_old = sdiscount
+from custsetting (nolock) where custid = @custid and sporttype = 154 and bettype = 20
+
 --v161
 select @discountnumber_old = sdiscount
 from custsetting3rd (nolock) where custid = @custid and sporttype = 161 and bettype = 81
 
 
 if (@groupa_old <> @groupa) or (@groupb_old <> @groupb) or (@groupc_old <> @groupc) or (@groupd_old <> @groupd)
-    or (@discountcs_old <> @discountcs) or (@discount1x2_old <> @discount1x2) or (@discountnumber_old <> @discountnumber)
+    or (@discountcs_old <> @discountcs) or (@discount1x2_old <> @discount1x2) or (@discountHRFixedOdds_old <> @discountHRFixedOdds) or (@discountnumber_old <> @discountnumber)
     set @updatecomm_old = 1
 else 
 	set @updatecomm_old = 0
@@ -458,6 +479,7 @@ begin
 		@discountcs = @discountcs,
 		@discount1x2 = @discount1x2,
 		@discountnumber = @discountnumber,
+		@discountHRFixedOdds =@discountHRFixedOdds_old,
 		
 		@updatecomm_old = @updatecomm_old,
 		@UserID = @UserID,
@@ -511,6 +533,9 @@ EXEC dbo.Acc_CustomerUpdSuper_MinMaxBet
 	@MinBetv99MP = @MinBetv99MP,
 	@MaxBetv99MP = @MaxBetv99MP,
 	@MaxPerMatchv99MP = @MaxPerMatchv99MP,
+	@MinBetv154 = @MinBetv154,
+	@MaxBetv154 = @MaxBetv154,
+	@MaxPerMatchv154 = @MaxPerMatchv154,	
 	@MinBetv161 = @MinBetv161,
 	@MaxBetv161 = @MaxBetv161,
 	@MaxPerMatchv161 = @MaxPerMatchv161,
@@ -583,6 +608,9 @@ Declare
 	@v99spositiontaking_9_old smallmoney,
 	@v99spositiontaking_20_old smallmoney,
 	
+	--HR Fixed Odds
+	@v154spositiontaking_20_old smallmoney,
+	
 	@v161spositiontaking_81_old smallmoney,
 	@v161spositiontaking_83_old smallmoney,
 	--@v161spositiontaking_85_old smallmoney,
@@ -641,6 +669,9 @@ Declare
 	@v99mpositiontaking_9_old smallmoney,
 	@v99mpositiontaking_20_old smallmoney,
 	
+	--HR Fixed Odds
+	@v154mpositiontaking_20_old smallmoney,
+	
 	@v161mpositiontaking_81_old smallmoney,
 	@v161mpositiontaking_83_old smallmoney,
 	--@v161mpositiontaking_85_old smallmoney,
@@ -651,7 +682,6 @@ Declare
 	@v161mlivepositiontaking_87_old smallmoney,
 	@v161mlivepositiontaking_89_old smallmoney,
 	@v161mlivepositiontaking_90_old smallmoney,
-	
 	
 	
 	@apositiontaking_1_old smallmoney,
@@ -698,6 +728,9 @@ Declare
 	@v99apositiontaking_3_old smallmoney,
 	@v99apositiontaking_9_old smallmoney,
 	@v99apositiontaking_20_old smallmoney,
+	
+	--HR Fixed Odds
+	@v154apositiontaking_20_old smallmoney,
 	
 	@v161apositiontaking_81_old smallmoney,
 	@v161apositiontaking_83_old smallmoney,
@@ -760,6 +793,8 @@ select @v99spositiontaking_3_old = spositiontaking, @v99mpositiontaking_3_old = 
 select @v99spositiontaking_9_old = spositiontaking, @v99mpositiontaking_9_old = mpositiontaking, @v99apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=99
 select @v99spositiontaking_20_old = spositiontaking, @v99mpositiontaking_20_old = mpositiontaking, @v99apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=99
 
+--HR Fixed Odds
+select @v154spositiontaking_20_old = spositiontaking, @v154mpositiontaking_20_old = mpositiontaking, @v154apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=154
 
 --v161
 select @v161spositiontaking_81_old = spositiontaking, @v161mpositiontaking_81_old = mpositiontaking, @v161apositiontaking_81_old = apositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=81 and sporttype=161
@@ -816,6 +851,9 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v99spositiontaking_3 <> @v99spositiontaking_3_old or
 	@v99spositiontaking_9 <> @v99spositiontaking_9_old or
 	@v99spositiontaking_20 <> @v99spositiontaking_20_old or
+	
+	--HR Fixed Odds
+	@v154spositiontaking_20 <> @v154spositiontaking_20_old or
 	
 	@v161spositiontaking_81 <> @v161spositiontaking_81_old or
 	@v161spositiontaking_83 <> @v161spositiontaking_83_old or
@@ -875,6 +913,9 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v99mpositiontaking_9 <> @v99mpositiontaking_9_old or
 	@v99mpositiontaking_20 <> @v99mpositiontaking_20_old or
 	
+	--HR Fixed Odds
+	@v154mpositiontaking_20 <> @v154mpositiontaking_20_old or
+	
 	@v161mpositiontaking_81 <> @v161mpositiontaking_81_old or
 	@v161mpositiontaking_83 <> @v161mpositiontaking_83_old or
 	--@v161mpositiontaking_85 <> @v161mpositiontaking_85_old or
@@ -931,6 +972,9 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v99apositiontaking_3 <> @v99apositiontaking_3_old or
 	@v99apositiontaking_9 <> @v99apositiontaking_9_old or
 	@v99apositiontaking_20 <> @v99apositiontaking_20_old or
+	
+	--HR Fixed Odds
+	@v154apositiontaking_20 <> @v154apositiontaking_20_old or
 	
 	@v161apositiontaking_81 <> @v161apositiontaking_81_old or
 	@v161apositiontaking_83 <> @v161apositiontaking_83_old or
@@ -993,6 +1037,9 @@ BEGIN
 		@v99spositiontaking_9 = @v99spositiontaking_9,
 		@v99spositiontaking_20 = @v99spositiontaking_20,
 		
+		--HR Fixed Odds
+		@v154spositiontaking_20 = @v154spositiontaking_20,
+		
 		@v161spositiontaking_81 = @v161spositiontaking_81,
 		@v161spositiontaking_83 = @v161spositiontaking_83,
 		--@v161spositiontaking_85 = @v161spositiontaking_85,
@@ -1049,6 +1096,8 @@ BEGIN
 		@v99mpositiontaking_3 = @v99mpositiontaking_3,
 		@v99mpositiontaking_9 = @v99mpositiontaking_9,
 		@v99mpositiontaking_20 = @v99mpositiontaking_20,
+		--HR Fixed Odds
+		@v154mpositiontaking_20 = @v154mpositiontaking_20,
 		
 		@v161mpositiontaking_81 = @v161mpositiontaking_81,
 		@v161mpositiontaking_83 = @v161mpositiontaking_83,
@@ -1105,6 +1154,8 @@ BEGIN
 		@v99apositiontaking_3 = @v99apositiontaking_3,
 		@v99apositiontaking_9 = @v99apositiontaking_9,
 		@v99apositiontaking_20 = @v99apositiontaking_20,
+		--HR Fixed Odds
+		@v154apositiontaking_20 = @v154apositiontaking_20,
 		
 		@v161apositiontaking_81 = @v161apositiontaking_81,
 		@v161apositiontaking_83 = @v161apositiontaking_83,
@@ -1134,12 +1185,9 @@ BEGIN
 	Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 END
 
-
-
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_All] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_All] TO [vnteam] AS [dbo]

@@ -68,7 +68,7 @@
 	@MaxPerMatchv153_51 MONEY =0,-- @MaxPerMatchv153_AU -> @MaxPerMatchv153_51
 	
 	--HRFixedOdds
-	@MaxPerMatchv154 MONEY =0,
+	@MaxPerMatchv154 MONEY = 0,
 	
 	@MaxPerMatchv99 MONEY,
 	@MaxPerMatchv99MP MONEY,	
