@@ -149,19 +149,20 @@ declare @ErrAcc varchar(4000), @ErrType varchar(4000),
 Select @UserName = username, @srecommend = srecommend
 from customer with (NOLOCK)
 where CustID = @CustID
+   
+EXEC Acc_CustomerSelMinMax @custid,
+	@MinBet = @old_MinBet output, @MaxBet = @old_MaxBet output, @MaxPerMatch =@old_MaxPerMatch output,
+	@MinBetv2 = @old_MinBetv2 output, @MaxBetv2 =@old_MaxBetv2 output, @MaxPerMatchv2 =@old_MaxPerMatchv2 output,
+	@MinBetv3 = @old_MinBetv3 output, @MaxBetv3 =@old_MaxBetv3 output, @MaxPerMatchv3 =@old_MaxPerMatchv3 output,
+	@MinBetv5 = @old_MinBetv5 output, @MaxBetv5 =@old_MaxBetv5 output, @MaxPerMatchv5 =@old_MaxPerMatchv5 output,
+	@MinBetv8 = @old_MinBetv8 output, @MaxBetv8 =@old_MaxBetv8 output, @MaxPerMatchv8 =@old_MaxPerMatchv8 output,
+	@MinBetv10 = @old_MinBetv10 output, @MaxBetv10 =@old_MaxBetv10 output, @MaxPerMatchv10 =@old_MaxPerMatchv10 output,
+	@MinBetv11 = @old_MinBetv11 output, @MaxBetv11 =@old_MaxBetv11 output, @MaxPerMatchv11 =@old_MaxPerMatchv11 output,
+	@MinBetv99 = @old_MinBetv99 output, @MaxBetv99 =@old_MaxBetv99 output, @MaxPerMatchv99 =@old_MaxPerMatchv99 output,
+	@MinBetv99MP = @old_MinBetv99MP output, @MaxBetv99MP =@old_MaxBetv99MP output, @MaxPerMatchv99MP =@old_MaxPerMatchv99MP output,
+	@MinBetv154 = @old_MinBetv154 output, @MaxBetv154 = @old_MinBetv154 output, @MaxPerMatchv154 =@old_MinBetv154 output,    
+	@MinBetv161 = @old_MinBetv161 output, @MaxBetv161 =@old_MaxBetv161 output, @MaxPerMatchv161 =@old_MaxPerMatchv161 output, @MaxPerBallv161 =@old_MaxPerBallv161 output
 
-EXEC Acc_CustomerSelMinMax @custid,  
-   @old_MinBet output, @old_MaxBet output, @old_MaxPerMatch output,  
-   @old_MinBetv2 output, @old_MaxBetv2 output, @old_MaxPerMatchv2 output,  
-   @old_MinBetv3 output, @old_MaxBetv3 output, @old_MaxPerMatchv3 output,  
-   @old_MinBetv5 output, @old_MaxBetv5 output, @old_MaxPerMatchv5 output,  
-   @old_MinBetv8 output, @old_MaxBetv8 output, @old_MaxPerMatchv8 output,  
-   @old_MinBetv10 output, @old_MaxBetv10 output, @old_MaxPerMatchv10 output,  
-   @old_MinBetv11 output, @old_MaxBetv11 output, @old_MaxPerMatchv11 output,  
-   @old_MinBetv99 output, @old_MaxBetv99 output, @old_MaxPerMatchv99 output,  
-   @old_MinBetv99MP output, @old_MaxBetv99MP output, @old_MaxPerMatchv99MP output,
-   @old_MinBetv154 output, @old_MaxBetv154 output, @old_MaxPerMatchv154 output,    
-   @old_MinBetv161 output, @old_MaxBetv161 output, @old_MaxPerMatchv161 output, @old_MaxPerBallv161 output  
    
 IF 	@Old_MinBet = @MinBet AND @Old_MaxBet = @MaxBet AND	@Old_MaxPerMatch = @MaxPerMatch AND
 	@Old_MinBetv2 = @MinBetv2 AND @Old_MaxBetv2 = @MaxBetv2 AND @Old_MaxPerMatchv2 = @MaxPerMatchv2 AND
@@ -1159,6 +1160,7 @@ EXEC dbo.Acc_CustomerUpdMaxPerMatch
 	@maxpermatchv11 = @maxpermatchv11,
 	@maxpermatchv99 = @maxpermatchv99,
 	@maxpermatchv99mp = @maxpermatchv99mp,
+	@maxpermatchv154 = @maxpermatchv154,
 	@maxpermatchv161 = @maxpermatchv161,
 	@UpdateMultiple = @UpdateMultiple,
 	@UpdateMinMaxBet = @UpdateMinMaxBet,
@@ -1451,6 +1453,7 @@ BEGIN CATCH
 		@duration = @duration		
 END CATCH
 ---------------------------------------------------------
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_MinMaxBet] TO [bodbAdminNet] AS [dbo]

@@ -9,7 +9,7 @@
 	@MinBetv11 money output, @MaxBetv11 money output, @MaxPerMatchv11 money output,
 	@MinBetv99 money output, @MaxBetv99 money output, @MaxPerMatchv99 money output,
 	@MinBetv99MP money output, @MaxBetv99MP money output, @MaxPerMatchv99MP money output,
-	@MinBetv154 money output, @MaxBetv154 money output, @MaxPerMatchv154 money output,
+	@MinBetv154 money = 0 output, @MaxBetv154 money = 0 output, @MaxPerMatchv154 money = 0 output,
 	@MinBetv161 money output, @MaxBetv161 money output, @MaxPerMatchv161 money output, @MaxPerBallv161 money output
 AS
 /*
@@ -81,11 +81,11 @@ Select
 from custsetting WITH (NOLOCK)
 where custid = @CustID and bettype = 9 and sporttype=99
 
-Select 
-	@MinBetv154 = isnull(MinBet,0), 
-	@MaxBetv154 = isnull(MaxBet,0)
-from custsetting WITH (NOLOCK)
-where custid = @CustID and bettype = 20 and sporttype=154
+--Select 
+--	@MinBetv154 = isnull(MinBet,0), 
+--	@MaxBetv154 = isnull(MaxBet,0)
+--from custsetting WITH (NOLOCK)
+--where custid = @CustID and bettype = 20 and sporttype=154
 
 Select 
 	@MinBetv161 = isnull(MinBet,0), 
@@ -105,11 +105,12 @@ Select
 	@MaxPerMatchv11 = MaxPerMatch11, 
 	@MaxPerMatchv99 = MaxPerMatch99,
 	@MaxPerMatchv99MP = MaxPerMatch99MP,
-	@MaxPerMatchv154 = MaxPerMatch154,
+	--@MaxPerMatchv154 = MaxPerMatch154,
 	@MaxPerMatchv161 = MaxPerMatch161,
 	@MaxPerBallv161 = MaxPerBall161
 from custinfo WITH (NOLOCK) 
 where custid = @CustID
+
 
 
 GO
