@@ -15,7 +15,7 @@ AS
 /*
 Created: 20110427@Simon
 Task : Select customer minbet, maxbet, maxpermatch. 
-DB: DBAGE/bodb02
+DB: DBTXN/bodb02
 Original:
 
 Revisions:
