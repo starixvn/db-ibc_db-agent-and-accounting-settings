@@ -7,6 +7,7 @@
 	@groupd DECIMAL(9,8),
 	@discountcs DECIMAL(9,8),	
 	@discount1x2 DECIMAL(9,8)=0,
+	@discountHRFixedOdds DECIMAL(9,8)=0,
 	@discountnumber DECIMAL(9,8)=0,
 	@updatecomm_old BIT =1,
 	@UserID INT = 0,	
@@ -36,6 +37,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -59,11 +61,13 @@ declare @Old_groupa DECIMAL(9,8),
 	@Old_groupd DECIMAL(9,8),
 	@Old_discountcs DECIMAL(9,8),	
 	@Old_discount1x2 DECIMAL(9,8),
+	@Old_discountHRFixedOdds DECIMAL(9,8),
 	@Old_discountnumber DECIMAL(9,8)
 
 IF 
 	@discountcs<0 OR @discountcs>0.2
 		OR @discount1x2<0 OR @discount1x2>0.2
+		OR @discountHRFixedOdds<0 OR @discountHRFixedOdds>0.2
 		OR @discountnumber<0 OR @discountnumber>0.2
 		OR @groupa<0 OR @groupa>0.2
 		OR @groupb<0 OR @groupb>0.2
@@ -90,7 +94,9 @@ BEGIN
 	
 	SELECT @Old_discountcs = adiscount FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 4
 	SELECT @Old_discount1x2 = adiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
+	SELECT @Old_discountHRFixedOdds = adiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 154 AND bettype = 20
 	SELECT @Old_discountnumber = adiscount FROM custsetting3rd AS cs3 WITH (NOLOCK) WHERE custid = @custid AND sporttype = 161 AND bettype = 81
+	
 	---------------------------------------------------
 	--Update @Super: g4, s4
 	UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
@@ -99,7 +105,7 @@ BEGIN
 		groupb = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupb ELSE groupb END,
 		groupc = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupc ELSE groupc END,
 		groupd = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupd ELSE groupd END,
-		sdiscount = CASE WHEN bettype IN (4,6,9,10,20,21,22) THEN @discountcs WHEN bettype = 5 THEN @discount1x2 ELSE sdiscount END
+		sdiscount = CASE WHEN bettype IN (4,6,9,10,20,21,22) and sporttype <> 154 THEN @discountcs WHEN bettype = 5 THEN @discount1x2 WHEN bettype = 20 and sporttype = 154 THEN @discountHRFixedOdds ELSE sdiscount END
 	WHERE custid = @custid 
 	
 	SELECT @err1 = @@ERROR
@@ -202,7 +208,7 @@ BEGIN
 	WHERE c.srecommend = @custid 
 		AND c.recommend <> 52466
 		AND c.roleid = 1 
-		AND bettype IN(4,6,9,10,20,21,22) 
+		AND bettype IN(4,6,9,10,20,21,22) and sporttype <> 154
 	IF (@@ERROR <> 0)
 	BEGIN
 		SELECT @ErrMsg = CASE @Language 
@@ -222,6 +228,25 @@ BEGIN
 		AND c.recommend <> 52466
 		AND c.roleid = 1 
 		AND bettype = 5
+	IF (@@ERROR <> 0)
+	BEGIN
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Update process is unsuccessful !'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+						END, @ErrCode = 105	
+		RETURN
+	END
+	
+	---------------------------------------------------
+	--Update s4 to member level --HRFixedOdds
+	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
+	SET 	
+		sdiscount =  @discountHRFixedOdds
+	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
+	WHERE c.srecommend = @custid
+		AND c.recommend <> 52466
+		AND c.roleid = 1 
+		AND bettype = 20  and sporttype = 154
 	IF (@@ERROR <> 0)
 	BEGIN
 		SELECT @ErrMsg = CASE @Language 
@@ -260,7 +285,7 @@ BEGIN
 	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
 	WHERE ci.srecommend = @custid 
 		AND ci.roleid = 3 
-		AND bettype IN(4,6,9,10,20,21,22) 
+		AND bettype IN(4,6,9,10,20,21,22) and sporttype <> 154
 		AND adiscount>@discountcs 
 	IF (@@ERROR <> 0)
 	BEGIN
@@ -291,7 +316,27 @@ BEGIN
 						END, @ErrCode = 106	
 		RETURN
 	END
-	
+
+	---------------------------------------------------
+	--Update m3=s4 if m3>s4  --HR Fixed Odds
+	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
+	SET 	
+		adiscount = @discountHRFixedOdds
+	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
+	WHERE ci.srecommend = @custid 
+		AND ci.roleid = 3 
+		AND bettype = 20 and sporttype = 154
+		AND adiscount>@discountHRFixedOdds 
+	IF (@@ERROR <> 0)
+	BEGIN
+		
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Update process is unsuccessful !'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+						END, @ErrCode = 106	
+		RETURN
+	END
+		
 	---------------------------------------------------
 	--Update m3=s4 if m3>s4  --number game
 	UPDATE custsetting3rd WITH (ROWLOCK, UPDLOCK) 
@@ -322,7 +367,7 @@ BEGIN
 	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
 	WHERE ci.srecommend = @custid 
 		AND ci.roleid = 2  
-		AND bettype IN(4,6,9,10,20,21,22)
+		AND bettype IN(4,6,9,10,20,21,22) and sporttype <> 154
 		AND discount>@discountcs
 	IF (@@ERROR <> 0)
 	BEGIN
@@ -354,6 +399,26 @@ BEGIN
 		RETURN
 	END
 
+	---------------------------------------------------
+	--Update a2=s4 if a2>s4  --HR Fixed Odds
+	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
+	SET 	
+		discount = @discountHRFixedOdds
+	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
+	WHERE ci.srecommend = @custid 
+		AND ci.roleid = 2  
+		AND bettype = 20 and sporttype = 154
+		AND discount>@discountHRFixedOdds
+	IF (@@ERROR <> 0)
+	BEGIN
+		
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Update process is unsuccessful !'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+						END, @ErrCode = 107	
+		RETURN
+	END
+	
 	---------------------------------------------------
 	--Update a2=s4 if a2>s4  --number game
 	
@@ -507,6 +572,7 @@ Select @LogSPData = '<Acc_CustomerUpdSuper_Commission custid="'+ coalesce(cast(@
 'groupd="'+ coalesce(cast(@groupd as varchar(50)),space(1)) + '" ' +
 'discountcs="'+ coalesce(cast(@discountcs as varchar(50)),space(1)) + '" ' +
 'discount1x2="'+ coalesce(cast(@discount1x2 as varchar(50)),space(1)) + '" ' +
+'discountHRFixedOdds="'+ coalesce(cast(@discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'discountnumber="'+ coalesce(cast(@discountnumber as varchar(50)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -521,6 +587,7 @@ Select @TrackingValue2 = '<Acc_CustomerUpdSuper_Commission custid="'+ coalesce(c
 'groupd="'+ coalesce(cast(@Old_groupd as varchar(50)),space(1)) + '" ' +
 'discountcs="'+ coalesce(cast(@Old_discountcs as varchar(50)),space(1)) + '" ' +
 'discount1x2="'+ coalesce(cast(@Old_discount1x2 as varchar(50)),space(1)) + '" ' +
+'discountHRFixedOdds="'+ coalesce(cast(@Old_discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'discountnumber="'+ coalesce(cast(@Old_discountnumber as varchar(50)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -550,6 +617,7 @@ BEGIN CATCH
 	'groupd="'+ coalesce(cast(@groupd as varchar(50)),space(1)) + '" ' +
 	'discountcs="'+ coalesce(cast(@discountcs as varchar(50)),space(1)) + '" ' +
 	'discount1x2="'+ coalesce(cast(@discount1x2 as varchar(50)),space(1)) + '" ' +
+	'discountHRFixedOdds="'+ coalesce(cast(@discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 	'discountnumber="'+ coalesce(cast(@discountnumber as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -564,6 +632,7 @@ BEGIN CATCH
 	'groupd="'+ coalesce(cast(@Old_groupd as varchar(50)),space(1)) + '" ' +
 	'discountcs="'+ coalesce(cast(@Old_discountcs as varchar(50)),space(1)) + '" ' +
 	'discount1x2="'+ coalesce(cast(@Old_discount1x2 as varchar(50)),space(1)) + '" ' +
+	'discountHRFixedOdds="'+ coalesce(cast(@Old_discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 	'discountnumber="'+ coalesce(cast(@Old_discountnumber as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -581,7 +650,8 @@ BEGIN CATCH
 		@duration = @duration	
 END CATCH
 	
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [vnteam] AS [dbo]

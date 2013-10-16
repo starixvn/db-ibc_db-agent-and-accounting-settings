@@ -479,7 +479,7 @@ begin
 		@discountcs = @discountcs,
 		@discount1x2 = @discount1x2,
 		@discountnumber = @discountnumber,
-		@discountHRFixedOdds =@discountHRFixedOdds_old,
+		@discountHRFixedOdds =@discountHRFixedOdds,
 		
 		@updatecomm_old = @updatecomm_old,
 		@UserID = @UserID,
