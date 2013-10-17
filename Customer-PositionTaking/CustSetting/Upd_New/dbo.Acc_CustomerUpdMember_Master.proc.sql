@@ -334,7 +334,7 @@ Revisions:
 	- 20120831@Johnson: check m1_max = min(m3,m4) 
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
-	- 20131016@Kathy: Add HR Fixed Odds(154)
+	- 20131016@Kathy: Add HR Fixed Odds(154) [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
