@@ -148,7 +148,7 @@ BEGIN
 		groupb = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupb ELSE groupb END ,
 		groupc = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupc ELSE groupc END ,
 		groupd = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupd ELSE groupd END ,
-		adiscount = CASE WHEN bettype IN (4,6,9,10,20,21,22) AND sporttype <> 154 THEN @discountcs WHEN bettype = 5 THEN @discount1x2 WHEN bettype = 154 THEN @discountHRFixedOdds ELSE adiscount END
+		adiscount = CASE WHEN bettype IN (4,6,9,10,20,21,22) AND sporttype <> 154 THEN @discountcs WHEN bettype = 5 THEN @discount1x2 WHEN bettype = 20 and sporttype = 154 THEN @discountHRFixedOdds ELSE adiscount END
 	WHERE custid=@custid 
 
 	IF (@@ERROR <> 0) 
