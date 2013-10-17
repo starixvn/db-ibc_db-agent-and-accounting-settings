@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master] 
 	@CustID INT,--memberid
 	@Closed BIT = null,
 	@UpdateClosed bit = 0,
@@ -6462,6 +6461,7 @@ if	@UpdatePositiontaking   = 1  or
 		END CATCH
 
 	END--UpdatePositiontaking
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Master] TO [bodbAdminNet]
