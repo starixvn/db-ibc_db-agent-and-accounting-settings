@@ -8,7 +8,7 @@ AS
 		DB: DB053.bodb02
 		
 		Revisions:
-		
+			- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 		Paramter's Explanation:
 	*/
 SET NOCOUNT ON
@@ -18,6 +18,7 @@ SET NOCOUNT ON
 		MAX( CASE WHEN cs.sporttype = 1 AND cs.bettype = 5 THEN cs.playerdiscount ELSE 0 END ) as playerdiscount1x2,
 		MAX( CASE WHEN cs.sporttype = 1 AND cs.bettype = 4 THEN cs.playerdiscount ELSE 0 END ) as playerdiscountcs,
 		MAX( CASE WHEN cs3.sporttype = 161 AND cs3.bettype = 81 THEN cs.playerdiscount ELSE 0 END ) as playerdiscountnumber,
+		max( case when cs.sporttype = 154 and cs.bettype = 20 then cs.playerdiscount else 0 end) as playerdiscountHRFixedOdds,
 		
 		MAX( CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 THEN cs.minbet ELSE 0 END) as v1minbet_1,
 		MAX( CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 THEN cs.maxbet ELSE 0 END) as v1maxbet_1,
@@ -42,7 +43,6 @@ SET NOCOUNT ON
 			ci.MaxPerMatch,
 			ci.MaxPerMatch2,
 			ci.MaxPerMatch161
-	
 	
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSBCloneSetting_Ag] TO [vnteam]
