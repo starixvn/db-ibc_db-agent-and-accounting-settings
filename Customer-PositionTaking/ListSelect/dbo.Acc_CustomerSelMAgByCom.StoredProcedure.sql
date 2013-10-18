@@ -36,6 +36,7 @@ Revisions:
 	- 20120525@Dom: exclude licensee customer
 	- 20120927@Johnson: - get double comm losing status and upline double comm losing status
 						- output total records affect 
+	- 20131018@Kathy: Add HR Fixed Odds (154)[Redmine:#6505]
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -96,6 +97,7 @@ Select * From
 		max(case when cs.bettype = 4 and cs.sporttype=1 then cs.adiscount else 0 end) as discountcs,
 		max(case when cs.bettype = 5 and cs.sporttype=1 then cs.adiscount else 0 end) as discount1x2,
 		max(case when cs3.bettype = 81 and cs3.sporttype = 161 then cs3.adiscount else 0 end) as discountnumber,
+		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.adiscount else 0 end) as discountHRFixedOdds,
 		m.currency as exchangeid,
 		m.currency,
 		cm.isinternal,
@@ -140,8 +142,10 @@ Select * From
 		u.DoubleCommLosing,
 		ci.synccasino,
 		ci.DoubleCommLosing
+		
 ) a
 WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbAdminNet]
