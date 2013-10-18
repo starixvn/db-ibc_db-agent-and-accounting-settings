@@ -3,6 +3,7 @@
 	@playerdiscount DECIMAL(9,8),
 	@playerdiscountcs DECIMAL(9,8),	
 	@playerdiscount1x2 DECIMAL(9,8)=0,
+	@playerdiscountHRFixedOdds DECIMAL(9,8)=0,
 	@playerdiscountnumber DECIMAL(9,8)=0,
 	@updatecomm_old BIT = 1,
 	@SubAccID INT = 0, --Sub-AccountID
@@ -35,6 +36,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -52,13 +54,15 @@ set @startRun = getdate()
 DECLARE @Old_playerdiscount DECIMAL(9,8),
 		@Old_playerdiscountcs DECIMAL(9,8),	
 		@Old_playerdiscount1x2 DECIMAL(9,8),
+		@Old_playerdiscountHRFixedOdds DECIMAL(9,8),
 		@Old_playerdiscountnumber DECIMAL(9,8)
 
 --Check Param
 IF	@playerdiscount<0 OR @playerdiscount>0.2
 	OR @playerdiscountcs<0 OR @playerdiscountcs>0.2
 	OR @playerdiscount1x2<0 OR @playerdiscount1x2>0.2
-	OR @playerdiscountnumber<0 OR @playerdiscountnumber>0.2
+	OR @playerdiscountHRFixedOdds<0 OR @playerdiscountHRFixedOdds>0.2
+	OR @playerdiscountnumber<0 OR @playerdiscountnumber>0.2	
 BEGIN	
 	SELECT @ErrMsg = CASE @Language 
 						WHEN 'E' THEN 'Invalid commission rate.'
@@ -69,7 +73,7 @@ END
 
 ---------------------------------------
 DECLARE @username VARCHAR(40), @recommend INT,
-		@discount DECIMAL(9,8), @discountcs DECIMAL(9,8), @discount1x2 DECIMAL(9,8), @discountnumber DECIMAL(9,8),@ugroup VARCHAR(10)
+		@discount DECIMAL(9,8), @discountcs DECIMAL(9,8), @discount1x2 DECIMAL(9,8), @discountHRFixedOdds DECIMAL(9,8), @discountnumber DECIMAL(9,8),@ugroup VARCHAR(10)
 declare @err1 int, @err2 int
 		
 SELECT @UserName  = username,
@@ -82,7 +86,8 @@ BEGIN
 	SELECT @Old_playerdiscount=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype=1 AND bettype=1
 	SELECT @Old_playerdiscountcs=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 4
 	SELECT @Old_playerdiscount1x2=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
-	SELECT @Old_playerdiscountnumber=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND Sporttype = 161 AND bettype = 81
+	SELECT @Old_playerdiscountHRFixedOdds=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 154 AND bettype = 20	
+	SELECT @Old_playerdiscountnumber=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND Sporttype = 161 AND bettype = 81	
 
 	--Get g2
 	SELECT 
@@ -102,6 +107,11 @@ BEGIN
 	FROM custsetting WITH (NOLOCK)
 	WHERE custid = @recommend AND sporttype = 1 AND bettype = 5
 	
+	--HR Fixed Odds
+	SELECT @discountHRFixedOdds = discount
+	FROM custsetting WITH (NOLOCK)
+	WHERE custid = @recommend AND sporttype = 154 AND bettype = 20
+	
 	--161
 	SELECT @discountnumber = discount
 	FROM custsetting3rd WITH (NOLOCK)
@@ -113,13 +123,15 @@ BEGIN
 		@playerdiscount = CASE WHEN @playerdiscount>@discount THEN @discount ELSE @playerdiscount END,
 		@playerdiscountcs = CASE WHEN @playerdiscountcs>@discountcs THEN @discountcs ELSE @playerdiscountcs END,
 		@playerdiscount1x2 = CASE WHEN @playerdiscount1x2>@discount1x2 THEN @discount1x2 ELSE @playerdiscount1x2 END,		
+		@playerdiscountHRFixedOdds = CASE WHEN @playerdiscountHRFixedOdds>@discountHRFixedOdds THEN @discountHRFixedOdds ELSE @playerdiscountHRFixedOdds END,				
 		@playerdiscountnumber = CASE WHEN @playerdiscountnumber>@discountnumber THEN @discountnumber ELSE @playerdiscountnumber END
 	---------------------------------------
 	UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
 	SET	
 		playerdiscount = CASE WHEN bettype IN (1,2,3,7,8) THEN @playerdiscount 
 							  WHEN bettype = 5 THEN @playerdiscount1x2  
-							  WHEN bettype IN (4,6,9,10,20,21,22) THEN @playerdiscountcs ELSE playerdiscount END  
+							  WHEN bettype IN (4,6,9,10,20,21,22) and sporttype <> 154 THEN @playerdiscountcs 
+							  when bettype = 20 and sporttype = 154 then @playerdiscountHRFixedOdds ELSE playerdiscount END  
 	WHERE custid=@custid
 		AND @recommend <> 52466
 	SELECT @err1 = @@error
@@ -150,6 +162,7 @@ Select @LogSPData = '<Acc_CustomerUpdMember_Commission custid="'+ coalesce(cast(
 'playerdiscount="'+ coalesce(cast(@playerdiscount as varchar(50)),space(1)) + '" ' +
 'playerdiscountcs="'+ coalesce(cast(@playerdiscountcs as varchar(50)),space(1)) + '" ' +
 'playerdiscount1x2="'+ coalesce(cast(@playerdiscount1x2 as varchar(50)),space(1)) + '" ' +
+'playerdiscountHRFixedOdds="'+ coalesce(cast(@playerdiscountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'playerdiscountnumber="'+ coalesce(cast(@playerdiscountnumber as varchar(50)),space(1)) + '" ' +
 'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -162,6 +175,7 @@ Select @TrackingValue2 = '<Acc_CustomerUpdMember_Commission custid="'+ coalesce(
 'playerdiscount="'+ coalesce(cast(@Old_playerdiscount as varchar(50)),space(1)) + '" ' +
 'playerdiscountcs="'+ coalesce(cast(@Old_playerdiscountcs as varchar(50)),space(1)) + '" ' +
 'playerdiscount1x2="'+ coalesce(cast(@Old_playerdiscount1x2 as varchar(50)),space(1)) + '" ' +
+'playerdiscountHRFixedOdds="'+ coalesce(cast(@Old_playerdiscountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'playerdiscountnumber="'+ coalesce(cast(@Old_playerdiscountnumber as varchar(50)),space(1)) + '" ' +
 'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -189,6 +203,7 @@ BEGIN CATCH
 	'playerdiscount="'+ coalesce(cast(@playerdiscount as varchar(50)),space(1)) + '" ' +
 	'playerdiscountcs="'+ coalesce(cast(@playerdiscountcs as varchar(50)),space(1)) + '" ' +
 	'playerdiscount1x2="'+ coalesce(cast(@playerdiscount1x2 as varchar(50)),space(1)) + '" ' +
+	'playerdiscountHRFixedOdds="'+ coalesce(cast(@playerdiscountHRFixedOdds as varchar(50)),space(1)) + '" ' +	
 	'playerdiscountnumber="'+ coalesce(cast(@playerdiscountnumber as varchar(50)),space(1)) + '" ' +
 	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -201,6 +216,7 @@ BEGIN CATCH
 	'playerdiscount="'+ coalesce(cast(@Old_playerdiscount as varchar(50)),space(1)) + '" ' +
 	'playerdiscountcs="'+ coalesce(cast(@Old_playerdiscountcs as varchar(50)),space(1)) + '" ' +
 	'playerdiscount1x2="'+ coalesce(cast(@Old_playerdiscount1x2 as varchar(50)),space(1)) + '" ' +
+	'playerdiscountHRFixedOdds="'+ coalesce(cast(@Old_playerdiscountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 	'playerdiscountnumber="'+ coalesce(cast(@Old_playerdiscountnumber as varchar(50)),space(1)) + '" ' +
 	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -218,10 +234,10 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
 END CATCH	
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbDownlineNet] 
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_Commission] TO vnteam 
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_Commission] TO [vnteam] AS [dbo]
