@@ -3606,45 +3606,82 @@ END
 update custsetting with (ROWLOCK, UPDLOCK)
 set
 	spositiontaking = case
-		when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0)
-										or (sporttype=2 and @UpdatePositiontakingv2 = 0)
-										or (sporttype=3 and @UpdatePositiontakingv3 = 0)
-										or (sporttype=5 and @UpdatePositiontakingv5 = 0)
-										or (sporttype=8 and @UpdatePositiontakingv8 = 0)
-										or (sporttype=10 and @UpdatePositiontakingv10 = 0)
-										or (sporttype=11 and @UpdatePositiontakingv11 = 0)
-										or (sporttype=99 and @UpdatePositiontakingv99 = 0 and bettype <> 9)
-										or (sporttype=99 and @UpdatePositiontakingv99MP = 0 and bettype = 9)	
-										or (sporttype=154 and @UpdatePositiontakingv154 = 0)
-										) then spositiontaking
-		else case sporttype when 1 then case bettype when 1 then @spositiontaking_1 when 2 then @spositiontaking_2 when 3 then @spositiontaking_3 when 4 then @spositiontaking_4 when 5 then @spositiontaking_5 when 6 then @spositiontaking_6 when 7 then @spositiontaking_7 when 8 then @spositiontaking_8 when 9 then @spositiontaking_9  when 10 then @spositiontaking_10 else 0 end
-
-		when 2 then case bettype when 1 then @v2spositiontaking_1 when 2 then @v2spositiontaking_2 when 3 then @v2spositiontaking_3 when 7 then @v2spositiontaking_7 when 8 then @v2spositiontaking_8 /*when 9 then @v2spositiontaking_9*/ when 20 then @v2spositiontaking_20 else 0 end
-		when 3 then case bettype when 1 then @v3spositiontaking_1 when 2 then @v3spositiontaking_2 when 3 then @v3spositiontaking_3 when 20 then @v3spositiontaking_20 else 0 end
-		when 5 then case bettype when 1 then @v5spositiontaking_1 when 2 then @v5spositiontaking_2 when 3 then @v5spositiontaking_3 when 20 then @v5spositiontaking_20 else 0 end
-		when 8 then case bettype when 1 then @v8spositiontaking_1 when 3 then @v8spositiontaking_3 when 20 then @v8spositiontaking_20 else 0 end
-		when 10 then case bettype when 1 then @v10spositiontaking_1 when 2 then @v10spositiontaking_2 when 3 then @v10spositiontaking_3 when 20 then @v10spositiontaking_20 else 0 end
-		when 11 then case bettype when 1 then @v11spositiontaking_1 when 20 then @v11spositiontaking_20 else 0 end
-		when 99 then case bettype when 1 then @v99spositiontaking_1 when 2 then @v99spositiontaking_2 when 3 then @v99spositiontaking_3 when 20 then @v99spositiontaking_20 when 9 then @v99spositiontaking_9 else 0 end
-		when 154 then case bettype when 20 then @v154spositiontaking_20 else 0 end
-		else spositiontaking end	end,
+					when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0)
+													or (sporttype=2 and @UpdatePositiontakingv2 = 0)
+													or (sporttype=3 and @UpdatePositiontakingv3 = 0)
+													or (sporttype=5 and @UpdatePositiontakingv5 = 0)
+													or (sporttype=8 and @UpdatePositiontakingv8 = 0)
+													or (sporttype=10 and @UpdatePositiontakingv10 = 0)
+													or (sporttype=11 and @UpdatePositiontakingv11 = 0)
+													or (sporttype=99 and @UpdatePositiontakingv99 = 0 and bettype <> 9)
+													or (sporttype=99 and @UpdatePositiontakingv99MP = 0 and bettype = 9)	
+													or (sporttype=154 and @UpdatePositiontakingv154 = 0)
+													) then spositiontaking
+					else case sporttype 
+						when 1 then case bettype when 1 then @spositiontaking_1 when 2 then @spositiontaking_2 when 3 then @spositiontaking_3 when 4 then @spositiontaking_4 when 5 then @spositiontaking_5 when 6 then @spositiontaking_6 when 7 then @spositiontaking_7 when 8 then @spositiontaking_8 when 9 then @spositiontaking_9  when 10 then @spositiontaking_10 else 0 end
+						when 2 then case bettype when 1 then @v2spositiontaking_1 when 2 then @v2spositiontaking_2 when 3 then @v2spositiontaking_3 when 7 then @v2spositiontaking_7 when 8 then @v2spositiontaking_8 /*when 9 then @v2spositiontaking_9*/ when 20 then @v2spositiontaking_20 else 0 end
+						when 3 then case bettype when 1 then @v3spositiontaking_1 when 2 then @v3spositiontaking_2 when 3 then @v3spositiontaking_3 when 20 then @v3spositiontaking_20 else 0 end
+						when 5 then case bettype when 1 then @v5spositiontaking_1 when 2 then @v5spositiontaking_2 when 3 then @v5spositiontaking_3 when 20 then @v5spositiontaking_20 else 0 end
+						when 8 then case bettype when 1 then @v8spositiontaking_1 when 3 then @v8spositiontaking_3 when 20 then @v8spositiontaking_20 else 0 end
+						when 10 then case bettype when 1 then @v10spositiontaking_1 when 2 then @v10spositiontaking_2 when 3 then @v10spositiontaking_3 when 20 then @v10spositiontaking_20 else 0 end
+						when 11 then case bettype when 1 then @v11spositiontaking_1 when 20 then @v11spositiontaking_20 else 0 end
+						when 99 then case bettype when 1 then @v99spositiontaking_1 when 2 then @v99spositiontaking_2 when 3 then @v99spositiontaking_3 when 20 then @v99spositiontaking_20 when 9 then @v99spositiontaking_9 else 0 end
+						when 154 then case bettype when 20 then @v154spositiontaking_20 else 0 end
+						else spositiontaking end	end,
 	
-	slivepositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) or (sporttype=2 and @UpdatePositiontakingv2 = 0) or (sporttype=3 and @UpdatePositiontakingv3 = 0) or (sporttype=5 and @UpdatePositiontakingv5 = 0) or (sporttype=8 and @UpdatePositiontakingv8 = 0) or (sporttype=10 and @UpdatePositiontakingv10 = 0) or (sporttype=11 and @UpdatePositiontakingv11 = 0) or (sporttype=99 and @UpdatePositiontakingv99 = 0) or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then slivepositiontaking else case sporttype 	when 1 then case bettype when 1 then @slivepositiontaking_1 when 3 then @slivepositiontaking_3 when 7 then @slivepositiontaking_7 when 8 then @slivepositiontaking_8 else slivepositiontaking end else slivepositiontaking end end,
+	slivepositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) 
+															or (sporttype=2 and @UpdatePositiontakingv2 = 0) 
+															or (sporttype=3 and @UpdatePositiontakingv3 = 0) 
+															or (sporttype=5 and @UpdatePositiontakingv5 = 0) 
+															or (sporttype=8 and @UpdatePositiontakingv8 = 0) 
+															or (sporttype=10 and @UpdatePositiontakingv10 = 0) 
+															or (sporttype=11 and @UpdatePositiontakingv11 = 0) 
+															or (sporttype=99 and @UpdatePositiontakingv99 = 0) 
+															or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then slivepositiontaking 
+						else case sporttype 	
+							when 1 then case bettype	when 1 then @slivepositiontaking_1 
+														when 3 then @slivepositiontaking_3 
+														when 7 then @slivepositiontaking_7 
+														when 8 then @slivepositiontaking_8 else slivepositiontaking end 
+							else slivepositiontaking end end,
 	
-	mpositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) or (sporttype=2 and @UpdatePositiontakingv2 = 0) or (sporttype=3 and @UpdatePositiontakingv3 = 0) or (sporttype=5 and @UpdatePositiontakingv5 = 0) or (sporttype=8 and @UpdatePositiontakingv8 = 0) or (sporttype=10 and @UpdatePositiontakingv10 = 0) or (sporttype=11 and @UpdatePositiontakingv11 = 0) or (sporttype=99 and @UpdatePositiontakingv99 = 0 and bettype <> 9) or (sporttype=99 and @UpdatePositiontakingv99MP = 0 and bettype = 9) or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then mpositiontaking else 
-	case sporttype 	when 1 then case bettype when 1 then @mpositiontaking_1 when 2 then @mpositiontaking_2 when 3 then @mpositiontaking_3 when 4 then @mpositiontaking_4 when 5 then @mpositiontaking_5 when 6 then @mpositiontaking_6 when 7 then @mpositiontaking_7 when 8 then @mpositiontaking_8 when 9 then @mpositiontaking_9  when 10 then @mpositiontaking_10 else 0 end
-					
-			when 2 then case bettype when 1 then @v2mpositiontaking_1 when 2 then @v2mpositiontaking_2 when 3 then @v2mpositiontaking_3 when 7 then @v2mpositiontaking_7 when 8 then @v2mpositiontaking_8 /*when 9 then @v2mpositiontaking_9*/  when 20 then @v2mpositiontaking_20 else 0 end
-			when 3 then case bettype when 1 then @v3mpositiontaking_1 when 2 then @v3mpositiontaking_2 when 3 then @v3mpositiontaking_3 when 20 then @v3mpositiontaking_20 else 0 end
-			when 5 then case bettype when 1 then @v5mpositiontaking_1 when 2 then @v5mpositiontaking_2 when 3 then @v5mpositiontaking_3 when 20 then @v5mpositiontaking_20 else 0 end
-			when 8 then case bettype when 1 then @v8mpositiontaking_1 when 3 then @v8mpositiontaking_3 when 20 then @v8mpositiontaking_20 else 0 end
-			when 10 then case bettype when 1 then @v10mpositiontaking_1 when 2 then @v10mpositiontaking_2 when 3 then @v10mpositiontaking_3 when 20 then @v10mpositiontaking_20 else 0 end
-			when 11 then case bettype when 1 then @v11mpositiontaking_1 when 20 then @v11mpositiontaking_20 else 0 end
-			when 99 then case bettype when 1 then @v99mpositiontaking_1 when 2 then @v99mpositiontaking_2 when 3 then @v99mpositiontaking_3 when 20 then @v99mpositiontaking_20 when 9 then @v99mpositiontaking_9 else 0 end
-			when 154 then case bettype when 20 then @v154mpositiontaking_20 else 0 end
-			else mpositiontaking end end,
+	mpositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) 
+															or (sporttype=2 and @UpdatePositiontakingv2 = 0) 
+															or (sporttype=3 and @UpdatePositiontakingv3 = 0) 
+															or (sporttype=5 and @UpdatePositiontakingv5 = 0) 
+															or (sporttype=8 and @UpdatePositiontakingv8 = 0) 
+															or (sporttype=10 and @UpdatePositiontakingv10 = 0) 
+															or (sporttype=11 and @UpdatePositiontakingv11 = 0) 
+															or (sporttype=99 and @UpdatePositiontakingv99 = 0 and bettype <> 9) 
+															or (sporttype=99 and @UpdatePositiontakingv99MP = 0 and bettype = 9) 
+															or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then mpositiontaking 
+					else case sporttype 	
+						when 1 then case bettype when 1 then @mpositiontaking_1 when 2 then @mpositiontaking_2 when 3 then @mpositiontaking_3 when 4 then @mpositiontaking_4 when 5 then @mpositiontaking_5 when 6 then @mpositiontaking_6 when 7 then @mpositiontaking_7 when 8 then @mpositiontaking_8 when 9 then @mpositiontaking_9  when 10 then @mpositiontaking_10 else 0 end					
+						when 2 then case bettype when 1 then @v2mpositiontaking_1 when 2 then @v2mpositiontaking_2 when 3 then @v2mpositiontaking_3 when 7 then @v2mpositiontaking_7 when 8 then @v2mpositiontaking_8 /*when 9 then @v2mpositiontaking_9*/  when 20 then @v2mpositiontaking_20 else 0 end
+						when 3 then case bettype when 1 then @v3mpositiontaking_1 when 2 then @v3mpositiontaking_2 when 3 then @v3mpositiontaking_3 when 20 then @v3mpositiontaking_20 else 0 end
+						when 5 then case bettype when 1 then @v5mpositiontaking_1 when 2 then @v5mpositiontaking_2 when 3 then @v5mpositiontaking_3 when 20 then @v5mpositiontaking_20 else 0 end
+						when 8 then case bettype when 1 then @v8mpositiontaking_1 when 3 then @v8mpositiontaking_3 when 20 then @v8mpositiontaking_20 else 0 end
+						when 10 then case bettype when 1 then @v10mpositiontaking_1 when 2 then @v10mpositiontaking_2 when 3 then @v10mpositiontaking_3 when 20 then @v10mpositiontaking_20 else 0 end
+						when 11 then case bettype when 1 then @v11mpositiontaking_1 when 20 then @v11mpositiontaking_20 else 0 end
+						when 99 then case bettype when 1 then @v99mpositiontaking_1 when 2 then @v99mpositiontaking_2 when 3 then @v99mpositiontaking_3 when 20 then @v99mpositiontaking_20 when 9 then @v99mpositiontaking_9 else 0 end
+						when 154 then case bettype when 20 then @v154mpositiontaking_20 else 0 end
+						else mpositiontaking end end,
 	
-	mlivepositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) or (sporttype=2 and @UpdatePositiontakingv2 = 0) or (sporttype=3 and @UpdatePositiontakingv3 = 0) or (sporttype=5 and @UpdatePositiontakingv5 = 0) or (sporttype=8 and @UpdatePositiontakingv8 = 0) or (sporttype=10 and @UpdatePositiontakingv10 = 0) or (sporttype=11 and @UpdatePositiontakingv11 = 0)  or (sporttype=99 and @UpdatePositiontakingv99 = 0) or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then mlivepositiontaking else case sporttype 	when 1 then case bettype when 1 then @mlivepositiontaking_1 when 3 then @mlivepositiontaking_3 when 7 then @mlivepositiontaking_7 when 8 then @mlivepositiontaking_8 else mlivepositiontaking end else mlivepositiontaking end end
+	mlivepositiontaking = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdatePositiontaking = 0) 
+															or (sporttype=2 and @UpdatePositiontakingv2 = 0) 
+															or (sporttype=3 and @UpdatePositiontakingv3 = 0) 
+															or (sporttype=5 and @UpdatePositiontakingv5 = 0) 
+															or (sporttype=8 and @UpdatePositiontakingv8 = 0) 
+															or (sporttype=10 and @UpdatePositiontakingv10 = 0) 
+															or (sporttype=11 and @UpdatePositiontakingv11 = 0)  
+															or (sporttype=99 and @UpdatePositiontakingv99 = 0) 
+															or (sporttype=154 and @UpdatePositiontakingv154 = 0)) then mlivepositiontaking 
+						else case sporttype 	
+								when 1 then case bettype	when 1 then @mlivepositiontaking_1 
+															when 3 then @mlivepositiontaking_3 
+															when 7 then @mlivepositiontaking_7 
+															when 8 then @mlivepositiontaking_8 else mlivepositiontaking end 
+							else mlivepositiontaking end end
 	
 where custid=@custid
 if (@@error <> 0)
