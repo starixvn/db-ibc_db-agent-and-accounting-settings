@@ -82,7 +82,7 @@ begin
 	IF @UplineDisableHRFixedOdds = 1
 	BEGIN
 		SELECT @ErrMsg =  CASE @Language 
-							WHEN 'E' THEN 'Your account was disabled Number Game betting. Cannot edit customer.'
+							WHEN 'E' THEN 'Your account was disabled Horse Racing betting. Cannot edit customer.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](60017,@Language)
 						END, @ErrCode = 105
 		return
