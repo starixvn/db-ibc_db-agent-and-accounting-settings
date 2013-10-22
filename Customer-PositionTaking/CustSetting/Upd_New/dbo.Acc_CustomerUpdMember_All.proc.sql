@@ -381,11 +381,11 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 	from custsetting3rd (nolock) where custid = @custid and sporttype = 161 and bettype = 81  
 
 	if @playerdiscount_old <> @playerdiscount or @playerdiscountcs_old <> @playerdiscountcs   
-		or @playerdiscount1x2_old <> @playerdiscount1x2 or @playerdiscountnumber_old <> @playerdiscountnumber  
+		or @playerdiscount1x2_old <> @playerdiscount1x2 or @playerdiscountnumber_old <> @playerdiscountnumber or @playerdiscountHRFixedOdds_old <> @playerdiscountHRFixedOdds
 		set @updatecomm_old = 1  
 	else   
 		set @updatecomm_old = 0  
-   
+		
  if @updatecomm_old <> 0  
  begin  
     
@@ -394,7 +394,7 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
    @playerdiscount = @playerdiscount,  
    @playerdiscountcs = @playerdiscountcs,  
    @playerdiscount1x2 = @playerdiscount1x2,  
-   @playerdiscountHRFixedOdds =@playerdiscountHRFixedOdds,
+   @playerdiscountHRFixedOdds = @playerdiscountHRFixedOdds,
    @playerdiscountnumber = @playerdiscountnumber,  
    @updatecomm_old = @updatecomm_old,  
    @SubAccID = @SubAccID,  
