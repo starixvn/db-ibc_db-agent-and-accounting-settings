@@ -62,7 +62,7 @@
 	@v99spositiontaking_20 SMALLMONEY OUTPUT,
 
 	-- mixed sports
-	@v99spositiontaking_9 SMALLMONEY OUTPUT,
+	@v99spositiontaking_9 SMALLMONEY = 0 OUTPUT,
 	
 	-- HR fixodds
 	@v154spositiontaking_20 SMALLMONEY  = 0 OUTPUT,
