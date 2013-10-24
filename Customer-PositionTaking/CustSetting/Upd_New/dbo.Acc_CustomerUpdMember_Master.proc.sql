@@ -1942,7 +1942,7 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v99apositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.apositiontaking ELSE 0 END),
 			
 			-- hr fixed odds
-			@max_v154mapositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype = 154 THEN acs.apositiontaking ELSE 0 END),
+			@max_v154apositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype = 154 THEN acs.apositiontaking ELSE 0 END),
 
 			--im2
 			@isauto_mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
