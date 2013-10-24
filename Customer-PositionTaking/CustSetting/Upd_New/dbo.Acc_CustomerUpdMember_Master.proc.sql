@@ -60,7 +60,7 @@
 	-- mixed sports
 	@v99mpositiontaking_9 SMALLMONEY OUTPUT,
 	--HR Fixed Odds
-	@v154mpositiontaking_20 SMALLMONEY OUTPUT,
+	@v154mpositiontaking_20 SMALLMONEY = 0 OUTPUT,
 	
 	-- number game
 	@v161mpositiontaking_81 SMALLMONEY OUTPUT,
