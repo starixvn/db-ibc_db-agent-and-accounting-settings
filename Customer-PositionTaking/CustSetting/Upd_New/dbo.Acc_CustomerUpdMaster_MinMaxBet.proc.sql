@@ -1035,7 +1035,7 @@ BEGIN
 		return
 	END
 	
-	if (@MinMinBetv154>0 and @minbetv154>0 and @minbetv99<@MinMinBetv154)
+	if (@MinMinBetv154>0 and @minbetv154>0 and @minbetv154<@MinMinBetv154)
 	BEGIN
 		SELECT @ErrMsg =	@UserName + ': '+
 						case @Language 
