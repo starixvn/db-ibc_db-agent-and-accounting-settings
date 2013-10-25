@@ -2290,7 +2290,7 @@ BEGIN
 		custinfo as c with (NOLOCK) 
 		inner join custsetting as cs with (NOLOCK) on c.custid = cs.custid
 		inner join (	
-					select 	11 as sporttype, 20 as bettype, @v154mpositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
+					select 	154 as sporttype, 20 as bettype, @v154mpositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
 			) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
 	where c.mrecommend = @custid and c.roleid = 1 and (cs.apositiontaking+cs.mpositiontaking>b.maxpositiontaking )
 	group by username
