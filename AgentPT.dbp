@@ -169,6 +169,7 @@ Begin DataProject = "AgentPT"
       Begin Folder = "CustSetting"
          Begin Folder = "Ins"
             Begin Folder = "CloneSetting"
+               Script = "dbo.Acc_CustomerInsMember_CloneSetting_Com.sql"
                Script = "dbo.Acc_CustomerInsMember_CloneSetting_MAg.sql"
                Script = "dbo.Acc_CustomerInsMember_CloneSetting_SAg.sql"
             End
