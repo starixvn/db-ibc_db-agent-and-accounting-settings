@@ -215,6 +215,7 @@ Begin DataProject = "AgentPT"
             End
             Script = "dbo.Acc_CheckAllowedShow.proc.sql"
             Script = "dbo.Acc_CustomerSelAgentInfo.StoredProcedure.sql"
+            Script = "dbo.Acc_CustomerSelAutoSuspendStatus.sql"
             Script = "dbo.Acc_CustomerSelByUserName.proc.sql"
             Script = "dbo.Acc_CustomerSelCEditCustomer.StoredProcedure.sql"
             Script = "dbo.Acc_CustomerSelDisableOutright.proc.sql"
