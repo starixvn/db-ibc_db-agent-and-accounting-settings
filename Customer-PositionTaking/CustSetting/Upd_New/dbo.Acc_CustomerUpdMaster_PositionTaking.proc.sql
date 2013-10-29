@@ -309,6 +309,7 @@ Revisions:
 				- Remove Dead ball Over/Under
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131026@Thien: Checking total downlines before UPDATEs 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -333,6 +334,20 @@ Select @UserName  = username, @srecommend = srecommend from custinfo with (NOLOC
 Select @maxpos = 0.9, @maxdownlinepos = 0
 -- th: @maxpos and @maxdownlinepos are no longer used
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+---- Thien@20131026: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=3,
+	@isExecRep=0,
+	@isUpdatePT = 1,
+	@Sporttype = 1,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+----------
 
 if @UpdateMultiple = 0 or @UpdatePositiontaking = 1
 BEGIN
