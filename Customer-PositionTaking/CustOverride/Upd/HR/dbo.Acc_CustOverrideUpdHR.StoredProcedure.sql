@@ -1,4 +1,12 @@
-﻿
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdHR]    Script Date: 10/29/2013 03:54:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 7/23/2013 6:12:55 PM ******/
+
 ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
 	@custid int,
 
@@ -62,6 +70,7 @@ Revisions:
 	- 20120311@Thien: include master level into weekend checking
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	- 20131029@Lukas: apply execRep
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -541,13 +550,15 @@ END
 
 if @roleid = 2
 BEGIN
-	EXEC dbo.Acc_CustomerUpdAgentHR_MinMaxPositiontaking @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	--EXEC dbo.Acc_CustomerUpdAgentHR_MinMaxPositiontaking @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC [dbo].[Acc_CustSetting3rd_04] @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2, @mode = 'horse'
 	-- The minimum position taking value of agent was modified by agent's upline
 	EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID
 END
 else if @roleid = 3
 BEGIN
-	EXEC dbo.Acc_CustomerUpdMasterHR_MinMaxPositiontaking @mrecommend = @mrecommend, @srecommend = @srecommend
+	--EXEC dbo.Acc_CustomerUpdMasterHR_MinMaxPositiontaking @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.[Acc_CustSetting3rd_04] @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'horse'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMinPos = 1
 BEGIN
@@ -703,13 +714,11 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbDownlineNet]
-Go
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdHR] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbExtAccNet] AS [dbo]
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdHR] TO [vnteam] AS [dbo]
