@@ -5,7 +5,7 @@ AS
 		Created: Johnson
 		Date: 2012-07-27
 		Task: Get sport book setting of customer
-		DB: DB053.bodb02
+		DB: DBAGE/bodb02, DBTXN/bodb02
 		
 		Revisions:
 		

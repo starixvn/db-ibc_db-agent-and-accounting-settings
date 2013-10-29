@@ -4,7 +4,7 @@
 	@Allowed bit output 
 AS
 /*
-DB: DB052.BODB02, DB02.BODB02
+DB: DBAGE/BODB02, DBTXN/BODB02
 Original: 
 
 Revisions:

@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Age_CustomerSelCheckBelonging]
+﻿ALTER PROCEDURE [dbo].[Age_CustomerSelCheckBelonging]
 	@SessionCustID int, --uplineID	
 	@custid int = NULL,
 	@transid bigint = NULL,
@@ -9,7 +8,7 @@ AS
 /*
 Created:
 Task: check downline belonging
-DB: DBAGE/bodb02
+DB: DBAGE/bodb02, DBTXN/bodb02
 Original: 
 	
 Revisions:

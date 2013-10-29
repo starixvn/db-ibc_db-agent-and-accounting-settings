@@ -1,18 +1,11 @@
-﻿ USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelAgentInfo_1]    Script Date: 02/26/2009 14:19:41 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerSelAgentInfo] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelAgentInfo] 
 	@CustID int--agentID
 AS
 /*
 Created by: []
 Date:[]
 Task: Add new Member at Agent Site
-DB: DB05.BODB02
+DB: DBAGE/BODB02, DBTXN/BODB02
 Original: agentsite\account\addnewmember.asp
 
 Revisions:
@@ -475,9 +468,6 @@ group by ci.maxpermatch,
 	ci.maxpermatch99MP,
 	ci.maxpermatch161,
 	ci.maxperball161
-
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelAgentInfo] TO [bodbAdminNet]

@@ -1,7 +1,4 @@
-USE bodb02
-GO
-
-CREATE PROCEDURE [dbo].[Acc_CustomerSelSBCloneSetting_MAg]
+ALTER PROCEDURE [dbo].[Acc_CustomerSelSBCloneSetting_MAg]
 	@Custid int	
 AS
 /*  
@@ -11,7 +8,7 @@ AS
  Task: Get setting information of sport book for a custid 
 	("search and copy" feature of creating new agent)
  
- DB: DB053.BODB02
+ DB: DBAGE/bodb02, DBTXN/bodb02
   
  History:   
   
