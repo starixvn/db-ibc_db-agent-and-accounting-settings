@@ -1,10 +1,4 @@
-﻿
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelMAgByCom]    Script Date: 01/17/2011 17:59:06 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing bit = NULL,
@@ -18,7 +12,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
 AS
 /*
 Task : Select Direct Master Agent list
-DB: DB052.bodb02
+DB: DBAGE/bodb02, DBTXN/bodb02
 Original: magentsite/account\customerlist.asp
 
 Revisions:

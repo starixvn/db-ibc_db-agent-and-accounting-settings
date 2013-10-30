@@ -1,19 +1,19 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
-@Currency int = NULL,
-@Closed bit = NULL,
-@DoubleCommLosing BIT = NULL,
-@Keyword nvarchar(50)='%',
-@FirstChar nvarchar(6)='%',
-@IsInternal bit = NULL,
-@System varchar(50) = 'ACCOUNTING',
-@PageSize int=50,
-@PageIndex int=1,
-@TotalPages int=0 OUTPUT,
-@TotalItems int=0 OUTPUT
+	@Currency int = NULL,
+	@Closed bit = NULL,
+	@DoubleCommLosing BIT = NULL,
+	@Keyword nvarchar(50)='%',
+	@FirstChar nvarchar(6)='%',
+	@IsInternal bit = NULL,
+	@System varchar(50) = 'ACCOUNTING',
+	@PageSize int=50,
+	@PageIndex int=1,
+	@TotalPages int=0 OUTPUT,
+	@TotalItems int=0 OUTPUT
 AS
 /*
 Task : Select Super Agent list
-DB: DBAGE/bodb02
+DB: DBAGE/bodb02, DBTXN/bodb02
 Revisions:
     - @update2008/01/14 search username
     - phuong.nguyen, check customer's currency for Horseracing spottype
@@ -34,6 +34,7 @@ Revisions:
 	- 20120927@Johnson: - Get super list by double comm status
 						- output total records affects
 	- 20130121@Dan: call to bodb_AGE for Acc_CustGroup
+	- 20131029@Elodie: Put link server DBAGE [Redmine:#7261]
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -155,7 +156,7 @@ BEGIN
 				Custinfo as m with (NOLOCK)
 				INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 			WHERE	
-				m.custid IN (SELECT custid FROM bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE GroupName = @System)
+				m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE GroupName = @System)
 				AND m.roleid=4 
 				AND csuper.IsInternal = 0	
 				AND m.closed = case when @closed is null then m.closed else @closed end
@@ -203,7 +204,7 @@ BEGIN
 		INNER JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE	
-			m.custid IN (SELECT custid FROM bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
+			m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
 			AND m.roleid=4 
 			AND csuper.IsInternal = 0
 			AND ci.closed = case when @closed is null then ci.closed else @closed end
