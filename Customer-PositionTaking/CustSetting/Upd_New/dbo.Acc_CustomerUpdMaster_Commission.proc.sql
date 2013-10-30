@@ -1,5 +1,4 @@
 ﻿
-
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission]
 	@custid INT,-- masterId
 	
@@ -9,7 +8,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission]
 	@groupd DECIMAL(9,8),
 	@discountcs DECIMAL(9,8),
 	@discount1x2 DECIMAL(9,8)=0,
-
+	--@discountHRFixedOdds decimal (9,8) = 0,
 	--- number game commission
 	@discountnumber decimal(9,8) = 0,
 
@@ -46,6 +45,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
 • @ErrCode:
     = 0: Update agent's commission successfully.
@@ -131,294 +131,29 @@ BEGIN
 	SELECT @discountnumber = case when @discountnumber > sdiscount then sdiscount else @discountnumber end
 	FROM custsetting3rd as cs3 with(nolock)
 	WHERE custid = @srecommend AND bettype = 81 AND sporttype = 161
-	---------------------------------------
-	--Update @Master: g3, m3
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
-	SET
-		groupa = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupa ELSE groupa END ,
-		groupb = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupb ELSE groupb END ,
-		groupc = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupc ELSE groupc END ,
-		groupd = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupd ELSE groupd END ,
-		adiscount = CASE WHEN bettype IN (4,6,9,10,20,21,22) THEN @discountcs WHEN bettype = 5 THEN @discount1x2 ELSE adiscount END
-	WHERE custid=@custid 
-
-	IF (@@ERROR <> 0) 
-	BEGIN 
-		
-		SELECT @ErrMsg = @UserName + ': '+ 
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !' 
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 102 
-		RETURN 
-	END 
-
-	-- number game commission - update master discount
-	UPDATE custsetting3rd WITH (ROWLOCK, UPDLOCK)
-	SET	adiscount = @discountnumber
-	WHERE custid=@custid and sporttype = 161
-
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 201
-		RETURN
-	END
-
-	---------------------------------------
-	--Update g2 = g3 if g2>g3
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		groupa = CASE WHEN groupa>@groupa THEN @groupa ELSE groupa END,
-		groupb = CASE WHEN groupb>@groupb THEN @groupb ELSE groupb END,
-		groupc = CASE WHEN groupc>@groupc THEN @groupc ELSE groupc END,
-		groupd = CASE WHEN groupd>@groupd THEN @groupd ELSE groupd END
-	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
-	WHERE ci.mrecommend = @custid 
-		AND ci.roleid = 2 
-		AND custsetting.bettype IN (1,2,3,7,8) 
-		
-	IF (@@ERROR <> 0)
-	BEGIN
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 103					 
-				
-		RETURN
-	END
-
-	---------------------------------------
-	--Update a2 = m3 if a2>m3
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		discount = CASE WHEN discount>@discountcs THEN @discountcs ELSE discount END 
-	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
-	WHERE ci.mrecommend = @custid 
-		AND ci.roleid = 2 
-		AND custsetting.bettype IN (4,6,9,10,20,21,22) 
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 104
-		RETURN
-	END
-
-	---------------------------------------
-	--Update a2 = m3 if a2>m3 --1x2
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		discount = CASE WHEN discount>@discount1x2 THEN @discount1x2 ELSE discount END 
-	FROM custsetting INNER JOIN custinfo AS ci WITH (NOLOCK) ON custsetting.custid = ci.custid
-	WHERE ci.mrecommend = @custid 
-		AND ci.roleid = 2 
-		AND custsetting.bettype = 5
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 109			 
-		
-		RETURN
-	END
-
 	
-	-- number game - update agent discount
-	UPDATE custsetting3rd WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		discount = CASE WHEN discount>@discountnumber THEN @discountnumber ELSE discount END 
-	FROM custsetting3rd cs3 INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs3.custid = ci.custid
-	WHERE ci.mrecommend = @custid 
-		AND ci.roleid = 2 AND sporttype = 161
-		
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 202		 
-		
-		RETURN
-	END
-	---------------------------------------
-	--Update g3 @ member level
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		adiscount = CASE WHEN c.ugroup IN ('a','hka','dea') THEN @groupa 
-						 WHEN c.ugroup IN ('b','hkb','deb') THEN @groupb 
-						 WHEN c.ugroup IN ('c','hkc','dec') THEN @groupc 
-						 WHEN c.ugroup IN ('d','hkd','ded') THEN @groupd ELSE @groupa END 
-	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-	WHERE c.mrecommend = @custid 
-		AND c.recommend <> 52466
-		AND c.roleid = 1 
-		AND custsetting.bettype IN (1,2,3,7,8) 
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 105	
-		
-		RETURN
-	END
+	Declare @RoleId int
+	Select
+		@RoleId = roleid
+	from custInfo with(NOLOCK)
+	where custid = @custid
 
-	---------------------------------------
-	--Update m3 @ member level
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		adiscount = @discountcs
-	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-	WHERE c.mrecommend = @custid
-		AND c.recommend <> 52466
-		AND c.roleid = 1 
-		AND custsetting.bettype IN (4,6,9,10,20,21,22)
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 106
-		RETURN
-	END
+	-- Apply exec rep
+	exec Acc_CustSetting_06
+		@CustId = @custid,
+		@RoleId = @RoleId,
+		@groupa = @groupa,
+		@groupb = @groupb,
+		@groupc = @groupc,
+		@groupd = @groupd,
+		@discountcs = @discountcs,
+		@discount1x2 = @discount1x2
 
-	---------------------------------------
-	--Update m3 @ member level --1x2 
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		adiscount = @discount1x2
-	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-	WHERE c.mrecommend = @custid 
-		AND c.recommend <> 52466
-		AND c.roleid = 1 
-		AND custsetting.bettype = 5
-	IF (@@ERROR <> 0)
-	BEGIN
-
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 110
-		RETURN
-	END		
-
-	-- number game - update master-discount on member
-	UPDATE cs3 WITH(ROWLOCK,UPDLOCK)
-	SET	cs3.adiscount = @discountnumber
-	FROM custsetting3rd cs3 INNER JOIN customer c WITH(NOLOCK) ON  cs3.custid = c.custid
-	WHERE c.mrecommend = @custid
-		  AND c.recommend <> 52466
-		  AND c.roleid = 1
-		  AND cs3.sporttype = 161
-
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 203
-		RETURN
-	END
-
-	---------------------------------------
-	--At member level, update discount = adiscount  if discount > adiscount
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		discount = adiscount
-	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-	WHERE c.mrecommend = @custid 
-		AND c.roleid = 1 
-		AND custsetting.discount>custsetting.adiscount 
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 107
-		RETURN
-	END
-
-	--- number game - update agent discount on member
-	UPDATE cs3 WITH(ROWLOCK,UPDLOCK)
-	SET cs3.discount = cs3.adiscount
-	FROM custsetting3rd cs3 INNER JOIN customer c WITH(NOLOCK) ON cs3.custid = c.custid
-	WHERE c.mrecommend = @custid
-		AND c.roleid = 1
-		AND cs3.sporttype = 161
-		AND cs3.discount > cs3.adiscount
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 204
-		RETURN
-	END
-
-	---------------------------------------
-	--At member level, update playerdiscount = discount if playerdiscount > discount
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		playerdiscount = discount
-	FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-	WHERE c.mrecommend = @custid 
-		AND c.roleid = 1 
-		AND custsetting.playerdiscount>custsetting.discount 
-	IF (@@ERROR <> 0)
-	BEGIN
-	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 108
-		RETURN
-	END
-	
-	--- number game - update agent discount on member
-	UPDATE cs3 WITH(ROWLOCK,UPDLOCK)
-	SET cs3.playerdiscount = cs3.discount
-	FROM custsetting3rd cs3 INNER JOIN customer c WITH(NOLOCK) ON cs3.custid = c.custid
-	WHERE c.mrecommend = @custid
-		AND c.roleid = 1
-		AND cs3.sporttype = 161
-		AND cs3.playerdiscount > cs3.discount
-		
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 204
-		RETURN
-	END
+	exec Acc_CustSetting3rd_06
+		@CustId = @custid,
+		@RoleId = @RoleId,
+		@discountNumber = @discountnumber,
+		@mode = 'NumberGame'
 END
 
 
@@ -508,7 +243,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration	
-END CATCH	
+END CATCH
 	
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [bodbAdminNet]
