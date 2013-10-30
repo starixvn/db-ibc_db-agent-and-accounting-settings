@@ -225,6 +225,8 @@ Revisions:
 	- 20120914@Johnson: check m4 with exsisting m3 and a4 with existing a1,a2
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131030@Johnson: Apply exec rep for recalculating pt on member
+				and check total downlines before UPDATEs
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -243,6 +245,20 @@ set @startRun = getdate()
 Declare @username varchar(40)
 select @username = username from custinfo with (NOLOCK) where custid = @custid
 --------------------------------------------------------------------------------------------
+
+---- Thien@20131026: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=4,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 1,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+----------
+
 --Check Param
 Declare @ErrAcc nvarchar(4000)
 declare @ErrType varchar(1000)
@@ -1858,8 +1874,12 @@ begin
 end
 
 
+-- 20131030@Johnson: Apply exec rep for recalculating pt on member
+EXEC dbo.Acc_CustSetting_07 @srecommend = @custid, @roleid = 4 
 
+EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid, @roleid = 4, @mode = 'number' 
 
+/*
 exec dbo.Acc_CustomerUpdSuper_AutoPositiontaking @srecommend = @custid
 if (@@error <> 0)
 begin
@@ -1870,6 +1890,7 @@ begin
 					end, @ErrCode = 107	
 	return
 end
+*/
 
 --Update l4=s4
 EXEC dbo.Acc_CustoverrideUpd

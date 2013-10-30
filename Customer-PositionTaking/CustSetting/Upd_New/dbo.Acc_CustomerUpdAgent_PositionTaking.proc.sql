@@ -314,6 +314,8 @@ Revisions:
 	- 20120829@Johnson: Check m2+a2 with m4
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131030@Johnson: Checking total downlines before UPDATEs
+					and apply execrep for recalculating pt on members 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -332,6 +334,19 @@ set @startRun = getdate()
 Declare @UserName varchar(20), @mrecommend int, @srecommend int
 declare @ErrAcc varchar(4000), @ErrType varchar(4000)
 Select @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend from custinfo with (NOLOCK) where CustID = @CustID
+
+---- Johnson@20131030: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=2,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 1,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+----------
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Check Param
 if @UpdateMultiple = 0 or @UpdatePositiontaking = 1
@@ -2536,7 +2551,12 @@ begin
 	return
 end
 
+---- 20131030@Johnson: apply execrep for recalculating pt on members
+EXEC dbo.Acc_CustSetting_07 @recommend = @custid, @roleid = 2
 
+EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'number'
+
+/*					
 EXEC dbo.Acc_CustomerUpdAgent_MaxPositiontaking @recommend = @custid
 if (@@error <> 0)
 begin
@@ -2549,7 +2569,7 @@ begin
 	
 	return
 end
-
+*/
 
 
 Declare @LogSPData varchar(8000)

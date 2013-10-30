@@ -310,6 +310,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131026@Thien: Checking total downlines before UPDATEs 
+	- 20131030@Johnson: Apply execrep for recalculating pt on members
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -3643,6 +3644,12 @@ begin
 	
 	return
 end
+
+--- 20131030@Johnson: Apply execrep for recalculating pt on members
+EXEC dbo.Acc_CustSetting_07 @srecommend = @srecommend, @mrecommend = @custid, @roleid = 3
+
+EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @srecommend, @mrecommend = @custid, @roleid = 3, @mode = 'number'
+/*
 EXEC dbo.Acc_CustomerUpdMaster_MaxPositiontaking @mrecommend = @custid
 if (@@error <> 0)
 begin
@@ -3655,7 +3662,7 @@ begin
 	
 	return
 end
-
+*/
 
 Declare @LogSPData varchar(MAX)
 Declare @TrackingValue2 varchar(MAX)

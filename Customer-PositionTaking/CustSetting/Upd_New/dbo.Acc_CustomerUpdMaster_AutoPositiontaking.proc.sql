@@ -965,8 +965,6 @@ EXEC Acc_CustSetting_05
 
 	-- mixed sports
 	@updatepositiontakingv99mp = @updatepositiontakingv99mp,
-	-- number game
-	@updatepositiontakingv161 = @updatepositiontakingv161,
 	
 	@updateallmembers = @updateallmembers,
 	@newspositiontaking = @newspositiontaking

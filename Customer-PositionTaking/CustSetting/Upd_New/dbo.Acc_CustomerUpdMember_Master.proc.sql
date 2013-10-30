@@ -325,6 +325,7 @@ Revisions:
 	- 20120831@Johnson: check m1_max = min(m3,m4) 
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20131030@Johnson: Apply execrep when update pt on member
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -4845,7 +4846,157 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @v161slivepositiontaking_87 = CASE WHEN @v161slivepositiontaking_87 > @max_v161slivepositiontaking_87 THEN @max_v161slivepositiontaking_87 ELSE @v161slivepositiontaking_87 END
 		SELECT @v161slivepositiontaking_89 = CASE WHEN @v161slivepositiontaking_89 > @max_v161slivepositiontaking_89 THEN @max_v161slivepositiontaking_89 ELSE @v161slivepositiontaking_89 END
 		SELECT @v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90 > @max_v161slivepositiontaking_90 THEN @max_v161slivepositiontaking_90 ELSE @v161slivepositiontaking_90 END
+		
+		--- 20131030@Johnson: Apply execrep when update pt on member
+		EXEC dbo.Acc_CustSetting_08
+			@custid = @custid,
+	
+			@mpositiontaking_1 = @mpositiontaking_1,
+			@mpositiontaking_2 = @mpositiontaking_2,
+			@mpositiontaking_3 = @mpositiontaking_3,
+			@mpositiontaking_4 = @mpositiontaking_4,
+			@mpositiontaking_5 = @mpositiontaking_5,
+			@mpositiontaking_6 = @mpositiontaking_6,
+			@mpositiontaking_7 = @mpositiontaking_7,
+			@mpositiontaking_8 = @mpositiontaking_8,
+			@mpositiontaking_9 = @mpositiontaking_9,
+			@mpositiontaking_10 = @mpositiontaking_10,
+			@mlivepositiontaking_1 = @mlivepositiontaking_1,
+			@mlivepositiontaking_3 = @mlivepositiontaking_3,
+			@mlivepositiontaking_7 = @mlivepositiontaking_7,
+			@mlivepositiontaking_8 = @mlivepositiontaking_8,
+			
+			@v2mpositiontaking_1 = @v2mpositiontaking_1,
+			@v2mpositiontaking_2 = @v2mpositiontaking_2,
+			@v2mpositiontaking_3 = @v2mpositiontaking_3,
+			@v2mpositiontaking_7 = @v2mpositiontaking_7,
+			@v2mpositiontaking_8 = @v2mpositiontaking_8,
+		--	@v2mpositiontaking_9 = @v2mpositiontaking_9,
+			@v2mpositiontaking_20 = @v2mpositiontaking_20,
 
+			@v3mpositiontaking_1 = @v3mpositiontaking_1,
+			@v3mpositiontaking_2 = @v3mpositiontaking_2,
+			@v3mpositiontaking_3 = @v3mpositiontaking_3,
+			@v3mpositiontaking_20 = @v3mpositiontaking_20,
+
+			@v5mpositiontaking_1 = @v5mpositiontaking_1,
+			@v5mpositiontaking_2 = @v5mpositiontaking_2,
+			@v5mpositiontaking_3 = @v5mpositiontaking_3,
+			@v5mpositiontaking_20 = @v5mpositiontaking_20,
+
+			@v8mpositiontaking_1 = @v8mpositiontaking_1,
+			@v8mpositiontaking_3 = @v8mpositiontaking_3,
+			@v8mpositiontaking_20 = @v8mpositiontaking_20,
+
+			@v10mpositiontaking_1 = @v10mpositiontaking_1,
+			@v10mpositiontaking_2 = @v10mpositiontaking_2,
+			@v10mpositiontaking_3 = @v10mpositiontaking_3,
+			@v10mpositiontaking_20 = @v10mpositiontaking_20,
+
+			@v11mpositiontaking_1 = @v11mpositiontaking_1,
+			@v11mpositiontaking_20 = @v11mpositiontaking_20,
+
+			@v99mpositiontaking_1 = @v99mpositiontaking_1,
+			@v99mpositiontaking_2 = @v99mpositiontaking_2,
+			@v99mpositiontaking_3 = @v99mpositiontaking_3,
+			@v99mpositiontaking_20 = @v99mpositiontaking_20,
+
+			-- mixed sports
+			@v99mpositiontaking_9  = @v99mpositiontaking_9,
+			
+			@spositiontaking_1 = @spositiontaking_1,
+			@spositiontaking_2 = @spositiontaking_2,
+			@spositiontaking_3 = @spositiontaking_3,
+			@spositiontaking_4 = @spositiontaking_4,
+			@spositiontaking_5 = @spositiontaking_5,
+			@spositiontaking_6 = @spositiontaking_6,
+			@spositiontaking_7 = @spositiontaking_7,
+			@spositiontaking_8 = @spositiontaking_8,
+			@spositiontaking_9 = @spositiontaking_9,
+			@spositiontaking_10 = @spositiontaking_10,
+			
+			@slivepositiontaking_1 = @slivepositiontaking_1,
+			@slivepositiontaking_3 = @slivepositiontaking_3,
+			@slivepositiontaking_7 = @slivepositiontaking_7,
+			@slivepositiontaking_8 = @slivepositiontaking_8,
+			
+			@v2spositiontaking_1 = @v2spositiontaking_1,
+			@v2spositiontaking_2 = @v2spositiontaking_2,
+			@v2spositiontaking_3 = @v2spositiontaking_3,
+			@v2spositiontaking_7 = @v2spositiontaking_7,
+			@v2spositiontaking_8 = @v2spositiontaking_8,
+		--	@v2spositiontaking_9 = @v2spositiontaking_9,
+			@v2spositiontaking_20 = @v2spositiontaking_20,
+
+			@v3spositiontaking_1 = @v3spositiontaking_1,
+			@v3spositiontaking_2 = @v3spositiontaking_2,
+			@v3spositiontaking_3 = @v3spositiontaking_3,
+			@v3spositiontaking_20 = @v3spositiontaking_20,
+
+			@v5spositiontaking_1 = @v5spositiontaking_1,
+			@v5spositiontaking_2 = @v5spositiontaking_2,
+			@v5spositiontaking_3 = @v5spositiontaking_3,
+			@v5spositiontaking_20 = @v5spositiontaking_20,
+
+			@v8spositiontaking_1 = @v8spositiontaking_1,
+			@v8spositiontaking_3 = @v8spositiontaking_3,
+			@v8spositiontaking_20 = @v8spositiontaking_20,
+
+			@v10spositiontaking_1 = @v10spositiontaking_1,
+			@v10spositiontaking_2 = @v10spositiontaking_2,
+			@v10spositiontaking_3 = @v10spositiontaking_3,
+			@v10spositiontaking_20 = @v10spositiontaking_20,
+
+			@v11spositiontaking_1 = @v11spositiontaking_1,
+			@v11spositiontaking_20 = @v11spositiontaking_20,
+
+			@v99spositiontaking_1 = @v99spositiontaking_1,
+			@v99spositiontaking_2 = @v99spositiontaking_2,
+			@v99spositiontaking_3 = @v99spositiontaking_3,
+			@v99spositiontaking_20 = @v99spositiontaking_20,	
+
+			-- mixed sports
+			@v99spositiontaking_9 = @v99spositiontaking_9,
+			
+			@UpdateMultiple = @UpdateMultiple,
+			@UpdatePositiontaking = @UpdatePositiontaking,
+			@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
+			@UpdatePositiontakingv3 = @UpdatePositiontakingv3,
+			@UpdatePositiontakingv5 = @UpdatePositiontakingv5,
+			@UpdatePositiontakingv8 = @UpdatePositiontakingv8,
+			@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
+			@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
+			@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
+			@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP
+		
+		IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
+		BEGIN
+			EXEC dbo.Acc_CustSetting3rd_08 
+				@custid = @custid,
+				@mode ='number',
+				
+				@v161mpositiontaking_81 = @v161mpositiontaking_81,
+				@v161mpositiontaking_83 = @v161mpositiontaking_83,
+				@v161mpositiontaking_86 = @v161mpositiontaking_86,
+				@v161mpositiontaking_88 = @v161mpositiontaking_88,
+				@v161mlivepositiontaking_85 = @v161mlivepositiontaking_85,
+				@v161mlivepositiontaking_86 = @v161mlivepositiontaking_86,
+				@v161mlivepositiontaking_87 = @v161mlivepositiontaking_87,
+				@v161mlivepositiontaking_89 = @v161mlivepositiontaking_89,
+				@v161mlivepositiontaking_90 = @v161mlivepositiontaking_90,
+				
+				@v161spositiontaking_81 = @v161spositiontaking_81,
+				@v161spositiontaking_83 = @v161spositiontaking_83,
+				@v161spositiontaking_86 = @v161spositiontaking_86,
+				@v161spositiontaking_88 = @v161spositiontaking_88,
+				@v161slivepositiontaking_85 = @v161slivepositiontaking_85,
+				@v161slivepositiontaking_86 = @v161slivepositiontaking_86,
+				@v161slivepositiontaking_87 = @v161slivepositiontaking_87,
+				@v161slivepositiontaking_89 = @v161slivepositiontaking_89,
+				@v161slivepositiontaking_90 = @v161slivepositiontaking_90
+		END
+			
+		/*
 		--don't update m1,s1 for member under agent was set im2=1
 		UPDATE cs WITH (ROWLOCK, UPDLOCK)
 		SET
@@ -4864,7 +5015,7 @@ if	@UpdatePositiontaking   = 1  or
 								cs.mpositiontaking		
 						ELSE CASE cs.sporttype
 						 	WHEN 1 THEN CASE cs.bettype WHEN 1 THEN @mpositiontaking_1 WHEN 2 THEN @mpositiontaking_2 WHEN 3 THEN @mpositiontaking_3 WHEN 4 THEN @mpositiontaking_4 WHEN 5 THEN @mpositiontaking_5 WHEN 6 THEN @mpositiontaking_6 WHEN 7 THEN @mpositiontaking_7 WHEN 8 THEN @mpositiontaking_8 WHEN 9 THEN @mpositiontaking_9 WHEN 10 THEN @mpositiontaking_10 ELSE 0 END
-							WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 /*WHEN 9 THEN @v2mpositiontaking_9*/ WHEN 20 THEN @v2mpositiontaking_20 ELSE 0 END
+							WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 WHEN 20 THEN @v2mpositiontaking_20 ELSE 0 END
 							WHEN 3 THEN CASE cs.bettype WHEN 1 THEN @v3mpositiontaking_1 WHEN 2 THEN @v3mpositiontaking_2 WHEN 3 THEN @v3mpositiontaking_3 WHEN 20 THEN @v3mpositiontaking_20 ELSE 0 END
 							WHEN 5 THEN CASE cs.bettype WHEN 1 THEN @v5mpositiontaking_1 WHEN 2 THEN @v5mpositiontaking_2 WHEN 3 THEN @v5mpositiontaking_3 WHEN 20 THEN @v5mpositiontaking_20 ELSE 0 END
 							WHEN 8 THEN CASE cs.bettype WHEN 1 THEN @v8mpositiontaking_1 WHEN 3 THEN @v8mpositiontaking_3 WHEN 20 THEN @v8mpositiontaking_20 ELSE 0 END
@@ -4888,7 +5039,7 @@ if	@UpdatePositiontaking   = 1  or
 									cs.spositiontaking
 							ELSE CASE cs.sporttype 
 								WHEN 1 THEN CASE cs.bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 ELSE 0 END
-								WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20 ELSE 0 END
+								WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 WHEN 20 THEN @v2spositiontaking_20 ELSE 0 END
 								WHEN 3 THEN CASE cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
 								WHEN 5 THEN CASE cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 ELSE 0 END
 								WHEN 8 THEN CASE cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
@@ -4982,6 +5133,7 @@ if	@UpdatePositiontaking   = 1  or
 				INNER JOIN Custsetting3rd acs3 WITH(NOLOCK) ON acs3.custid = c.recommend AND cs3.sporttype = acs3.sporttype AND cs3.bettype = acs3.bettype 
 			WHERE c.custid=@custid AND c.roleid = 1 AND acs3.isautolivempositiontaking = 0 
 		END
+		*/
 		
 		print @ErrCode_Cur
 		--Update auto PT
