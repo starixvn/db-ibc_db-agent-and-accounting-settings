@@ -5,7 +5,8 @@ AS
 --@Source Control
 /*
 Created: 20090520@Phuc
-Task : Update minmaxPT for HR
+Task : Up
+
 DB: DBTRANS.bodb02
 Original: [Acc_CustomerUpdMinMaxPositiontaking_MAg]
 

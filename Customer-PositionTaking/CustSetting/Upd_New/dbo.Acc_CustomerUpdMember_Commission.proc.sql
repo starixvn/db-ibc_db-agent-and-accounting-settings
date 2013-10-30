@@ -1,9 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Commission]
+﻿
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Commission]
 	@custid INT,-- MemberId
 	@playerdiscount DECIMAL(9,8),
 	@playerdiscountcs DECIMAL(9,8),	
 	@playerdiscount1x2 DECIMAL(9,8)=0,
 	@playerdiscountnumber DECIMAL(9,8)=0,
+	--@playerdiscountHRFixedOdds decimal (9,8) = 0,
 	@updatecomm_old BIT = 1,
 	@SubAccID INT = 0, --Sub-AccountID
 	@UserID INT = 0,	
@@ -35,6 +37,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -115,30 +118,25 @@ BEGIN
 		@playerdiscount1x2 = CASE WHEN @playerdiscount1x2>@discount1x2 THEN @discount1x2 ELSE @playerdiscount1x2 END,		
 		@playerdiscountnumber = CASE WHEN @playerdiscountnumber>@discountnumber THEN @discountnumber ELSE @playerdiscountnumber END
 	---------------------------------------
-	UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
-	SET	
-		playerdiscount = CASE WHEN bettype IN (1,2,3,7,8) THEN @playerdiscount 
-							  WHEN bettype = 5 THEN @playerdiscount1x2  
-							  WHEN bettype IN (4,6,9,10,20,21,22) THEN @playerdiscountcs ELSE playerdiscount END  
-	WHERE custid=@custid
-		AND @recommend <> 52466
-	SELECT @err1 = @@error
-				
-	UPDATE custsetting3rd WITH (ROWLOCK, UPDLOCK)
-	SET
-		playerdiscount = @playerdiscountnumber
-	WHERE custid = @custid AND Sporttype = 161
-	SELECT @err2 = @@error
-	
-	IF (@err1 <> 0 OR @err2 <> 0)
-	BEGIN
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 102
-		RETURN
-	END
+	Declare @RoleId int
+	Select
+		@RoleId = roleid
+	from custInfo with(NOLOCK)
+	where custid = @custid
+
+	-- Apply exec rep
+	exec Acc_CustSetting_06
+		@CustId = @custid,
+		@RoleId = @RoleId,
+		@groupa = @playerdiscount ,
+		@discountcs = @playerdiscountcs,	
+		@discount1x2 = @playerdiscount1x2
+
+	exec Acc_CustSetting3rd_06
+		@CustId = @custid,
+		@RoleId = @RoleId,
+		@discountNumber = @playerdiscountnumber,
+		@mode = 'NumberGame'
 
 END
 
@@ -217,7 +215,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
-END CATCH	
+END CATCH
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbAdminNet]
 GO
