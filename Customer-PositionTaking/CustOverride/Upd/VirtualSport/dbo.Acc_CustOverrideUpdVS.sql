@@ -26,6 +26,7 @@ AS
 	Revisions:
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+		- 20131029@Elodie: Apply execrep when update min/max pt on master or agent
 	Param's Explanation:
 	• @ErrCode:
 		= 0: Update successfully.
@@ -181,13 +182,15 @@ END
 
 if @roleid = 2
 BEGIN	
-	EXEC dbo.Acc_CustomerUpdAgentVS_MinMaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.Acc_CustSetting3rd_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 2
+
 	-- The minimum position taking value of agent was modified by agent's upline
 	EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID	
 END
 ELSE IF @roleid = 3
 BEGIN	
-	EXEC dbo.Acc_CustomerUpdMasterVS_MinMaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 3
+
 END
 ELSE IF @roleid= 4 and @UpdateMinPos = 1 
 BEGIN	
