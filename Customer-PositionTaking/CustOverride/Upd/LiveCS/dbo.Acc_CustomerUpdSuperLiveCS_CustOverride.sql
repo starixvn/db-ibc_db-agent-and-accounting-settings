@@ -20,7 +20,7 @@ AS
 		
 		Revisions:
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
-			
+			- 20131030@Lukas: Apply execRep
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -72,12 +72,14 @@ SET NOCOUNT ON
 
 	IF @roleid = 3
 	BEGIN
-		EXEC Acc_CustomerUpdMasterLiveCS_MinPositiontaking @custid = @custid, @srecommend = @UplineID
+		--EXEC Acc_CustomerUpdMasterLiveCS_MinPositiontaking @custid = @custid, @srecommend = @UplineID
+		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mod = 'LiveCasino'
 	END
 
 	IF @roleid = 2
 	BEGIN
-		EXEC Acc_CustomerUpdAgentLiveCS_MinPositiontaking @custid = @custid, @mrecommend = @UplineID
+		--EXEC Acc_CustomerUpdAgentLiveCS_MinPositiontaking @custid = @custid, @mrecommend = @UplineID
+		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mod = 'LiveCasino'
 	END
 
 	DECLARE @LogSPData VARCHAR(MAX),
@@ -132,10 +134,9 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
-
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbDownlineNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [vnteam] AS [dbo]
