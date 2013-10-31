@@ -1,4 +1,5 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR]
+﻿
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR]
 	@custid INT,-- masterId
 	@v151discount_31 DECIMAL(9,8),--commission for tote.
 	@v151discount_41 DECIMAL(9,8),--commission for OT.
@@ -43,6 +44,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
+	- 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -132,29 +134,113 @@ SELECT @username = username,
 FROM custinfo WITH (NOLOCK)
 WHERE custid = @custid AND roleid = 3
 
-if (@UpdateMultiple = 0 or @Updatediscountv151_31 = 1 or @Updatediscountv151_41 = 1 or @Updatediscountv153_51 = 1)
-BEGIN --@@Updatediscountv151
+SELECT @db_v151discount_31 = ISNULL(adiscount,0)	-- @db_v151discount_31
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 31 and sporttype = 151
+
+SELECT @db_v151discount_41 = ISNULL(adiscount,0)	-- @db_v151discount_41
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 41 and sporttype = 151
+
+SELECT @db_v151discount_51 = ISNULL(adiscount,0)	 -- @db_v151discount_51
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 51 and sporttype = 151
+
+SELECT @db_v152discount_41 = ISNULL(adiscount,0)	 -- @db_v152discount_41
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 41 and sporttype = 152
+
+SELECT @db_v152discount_51 = ISNULL(adiscount,0)	 -- @db_v152discount_51
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 51 and sporttype = 152
+
+SELECT @db_v153discount_51 = ISNULL(adiscount,0)	
+		FROM CustSetting3rd WITH (NOLOCK) 
+		WHERE custid = @custid AND bettype = 51 and sporttype = 153
+
+DECLARE @RoleId int
+SELECT @RoleId = roleid
+FROM custInfo with(NOLOCK)
+WHERE custid = @custid 
+
+if (@UpdateMultiple = 0 
+	or @Updatediscountv151_31 = 1 
+	or @Updatediscountv151_41 = 1 
+	or @Updatediscountv153_51 = 1
+	or @Updatediscountv152_41 = 1 
+	or @Updatediscountv152_51 = 1
+	or @Updatediscountv153_51 = 1
+	)
+BEGIN 
+	--@@Updatediscountv151
 	if (@Updatediscountv151_31 = 1)
-		SELECT @db_v151discount_31 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 31 and sporttype = 151
+	BEGIN
+		SELECT @v151discount_31 = CASE WHEN @v151discount_31 >sdiscount THEN sdiscount ELSE @v151discount_31 END -- @v151discount_31
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype=31 AND sporttype = 151
+	END
+	ELSE
+		SELECT @v151discount_31 = @db_v151discount_31
+
 	if (@Updatediscountv151_41 = 1)
-		SELECT @db_v151discount_41 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 41 and sporttype = 151
+	BEGIN
+		SELECT @v151discount_41 = CASE WHEN @v151discount_41 > sdiscount THEN sdiscount ELSE @v151discount_41 END  -- @v151discount_41
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype = 41 AND sporttype = 151
+	END
+	ELSE 
+		SELECT @v151discount_41 = @db_v151discount_41 	
+
 	if (@Updatediscountv151_51 = 1)
-		SELECT @db_v151discount_51 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 and sporttype = 151
-END --@@Updatediscountv151
+	BEGIN
+		SELECT @v151discount_51 = CASE WHEN @v151discount_51 > sdiscount THEN sdiscount ELSE @v151discount_51 END   -- @v151discount_51
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 151
+	END
+	ELSE 
+		SELECT @v151discount_51 = @db_v151discount_51
 
-if (@UpdateMultiple = 0 or @Updatediscountv152_41 = 1 or @Updatediscountv152_51 = 1)
-BEGIN --@@Updatediscountv152
+	--@@Updatediscountv152
 	if (@Updatediscountv152_41 = 1)
-		SELECT @db_v152discount_41 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 41 and sporttype = 152
+	BEGIN
+		SELECT @v152discount_41 = CASE WHEN @v152discount_41 > sdiscount THEN sdiscount ELSE @v152discount_41 END  -- @v152discount_41
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype = 41 AND sporttype = 152 
+	END
+	ELSE 
+		SELECT @v152discount_41 = @db_v152discount_41	
+
 	if (@Updatediscountv152_51 = 1)
-		SELECT @db_v152discount_51 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 and sporttype = 152
-END --@@Updatediscountv152
+	BEGIN
+		SELECT @v152discount_51 = CASE WHEN @v152discount_51 > sdiscount THEN sdiscount ELSE @v152discount_51 END  -- @v152discount_51
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 152
+	END
+	ELSE
+		SELECT @v152discount_51 = @db_v152discount_51	
 
-if (@UpdateMultiple = 0 or @Updatediscountv153_51 = 1)
-BEGIN --@@Updatediscountv153
-	if (@Updatediscountv152_41 = 1)
-		SELECT @db_v153discount_51 = adiscount	FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 and sporttype = 153
-END --@@Updatediscountv153
+	--@@Updatediscountv153
+	if (@Updatediscountv153_51 = 1)
+	BEGIN
+		SELECT @v153discount_51 = CASE WHEN @v153discount_51 > sdiscount THEN sdiscount ELSE @v153discount_51 END 
+		FROM CustSetting3rd AS cs WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 153 
+	END
+	ELSE 
+		SELECT @v153discount_51 = @db_v153discount_51	
+
+	-- Apply exec rep
+	exec dbo.Acc_CustSetting3rd_06
+			@CustId = @custid,
+			@RoleId = @RoleId ,
+			@v151discount_31 = @v151discount_31,
+			@v151discount_41 = @v151discount_41, 
+			@v151discount_51 = @v151discount_51,
+			@v152discount_41 = @v152discount_41,
+			@v152discount_51 = @v152discount_51,
+			@v153discount_51 = @v153discount_51,
+			@mode = 'HorseRacing'
+END 
 
 -- Check whether user edits commission or not - If not - RETURN 
 --20090305: Thien comment out the make sure the commission is updated correctly
@@ -164,454 +250,6 @@ END --@@Updatediscountv153
 ---------------------------------------
 
 ---------------------------------------
-if (@UpdateMultiple = 0 or @Updatediscountv151_31 = 1 or @Updatediscountv151_41 = 1 or @Updatediscountv151_51 = 1)
-BEGIN --@Updatediscountv151
-	IF (@db_v151discount_31 <> @v151discount_31) and @Updatediscountv151_31 = 1
-	BEGIN
-		--Get g3=g4 if g3>g4
-		SELECT @v151discount_31 = CASE WHEN @v151discount_31 >sdiscount THEN sdiscount ELSE @v151discount_31 END
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype=31 AND sporttype = 151
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v151discount_31
-		WHERE custid=@custid AND bettype IN(31,32) AND sporttype = 151
-		IF (@@ERROR <> 0)
-		BEGIN
-		
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 102
-			RETURN
-		END
-		---------------------------------------
-		--Update g2 = g3 if g2>g3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v151discount_31 
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(31,32) AND cs.sporttype = 151 AND discount> @v151discount_31
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 103					 
-			
-			RETURN
-		END
-
-		---------------------------------------
-		--Update g3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET adiscount = @v151discount_31
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 	
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(31,32) 
-			AND cs.sporttype = 151
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 105	
-			
-			RETURN
-		END
-	END 
-
-	IF (@db_v151discount_41 <> @v151discount_41)and  @Updatediscountv151_41 = 1
-	BEGIN 
-		--Get m3=s4 if m3>s4
-		SELECT @v151discount_41 = CASE WHEN @v151discount_41 > sdiscount THEN sdiscount ELSE @v151discount_41 END 
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype = 41 AND sporttype = 151 
-		
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v151discount_41 
-		WHERE custid=@custid AND bettype IN(41,42) AND sporttype = 151 
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END
-		---------------------------------------
-		--Update a2 = m3 if a2>m3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v151discount_41
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(41,42) AND cs.sporttype = 151 AND discount>@v151discount_41
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 104				 
-			
-			RETURN
-		END
-		
-		
-		
-		---------------------------------------
-		--Update m3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    adiscount = @v151discount_41
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(41,42) 
-			AND cs.sporttype = 151
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 106
-			RETURN
-		END
-	END 
-	---------------------------------------
-	IF (isnull(@db_v151discount_51,0) <> @v151discount_51) and @Updatediscountv151_51 = 1
-	BEGIN 
-		--Get m3=s4 if m3>s4
-		SELECT @v151discount_51 = CASE WHEN @v151discount_51 > sdiscount THEN sdiscount ELSE @v151discount_51 END 
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 151 
-		
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v151discount_51 
-		WHERE custid=@custid AND bettype IN(51,52) AND sporttype = 151 
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END
-		---------------------------------------
-		--Update a2 = m3 if a2>m3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v151discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(51,52) AND cs.sporttype = 151 AND discount>@v151discount_51
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 104				 
-			
-			RETURN
-		END
-		
-		
-		
-		---------------------------------------
-		--Update m3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    adiscount = @v151discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(51,52) 
-			AND cs.sporttype = 151
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 106
-			RETURN
-		END
-	END 
-END --@Updatediscountv151	
-	------------------------------------------
-if (@UpdateMultiple = 0 or @Updatediscountv152_41 = 1 or @Updatediscountv152_51 = 1)
-BEGIN --@Updatediscountv152	
-	IF (isnull(@db_v152discount_41,0) <> @v152discount_41) and @Updatediscountv152_41 = 1
-	BEGIN 
-		--Get m3=s4 if m3>s4
-		SELECT @v152discount_41 = CASE WHEN @v152discount_41 > sdiscount THEN sdiscount ELSE @v152discount_41 END 
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype = 41 AND sporttype = 152 
-		
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v152discount_41 
-		WHERE custid=@custid AND bettype IN(41,42) AND sporttype = 152 
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END
-		---------------------------------------
-		--Update a2 = m3 if a2>m3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v152discount_41
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(41,42) AND cs.sporttype = 152 AND discount>@v152discount_41
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 104				 
-			
-			RETURN
-		END
-		
-		
-		
-		---------------------------------------
-		--Update m3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    adiscount = @v152discount_41
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(41,42) 
-			AND cs.sporttype = 152
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 106
-			RETURN
-		END
-	END 
-	
-	-----------------------------------------
-	
-	IF (isnull(@db_v152discount_51,0) <> @v152discount_51) and @Updatediscountv152_51 = 1
-	BEGIN 
-		--Get m3=s4 if m3>s4
-		SELECT @v152discount_51 = CASE WHEN @v152discount_51 > sdiscount THEN sdiscount ELSE @v152discount_51 END 
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 152 
-		
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v152discount_51 
-		WHERE custid=@custid AND bettype IN(51,52) AND sporttype = 152 
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END
-		---------------------------------------
-		--Update a2 = m3 if a2>m3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v152discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(51,52) AND cs.sporttype = 152 AND discount>@v152discount_51
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 104				 
-			
-			RETURN
-		END
-		
-		
-		
-		---------------------------------------
-		--Update m3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    adiscount = @v152discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(51,52) 
-			AND cs.sporttype = 152
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 106
-			RETURN
-		END
-	END 
-END--@Updatediscountv152		
-	------------------------------------------
-
-if (@UpdateMultiple = 0 or @Updatediscountv153_51 = 1)
-BEGIN --@Updatediscountv153
-	IF (isnull(@db_v153discount_51,0) <> @v153discount_51) and @Updatediscountv153_51 = 1
-	BEGIN 
-		--Get m3=s4 if m3>s4
-		SELECT @v153discount_51 = CASE WHEN @v153discount_51 > sdiscount THEN sdiscount ELSE @v153discount_51 END 
-		FROM CustSetting3rd AS cs WITH (NOLOCK) 
-		WHERE custid = @srecommend AND bettype = 51 AND sporttype = 153 
-		
-		--Update @Master: g3, m3
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-		SET    adiscount = @v153discount_51 
-		WHERE custid=@custid AND bettype IN(51,52) AND sporttype = 153 
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END
-		---------------------------------------
-		--Update a2 = m3 if a2>m3 at agent
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    discount = @v153discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 AND cs.bettype IN(51,52) AND cs.sporttype = 153 AND discount>@v153discount_51
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 104				 
-			
-			RETURN
-		END
-		
-		
-		
-		---------------------------------------
-		--Update m3 @ member level
-		UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-		SET    adiscount = @v153discount_51
-		FROM CustSetting3rd AS cs
-		INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND cs.bettype IN(51,52) 
-			AND cs.sporttype = 153
-		IF (@@ERROR <> 0)
-		BEGIN
-			
-			SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 106
-			RETURN
-		END
-	END 
-END --@Updatediscountv153	
-	
-	------------------------------------------
-	--At member level, update discount = adiscount  if discount > adiscount
-	UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		discount = CASE WHEN @UpdateMultiple = 1 
-								OR (	(cs.sporttype=151 AND @Updatediscountv151_31 = 0 AND @Updatediscountv151_41 = 0 AND @Updatediscountv151_51 = 0) 
-									OR  (cs.sporttype=152 AND @Updatediscountv152_41 = 0 AND @Updatediscountv152_51 = 0) 
-									OR  (cs.sporttype=153 AND @Updatediscountv153_51 = 0))
-								THEN discount 		
-						ELSE adiscount END
-	FROM CustSetting3rd AS cs
-	INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-	WHERE c.mrecommend = @custid AND c.roleid = 1 AND cs.discount>cs.adiscount AND sporttype IN (151,152,153)
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 107
-		RETURN
-	END
-
-	---------------------------------------
-	--At member level, update playerdiscount = discount  if playerdiscount > discount
-	UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
-	SET 	
-		playerdiscount = CASE WHEN @UpdateMultiple = 1 
-								AND (	(cs.sporttype=151 AND @Updatediscountv151_31 = 0 AND @Updatediscountv151_41 = 0 AND @Updatediscountv151_51 = 0) 
-									OR  (cs.sporttype=152 AND @Updatediscountv152_41 = 0 AND @Updatediscountv152_51 = 0) 
-									OR  (cs.sporttype=153 AND @Updatediscountv153_51 = 0))
-								THEN playerdiscount
-							ELSE discount END
-	FROM CustSetting3rd AS cs
-	INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-	WHERE c.mrecommend = @custid AND c.roleid = 1 AND cs.playerdiscount>cs.discount AND sporttype in (151,152,153)
-	IF (@@ERROR <> 0)
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 108
-		RETURN
-	END
-
 
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(4000)
@@ -707,6 +345,7 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH	
+
 
 
 GO

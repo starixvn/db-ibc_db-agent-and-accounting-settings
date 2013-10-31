@@ -1,4 +1,5 @@
 ﻿
+
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_CommissionHR]
 	@custid INT,-- MemberId
 	@v151discount_31 DECIMAL(9,8),--commission for Tote.
@@ -47,6 +48,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: write log on DBTXN if DBLOG failure
+	- 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -141,97 +143,132 @@ SELECT @UserName  = username,
 		@recommend = recommend
 FROM customer c WITH (NOLOCK) WHERE CustID = @CustID
 
-if (@UpdateMultiple = 0 or @Updatediscountv151_31 = 1 or @Updatediscountv151_41 = 1 or @Updatediscountv153_51 = 1)
-BEGIN --@Updatediscountv151
-	if (@Updatediscountv151_31 = 1)
-		SELECT @db_v151discount_31 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 31 AND sporttype = 151
-	if (@Updatediscountv151_41 = 1)
-		SELECT @db_v151discount_41 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 41 AND sporttype = 151
-	if (@Updatediscountv151_51 = 1)
-		SELECT @db_v151discount_51 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 AND sporttype = 151
-END--@Updatediscountv151
-
-if (@UpdateMultiple = 0 or @Updatediscountv152_41 = 1 or @Updatediscountv152_51 = 1)
-BEGIN --@Updatediscountv152
-	if (@Updatediscountv152_41 = 1)
-		SELECT @db_v152discount_41 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 41 AND sporttype = 152
-	if (@Updatediscountv152_51 = 1)
-		SELECT @db_v152discount_51 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 AND sporttype = 152
-END--@Updatediscountv152
-
-if (@UpdateMultiple = 0 or @Updatediscountv153_51 = 1)
-BEGIN --@Updatediscountv153
-	if (@Updatediscountv153_51 = 1)
-		SELECT @db_v153discount_51 = playerdiscount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @custid AND bettype = 51 AND sporttype = 153
-END--@Updatediscountv153
---20090305: Thien comment out the make sure the commission is updated correctly
---IF @db_v151discount_31 = @v151discount_31 AND @db_v151discount_41 = @v151discount_41
---	RETURN
-
-if (@UpdateMultiple = 0 or @Updatediscountv151_31 = 1 or @Updatediscountv151_41 = 1 or @Updatediscountv151_51 = 1)
-BEGIN --@Updatediscountv151
-	if (@Updatediscountv151_31 = 1)
-		SELECT @Av151discount_31 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=31 AND sporttype = 151
-	if (@Updatediscountv151_41 = 1)
-		SELECT @Av151discount_41 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=41 AND sporttype = 151 
-	if (@Updatediscountv151_51 = 1)
-		SELECT @Av151discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 151
-END--@Updatediscountv151
-if (@UpdateMultiple = 0 or @Updatediscountv152_41 = 1 or @Updatediscountv152_51 = 1)
-BEGIN --@Updatediscountv152
-	if (@Updatediscountv152_41 = 1)
-		SELECT @Av152discount_41 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=41 AND sporttype = 152
-	if (@Updatediscountv152_51 = 1)
-		SELECT @Av152discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 152
-END--@Updatediscountv152
-
-if (@UpdateMultiple = 0 or @Updatediscountv153_51 = 1)
-BEGIN --@Updatediscountv153
-	if (@Updatediscountv153_51 = 1)
-		SELECT @Av153discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 153
-END--@Updatediscountv153
+SELECT 
+	@db_v151discount_31 = ISNULL(playerdiscount , 0)
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 31 
+	AND sporttype = 151
+		
+SELECT 
+	@db_v151discount_41 = ISNULL(playerdiscount , 0) 
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 41 
+	AND sporttype = 151
 
 SELECT 
-	@v151discount_31 = CASE WHEN @v151discount_31 > @Av151discount_31 THEN @Av151discount_31 ELSE @v151discount_31 END,
-	@v151discount_41 = CASE WHEN @v151discount_41 > @Av151discount_41 THEN @Av151discount_41 ELSE @v151discount_41 END,
-	@v151discount_51 = CASE WHEN @v151discount_51 > @Av151discount_51 THEN @Av151discount_51 ELSE @v151discount_51 END,
-	@v152discount_41 = CASE WHEN @v152discount_41 > @Av152discount_41 THEN @Av152discount_41 ELSE @v152discount_41 END,
-	@v152discount_51 = CASE WHEN @v152discount_51 > @Av152discount_51 THEN @Av152discount_51 ELSE @v152discount_51 END,
-	@v153discount_51 = CASE WHEN @v153discount_51 > @Av153discount_51 THEN @Av153discount_51 ELSE @v153discount_51 END
+	@db_v151discount_51 = ISNULL(playerdiscount , 0) 
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 51 
+	AND sporttype = 151
 
----------------------------------------
+SELECT 
+	@db_v152discount_41 = ISNULL(playerdiscount , 0) 
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 41 
+	AND sporttype = 152
 
----------------------------------------
-UPDATE CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	playerdiscount = CASE WHEN @UpdateMultiple = 1 
-								AND (	(sporttype=151 AND @Updatediscountv151_31 = 0 AND @Updatediscountv151_41 = 0 AND @Updatediscountv151_51 = 0 )
-									OR  (sporttype=152 AND @Updatediscountv152_41 = 0 AND @Updatediscountv152_51 = 0 ) 
-									OR  (sporttype=153 AND @Updatediscountv153_51 = 0))
-								THEN playerdiscount
-							ELSE
-								CASE	WHEN bettype IN (31,32) AND sporttype = 151 AND @Updatediscountv151_31 = 1 THEN @v151discount_31 
-										WHEN bettype IN (41,42) AND sporttype = 151 AND @Updatediscountv151_41 = 1 THEN @v151discount_41 
-										WHEN bettype IN (51,52) AND sporttype = 151 AND @Updatediscountv151_51 = 1 THEN @v151discount_51
-										WHEN bettype IN (41,42) AND sporttype = 152 AND @Updatediscountv152_41 = 1 THEN @v152discount_41
-										WHEN bettype IN (51,52) AND sporttype = 152 AND @Updatediscountv152_51 = 1 THEN @v152discount_51
-										WHEN bettype IN (51,52) AND sporttype = 153 AND @Updatediscountv153_51 = 1 THEN @v153discount_51
-										ELSE playerdiscount END
-							END
-WHERE custid=@custid 
-		and sporttype in (151,152,153)
-	AND @recommend <> 52466
-IF (@@ERROR <> 0)
-BEGIN
+SELECT 
+	@db_v152discount_51 = ISNULL(playerdiscount , 0) 
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 51 
+	AND sporttype = 152
 
-	SELECT @ErrMsg = @UserName + ': '+
-					CASE @Language 
-						WHEN 'E' THEN 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					END	, @ErrCode = 107
-	RETURN
+SELECT 
+	@db_v153discount_51 = ISNULL(playerdiscount , 0) 
+FROM CustSetting3rd WITH (NOLOCK) 
+WHERE custid = @custid 
+	AND bettype = 51 
+	AND sporttype = 153
+
+
+DECLARE @RoleId int
+SELECT @RoleId = roleid
+FROM custInfo with(NOLOCK)
+WHERE custid = @custid 
+
+if (@UpdateMultiple = 0 
+	or @Updatediscountv151_31 = 1 
+	or @Updatediscountv151_41 = 1 
+	or @Updatediscountv151_51 = 1 
+
+	or @Updatediscountv152_41 = 1
+	or @Updatediscountv152_51 = 1
+
+	or @Updatediscountv153_51 = 1
+	)
+BEGIN 
+	--@Updatediscountv151
+	if (@Updatediscountv151_31 = 1)
+	BEGIN
+		SELECT @Av151discount_31 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=31 AND sporttype = 151
+
+		SELECT @v151discount_31 = CASE WHEN @v151discount_31 > @Av151discount_31 
+											THEN @Av151discount_31 
+									   ELSE @v151discount_31 
+								  END
+	END
+	ELSE
+		SELECT @v151discount_31 = @db_v151discount_31
+
+	if (@Updatediscountv151_41 = 1)
+	BEGIN
+		SELECT @Av151discount_41 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=41 AND sporttype = 151 
+		SELECT @v151discount_41 = CASE WHEN @v151discount_41 > @Av151discount_41 THEN @Av151discount_41 ELSE @v151discount_41 END
+	END
+	ELSE
+		SELECT @db_v151discount_41 = @v151discount_41
+
+	if (@Updatediscountv151_51 = 1)
+	BEGIN
+		SELECT @Av151discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 151
+		SELECT @v151discount_51 = CASE WHEN @v151discount_51 > @Av151discount_51 THEN @Av151discount_51 ELSE @v151discount_51 END
+	END
+	ELSE
+		SELECT @db_v151discount_51 = @v151discount_51
+	--@Updatediscountv152
+	if (@Updatediscountv152_41 = 1)
+	BEGIN
+		SELECT @Av152discount_41 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=41 AND sporttype = 152
+		SELECT @v152discount_41 = CASE WHEN @v152discount_41 > @Av152discount_41 THEN @Av152discount_41 ELSE @v152discount_41 END
+	END
+	ELSE	
+		SELECT @db_v152discount_41 = @v152discount_41
+	if (@Updatediscountv152_51 = 1)
+	BEGIN
+		SELECT @Av152discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 152
+		SELECT @v152discount_51 = CASE WHEN @v152discount_51 > @Av152discount_51 THEN @Av152discount_51 ELSE @v152discount_51 END
+	END
+	ELSE
+		SELECT @db_v152discount_51 = @v152discount_51
+	
+	if (@Updatediscountv153_51 = 1)
+	BEGIN
+		SELECT @Av153discount_51 = discount FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @recommend AND bettype=51 AND sporttype = 153
+		SELECT @v153discount_51 = CASE WHEN @v153discount_51 > @Av153discount_51 THEN @Av153discount_51 ELSE @v153discount_51 END
+	END
+	ELSE
+		SELECT @db_v153discount_51 = @v153discount_51
+
+
+	-- Apply exec rep
+	exec dbo.Acc_CustSetting3rd_06
+			@CustId = @custid,
+			@RoleId = @RoleId ,
+			@v151discount_31 = @v151discount_31,
+			@v151discount_41 = @v151discount_41, 
+			@v151discount_51 = @v151discount_51,
+			@v152discount_41 = @v152discount_41,
+			@v152discount_51 = @v152discount_51,
+			@v153discount_51 = @v153discount_51,
+			@mode = 'HorseRacing'
 END
 
+	
 
 
 Declare @LogSPData varchar(MAX),
@@ -322,6 +359,9 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH	
+
+
+	
 
 
 	
