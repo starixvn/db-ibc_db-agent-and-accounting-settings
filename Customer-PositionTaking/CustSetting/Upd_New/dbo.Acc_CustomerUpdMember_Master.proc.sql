@@ -4850,7 +4850,8 @@ if	@UpdatePositiontaking   = 1  or
 		--- 20131030@Johnson: Apply execrep when update pt on member
 		EXEC dbo.Acc_CustSetting_08
 			@custid = @custid,
-	
+			@roleid = 3,
+			
 			@mpositiontaking_1 = @mpositiontaking_1,
 			@mpositiontaking_2 = @mpositiontaking_2,
 			@mpositiontaking_3 = @mpositiontaking_3,
@@ -4973,6 +4974,7 @@ if	@UpdatePositiontaking   = 1  or
 		BEGIN
 			EXEC dbo.Acc_CustSetting3rd_08 
 				@custid = @custid,
+				@roleid = 3,
 				@mode ='number',
 				
 				@v161mpositiontaking_81 = @v161mpositiontaking_81,

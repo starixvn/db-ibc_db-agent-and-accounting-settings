@@ -336,6 +336,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130617@Johnson: check s1 with valid range of s1
+	- 20131031@Johnson: Aplly execrep when update pt on member
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -3169,7 +3170,95 @@ BEGIN--Update Position Taking
 		@v161slivepositiontaking_89 = CASE WHEN @v161slivepositiontaking_89<0 THEN 0 ELSE @v161slivepositiontaking_89 END,
 		@v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90<0 THEN 0 ELSE @v161slivepositiontaking_90 END
 
+	--- 20131031@Johnson: Aplly execrep when update pt on member
+	EXEC dbo.Acc_CustSetting_08
+		@custid = @custid,
+		@roleid = 4,
+		
+		@spositiontaking_1 = @spositiontaking_1,
+		@spositiontaking_2 = @spositiontaking_2,
+		@spositiontaking_3 = @spositiontaking_3,
+		@spositiontaking_4 = @spositiontaking_4,
+		@spositiontaking_5 = @spositiontaking_5,
+		@spositiontaking_6 = @spositiontaking_6,
+		@spositiontaking_7 = @spositiontaking_7,
+		@spositiontaking_8 = @spositiontaking_8,
+		@spositiontaking_9 = @spositiontaking_9,
+		@spositiontaking_10 = @spositiontaking_10,
+		
+		@slivepositiontaking_1 = @slivepositiontaking_1,
+		@slivepositiontaking_3 = @slivepositiontaking_3,
+		@slivepositiontaking_7 = @slivepositiontaking_7,
+		@slivepositiontaking_8 = @slivepositiontaking_8,
+		
+		@v2spositiontaking_1 = @v2spositiontaking_1,
+		@v2spositiontaking_2 = @v2spositiontaking_2,
+		@v2spositiontaking_3 = @v2spositiontaking_3,
+		@v2spositiontaking_7 = @v2spositiontaking_7,
+		@v2spositiontaking_8 = @v2spositiontaking_8,
+	--	@v2spositiontaking_9 = @v2spositiontaking_9,
+		@v2spositiontaking_20 = @v2spositiontaking_20,
 
+		@v3spositiontaking_1 = @v3spositiontaking_1,
+		@v3spositiontaking_2 = @v3spositiontaking_2,
+		@v3spositiontaking_3 = @v3spositiontaking_3,
+		@v3spositiontaking_20 = @v3spositiontaking_20,
+
+		@v5spositiontaking_1 = @v5spositiontaking_1,
+		@v5spositiontaking_2 = @v5spositiontaking_2,
+		@v5spositiontaking_3 = @v5spositiontaking_3,
+		@v5spositiontaking_20 = @v5spositiontaking_20,
+
+		@v8spositiontaking_1 = @v8spositiontaking_1,
+		@v8spositiontaking_3 = @v8spositiontaking_3,
+		@v8spositiontaking_20 = @v8spositiontaking_20,
+
+		@v10spositiontaking_1 = @v10spositiontaking_1,
+		@v10spositiontaking_2 = @v10spositiontaking_2,
+		@v10spositiontaking_3 = @v10spositiontaking_3,
+		@v10spositiontaking_20 = @v10spositiontaking_20,
+
+		@v11spositiontaking_1 = @v11spositiontaking_1,
+		@v11spositiontaking_20 = @v11spositiontaking_20,
+
+		@v99spositiontaking_1 = @v99spositiontaking_1,
+		@v99spositiontaking_2 = @v99spositiontaking_2,
+		@v99spositiontaking_3 = @v99spositiontaking_3,
+		@v99spositiontaking_20 = @v99spositiontaking_20,
+
+		-- mixed sports
+		@v99spositiontaking_9 = @v99spositiontaking_9,
+		
+		@UpdateMultiple = @UpdateMultiple,
+		@UpdatePositiontaking = @UpdatePositiontaking,
+		@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
+		@UpdatePositiontakingv3 = @UpdatePositiontakingv3,
+		@UpdatePositiontakingv5 = @UpdatePositiontakingv5,
+		@UpdatePositiontakingv8 = @UpdatePositiontakingv8,
+		@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
+		@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
+		@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
+		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP
+	
+	-- number game
+	IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
+	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_08
+			@custid = 0,
+			@mode = 'number',
+			@roleid = 4,
+			
+			@v161spositiontaking_81 = @v161spositiontaking_81,
+			@v161spositiontaking_83 = @v161spositiontaking_83,
+			@v161spositiontaking_86 = @v161spositiontaking_86,
+			@v161spositiontaking_88 = @v161spositiontaking_88,
+			@v161slivepositiontaking_85 = @v161slivepositiontaking_85,
+			@v161slivepositiontaking_86 = @v161slivepositiontaking_86,
+			@v161slivepositiontaking_87 = @v161slivepositiontaking_87,
+			@v161slivepositiontaking_89 = @v161slivepositiontaking_89,
+			@v161slivepositiontaking_90 = @v161slivepositiontaking_90
+	END
+	/*
 	--don't update s1 for member under master was set i3=1(normal)
 	UPDATE cs WITH (ROWLOCK, UPDLOCK)
 	SET
@@ -3187,7 +3276,7 @@ BEGIN--Update Position Taking
 								THEN cs.spositiontaking 
 						ELSE CASE cs.sporttype 	
 								WHEN 1 THEN case cs.bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 ELSE 0 END
-								WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20  ELSE 0 END
+								WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8  WHEN 20 THEN @v2spositiontaking_20  ELSE 0 END
 								WHEN 3 THEN case cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
 								WHEN 5 THEN case cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 ELSE 0 END
 								WHEN 8 THEN case cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
@@ -3253,6 +3342,7 @@ BEGIN--Update Position Taking
 			INNER JOIN custsetting3rd mcs3 (nolock) on mcs3.custid = c.mrecommend and cs3.sporttype = mcs3.sporttype and cs3.bettype = mcs3.bettype
 		where cs3.custid=@custid and c.roleid = 1 and mcs3.isautolivepositiontaking = 0
 	END
+	*/
 	
 	EXEC dbo.Acc_CustomerUpdMember_AutoPositiontaking 
 				@custid = @custid,

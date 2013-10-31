@@ -112,6 +112,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20130614@Johnson: check a1 with valid range of a1
+	- 20131031@Johnson: Apply execrep when update pt on member
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -3790,6 +3791,226 @@ SELECT @v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90 > @ma
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------
+--- 20131031@Johnson: Apply execrep when update pt on member
+	EXEC dbo.Acc_CustSetting_08
+		@custid = @custid,
+		@roleid = 2,
+		
+		@spositiontaking_1 = @spositiontaking_1,
+		@spositiontaking_2 = @spositiontaking_2,
+		@spositiontaking_3 = @spositiontaking_3,
+		@spositiontaking_4 = @spositiontaking_4,
+		@spositiontaking_5 = @spositiontaking_5,
+		@spositiontaking_6 = @spositiontaking_6,
+		@spositiontaking_7 = @spositiontaking_7,
+		@spositiontaking_8 = @spositiontaking_8,
+		@spositiontaking_9 = @spositiontaking_9,
+		@spositiontaking_10 = @spositiontaking_10,
+		
+		@slivepositiontaking_1 = @slivepositiontaking_1,
+		@slivepositiontaking_3 = @slivepositiontaking_3,
+		@slivepositiontaking_7 = @slivepositiontaking_7,
+		@slivepositiontaking_8 = @slivepositiontaking_8,
+		
+		@v2spositiontaking_1 = @v2spositiontaking_1,
+		@v2spositiontaking_2 = @v2spositiontaking_2,
+		@v2spositiontaking_3 = @v2spositiontaking_3,
+		@v2spositiontaking_7 = @v2spositiontaking_7,
+		@v2spositiontaking_8 = @v2spositiontaking_8,
+	--	@v2spositiontaking_9 = @v2spositiontaking_9,
+		@v2spositiontaking_20 = @v2spositiontaking_20,
+
+		@v3spositiontaking_1 = @v3spositiontaking_1,
+		@v3spositiontaking_2 = @v3spositiontaking_2,
+		@v3spositiontaking_3 = @v3spositiontaking_3,
+		@v3spositiontaking_20 = @v3spositiontaking_20,
+
+		@v5spositiontaking_1 = @v5spositiontaking_1,
+		@v5spositiontaking_2 = @v5spositiontaking_2,
+		@v5spositiontaking_3 = @v5spositiontaking_3,
+		@v5spositiontaking_20 = @v5spositiontaking_20,
+
+		@v8spositiontaking_1 = @v8spositiontaking_1,
+		@v8spositiontaking_3 = @v8spositiontaking_3,
+		@v8spositiontaking_20 = @v8spositiontaking_20,
+
+		@v10spositiontaking_1 = @v10spositiontaking_1,
+		@v10spositiontaking_2 = @v10spositiontaking_2,
+		@v10spositiontaking_3 = @v10spositiontaking_3,
+		@v10spositiontaking_20 = @v10spositiontaking_20,
+
+		@v11spositiontaking_1 = @v11spositiontaking_1,
+		@v11spositiontaking_20 = @v11spositiontaking_20,
+
+		@v99spositiontaking_1 = @v99spositiontaking_1,
+		@v99spositiontaking_2 = @v99spositiontaking_2,
+		@v99spositiontaking_3 = @v99spositiontaking_3,
+		@v99spositiontaking_20 = @v99spositiontaking_20,
+
+		-- mixed sports
+		@v99spositiontaking_9 = @v99spositiontaking_9,
+		
+		@mpositiontaking_1 = @mpositiontaking_1,
+		@mpositiontaking_2 = @mpositiontaking_2,
+		@mpositiontaking_3 = @mpositiontaking_3,
+		@mpositiontaking_4 = @mpositiontaking_4,
+		@mpositiontaking_5 = @mpositiontaking_5,
+		@mpositiontaking_6 = @mpositiontaking_6,
+		@mpositiontaking_7 = @mpositiontaking_7,
+		@mpositiontaking_8 = @mpositiontaking_8,
+		@mpositiontaking_9 = @mpositiontaking_9,
+		@mpositiontaking_10 = @mpositiontaking_10,
+		@mlivepositiontaking_1 = @mlivepositiontaking_1,
+		@mlivepositiontaking_3 = @mlivepositiontaking_3,
+		@mlivepositiontaking_7 = @mlivepositiontaking_7,
+		@mlivepositiontaking_8 = @mlivepositiontaking_8,
+		
+		@v2mpositiontaking_1 = @v2mpositiontaking_1,
+		@v2mpositiontaking_2 = @v2mpositiontaking_2,
+		@v2mpositiontaking_3 = @v2mpositiontaking_3,
+		@v2mpositiontaking_7 = @v2mpositiontaking_7,
+		@v2mpositiontaking_8 = @v2mpositiontaking_8,
+	--	@v2mpositiontaking_9 = @v2mpositiontaking_9,
+		@v2mpositiontaking_20 = @v2mpositiontaking_20,
+
+		@v3mpositiontaking_1 = @v3mpositiontaking_1,
+		@v3mpositiontaking_2 = @v3mpositiontaking_2,
+		@v3mpositiontaking_3 = @v3mpositiontaking_3,
+		@v3mpositiontaking_20 = @v3mpositiontaking_20,
+
+		@v5mpositiontaking_1 = @v5mpositiontaking_1,
+		@v5mpositiontaking_2 = @v5mpositiontaking_2,
+		@v5mpositiontaking_3 = @v5mpositiontaking_3,
+		@v5mpositiontaking_20 = @v5mpositiontaking_20,
+
+		@v8mpositiontaking_1 = @v8mpositiontaking_1,
+		@v8mpositiontaking_3 = @v8mpositiontaking_3,
+		@v8mpositiontaking_20 = @v8mpositiontaking_20,
+
+		@v10mpositiontaking_1 = @v10mpositiontaking_1,
+		@v10mpositiontaking_2 = @v10mpositiontaking_2,
+		@v10mpositiontaking_3 = @v10mpositiontaking_3,
+		@v10mpositiontaking_20 = @v10mpositiontaking_20,
+
+		@v11mpositiontaking_1 = @v11mpositiontaking_1,
+		@v11mpositiontaking_20 = @v11mpositiontaking_20,
+
+		@v99mpositiontaking_1 = @v99mpositiontaking_1,
+		@v99mpositiontaking_2 = @v99mpositiontaking_2,
+		@v99mpositiontaking_3 = @v99mpositiontaking_3,
+		@v99mpositiontaking_20 = @v99mpositiontaking_20,
+
+		-- mixed sports
+		@v99mpositiontaking_9 = @v99mpositiontaking_9,
+				
+		@apositiontaking_1 = @apositiontaking_1,
+		@apositiontaking_2 = @apositiontaking_2,
+		@apositiontaking_3 = @apositiontaking_3,
+		@apositiontaking_4 = @apositiontaking_4,
+		@apositiontaking_5 = @apositiontaking_5,
+		@apositiontaking_6 = @apositiontaking_6,
+		@apositiontaking_7 = @apositiontaking_7,
+		@apositiontaking_8 = @apositiontaking_8,
+		@apositiontaking_9 = @apositiontaking_9,
+		@apositiontaking_10 = @apositiontaking_10,
+		
+		@alivepositiontaking_1 = @alivepositiontaking_1,
+		@alivepositiontaking_3 = @alivepositiontaking_3,
+		@alivepositiontaking_7 = @alivepositiontaking_7,
+		@alivepositiontaking_8 = @alivepositiontaking_8,
+		
+		@v2apositiontaking_1 = @v2apositiontaking_1,
+		@v2apositiontaking_2 = @v2apositiontaking_2,
+		@v2apositiontaking_3 = @v2apositiontaking_3,
+		@v2apositiontaking_7 = @v2apositiontaking_7,
+		@v2apositiontaking_8 = @v2apositiontaking_8,
+		--@v2apositiontaking_9 = @v2apositiontaking_9,
+		@v2apositiontaking_20 = @v2apositiontaking_20,
+		
+		@v3apositiontaking_1 = @v3apositiontaking_1,
+		@v3apositiontaking_2 = @v3apositiontaking_2,
+		@v3apositiontaking_3 = @v3apositiontaking_3,
+		@v3apositiontaking_20 = @v3apositiontaking_20,
+
+		@v5apositiontaking_1 = @v5apositiontaking_1,
+		@v5apositiontaking_2 = @v5apositiontaking_2,
+		@v5apositiontaking_3 = @v5apositiontaking_3,
+		@v5apositiontaking_20 = @v5apositiontaking_20,
+
+		@v8apositiontaking_1 = @v8apositiontaking_1,
+		@v8apositiontaking_3 = @v8apositiontaking_3,
+		@v8apositiontaking_20 = @v8apositiontaking_20,
+
+		@v10apositiontaking_1 = @v10apositiontaking_1,
+		@v10apositiontaking_2 = @v10apositiontaking_2,
+		@v10apositiontaking_3 = @v10apositiontaking_3,
+		@v10apositiontaking_20 = @v10apositiontaking_20,
+
+		@v11apositiontaking_1 = @v11apositiontaking_1,
+		@v11apositiontaking_20 = @v11apositiontaking_20,
+
+		@v99apositiontaking_1 = @v99apositiontaking_1,
+		@v99apositiontaking_2 = @v99apositiontaking_2,
+		@v99apositiontaking_3 = @v99apositiontaking_3,
+		@v99apositiontaking_9 = @v99apositiontaking_9,
+		@v99apositiontaking_20 = @v99apositiontaking_20,
+		
+		@UpdateMultiple = @UpdateMultiple,
+		@UpdatePositiontaking = @UpdatePositiontaking,
+		@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
+		@UpdatePositiontakingv3 = @UpdatePositiontakingv3,
+		@UpdatePositiontakingv5 = @UpdatePositiontakingv5,
+		@UpdatePositiontakingv8 = @UpdatePositiontakingv8,
+		@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
+		@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
+		@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
+		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP
+	
+	
+	--v161
+	IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
+	BEGIN	
+		EXEC dbo.Acc_CustSetting3rd_08
+			@custid = @custid,
+			@roleid = 2,
+			@mode = 'number',
+			
+			@v161spositiontaking_81 = @v161spositiontaking_81,
+			@v161spositiontaking_83 = @v161spositiontaking_83,
+			@v161spositiontaking_86 = @v161spositiontaking_86,
+			@v161spositiontaking_88 = @v161spositiontaking_88,
+			@v161slivepositiontaking_85 = @v161slivepositiontaking_85,
+			@v161slivepositiontaking_86 = @v161slivepositiontaking_86,
+			@v161slivepositiontaking_87 = @v161slivepositiontaking_87,
+			@v161slivepositiontaking_89 = @v161slivepositiontaking_89,
+			@v161slivepositiontaking_90 = @v161slivepositiontaking_90,
+			
+			@v161mpositiontaking_81 = @v161mpositiontaking_81,
+			@v161mpositiontaking_83 = @v161mpositiontaking_83,
+			@v161mpositiontaking_86 = @v161mpositiontaking_86,
+			@v161mpositiontaking_88 = @v161mpositiontaking_88,
+			@v161mlivepositiontaking_85 = @v161mlivepositiontaking_85,
+			@v161mlivepositiontaking_86 = @v161mlivepositiontaking_86,
+			@v161mlivepositiontaking_87 = @v161mlivepositiontaking_87,
+			@v161mlivepositiontaking_89 = @v161mlivepositiontaking_89,
+			@v161mlivepositiontaking_90 = @v161mlivepositiontaking_90,
+			
+			@v161apositiontaking_81 = @v161apositiontaking_81, 
+			@v161apositiontaking_83 = @v161apositiontaking_83, 	
+			@v161apositiontaking_86 = @v161apositiontaking_86, 
+			@v161apositiontaking_88 = @v161apositiontaking_88, 
+			@v161alivepositiontaking_85 = @v161alivepositiontaking_85,
+			@v161alivepositiontaking_86 = @v161alivepositiontaking_86,
+			@v161alivepositiontaking_87 = @v161alivepositiontaking_87,
+			@v161alivepositiontaking_89 = @v161alivepositiontaking_89,
+			@v161alivepositiontaking_90 = @v161alivepositiontaking_90
+	END
+	
+	
+	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+
+	
+/*
 BEGIN TRANSACTION
 ---------------------------------------
 
@@ -3890,6 +4111,7 @@ END
 EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 COMMIT TRANSACTION
+*/
 
 
 
