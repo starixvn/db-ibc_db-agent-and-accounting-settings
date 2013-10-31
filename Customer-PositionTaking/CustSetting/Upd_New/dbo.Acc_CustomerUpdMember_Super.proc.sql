@@ -3244,7 +3244,7 @@ BEGIN--Update Position Taking
 	IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
 	BEGIN
 		EXEC dbo.Acc_CustSetting3rd_08
-			@custid = 0,
+			@custid = @custid,
 			@mode = 'number',
 			@roleid = 4,
 			
