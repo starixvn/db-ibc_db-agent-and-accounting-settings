@@ -5137,6 +5137,129 @@ if	@UpdatePositiontaking   = 1  or
 		END
 		*/
 		
+		--apply exec rep when update auto pt on member
+		EXEC dbo.Acc_CustSetting_09
+			@custid = @custid,
+			@roleid = 3,
+			
+			@auto_mpositiontaking_mem_1 = @auto_mpositiontaking_mem_1,
+			@auto_mpositiontaking_mem_2 = @auto_mpositiontaking_mem_2,
+			@auto_mpositiontaking_mem_3 = @auto_mpositiontaking_mem_3,
+			@auto_mpositiontaking_mem_4 = @auto_mpositiontaking_mem_4,
+			@auto_mpositiontaking_mem_5 = @auto_mpositiontaking_mem_5,
+			@auto_mpositiontaking_mem_6 = @auto_mpositiontaking_mem_6,
+			@auto_mpositiontaking_mem_7 = @auto_mpositiontaking_mem_7,
+			@auto_mpositiontaking_mem_8 = @auto_mpositiontaking_mem_8,
+			@auto_mpositiontaking_mem_9 = @auto_mpositiontaking_mem_9,
+			@auto_mpositiontaking_mem_10 = @auto_mpositiontaking_mem_10,
+			@auto_mlivepositiontaking_mem_1 = @auto_mlivepositiontaking_mem_1,
+			@auto_mlivepositiontaking_mem_3 = @auto_mlivepositiontaking_mem_3,
+			@auto_mlivepositiontaking_mem_7 = @auto_mlivepositiontaking_mem_7,
+			@auto_mlivepositiontaking_mem_8 = @auto_mlivepositiontaking_mem_8,
+			@auto_v2mpositiontaking_mem_1 = @auto_v2mpositiontaking_mem_1,
+			@auto_v2mpositiontaking_mem_2 = @auto_v2mpositiontaking_mem_2,
+			@auto_v2mpositiontaking_mem_3 = @auto_v2mpositiontaking_mem_3,
+			@auto_v2mpositiontaking_mem_7 = @auto_v2mpositiontaking_mem_7,
+			@auto_v2mpositiontaking_mem_8 = @auto_v2mpositiontaking_mem_8,
+		--	@auto_v2mpositiontaking_mem_9 = @auto_v2mpositiontaking_mem_9,
+			@auto_v2mpositiontaking_mem_20 = @auto_v2mpositiontaking_mem_20,
+			@auto_v3mpositiontaking_mem_1 = @auto_v3mpositiontaking_mem_1,
+			@auto_v3mpositiontaking_mem_2 = @auto_v3mpositiontaking_mem_2,
+			@auto_v3mpositiontaking_mem_3 = @auto_v3mpositiontaking_mem_3,
+			@auto_v3mpositiontaking_mem_20 = @auto_v3mpositiontaking_mem_20,
+			@auto_v5mpositiontaking_mem_1 = @auto_v5mpositiontaking_mem_1,
+			@auto_v5mpositiontaking_mem_2 = @auto_v5mpositiontaking_mem_2,
+			@auto_v5mpositiontaking_mem_3 = @auto_v5mpositiontaking_mem_3,
+			@auto_v5mpositiontaking_mem_20 = @auto_v5mpositiontaking_mem_20,
+			@auto_v8mpositiontaking_mem_1 = @auto_v8mpositiontaking_mem_1,
+			@auto_v8mpositiontaking_mem_3 = @auto_v8mpositiontaking_mem_3,
+			@auto_v8mpositiontaking_mem_20 = @auto_v8mpositiontaking_mem_20,
+			@auto_v10mpositiontaking_mem_1 = @auto_v10mpositiontaking_mem_1,
+			@auto_v10mpositiontaking_mem_2 = @auto_v10mpositiontaking_mem_2,
+			@auto_v10mpositiontaking_mem_3 = @auto_v10mpositiontaking_mem_3,
+			@auto_v10mpositiontaking_mem_20 = @auto_v10mpositiontaking_mem_20,
+			@auto_v11mpositiontaking_mem_1 = @auto_v11mpositiontaking_mem_1,
+			@auto_v11mpositiontaking_mem_20 = @auto_v11mpositiontaking_mem_20,
+			@auto_v99mpositiontaking_mem_1 = @auto_v99mpositiontaking_mem_1,
+			@auto_v99mpositiontaking_mem_2 = @auto_v99mpositiontaking_mem_2,
+			@auto_v99mpositiontaking_mem_3 = @auto_v99mpositiontaking_mem_3,
+			@auto_v99mpositiontaking_mem_20 = @auto_v99mpositiontaking_mem_20,
+			-- mixed sprots
+			@auto_v99mpositiontaking_mem_9 = @auto_v99mpositiontaking_mem_9,
+			
+			@isauto_mpositiontaking_mem_1 = @isauto_mpositiontaking_mem_1,
+			@isauto_mpositiontaking_mem_2 = @isauto_mpositiontaking_mem_2,
+			@isauto_mpositiontaking_mem_3 = @isauto_mpositiontaking_mem_3,
+			@isauto_mpositiontaking_mem_4 = @isauto_mpositiontaking_mem_4,
+			@isauto_mpositiontaking_mem_5 = @isauto_mpositiontaking_mem_5,
+			@isauto_mpositiontaking_mem_6 = @isauto_mpositiontaking_mem_6,
+			@isauto_mpositiontaking_mem_7 = @isauto_mpositiontaking_mem_7,
+			@isauto_mpositiontaking_mem_8 = @isauto_mpositiontaking_mem_8,
+			@isauto_mpositiontaking_mem_9 = @isauto_mpositiontaking_mem_9,
+			@isauto_mpositiontaking_mem_10 = @isauto_mpositiontaking_mem_10,
+			@isauto_mlivepositiontaking_mem_1 = @isauto_mlivepositiontaking_mem_1,
+			@isauto_mlivepositiontaking_mem_3 = @isauto_mlivepositiontaking_mem_3,
+			@isauto_mlivepositiontaking_mem_7 = @isauto_mlivepositiontaking_mem_7,
+			@isauto_mlivepositiontaking_mem_8 = @isauto_mlivepositiontaking_mem_8,
+			@isauto_v2mpositiontaking_mem_1 = @isauto_v2mpositiontaking_mem_1,
+			@isauto_v2mpositiontaking_mem_2 = @isauto_v2mpositiontaking_mem_2,
+			@isauto_v2mpositiontaking_mem_3 = @isauto_v2mpositiontaking_mem_3,
+			@isauto_v2mpositiontaking_mem_7 = @isauto_v2mpositiontaking_mem_7,
+			@isauto_v2mpositiontaking_mem_8 = @isauto_v2mpositiontaking_mem_8,
+		--	@isauto_v2mpositiontaking_mem_9 = @isauto_v2mpositiontaking_mem_9,
+			@isauto_v2mpositiontaking_mem_20 = @isauto_v2mpositiontaking_mem_20,
+			@isauto_v3mpositiontaking_mem_1 = @isauto_v3mpositiontaking_mem_1,
+			@isauto_v3mpositiontaking_mem_2 = @isauto_v3mpositiontaking_mem_2,
+			@isauto_v3mpositiontaking_mem_3 = @isauto_v3mpositiontaking_mem_3,
+			@isauto_v3mpositiontaking_mem_20 = @isauto_v3mpositiontaking_mem_20,
+			@isauto_v5mpositiontaking_mem_1 = @isauto_v5mpositiontaking_mem_1,
+			@isauto_v5mpositiontaking_mem_2 = @isauto_v5mpositiontaking_mem_2,
+			@isauto_v5mpositiontaking_mem_3 = @isauto_v5mpositiontaking_mem_3,
+			@isauto_v5mpositiontaking_mem_20 = @isauto_v5mpositiontaking_mem_20,
+			@isauto_v8mpositiontaking_mem_1 = @isauto_v8mpositiontaking_mem_1,
+			@isauto_v8mpositiontaking_mem_3 = @isauto_v8mpositiontaking_mem_3,
+			@isauto_v8mpositiontaking_mem_20 = @isauto_v8mpositiontaking_mem_20,
+			@isauto_v10mpositiontaking_mem_1 = @isauto_v10mpositiontaking_mem_1,
+			@isauto_v10mpositiontaking_mem_2 = @isauto_v10mpositiontaking_mem_2,
+			@isauto_v10mpositiontaking_mem_3 = @isauto_v10mpositiontaking_mem_3,
+			@isauto_v10mpositiontaking_mem_20 = @isauto_v10mpositiontaking_mem_20,
+			@isauto_v11mpositiontaking_mem_1 = @isauto_v11mpositiontaking_mem_1,
+			@isauto_v11mpositiontaking_mem_20 = @isauto_v11mpositiontaking_mem_20,
+			@isauto_v99mpositiontaking_mem_1 = @isauto_v99mpositiontaking_mem_1,
+			@isauto_v99mpositiontaking_mem_2 = @isauto_v99mpositiontaking_mem_2,
+			@isauto_v99mpositiontaking_mem_3 = @isauto_v99mpositiontaking_mem_3,
+			@isauto_v99mpositiontaking_mem_20 = @isauto_v99mpositiontaking_mem_20,
+			
+			-- mixed sports
+			@isauto_v99mpositiontaking_mem_9 = @isauto_v99mpositiontaking_mem_9
+		
+		EXEC dbo.Acc_CustSetting3rd_09
+			@custid = @custid,
+			@roleid = 3,
+			@mode = 'number',
+			
+			@auto_v161mpositiontaking_mem_81 = @auto_v161mpositiontaking_mem_81,
+			@auto_v161mpositiontaking_mem_83 = @auto_v161mpositiontaking_mem_83,
+			@auto_v161mpositiontaking_mem_86 = @auto_v161mpositiontaking_mem_86,
+			@auto_v161mpositiontaking_mem_88 = @auto_v161mpositiontaking_mem_88,
+			@auto_v161mlivepositiontaking_mem_85 = @auto_v161mlivepositiontaking_mem_85,
+			@auto_v161mlivepositiontaking_mem_86 = @auto_v161mlivepositiontaking_mem_86,
+			@auto_v161mlivepositiontaking_mem_87 = @auto_v161mlivepositiontaking_mem_87,
+			@auto_v161mlivepositiontaking_mem_89 = @auto_v161mlivepositiontaking_mem_89,
+			@auto_v161mlivepositiontaking_mem_90 = @auto_v161mlivepositiontaking_mem_90,
+			
+			@isauto_v161mpositiontaking_mem_81 = @isauto_v161mpositiontaking_mem_81,
+			@isauto_v161mpositiontaking_mem_83 = @isauto_v161mpositiontaking_mem_83,
+			@isauto_v161mpositiontaking_mem_86 = @isauto_v161mpositiontaking_mem_86,
+			@isauto_v161mpositiontaking_mem_88 = @isauto_v161mpositiontaking_mem_88,
+			@isauto_v161mlivepositiontaking_mem_85 = @isauto_v161mlivepositiontaking_mem_85,
+			@isauto_v161mlivepositiontaking_mem_86 = @isauto_v161mlivepositiontaking_mem_86,
+			@isauto_v161mlivepositiontaking_mem_87 = @isauto_v161mlivepositiontaking_mem_87,
+			@isauto_v161mlivepositiontaking_mem_89 = @isauto_v161mlivepositiontaking_mem_89,
+			@isauto_v161mlivepositiontaking_mem_90 = @isauto_v161mlivepositiontaking_mem_90
+
+			
+		/*
 		print @ErrCode_Cur
 		--Update auto PT
 		SELECT @ErrCode_Cur =0 , @ErrMsg_Cur =''
@@ -5269,6 +5392,7 @@ if	@UpdatePositiontaking   = 1  or
 			
 			Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 		END
+		*/
 				
 		EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 			@custid = @custid, 
