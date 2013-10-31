@@ -19,6 +19,8 @@ AS
 	Revisions:
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: write log on DBTXN if DBLOG failure
+		- 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
+
 	Parameters Explanation:
 */
 BEGIN
@@ -32,9 +34,12 @@ BEGIN
 	
 	DECLARE @username				NVARCHAR(50), 
 			@mrecommend				INT , 
-			@db_v162discount_1101	DECIMAL(9,8)
+			@db_v162discount_1101	DECIMAL(9,8),
+			@roleid					INT 
+
 	SELECT	@UserName	= username, 
-			@mrecommend = mrecommend
+			@mrecommend = mrecommend,
+			@roleid = roleid
 	FROM customer WITH(NOLOCK) 
 	WHERE CustID = @CustID
 	
@@ -59,68 +64,18 @@ BEGIN
 	END
 	
 	--Get g2=g3 if g2>g3	
-	SELECT @V162discount_1101 = CASE WHEN @v162discount_1101 > adiscount THEN adiscount ELSE @v162discount_1101 END
+	SELECT @v162discount_1101 = CASE WHEN @v162discount_1101 > adiscount THEN adiscount ELSE @v162discount_1101 END
 	FROM CustSettingGame AS cs WITH (NOLOCK) 
 	WHERE custid = @mrecommend 
 		AND bettype = 1101 AND sporttype = 162
 		
-	--@Updatediscountv151
-	--Update @Agent: g2, a2
-	UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
-	SET	discount = CASE WHEN ISNULL(@db_v162discount_1101,0) <> @v162discount_1101 THEN @v162discount_1101			
-					ELSE discount END
-	WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
-	IF @@ERROR <> 0
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 102
-		RETURN
-	END
-		
-	--Update g2, a2 at Member level
-	UPDATE cs
-		SET cs.discount = @v162discount_1101
-	FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
-		INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-	WHERE c.recommend = @custid 
-		AND c.recommend <> 52466
-		AND c.roleid = 1 AND c.SyncLiveCasino = 1
-		AND sporttype = 162
-		AND bettype = 1101
-	IF @@ERROR <> 0
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-							CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode = 103
-		RETURN
-	END
-
-	--At member level, update playerdiscount = discount  if playerdiscount > discount
-	UPDATE cs 
-	SET cs.playerdiscount = cs.discount
-	FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
-		INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-	WHERE c.recommend = @custid 
-		AND c.roleid = 1 
-		AND cs.playerdiscount > cs.discount 
-		AND sporttype = 162
-		AND bettype = 1101
-	IF @@ERROR <> 0
-	BEGIN
-		
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END, @ErrCode = 104
-		RETURN
-	END
-
+	
+	-- apply exec rep
+	EXEC Acc_CustSetting3rd_06
+	@CustId = @custid,
+	@RoleId = @roleid,
+	@v162discount_1101 = @v162discount_1101,
+	@mode = 'LiveCasino'
 	
 	SET @endRun = GETDATE()
 	set @duration  = DATEDIFF(MILLISECOND,@startRun,@endRun)
@@ -178,7 +133,6 @@ BEGIN
 		
 
 END
-
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_Commission] TO [vnteam]

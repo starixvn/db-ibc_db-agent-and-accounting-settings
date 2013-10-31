@@ -18,6 +18,7 @@ AS
 		Revisions:
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: write log on DBTXN if DBLOG failure
+			- 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -68,7 +69,7 @@ END
 ---------------------------------------
 DECLARE @srecommend INT, @username NVARCHAR(50)
 
-SELECT @srecommend = srecommend , @username = username
+SELECT @srecommend = srecommend , @username = username, @roleid = roleid
 FROM CustInfo WITH(NOLOCK)
 WHERE custid = @custid
 
@@ -76,99 +77,12 @@ SELECT @v162discount_1101 = CASE WHEN @v162discount_1101 > sdiscount THEN sdisco
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @srecommend AND sporttype = 162 AND bettype = 1101
 
---Update @Master: g3, m3
-UPDATE CustSettingGame WITH(UPDLOCK, ROWLOCK)
-SET adiscount = @v162discount_1101
-WHERE custid = @custid AND sporttype = 162 AND bettype = 1101 
-
-IF (@@ERROR <> 0)
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 101
-		RETURN
-	END
-
---Update g2 = g3 if g2>g3 at agent
-UPDATE cs
-SET cs.discount = @v162discount_1101
-FROM CustSettingGame cs
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-WHERE ci.mrecommend = @custid AND ci.roleid = 2 
-	AND cs.sporttype = 162 AND cs.bettype = 1101
-	AND cs.discount > @v162discount_1101
-
-IF (@@ERROR <> 0)
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 102
-		RETURN
-	END
-
---Update g3 @ member level
-UPDATE cs
-SET cs.adiscount = @v162discount_1101
-FROM CustSettingGame cs
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-WHERE ci.mrecommend = @custid AND ci.roleid = 1
-	AND cs.sporttype = 162 AND cs.bettype = 1101 
-	AND ci.recommend <> 52466
-	AND ci.SyncLiveCasino = 1
-
-
-IF (@@ERROR <> 0)
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 103
-		RETURN
-	END
-	
---At member level, update discount = adiscount  if discount > adiscount
-UPDATE cs
-SET cs.discount = cs.adiscount
-FROM CustSettingGame cs
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-WHERE ci.mrecommend = @custid AND ci.roleid = 1
-	AND cs.sporttype = 162 AND cs.bettype = 1101 
-	AND cs.discount > cs.adiscount
-
-IF (@@ERROR <> 0)
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 104
-		RETURN
-	END
-
---At member level, update playerdiscount = discount  if playerdiscount > discount
-UPDATE cs
-SET cs.playerdiscount = cs.discount
-FROM CustSettingGame cs
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-WHERE ci.mrecommend = @custid AND ci.roleid = 1
-	AND cs.sporttype = 162 AND cs.bettype = 1101 
-	AND cs.playerdiscount > cs.discount
-
-IF (@@ERROR <> 0)
-	BEGIN	
-		SELECT @ErrMsg = @UserName + ': '+
-						CASE @Language 
-							WHEN 'E' THEN 'Update process is unsuccessful !'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-						END	, @ErrCode = 105
-		RETURN
-	END
-	
+-- Apply exec rep
+	EXEC Acc_CustSetting3rd_06
+	@CustId = @custid,
+	@RoleId = @roleid,
+	@v162discount_1101 = @v162discount_1101,
+	@mode = 'LiveCasino'
 	
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(4000)
@@ -224,6 +138,7 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH			
+			
 	
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_Commission] TO [vnteam]
