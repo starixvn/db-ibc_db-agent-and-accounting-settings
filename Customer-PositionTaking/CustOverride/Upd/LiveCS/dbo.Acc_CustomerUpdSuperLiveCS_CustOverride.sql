@@ -1,4 +1,5 @@
 ﻿
+
  ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
 	@custid		INT,
 	@UplineID	INT = 0,
@@ -67,7 +68,8 @@ SET NOCOUNT ON
 
 	IF @roleid = 4
 	BEGIN
-		EXEC Acc_CustomerUpdSuperLiveCS_MinPositiontaking @srecommend = @custid
+		--EXEC Acc_CustomerUpdSuperLiveCS_MinPositiontaking @srecommend = @custid
+		EXEC [Acc_CustSetting3rd_00] @srecommend = @custid, @mode = 'LiveCasino'
 	END
 
 	IF @roleid = 3
@@ -134,6 +136,7 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
