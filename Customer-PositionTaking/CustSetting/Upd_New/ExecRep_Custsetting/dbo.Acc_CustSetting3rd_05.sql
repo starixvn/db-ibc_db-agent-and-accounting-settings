@@ -50,6 +50,14 @@
 	@old_auto_v161slivepositiontaking_89 smallmoney = 0,
 	@old_auto_v161slivepositiontaking_90 smallmoney = 0,
 	
+	--virtual sports
+	@vs_sporttype INT = 0,
+	@vs_bettype INT = 0,
+	
+	@vs_isauto_spositiontaking bit = 0,--is3
+	@old_vs_isauto_spositiontaking bit = 0,--is3_old
+	
+	@vs_auto_spositiontaking smallmoney = 0,--us3
 	------------------------------------------------------------------------
 	--update auto pt on agent
 	@isauto_v161mpositiontaking_81 bit = 0,
@@ -95,9 +103,11 @@
 	@old_auto_v161mlivepositiontaking_87 smallmoney = 0,
 	@old_auto_v161mlivepositiontaking_89 smallmoney = 0,
 	@old_auto_v161mlivepositiontaking_90 smallmoney = 0,
+		
+	--virtual sports
 
-	
-	@updatepositiontakingv161 bit = 1,
+	@updatepositiontakingv161 bit = 1,		
+	@updateautopositiontakingvs bit = 1,
 	@updateallmembers bit = 0,
 	@updatemultiple bit = 0,
 	@newspositiontaking smallmoney =0 ,
@@ -109,7 +119,9 @@ AS
 		Date: 2013-10-29
 		Task: Apply execrep when update auto pt on master , agent, member levels
 		DB: DBTXN/bodb02
-		
+		Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
+					Acc_CustomerUpdAgent_AutoPositiontaking
+					
 		Revision:
 		
 		Parameter's Explanation:
@@ -213,6 +225,71 @@ BEGIN
 			END
 			CLOSE CUR
 			DEALLOCATE CUR
+		END
+		ELSE IF @mode = 'virtual-sports'
+		BEGIN
+			IF @updateautopositiontakingvs = 1
+			BEGIN
+				IF @vs_isauto_spositiontaking >0 --auto PT is used
+				BEGIN
+					--Update use Auto_SPT at master for all members only when:
+						--(autoSPT at master changes AND isauto at master = 1
+						--OR isauto at master changes from 0 to 1)
+						--AND isauto at member = 0
+					
+					
+					SELECT @maxpos = spositiontaking 
+					FROM CustSetting3rd with (NOLOCK) 
+					WHERE custid = @srecommend and sporttype= @vs_sporttype and bettype = @vs_bettype
+					
+					UPDATE cs
+					SET cs.spositiontaking = CASE WHEN @maxpos - cs.mpositiontaking - cs.apositiontaking > @vs_auto_spositiontaking THEN @vs_auto_spositiontaking ELSE @maxpos - cs.mpositiontaking - cs.apositiontaking END
+					FROM CustSetting3rd cs WITH(NOLOCK)
+						INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+					WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1 
+						AND cs.sporttype = @vs_sporttype AND cs.bettype = @vs_bettype
+						AND cs.isautopositiontaking = 0 -- only update members without AutoSPT at member
+								
+				END
+				ELSE IF @vs_isauto_spositiontaking <> @old_vs_isauto_spositiontaking  --auto PT is NOT used
+				BEGIN
+					IF @Updateallmembers = 1
+					BEGIN
+					--Update a specific SPT for all members only when:
+								-- @updateallmembers = 1
+								-- isauto at master = 0
+								--AND isauto at master change from 1 to 0
+								--AND isauto at member = 0
+									
+						SELECT @maxpos = spositiontaking 
+						FROM CustSetting3rd with (NOLOCK) 
+						WHERE custid = @srecommend and sporttype= @vs_sporttype and bettype = @vs_bettype
+					
+						UPDATE cs
+						SET cs.spositiontaking = CASE WHEN @newspositiontaking > @maxpos - mcs.mpositiontaking THEN @maxpos - mcs.mpositiontaking ELSE @newspositiontaking END
+						FROM CustSetting3rd cs
+							INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+							INNER JOIN CustSetting3rd mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
+						WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1
+							AND cs.sporttype = @vs_sporttype AND cs.bettype = @vs_bettype
+							AND cs.isautopositiontaking = 0
+											
+					END
+				END	
+			END
+			ELSE
+			BEGIN
+				UPDATE cs 
+				SET spositiontaking = b.spositiontaking
+				FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+					INNER JOIN custinfo ci (nolock) on ci.custid = cs.custid and ci.mrecommend = @mrecommend and ci.roleid = 1
+					INNER JOIN 
+						(
+							select @vs_sporttype as sporttype, @vs_bettype as bettype, @vs_isauto_spositiontaking as isautopositiontaking, @old_vs_isauto_spositiontaking as oldisautopositiontaking, @newspositiontaking as spositiontaking
+						) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
+				WHERE b.isautopositiontaking = 0 --and b.oldisautopositiontaking = 0 
+					and cs.isautopositiontaking = 0
+			END
 		END
 	END
 	ELSE IF @roleid = 2

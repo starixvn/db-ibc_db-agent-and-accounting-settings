@@ -52,7 +52,9 @@
 		Date: 2013-10-30
 		Task: Apply execrep update auto pt on member
 		DB: DBTXN/bodb02
-		
+		Original versions:	Acc_CustomerUpdMember_Super
+				Acc_CustomerUpdMember_Master
+				
 		Revision:
 		
 		Parameter's Explanation:

@@ -42,7 +42,10 @@ AS
 		Date: 2013-10-30
 		Task: Apply execrep update pt on member
 		DB: DBTXN/bodb02
-		
+		Original versions: Acc_CustomerUpdMember_Super
+					Acc_CustomerUpdMember_Master
+					Acc_CustomerUpdMember_PositionTaking
+					
 		Revision:
 		
 		Parameter's Explanation:

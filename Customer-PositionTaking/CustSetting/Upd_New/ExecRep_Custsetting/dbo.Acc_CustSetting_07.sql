@@ -9,7 +9,10 @@ AS
 		Date: 2013-10-30
 		Task: Apply execrep when corrects pt on members
 		DB: DBTXN/bodb02
-		
+		Original versions: Acc_CustomerUpdSuper_AutoPositiontaking
+					Acc_CustomerUpdMaster_MaxPositiontaking
+					Acc_CustomerUpdAgent_MaxPositiontaking
+			
 		Revision:
 		
 		Parameter's Explanation:

@@ -448,6 +448,8 @@
 		Date: 2013-10-29
 		Task: Apply execrep when update auto pt on master , agent, member levels
 		DB: DBTXN/bodb02
+		Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
+					Acc_CustomerUpdAgent_AutoPositiontaking
 		
 		Revision:
 		

@@ -9,6 +9,8 @@
 		Date: 2013-10-29
 		Task: Apply execrep when update min/max pt on master and agent
 		DB: DBTXN/bodb02
+		Original versions: Acc_CustomerUpdMaster_MinMaxPositiontaking
+						Acc_CustomerUpdAgent_MinMaxPositiontaking
 		
 		Revision:
 		

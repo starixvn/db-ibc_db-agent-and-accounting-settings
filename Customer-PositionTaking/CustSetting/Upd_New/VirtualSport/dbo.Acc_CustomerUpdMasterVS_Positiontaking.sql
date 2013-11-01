@@ -34,6 +34,7 @@
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130205@Lukas: fix bug - do not apply new s1 from popup when uncheck auto PT
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20131101@Johnson: apply execrep when update min pt, auto pt 
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -444,7 +445,27 @@ SET NOCOUNT ON
 				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN						
 		END		
-					
+		
+		--20131101@Johnson: apply execrep when update auto pt
+		EXEC dbo.Acc_CustSetting3rd_05
+			@srecommend = @srecommend,
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'virtual-sports',
+			
+			@vs_sporttype = @sporttype,
+			@vs_bettype = @bettype,
+			
+			@vs_isauto_spositiontaking = @is3,--is3
+			@old_vs_isauto_spositiontaking = @is3_old,--is3_old
+			
+			@vs_auto_spositiontaking = @us3,--us3
+				
+			@updateallmembers = @updateallmembers,			
+			@updateautopositiontakingvs = 1,
+			@newspositiontaking = @s1
+			
+		/*			
 		IF @is3 >0 --auto PT is used
 		BEGIN
 			--Update use Auto_SPT at master for all members only when:
@@ -514,12 +535,28 @@ SET NOCOUNT ON
 					RETURN			
 				END
 			END
-		END			
+		END	*/		
 	END
 	
+	--apply new value position taking for super on members
 	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND
 		@Updateallmembers = 1 AND @is3=0
 	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_05
+			@srecommend = @srecommend,
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'virtual-sports',
+			
+			@vs_sporttype = @sporttype,
+			@vs_bettype = @bettype,
+			
+			@vs_isauto_spositiontaking = @is3,--is3
+			@old_vs_isauto_spositiontaking = @is3_old,--is3_old
+									
+			@updateautopositiontakingvs = 0,
+			@newspositiontaking = @s1
+		/*
 		UPDATE cs 
 		SET spositiontaking = b.spositiontaking
 		FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
@@ -542,10 +579,37 @@ SET NOCOUNT ON
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)		
 			RETURN				
 		END
+		*/
 	END
 	
 	IF @UpdateAutoPositiontaking = 1 OR @UpdatePositiontaking = 1
 	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_07
+			@srecommend = @srecommend , 
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'virtual-sports',
+			
+			@sporttype = @sporttype,
+			@bettype = @bettype
+			 
+			IF (@@error <> 0)
+			BEGIN		
+				SELECT @ErrMsg_Cur = CASE @Language 
+										WHEN 'E' THEN 'Update process is unsuccessful !'
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+									END, @ErrCode_Cur = 304			 
+				
+				SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
+								@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)		
+				RETURN				
+			END
+			ELSE
+			BEGIN
+				SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), 
+							@ErrMsg = @ErrMsg + CHAR(7)
+			END
+		/*
 		EXEC dbo.Acc_CustomerUpdMasterVS_MaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @srecommend = @srecommend , @mrecommend = @custid
 		
 		IF (@@error <> 0)
@@ -563,7 +627,7 @@ SET NOCOUNT ON
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), 
 						@ErrMsg = @ErrMsg + CHAR(7)
-		END
+		END*/
 	END
 
 	
