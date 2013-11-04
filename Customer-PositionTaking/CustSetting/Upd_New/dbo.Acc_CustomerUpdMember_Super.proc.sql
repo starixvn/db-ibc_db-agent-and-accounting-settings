@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super] 
 	@CustID INT,--memberid
 	@Closed BIT,
 	@disCasino BIT = 0,
@@ -63,8 +62,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super]
 	@v99spositiontaking_20 SMALLMONEY OUTPUT,
 
 	-- mixed sports
-	@v99spositiontaking_9 SMALLMONEY OUTPUT,
-
+	@v99spositiontaking_9 SMALLMONEY = 0 OUTPUT,
+	
 	-- HR fixodds
 	@v154spositiontaking_20 SMALLMONEY  = 0 OUTPUT,
 
@@ -135,7 +134,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super]
 
 	-- mixed sports
 	@auto_v99spositiontaking_9 SMALLMONEY = 0,
-
+		
 	-- HR Fixodds
 	@auto_v154spositiontaking_20 SMALLMONEY = 0,
 
@@ -204,7 +203,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super]
 
 	-- mixed sports
 	@isauto_v99spositiontaking_9 BIT = 0,	
-
+	
 	-- HR fixodds
 	@isauto_v154spositiontaking_20 BIT = 0,
 
@@ -273,9 +272,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super]
 
 	-- mixed sports
 	@isauto_v99smpositiontaking_9 BIT = 0,		
-
+	
 	-- HR Fixodds
-	@isauto_v154smpositiontaking_20 BIT = 0,
+	@isauto_v154smpositiontaking_20 BIT = 0,		
 
 	-- number game
 	@isauto_v161smpositiontaking_81 BIT = 0,		
@@ -349,8 +348,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130617@Johnson: check s1 with valid range of s1
-	- 20131031@Johnson: Aplly execrep when update pt on member
-	- 20131104@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
+	- 20131014@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -527,7 +525,7 @@ if	@UpdatePositiontaking   = 1  or
 	@UpdatePositiontakingv10   = 1  or
 	@UpdatePositiontakingv11   = 1  or
 	@UpdatePositiontakingv99   = 1  or
-	@UpdatePositiontakingv99MP = 1 or
+	@UpdatePositiontakingv99MP = 1 OR
 	@UpdatePositiontakingv154 = 1 OR
 	@UpdatePositiontakingv161 = 1
 BEGIN--Update Position Taking
@@ -584,7 +582,7 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@v99mpositiontaking_9 SMALLMONEY,
-
+		
 		-- HR Fixed Odds
 		@v154mpositiontaking_20 SMALLMONEY,
 
@@ -652,7 +650,7 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@old_v99spositiontaking_9 SMALLMONEY,
-
+		
 		-- HR Fixed Odds
 		@old_v154spositiontaking_20 SMALLMONEY,
 
@@ -719,7 +717,7 @@ BEGIN--Update Position Taking
 		
 		-- mixed sports
 		@v99apositiontaking_9 SMALLMONEY,
-
+		
 		-- HR Fixed Odds
 		@v154apositiontaking_20 SMALLMONEY,
 
@@ -790,7 +788,7 @@ BEGIN--Update Position Taking
 		
 		-- HR Fixed Odds
 		@v154spositiontaking_20_max SMALLMONEY,
-
+		
 		-- number game
 		@v161spositiontaking_81_max SMALLMONEY,
 		@v161spositiontaking_83_max SMALLMONEY,
@@ -856,7 +854,7 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@old_auto_v99spositiontaking_9 SMALLMONEY ,	
-
+		
 		-- HR Fixed Odds
 		@old_auto_v154spositiontaking_20 SMALLMONEY,
 
@@ -924,7 +922,7 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@old_isauto_v99spositiontaking_9 BIT ,
-
+		
 		-- HR Fixed Odds
 		@old_isauto_v154spositiontaking_20 BIT, 
 		
@@ -989,7 +987,7 @@ BEGIN--Update Position Taking
 		@v99mspositiontaking_2_max SMALLMONEY,  
 		@v99mspositiontaking_3_max SMALLMONEY,   
 		@v99mspositiontaking_20_max SMALLMONEY,
-
+		
 		@v154mspositiontaking_20_max SMALLMONEY,
 		
 		@v161mspositiontaking_81_max SMALLMONEY,  
@@ -1055,7 +1053,7 @@ BEGIN--Update Position Taking
 		@v99mpos_2 SMALLMONEY,  
 		@v99mpos_3 SMALLMONEY,   
 		@v99mpos_20 SMALLMONEY,
-
+		
 		@v154mpos_20 SMALLMONEY,
 		
 		@v161mpos_81 SMALLMONEY,  
@@ -1130,13 +1128,15 @@ BEGIN--Update Position Taking
 	SELECT @v99apositiontaking_20 = apositiontaking, @v99mpositiontaking_20 = mpositiontaking, @old_v99spositiontaking_20 = spositiontaking, @old_auto_v99spositiontaking_20 = autopositiontaking, @old_isauto_v99spositiontaking_20 = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=99
 
 	-- mixed sports
-	SELECT @v99apositiontaking_9 = apositiontaking, @v99mpositiontaking_9 = mpositiontaking, @old_v99spositiontaking_9 = spositiontaking, @old_auto_v99spositiontaking_9 = autopositiontaking, @old_isauto_v99spositiontaking_9 = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=99
+	SELECT @v99apositiontaking_9 = apositiontaking, @v99mpositiontaking_9 = mpositiontaking, @old_v99spositiontaking_9 = spositiontaking, 
+	@old_auto_v99spositiontaking_9 = autopositiontaking, @old_isauto_v99spositiontaking_9 = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=99
 
 	-- HR Fixed Odds
-	SELECT @v154apositiontaking_20 = apositiontaking, @v154mpositiontaking_20 = mpositiontaking, @old_v154spositiontaking_20 = spositiontaking,
-		@old_auto_v154spositiontaking_20 = autopositiontaking, @old_isauto_v154spositiontaking_20 = isautopositiontaking
+	SELECT @v154apositiontaking_20 = apositiontaking, @v154mpositiontaking_20 = mpositiontaking, 
+	@old_v154spositiontaking_20 = spositiontaking, @old_auto_v154spositiontaking_20 = autopositiontaking, 
+	@old_isauto_v154spositiontaking_20 = isautopositiontaking
 	from custsetting with (NOLOCK) where custid = @custid and bettype = 20 and sporttype = 154 
-
+	
 	-- number game
 	SELECT @v161apositiontaking_81 = apositiontaking, @v161mpositiontaking_81 = mpositiontaking, @old_v161spositiontaking_81 = spositiontaking, @old_auto_v161spositiontaking_81 = autopositiontaking, @old_isauto_v161spositiontaking_81 = isautopositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=81 and sporttype=161
 	SELECT @v161apositiontaking_83 = apositiontaking, @v161mpositiontaking_83 = mpositiontaking, @old_v161spositiontaking_83 = spositiontaking, @old_auto_v161spositiontaking_83 = autopositiontaking, @old_isauto_v161spositiontaking_83 = isautopositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=83 and sporttype=161
@@ -1200,10 +1200,9 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@v99spositiontaking_9 = @old_v99spositiontaking_9 AND
-
+		
 		-- HR Fixed Odds
 		@v154spositiontaking_20 = @old_v154spositiontaking_20 AND
-
 		-- number game
 		@v161spositiontaking_81 = @old_v161spositiontaking_81 AND
 		@v161spositiontaking_83 = @old_v161spositiontaking_83 AND
@@ -1267,7 +1266,7 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@auto_v99spositiontaking_9 = @old_auto_v99spositiontaking_9 AND
-
+		
 		-- HR Fixed Odds
 		@auto_v154spositiontaking_20 = @old_auto_v154spositiontaking_20 AND
 
@@ -1334,8 +1333,9 @@ BEGIN--Update Position Taking
 
 		-- mixed sports
 		@isauto_v99spositiontaking_9 = @old_isauto_v99spositiontaking_9 AND
-
-		-- HR Fixed Odds		
+		
+		-- HR Fixed Odds
+		
 		@isauto_v154spositiontaking_20 = @old_isauto_v154spositiontaking_20 AND
 
 		-- number game
@@ -1411,8 +1411,8 @@ BEGIN--Update Position Taking
 		@isauto_v99smpositiontaking_9 = max(case when mcs.bettype = 9 and mcs.sporttype=99 then mcs.isautopositiontaking else 0 end),
 		
 		-- HR Fixed Odds
-		@isauto_v154smpositiontaking_20 = MAX(CASE WHEN mcs.bettype = 20 AND mcs.sporttype = 20 THEN mcs.isautopositiontaking ELSE 0 END),
-
+		@isauto_v154smpositiontaking_20 = MAX(CASE WHEN mcs.bettype = 20 AND mcs.sporttype = 154 THEN mcs.isautopositiontaking ELSE 0 END),
+		
 		--m3
 		@mpos_1 = MAX(CASE WHEN mcs.bettype = 1 AND mcs.sporttype=1 THEN mcs.mpositiontaking ELSE 0 END),  
 		@mpos_2 = MAX(CASE WHEN mcs.bettype = 2 AND mcs.sporttype=1 THEN mcs.mpositiontaking ELSE 0 END),  
@@ -1465,7 +1465,7 @@ BEGIN--Update Position Taking
 		@v99mpos_20 = MAX(CASE WHEN mcs.bettype = 20 AND mcs.sporttype=99 THEN mcs.mpositiontaking ELSE 0 END),
 			
 		@v99mpos_9 = MAX(CASE WHEN mcs.bettype = 9 AND mcs.sporttype=99 THEN mcs.mpositiontaking ELSE 0 END),
-
+		
 		-- HR Fixed Odds
 		@v154mpos_20 = MAX(CASE WHEN mcs.bettype = 20 AND mcs.sporttype = 154 THEN mcs.mpositiontaking ELSE 0 END)
 		  
@@ -1549,16 +1549,10 @@ BEGIN--Update Position Taking
 		@v99mspositiontaking_3_max = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=99 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),  
 		@v99mspositiontaking_20_max = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=99 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),  
 			
-		@v99mspositiontaking_9_max = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=99 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END)  ,
-
+		@v99mspositiontaking_9_max = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=99 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),
+		
 		-- HR Fixed Odds
-		@v154mspositiontaking_20_max = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 
-													THEN CASE WHEN cs.spositiontaking< co.maxpositiontaking 
-																	THEN cs.spositiontaking 
-																	ELSE co.maxpositiontaking 
-														 END 
-													ELSE 0 
-										   END)  
+		@v154mspositiontaking_20_max = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 THEN CASE WHEN cs.spositiontaking< co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END)  
 	FROM 	
 		CustSetting AS cs WITH (NOLOCK)
 	LEFT JOIN custoverride AS co WITH (NOLOCK) ON cs.custid = co.custid AND cs.sporttype=co.sporttype AND cs.bettype=co.bettype  
@@ -1633,7 +1627,7 @@ BEGIN--Update Position Taking
 			@v99mspositiontaking_20_max = @v99mspositiontaking_20_max - @v99mpos_20,
 			
 			@v99mspositiontaking_9_max = @v99mspositiontaking_9_max - @v99mpos_9,
-
+			
 			@v154mspositiontaking_20_max = @v154mspositiontaking_20_max - @v154mpos_20
 	
 	SELECT
@@ -2906,8 +2900,7 @@ BEGIN--Update Position Taking
 				inner join
 					(
 					SELECT 154 AS sporttype, 20 AS bettype, @auto_v154spositiontaking_20 AS autopositiontaking,
-							@isauto_v154spositiontaking_20 AS isautopositiontaking, 
-							0 AS autolivepositiontaking, 0 AS isautolivepositiontaking						
+							@isauto_v154spositiontaking_20 AS isautopositiontaking
 					) AS b 
 						on co.sporttype=b.sporttype and co.bettype=b.bettype
 				INNER JOIN sports with (nolock) 
@@ -2936,8 +2929,7 @@ BEGIN--Update Position Taking
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))+ '<br>'
 				from custsetting AS cs with (NOLOCK) inner join
 					(
-						SELECT 154 AS bettype, 20 AS sporttype,@auto_v154spositiontaking_20 AS autopositiontaking, 0 AS autolivepositiontaking
-
+						SELECT 20 AS bettype, 154 AS sporttype, @auto_v154spositiontaking_20 AS autopositiontaking
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
 				INNER JOIN sports with (nolock) on b.sporttype = sports.sporttype
 				INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
@@ -2962,7 +2954,7 @@ BEGIN--Update Position Taking
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))+ '<br>'
 				from custsetting AS cs with (NOLOCK) inner join
 					(
-						SELECT 20 AS bettype, 154 AS sporttype,@v154spositiontaking_20 AS positiontaking, 0 AS livepositiontaking			
+						SELECT 20 AS bettype, 154 AS sporttype,@v154spositiontaking_20 AS positiontaking	
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
 					INNER JOIN sports with (nolock) on b.sporttype = sports.sporttype
 					INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
@@ -2987,7 +2979,8 @@ BEGIN--Update Position Taking
 				from
 					(
 						SELECT 20 AS bettype, 154 AS sporttype,@v154spositiontaking_20 AS positiontaking,
-						@isauto_v154spositiontaking_20 as isauto_spositiontaking,@isauto_v154smpositiontaking_20 as isauto_smpositiontaking, 
+						@isauto_v154spositiontaking_20 as isauto_spositiontaking,
+						@isauto_v154smpositiontaking_20 as isauto_smpositiontaking, 
 						@v154mspositiontaking_20_max as positiontaking_max
 					) b
 				INNER JOIN sports with (nolock) on b.sporttype = sports.sporttype
@@ -3006,7 +2999,6 @@ BEGIN--Update Position Taking
 					return
 				END
 			END
-
 		--v161 number game
 		if (@UpdateMultiple = 0 or  @UpdatePositiontakingv161 = 1)
 		BEGIN --@UpdatePositiontakingv161
@@ -3214,11 +3206,14 @@ BEGIN--Update Position Taking
 
 	--mixed sports
 	SELECT @v99spositiontaking_9_max = spositiontaking from custsetting with (NOLOCK) where custid = @srecommEND and bettype=9 and sporttype=99
-
+	
 	-- HR Fixed Odds
-	SELECT @v154spositiontaking_20_max = spositiontaking FROM custsetting WITH (NOLOCK)	WHERE custid = @srecommend AND bettype = 20 
+	SELECT @v154spositiontaking_20_max = spositiontaking
+	FROM custsetting WITH (NOLOCK)
+	WHERE custid = @srecommend 
+	AND bettype = 20 
 	AND sporttype = 154
-
+	
 	--number game
 	SELECT @v161spositiontaking_81_max = spositiontaking from custsetting3rd with (NOLOCK) where custid = @srecommEND and bettype=81 and sporttype=161
 	SELECT @v161spositiontaking_83_max = spositiontaking from custsetting3rd with (NOLOCK) where custid = @srecommEND and bettype=83 and sporttype=161
@@ -3282,11 +3277,13 @@ BEGIN--Update Position Taking
 		@v99spositiontaking_20 = CASE WHEN @v99mpositiontaking_20+@v99spositiontaking_20+@v99apositiontaking_20>@v99spositiontaking_20_max THEN @v99spositiontaking_20_max-@v99mpositiontaking_20-@v99apositiontaking_20 ELSE @v99spositiontaking_20 END,
 
 		-- mixed sports
-		@v99spositiontaking_9 = CASE WHEN @v99mpositiontaking_9+@v99spositiontaking_9+@v99apositiontaking_9>@v99spositiontaking_9_max THEN @v99spositiontaking_9_max-@v99mpositiontaking_9-@v99apositiontaking_9 ELSE @v99spositiontaking_9 END,
-
+		@v99spositiontaking_9 = CASE WHEN @v99mpositiontaking_9+@v99spositiontaking_9+@v99apositiontaking_9>@v99spositiontaking_9_max 
+									THEN @v99spositiontaking_9_max-@v99mpositiontaking_9-@v99apositiontaking_9 ELSE @v99spositiontaking_9 
+		                        END,
 		-- HR Fixed Odds
-		@v154spositiontaking_20 = CASE WHEN @v154mpositiontaking_20 + @v154spositiontaking_20 + @v154apositiontaking_20 > @v154spositiontaking_20_max THEN @v154spositiontaking_20_max - @v154mpositiontaking_20 - @v154apositiontaking_20 ELSE @v154spositiontaking_20 END,
-
+		@v154spositiontaking_20 = CASE WHEN @v154mpositiontaking_20 + @v154spositiontaking_20 + @v154apositiontaking_20 > @v154spositiontaking_20_max
+									THEN @v154spositiontaking_20_max - @v154mpositiontaking_20 - @v154apositiontaking_20 ELSE @v154spositiontaking_20
+									END,
 		-- number game
 		@v161spositiontaking_81 = CASE WHEN @v161mpositiontaking_81+@v161spositiontaking_81+@v161apositiontaking_81>@v161spositiontaking_81_max THEN @v161spositiontaking_81_max-@v161mpositiontaking_81-@v161apositiontaking_81 ELSE @v161spositiontaking_81 END,
 		@v161spositiontaking_83 = CASE WHEN @v161mpositiontaking_83+@v161spositiontaking_83+@v161apositiontaking_83>@v161spositiontaking_83_max THEN @v161spositiontaking_83_max-@v161mpositiontaking_83-@v161apositiontaking_83 ELSE @v161spositiontaking_83 END,		
@@ -3355,7 +3352,7 @@ BEGIN--Update Position Taking
 
 		-- HR Fixed Odds
 		@v154spositiontaking_20 = CASE WHEN @v154spositiontaking_20 < 0 THEN 0 ELSE @v154spositiontaking_20 END,
-
+		
 		-- number game
 		@v161spositiontaking_81 = CASE WHEN @v161spositiontaking_81<0 THEN 0 ELSE @v161spositiontaking_81 END,
 		@v161spositiontaking_83 = CASE WHEN @v161spositiontaking_83<0 THEN 0 ELSE @v161spositiontaking_83 END,
@@ -3367,99 +3364,7 @@ BEGIN--Update Position Taking
 		@v161slivepositiontaking_89 = CASE WHEN @v161slivepositiontaking_89<0 THEN 0 ELSE @v161slivepositiontaking_89 END,
 		@v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90<0 THEN 0 ELSE @v161slivepositiontaking_90 END
 
-	--- 20131031@Johnson: Aplly execrep when update pt on member
-	EXEC dbo.Acc_CustSetting_08
-		@custid = @custid,
-		@roleid = 4,
-		
-		@spositiontaking_1 = @spositiontaking_1,
-		@spositiontaking_2 = @spositiontaking_2,
-		@spositiontaking_3 = @spositiontaking_3,
-		@spositiontaking_4 = @spositiontaking_4,
-		@spositiontaking_5 = @spositiontaking_5,
-		@spositiontaking_6 = @spositiontaking_6,
-		@spositiontaking_7 = @spositiontaking_7,
-		@spositiontaking_8 = @spositiontaking_8,
-		@spositiontaking_9 = @spositiontaking_9,
-		@spositiontaking_10 = @spositiontaking_10,
-		
-		@slivepositiontaking_1 = @slivepositiontaking_1,
-		@slivepositiontaking_3 = @slivepositiontaking_3,
-		@slivepositiontaking_7 = @slivepositiontaking_7,
-		@slivepositiontaking_8 = @slivepositiontaking_8,
-		
-		@v2spositiontaking_1 = @v2spositiontaking_1,
-		@v2spositiontaking_2 = @v2spositiontaking_2,
-		@v2spositiontaking_3 = @v2spositiontaking_3,
-		@v2spositiontaking_7 = @v2spositiontaking_7,
-		@v2spositiontaking_8 = @v2spositiontaking_8,
-	--	@v2spositiontaking_9 = @v2spositiontaking_9,
-		@v2spositiontaking_20 = @v2spositiontaking_20,
 
-		@v3spositiontaking_1 = @v3spositiontaking_1,
-		@v3spositiontaking_2 = @v3spositiontaking_2,
-		@v3spositiontaking_3 = @v3spositiontaking_3,
-		@v3spositiontaking_20 = @v3spositiontaking_20,
-
-		@v5spositiontaking_1 = @v5spositiontaking_1,
-		@v5spositiontaking_2 = @v5spositiontaking_2,
-		@v5spositiontaking_3 = @v5spositiontaking_3,
-		@v5spositiontaking_20 = @v5spositiontaking_20,
-
-		@v8spositiontaking_1 = @v8spositiontaking_1,
-		@v8spositiontaking_3 = @v8spositiontaking_3,
-		@v8spositiontaking_20 = @v8spositiontaking_20,
-
-		@v10spositiontaking_1 = @v10spositiontaking_1,
-		@v10spositiontaking_2 = @v10spositiontaking_2,
-		@v10spositiontaking_3 = @v10spositiontaking_3,
-		@v10spositiontaking_20 = @v10spositiontaking_20,
-
-		@v11spositiontaking_1 = @v11spositiontaking_1,
-		@v11spositiontaking_20 = @v11spositiontaking_20,
-
-		@v99spositiontaking_1 = @v99spositiontaking_1,
-		@v99spositiontaking_2 = @v99spositiontaking_2,
-		@v99spositiontaking_3 = @v99spositiontaking_3,
-		@v99spositiontaking_20 = @v99spositiontaking_20,
-
-		-- mixed sports
-		@v99spositiontaking_9 = @v99spositiontaking_9,
-
-		-- HR Fixed Odds
-		@v154spositiontaking_20 = @v154spositiontaking_20,
-		
-		@UpdateMultiple = @UpdateMultiple,
-		@UpdatePositiontaking = @UpdatePositiontaking,
-		@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
-		@UpdatePositiontakingv3 = @UpdatePositiontakingv3,
-		@UpdatePositiontakingv5 = @UpdatePositiontakingv5,
-		@UpdatePositiontakingv8 = @UpdatePositiontakingv8,
-		@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
-		@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
-		@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
-		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
-		@UpdatePositiontakingv154 = @UpdatePositiontakingv154
-			
-	-- number game
-	IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
-	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_08
-			@custid = @custid,
-			@mode = 'number',
-			@roleid = 4,
-			
-			@v161spositiontaking_81 = @v161spositiontaking_81,
-			@v161spositiontaking_83 = @v161spositiontaking_83,
-			@v161spositiontaking_86 = @v161spositiontaking_86,
-			@v161spositiontaking_88 = @v161spositiontaking_88,
-			@v161slivepositiontaking_85 = @v161slivepositiontaking_85,
-			@v161slivepositiontaking_86 = @v161slivepositiontaking_86,
-			@v161slivepositiontaking_87 = @v161slivepositiontaking_87,
-			@v161slivepositiontaking_89 = @v161slivepositiontaking_89,
-			@v161slivepositiontaking_90 = @v161slivepositiontaking_90
-	END
-	/*
 	--don't update s1 for member under master was set i3=1(normal)
 	UPDATE cs WITH (ROWLOCK, UPDLOCK)
 	SET
@@ -3473,17 +3378,19 @@ BEGIN--Update Position Taking
 									OR (cs.sporttype=10 AND @UpdatePositiontakingv10 = 0) 
 									OR (cs.sporttype=11 AND @UpdatePositiontakingv11 = 0) 
 									OR (cs.sporttype=99 AND cs.bettype<>9 AND @UpdatePositiontakingv99 = 0) 
-									OR (cs.sporttype=99 AND cs.bettype=9 AND @UpdatePositiontakingv99MP = 0) )) 
+									OR (cs.sporttype=99 AND cs.bettype=9 AND @UpdatePositiontakingv99MP = 0)
+									OR (cs.sporttype = 154 AND cs.bettype = 20 AND @UpdatePositiontakingv154 = 0) )) 
 								THEN cs.spositiontaking 
 						ELSE CASE cs.sporttype 	
 								WHEN 1 THEN case cs.bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 ELSE 0 END
-								WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8  WHEN 20 THEN @v2spositiontaking_20  ELSE 0 END
+								WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20  ELSE 0 END
 								WHEN 3 THEN case cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
 								WHEN 5 THEN case cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 ELSE 0 END
 								WHEN 8 THEN case cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
 								WHEN 10 THEN case cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 ELSE 0 END
 								WHEN 11 THEN case cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 ELSE 0 END
 								WHEN 99 THEN case cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 9 THEN @v99spositiontaking_9 WHEN 20 THEN @v99spositiontaking_20 ELSE 0 END
+								WHEN 154 THEN CASE cs.bettype WHEN 20 THEN @v154spositiontaking_20 ELSE 0 END
 								ELSE cs.spositiontaking END
 						END
 	FROM Custsetting cs INNER JOIN custinfo c (nolock) on cs.custid = c.custid
@@ -3543,152 +3450,7 @@ BEGIN--Update Position Taking
 			INNER JOIN custsetting3rd mcs3 (nolock) on mcs3.custid = c.mrecommend and cs3.sporttype = mcs3.sporttype and cs3.bettype = mcs3.bettype
 		where cs3.custid=@custid and c.roleid = 1 and mcs3.isautolivepositiontaking = 0
 	END
-	*/
 	
-	---apply execrep when update auto pt on member
-	EXEC dbo.Acc_CustSetting_09
-		@custid = @custid,
-		@roleid = 4,
-		
-		@auto_spositiontaking_1 = @auto_spositiontaking_1,
-		@auto_spositiontaking_2 = @auto_spositiontaking_2,
-		@auto_spositiontaking_3 = @auto_spositiontaking_3,
-		@auto_spositiontaking_4 = @auto_spositiontaking_4,
-		@auto_spositiontaking_5 = @auto_spositiontaking_5,
-		@auto_spositiontaking_6 = @auto_spositiontaking_6,
-		@auto_spositiontaking_7 = @auto_spositiontaking_7,
-		@auto_spositiontaking_8 = @auto_spositiontaking_8,
-		@auto_spositiontaking_9 = @auto_spositiontaking_9,
-		@auto_spositiontaking_10 = @auto_spositiontaking_10,
-		@auto_slivepositiontaking_1 = @auto_slivepositiontaking_1,
-		@auto_slivepositiontaking_3 = @auto_slivepositiontaking_3,
-		@auto_slivepositiontaking_7 = @auto_slivepositiontaking_7,
-		@auto_slivepositiontaking_8 = @auto_slivepositiontaking_8,
-		@auto_v2spositiontaking_1 = @auto_v2spositiontaking_1,
-		@auto_v2spositiontaking_2 = @auto_v2spositiontaking_2,
-		@auto_v2spositiontaking_3 = @auto_v2spositiontaking_3,
-		@auto_v2spositiontaking_7 = @auto_v2spositiontaking_7,
-		@auto_v2spositiontaking_8 = @auto_v2spositiontaking_8,
---			@auto_v2spositiontaking_9 = @auto_v2spositiontaking_9,
-		@auto_v2spositiontaking_20 = @auto_v2spositiontaking_20,
-		@auto_v3spositiontaking_1 = @auto_v3spositiontaking_1,
-		@auto_v3spositiontaking_2 = @auto_v3spositiontaking_2,
-		@auto_v3spositiontaking_3 = @auto_v3spositiontaking_3,
-		@auto_v3spositiontaking_20 = @auto_v3spositiontaking_20,
-		@auto_v5spositiontaking_1 = @auto_v5spositiontaking_1,
-		@auto_v5spositiontaking_2 = @auto_v5spositiontaking_2,
-		@auto_v5spositiontaking_3 = @auto_v5spositiontaking_3,
-		@auto_v5spositiontaking_20 = @auto_v5spositiontaking_20,
-		@auto_v8spositiontaking_1 = @auto_v8spositiontaking_1,
-		@auto_v8spositiontaking_3 = @auto_v8spositiontaking_3,
-		@auto_v8spositiontaking_20 = @auto_v8spositiontaking_20,
-		@auto_v10spositiontaking_1 = @auto_v10spositiontaking_1,
-		@auto_v10spositiontaking_2 = @auto_v10spositiontaking_2,
-		@auto_v10spositiontaking_3 = @auto_v10spositiontaking_3,
-		@auto_v10spositiontaking_20 = @auto_v10spositiontaking_20,
-		@auto_v11spositiontaking_1 = @auto_v11spositiontaking_1,
-		@auto_v11spositiontaking_20 = @auto_v11spositiontaking_20,
-		
-		@auto_v99spositiontaking_1 = @auto_v99spositiontaking_1,
-		@auto_v99spositiontaking_2 = @auto_v99spositiontaking_2,
-		@auto_v99spositiontaking_3 = @auto_v99spositiontaking_3,
-		@auto_v99spositiontaking_20 = @auto_v99spositiontaking_20,
-
-		-- mixed sports
-		@auto_v99spositiontaking_9 = @auto_v99spositiontaking_9,
-
-		-- HR Fixed Odds
-		@auto_v154spositiontaking_20 = @auto_v154spositiontaking_20,
-		
-		@isauto_spositiontaking_1 = @isauto_spositiontaking_1,
-		@isauto_spositiontaking_2 = @isauto_spositiontaking_2,
-		@isauto_spositiontaking_3 = @isauto_spositiontaking_3,
-		@isauto_spositiontaking_4 = @isauto_spositiontaking_4,
-		@isauto_spositiontaking_5 = @isauto_spositiontaking_5,
-		@isauto_spositiontaking_6 = @isauto_spositiontaking_6,
-		@isauto_spositiontaking_7 = @isauto_spositiontaking_7,
-		@isauto_spositiontaking_8 = @isauto_spositiontaking_8,
-		@isauto_spositiontaking_9 = @isauto_spositiontaking_9,
-		@isauto_spositiontaking_10 = @isauto_spositiontaking_10,
-		@isauto_slivepositiontaking_1 = @isauto_slivepositiontaking_1,
-		@isauto_slivepositiontaking_3 = @isauto_slivepositiontaking_3,
-		@isauto_slivepositiontaking_7 = @isauto_slivepositiontaking_7,
-		@isauto_slivepositiontaking_8 = @isauto_slivepositiontaking_8,
-		@isauto_v2spositiontaking_1 = @isauto_v2spositiontaking_1,
-		@isauto_v2spositiontaking_2 = @isauto_v2spositiontaking_2,
-		@isauto_v2spositiontaking_3 = @isauto_v2spositiontaking_3,
-		@isauto_v2spositiontaking_7 = @isauto_v2spositiontaking_7,
-		@isauto_v2spositiontaking_8 = @isauto_v2spositiontaking_8,
---			@isauto_v2spositiontaking_9 = @isauto_v2spositiontaking_9,
-		@isauto_v2spositiontaking_20 = @isauto_v2spositiontaking_20,
-		@isauto_v3spositiontaking_1 = @isauto_v3spositiontaking_1,
-		@isauto_v3spositiontaking_2 = @isauto_v3spositiontaking_2,
-		@isauto_v3spositiontaking_3 = @isauto_v3spositiontaking_3,
-		@isauto_v3spositiontaking_20 = @isauto_v3spositiontaking_20,
-		@isauto_v5spositiontaking_1 = @isauto_v5spositiontaking_1,
-		@isauto_v5spositiontaking_2 = @isauto_v5spositiontaking_2,
-		@isauto_v5spositiontaking_3 = @isauto_v5spositiontaking_3,
-		@isauto_v5spositiontaking_20 = @isauto_v5spositiontaking_20,
-		@isauto_v8spositiontaking_1 = @isauto_v8spositiontaking_1,
-		@isauto_v8spositiontaking_3 = @isauto_v8spositiontaking_3,
-		@isauto_v8spositiontaking_20 = @isauto_v8spositiontaking_20,
-		@isauto_v10spositiontaking_1 = @isauto_v10spositiontaking_1,
-		@isauto_v10spositiontaking_2 = @isauto_v10spositiontaking_2,
-		@isauto_v10spositiontaking_3 = @isauto_v10spositiontaking_3,
-		@isauto_v10spositiontaking_20 = @isauto_v10spositiontaking_20,
-		@isauto_v11spositiontaking_1 = @isauto_v11spositiontaking_1,
-		@isauto_v11spositiontaking_20 = @isauto_v11spositiontaking_20,
-		
-		@isauto_v99spositiontaking_1 = @isauto_v99spositiontaking_1,
-		@isauto_v99spositiontaking_2 = @isauto_v99spositiontaking_2,
-		@isauto_v99spositiontaking_3 = @isauto_v99spositiontaking_3,
-		@isauto_v99spositiontaking_20 = @isauto_v99spositiontaking_20,
-		-- mixed sports
-		@isauto_v99spositiontaking_9 = @isauto_v99spositiontaking_9,
-	
-		-- HR Fixed Odds
-		@isauto_v154spositiontaking_20 = @isauto_v154spositiontaking_20,
-
-		@UpdateMultiple = @UpdateMultiple,
-		@UpdatePositiontaking = @UpdatePositiontaking,
-		@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
-		@UpdatePositiontakingv3 = @UpdatePositiontakingv3,
-		@UpdatePositiontakingv5 = @UpdatePositiontakingv5,
-		@UpdatePositiontakingv8 = @UpdatePositiontakingv8,
-		@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
-		@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
-		@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
-		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
-		@UpdatePositiontakingv154 = @UpdatePositiontakingv154
-	
-	EXEC dbo.Acc_CustSetting3rd_09
-		@custid = @custid,
-		@roleid = 4,
-		@mode = 'number',
-		
-		@auto_v161spositiontaking_81 = @auto_v161spositiontaking_81,
-		@auto_v161spositiontaking_83 = @auto_v161spositiontaking_83,
-		@auto_v161spositiontaking_86 = @auto_v161spositiontaking_86,
-		@auto_v161spositiontaking_88 = @auto_v161spositiontaking_88,
-		@auto_v161slivepositiontaking_85 = @auto_v161slivepositiontaking_85,
-		@auto_v161slivepositiontaking_86 = @auto_v161slivepositiontaking_86,
-		@auto_v161slivepositiontaking_87 = @auto_v161slivepositiontaking_87,
-		@auto_v161slivepositiontaking_89 = @auto_v161slivepositiontaking_89,
-		@auto_v161slivepositiontaking_90 = @auto_v161slivepositiontaking_90,
-
-		@isauto_v161spositiontaking_81 = @isauto_v161spositiontaking_81,
-		@isauto_v161spositiontaking_83 = @isauto_v161spositiontaking_83,
-		@isauto_v161spositiontaking_86 = @isauto_v161spositiontaking_86,
-		@isauto_v161spositiontaking_88 = @isauto_v161spositiontaking_88,
-		@isauto_v161slivepositiontaking_85 = @isauto_v161slivepositiontaking_85,
-		@isauto_v161slivepositiontaking_86 = @isauto_v161slivepositiontaking_86,
-		@isauto_v161slivepositiontaking_87 = @isauto_v161slivepositiontaking_87,
-		@isauto_v161slivepositiontaking_89 = @isauto_v161slivepositiontaking_89,
-		@isauto_v161slivepositiontaking_90 = @isauto_v161slivepositiontaking_90,
-		
-		@UpdateMultiple = @UpdateMultiple,
-		@UpdatePositiontakingv161 = @UpdatePositiontakingv161
-	/*
 	EXEC dbo.Acc_CustomerUpdMember_AutoPositiontaking 
 				@custid = @custid,
 				@auto_spositiontaking_1 = @auto_spositiontaking_1,
@@ -3737,6 +3499,8 @@ BEGIN--Update Position Taking
 
 				-- mixed sports
 				@auto_v99spositiontaking_9 = @auto_v99spositiontaking_9,
+				-- HR Fixed Odds
+				@auto_v154spositiontaking_20 = @auto_v154spositiontaking_20,
 				-- number game
 				@auto_v161spositiontaking_81 = @auto_v161spositiontaking_81,
 				@auto_v161spositiontaking_83 = @auto_v161spositiontaking_83,
@@ -3793,6 +3557,8 @@ BEGIN--Update Position Taking
 				@isauto_v99spositiontaking_20 = @isauto_v99spositiontaking_20,
 				-- mixed sports
 				@isauto_v99spositiontaking_9 = @isauto_v99spositiontaking_9,
+				-- HR Fixed Odds
+				@isauto_v154spositiontaking_20 = @isauto_v154spositiontaking_20,
 				-- number game
 				@isauto_v161spositiontaking_81 = @isauto_v161spositiontaking_81,
 				@isauto_v161spositiontaking_83 = @isauto_v161spositiontaking_83,
@@ -3814,11 +3580,12 @@ BEGIN--Update Position Taking
 				@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
 				@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
 				@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
+				@UpdatePositiontakingv154 = @UpdatePositiontakingv154,
 				@UpdatePositiontakingv161 = @UpdatePositiontakingv161,
 
 				@language = @language,
 				@userid = @userid
-		*/
+
 	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 		@custid = @custid, 
 		@recommEND = @recommEND, 
@@ -3900,10 +3667,8 @@ BEGIN--Update Position Taking
 	'v99spt_20="'+ coalesce(cast(@v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 	-- mixed sports
 	'v99spt_9="'+ coalesce(cast(@v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'v154spt_20="'+ coalesce(cast(@v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	--number game
 	'v161spt_81="'+ coalesce(cast(@v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'v161spt_83="'+ coalesce(cast(@v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -3966,10 +3731,8 @@ BEGIN--Update Position Taking
 	'a_v99spt_20="'+ coalesce(cast(@auto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' + 
 	-- mixed sports
 	'a_v99spt_9="'+ coalesce(cast(@auto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'a_v154spt_20="'+ coalesce(cast(@auto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	-- number game
 	'a_v161spt_81="'+ coalesce(cast(@auto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'a_v161spt_83="'+ coalesce(cast(@auto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4033,10 +3796,8 @@ BEGIN--Update Position Taking
 	'isa_v99spt_20="'+ coalesce(cast(@isauto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 	-- mixed sports
 	'isa_v99spt_9="'+ coalesce(cast(@isauto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'isa_v154spt_20="'+ coalesce(cast(@isauto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	-- number game
 	'isa_v161spt_81="'+ coalesce(cast(@isauto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'isa_v161spt_83="'+ coalesce(cast(@isauto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4177,10 +3938,8 @@ BEGIN--Update Position Taking
 	'v99spt_20="'+ coalesce(cast(@Old_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 	-- mixed sports
 	'v99spt_9="'+ coalesce(cast(@Old_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'v154spt_20="'+ coalesce(cast(@old_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	--number game
 	'v161spt_81="'+ coalesce(cast(@Old_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'v161spt_83="'+ coalesce(cast(@Old_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4242,10 +4001,8 @@ BEGIN--Update Position Taking
 	'a_v99spt_20="'+ coalesce(cast(@Old_auto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' + 
 	-- mixed sports
 	'a_v99spt_9="'+ coalesce(cast(@Old_auto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'a_v154spt_20="'+ coalesce(cast(@old_auto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	-- number game
 	'a_v161spt_81="'+ coalesce(cast(@Old_auto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'a_v161spt_83="'+ coalesce(cast(@Old_auto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4308,10 +4065,8 @@ BEGIN--Update Position Taking
 	'isa_v99spt_20="'+ coalesce(cast(@Old_isauto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 	-- mixed sports
 	'isa_v99spt_9="'+ coalesce(cast(@Old_isauto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 	-- HR Fixed Odds
 	'isa_v154spt_20="'+ coalesce(cast(@old_isauto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 	-- number game
 	'isa_v161spt_81="'+ coalesce(cast(@Old_isauto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 	'isa_v161spt_83="'+ coalesce(cast(@Old_isauto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4407,10 +4162,8 @@ BEGIN--Update Position Taking
 		'v99spt_20="'+ coalesce(cast(@v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'v99spt_9="'+ coalesce(cast(@v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		--HR Fixed Odds
 		'v154spt_20="'+ coalesce(cast(@v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +		
-
 		--number game
 		'v161spt_81="'+ coalesce(cast(@v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'v161spt_83="'+ coalesce(cast(@v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4473,10 +4226,8 @@ BEGIN--Update Position Taking
 		'a_v99spt_20="'+ coalesce(cast(@auto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' + 
 		-- mixed sports
 		'a_v99spt_9="'+ coalesce(cast(@auto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		-- HR Fixed Odds
 		'a_v154spt_20="'+ coalesce(cast(@auto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 		-- number game
 		'a_v161spt_81="'+ coalesce(cast(@auto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'a_v161spt_83="'+ coalesce(cast(@auto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4540,10 +4291,8 @@ BEGIN--Update Position Taking
 		'isa_v99spt_20="'+ coalesce(cast(@isauto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'isa_v99spt_9="'+ coalesce(cast(@isauto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		-- HR Fixed Odds
 		'isa_v154spt_20="'+ coalesce(cast(@isauto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 		-- number game
 		'isa_v161spt_81="'+ coalesce(cast(@isauto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'isa_v161spt_83="'+ coalesce(cast(@isauto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4624,10 +4373,8 @@ BEGIN--Update Position Taking
 		'v99spt_20="'+ coalesce(cast(@Old_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'v99spt_9="'+ coalesce(cast(@Old_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		-- HR Fixed Odds
 		'v154spt_20="'+ coalesce(cast(@old_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 		--number game
 		'v161spt_81="'+ coalesce(cast(@Old_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'v161spt_83="'+ coalesce(cast(@Old_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4689,10 +4436,8 @@ BEGIN--Update Position Taking
 		'a_v99spt_20="'+ coalesce(cast(@Old_auto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' + 
 		-- mixed sports
 		'a_v99spt_9="'+ coalesce(cast(@Old_auto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		-- HR Fixed Odds
 		'a_v154spt_20="'+ coalesce(cast(@old_auto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 		-- number game
 		'a_v161spt_81="'+ coalesce(cast(@Old_auto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'a_v161spt_83="'+ coalesce(cast(@Old_auto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +
@@ -4755,10 +4500,8 @@ BEGIN--Update Position Taking
 		'isa_v99spt_20="'+ coalesce(cast(@Old_isauto_v99spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'isa_v99spt_9="'+ coalesce(cast(@Old_isauto_v99spositiontaking_9 AS varchar(50)),space(1)) + '" ' +
-
 		-- HR fixed odds
 		'isa_v154spt_20="'+ coalesce(cast(@old_isauto_v154spositiontaking_20 AS varchar(50)),space(1)) + '" ' +
-
 		-- number game
 		'isa_v161spt_81="'+ coalesce(cast(@Old_isauto_v161spositiontaking_81 AS varchar(50)),space(1)) + '" ' +
 		'isa_v161spt_83="'+ coalesce(cast(@Old_isauto_v161spositiontaking_83 AS varchar(50)),space(1)) + '" ' +

@@ -1816,7 +1816,7 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v154spositiontaking_20 = spositiontaking
 		from custsetting with(NOLOCK)
 		where custid = @srecommend
-		and bettype = 20 
+		and bettype = 20 and sporttype = 154
 
 		-- number game
 		SELECT @max_v161mapositiontaking_81 = case when @max_v161mapositiontaking_81 > mpositiontaking then mpositiontaking else @max_v161mapositiontaking_81 end ,@max_v161spositiontaking_81 = spositiontaking FROM custsetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=81 AND sporttype=161
@@ -3984,8 +3984,7 @@ if	@UpdatePositiontaking   = 1  or
 			from custOverride co with(NOLOCK) 
 			inner JOIN (
 				SELECT 154 as sporttype, 20 as bettype, @auto_v154mpositiontaking_mem_20 as autopositiontaking,
-					@isauto_v154mpositiontaking_mem_20 as isautopositiontaking, 0 as autolivepositiontaking,
-					0 as isautolivepositiontaking
+					@isauto_v154mpositiontaking_mem_20 as isautopositiontaking
 			) as b ON co.bettype = b.bettype and co.sporttype = b.sporttype
 			inner JOIN Sports with (NOLOCK) ON b.sporttype = Sports.SportType
 			inner JOIN bettype bt with(NOLOCK) ON b.bettype = bt.typeid
@@ -6461,6 +6460,7 @@ if	@UpdatePositiontaking   = 1  or
 		END CATCH
 
 	END--UpdatePositiontaking
+
 
 
 GO
