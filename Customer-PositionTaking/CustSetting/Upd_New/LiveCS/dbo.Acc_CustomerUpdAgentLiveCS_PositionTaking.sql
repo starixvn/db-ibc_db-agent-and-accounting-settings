@@ -31,6 +31,8 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: write log on DBTXN if DBLOG failure
 		- 20130516@Lukas: allow PT = 100%
+		- 20131104@Johnson: Apply execrep when recalculate pt on members
+				and check total downlines before UPDATEs 
 	Parameters Explanation:
 */
 BEGIN
@@ -48,6 +50,18 @@ BEGIN
 			@ErrAcc				VARCHAR(4000), 
 			@ErrType			VARCHAR(4000)			
 	
+	---- Johnson@20131104: Checking total downlines before UPDATEs 
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+		@roleid=2,
+		@isExecRep=1,
+		@isUpdatePT = 1,
+		@Sporttype = 0,
+		@Language='E',
+		@ErrMsg=@ErrMsg output,
+		@ErrCode=@ErrCode output
+	IF	@ErrCode <> 0 
+		RETURN 
+		
 	SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend, @SyncLiveCasino = SyncLiveCasino 
 	FROM custinfo WITH(NOLOCK) 
 	WHERE CustID = @CustID
@@ -235,6 +249,20 @@ BEGIN
 	
 		if (@auto_v162mpositiontaking_1101 <> @old_auto_v162mpositiontaking_1101 or @isauto_v162mpositiontaking_1101 <> @old_isauto_v162mpositiontaking_1101 )
 		BEGIN
+			EXEC dbo.Acc_CustSetting3rd_05
+				@mrecommend = @mrecommend,
+				@recommend = @custid,
+				@roleid = 2,
+				@mode = 'LiveCasino',
+				
+				@isauto_v162mpositiontaking_1101 = @isauto_v162mpositiontaking_1101,
+				@old_isauto_v162mpositiontaking_1101 = @old_isauto_v162mpositiontaking_1101,
+				
+				@auto_v162mpositiontaking_1101 = @auto_v162mpositiontaking_1101,
+				
+				@updateallmembers = @updateallmembers,
+				@newmpositiontaking = @newmpositiontaking
+			/*
 			if @isauto_v162mpositiontaking_1101 >0 --Use AUTO MPT
 			BEGIN
 				--m1=min(m3-a1,u2)
@@ -281,15 +309,17 @@ BEGIN
 						return
 					END
 				END
-			END
+			END*/
 		END	
 	END
 	
 	IF @v162UpdateAutoPositiontaking_1101 = 1 OR @v162UpdatePositiontaking_1101 =1 
 	BEGIN 
-	
-		EXEC dbo.Acc_CustomerUpdAgentLiveCS_MaxPositiontaking @recommend = @custid
 		
+		EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'LiveCasino'
+	/*
+		EXEC dbo.Acc_CustomerUpdAgentLiveCS_MaxPositiontaking @recommend = @custid
+	*/	
 		IF (@@error <> 0)
 		BEGIN
 			

@@ -31,6 +31,8 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Amy: change limitation of max super PT to 100% instead of 90%
 			- 20130320@Johnson: Write log on DBTXN if DBLOG failure
+			- 20131104@Johnson: Apply execrep when recalculate pt on members 
+					and Check total downlines before UPDATEs 
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -53,6 +55,17 @@ DECLARE @roleid			TINYINT,
 
 SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
+---- Johnson@20131104: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=3,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 ---------------------------
 -- ***Check Downline Belonging***
 --EXEC DB053.bodb02.dbo.Age_CustomerSelCheckBelonging 
@@ -236,6 +249,22 @@ BEGIN
 			,  @ErrCode=201
 		RETURN
 	END
+	
+	EXEC dbo.Acc_CustSetting3rd_05
+		@srecommend = @srecommend,
+		@mrecommend = @custid,
+		@roleid = 3,
+		@mode = 'LiveCasino',
+		
+		@isauto_v162spositiontaking_1101 = @isauto_v162spositiontaking_1101,
+		@old_isauto_v162spositiontaking_1101 = @db_isauto_v162spositiontaking_1101,
+		
+		@auto_v162spositiontaking_1101 = @auto_v162spositiontaking_1101, 
+		
+		@Updateallmembers = @Updateallmembers,
+		@newspositiontaking = @newspositiontaking
+		
+	/*
 	IF @isauto_v162spositiontaking_1101 >0 --auto PT is used
 	BEGIN
 		--Update use Auto_SPT at master for all members only when:
@@ -298,13 +327,20 @@ BEGIN
 				RETURN
 			END
 		END
-	END
+	END*/
 END
 
 IF @v162UpdateAutoPositiontaking_1101 = 1 OR @v162UpdatePositiontaking_1101 = 1
 BEGIN
+	EXEC dbo.Acc_CustSetting3rd_07 
+		@srecommend = @srecommend,
+		@mrecommend = @custid,
+		@roleid = 3,
+		@mode = 'LiveCasino'
+		
+/*
 	EXEC dbo.Acc_CustomerUpdMasterLiveCS_MaxPositiontaking @srecommend = @srecommend , @mrecommend = @custid
-	
+*/	
 	IF (@@error <> 0)
 	BEGIN		
 		SELECT @ErrMsg = @UserName + ': '+

@@ -35,6 +35,7 @@
 			- 20130205@Lukas: fix bug - do not apply new s1 from popup when uncheck auto PT
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131101@Johnson: apply execrep when update min pt, auto pt 
+							and check total downlines before UPDATEs 
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -84,6 +85,18 @@ SET NOCOUNT ON
 	END
 	--end
 	
+	---- Johnson@20131104: Checking total downlines before UPDATEs 
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+		@roleid=3,
+		@isExecRep=1,
+		@isUpdatePT = 1,
+		@Sporttype = 0,
+		@Language='E',
+		@ErrMsg=@ErrMsg output,
+		@ErrCode=@ErrCode output
+	IF	@ErrCode <> 0 
+		RETURN    
+		
 	--Get old values for tracking 
 	SELECT @s3_old		= mcs.spositiontaking,
 			@m3_old		= mcs.mpositiontaking,

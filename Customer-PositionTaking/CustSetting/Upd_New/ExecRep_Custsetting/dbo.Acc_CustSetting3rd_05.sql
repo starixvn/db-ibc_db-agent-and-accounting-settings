@@ -58,8 +58,16 @@
 	@old_vs_isauto_spositiontaking bit = 0,--is3_old
 	
 	@vs_auto_spositiontaking smallmoney = 0,--us3
+	
+	--Live Casino
+	@isauto_v162spositiontaking_1101 bit = 0,
+	@old_isauto_v162spositiontaking_1101 bit = 0,
+	
+	@auto_v162spositiontaking_1101 smallmoney = 0,	
+	
 	------------------------------------------------------------------------
 	--update auto pt on agent
+	--number game
 	@isauto_v161mpositiontaking_81 bit = 0,
 	@isauto_v161mpositiontaking_83 bit = 0,
 	@isauto_v161mpositiontaking_86 bit = 0,
@@ -105,7 +113,18 @@
 	@old_auto_v161mlivepositiontaking_90 smallmoney = 0,
 		
 	--virtual sports
-
+	@vs_mpositiontaking_max smallmoney = 0, --m3
+	@vs_auto_mpositiontaking smallmoney = 0, --um2
+	
+	@vs_isauto_mpositiontaking bit = 0, --im2
+	@old_vs_isauto_mpositiontaking bit = 0, --old_im2
+	
+	--Live Casino
+	@auto_v162mpositiontaking_1101 smallmoney = 0,
+	
+	@isauto_v162mpositiontaking_1101 bit = 0,
+	@old_isauto_v162mpositiontaking_1101 bit = 0,
+	
 	@updatepositiontakingv161 bit = 1,		
 	@updateautopositiontakingvs bit = 1,
 	@updateallmembers bit = 0,
@@ -120,8 +139,11 @@ AS
 		Task: Apply execrep when update auto pt on master , agent, member levels
 		DB: DBTXN/bodb02
 		Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
-					Acc_CustomerUpdAgent_AutoPositiontaking
-					
+					Acc_CustomerUpdAgent_AutoPositiontaking					
+					Acc_CustomerUpdMasterVS_Positiontaking
+					Acc_CustomerUpdAgentVS_PositionTaking
+					Acc_CustomerUpdMasterLiveCS_Positiontaking
+					Acc_CustomerUpdAgentLiveCS_PositionTaking
 		Revision:
 		
 		Parameter's Explanation:
@@ -291,6 +313,49 @@ BEGIN
 					and cs.isautopositiontaking = 0
 			END
 		END
+		ELSE IF @mode = 'LiveCasino'
+		BEGIN
+			 IF @isauto_v162spositiontaking_1101 >0 --auto PT is used
+			BEGIN
+				--Update use Auto_SPT at master for all members only when:
+					--(autoSPT at master changes AND isauto at master = 1
+					--OR isauto at master changes from 0 to 1)
+					--AND isauto at member = 0			
+				
+				SELECT @maxpos = spositiontaking 
+				FROM CustSettingGame with (NOLOCK) 
+				WHERE custid = @srecommend and sporttype=162 and bettype = 1101
+				
+				UPDATE cs
+				SET cs.spositiontaking = CASE WHEN @maxpos - cs.mpositiontaking - cs.apositiontaking > @auto_v162spositiontaking_1101 THEN @auto_v162spositiontaking_1101 ELSE @maxpos - cs.mpositiontaking - cs.apositiontaking END
+				FROM CustSettingGame cs 
+					INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1 AND ci.SyncLiveCasino = 1
+					AND cs.sporttype = 162 AND cs.bettype = 1101 
+					AND cs.isautopositiontaking = 0 -- only update members without AutoSPT at member
+								
+			END
+			ELSE IF @isauto_v162spositiontaking_1101 <> @old_isauto_v162spositiontaking_1101  --auto PT is NOT used
+			BEGIN
+				IF @Updateallmembers = 1
+				BEGIN
+				--Update a specific SPT for all members only when:
+							-- @updateallmembers = 1
+							-- isauto at master = 0
+							--AND isauto at master change from 1 to 0
+							--AND isauto at member = 0
+							
+					UPDATE cs
+					SET cs.spositiontaking = CASE WHEN mcs.spositiontaking < @newspositiontaking THEN mcs.spositiontaking ELSE @newspositiontaking END
+					FROM CustSettingGame cs
+						INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+						INNER JOIN CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
+					WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1 AND ci.SyncLiveCasino = 1
+						AND cs.sporttype = 162 AND cs.bettype = 1101 
+						AND cs.isautopositiontaking = 0
+				END
+			END
+		END
 	END
 	ELSE IF @roleid = 2
 	BEGIN
@@ -385,4 +450,77 @@ BEGIN
 			DEALLOCATE CUR
 		END
 	END	
+	ELSE IF @mode = 'virtual-sports'
+	BEGIN
+		IF @updateautopositiontakingvs = 1
+		BEGIN
+			IF @vs_isauto_mpositiontaking >0 --Use AUTO MPT        
+			BEGIN        
+			   --m1=min(m3-a1,u2)        
+			   SELECT @maxpos = mpositiontaking FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @mrecommend and sporttype=@vs_sporttype and bettype = @vs_bettype        
+			   
+			   UPDATE cs         
+			   SET mpositiontaking = case when @maxpos - apositiontaking> @vs_auto_mpositiontaking then @vs_auto_mpositiontaking else @maxpos -apositiontaking end        
+			   FROM CustSetting3rd AS cs WITH (ROWLOCK, UPDLOCK)        
+					INNER JOIN custinfo AS c WITH (NOLOCK) on cs.custid = c.custid        
+			   WHERE c.recommend = @recommend and c.roleid = 1 and cs.sporttype=@vs_sporttype and cs.bettype = @vs_bettype        
+			END
+			ELSE IF @vs_isauto_mpositiontaking <> @old_vs_isauto_mpositiontaking --Not use AUTO MPT        
+			BEGIN        
+				IF @updateallmembers = 1 --all member        
+				BEGIN                  
+					--m1=min(m3-a2,@m1)
+					UPDATE cs             
+					SET mpositiontaking = case when @vs_mpositiontaking_max - acs.mpositiontaking < @newmpositiontaking then @vs_mpositiontaking_max - acs.mpositiontaking else @newmpositiontaking end        
+					FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)         
+						 INNER JOIN custinfo as c with (NOLOCK) on cs.custid = c.custid        
+						 INNER JOIN CustSetting3rd as acs with (NOLOCK) on acs.custid = @recommend and cs.sporttype=acs.sporttype and cs.bettype=acs.bettype        
+					where c.recommend = @recommend and c.roleid = 1 and cs.bettype = @vs_bettype and cs.sporttype=@vs_sporttype        
+				END        
+			END  
+		END
+		ELSE 
+		BEGIN
+			 UPDATE cs        
+			 SET mpositiontaking = b.mpositiontaking        
+			 FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)        
+				  INNER JOIN custinfo ci(nolock) on cs.custid = ci.custid and ci.recommend = @recommend and ci.roleid = 1        
+				  INNER JOIN         
+				   (        
+					select @vs_sporttype as sporttype, @vs_bettype as bettype, @vs_isauto_mpositiontaking as isautopositiontaking, @old_vs_isauto_mpositiontaking as oldisautopositiontaking, @newmpositiontaking as mpositiontaking        
+				   ) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype        
+			 WHERE b.isautopositiontaking = 0 -- and b.oldisautopositiontaking = 0          
+				AND cs.isautompositiontaking = 0 
+		END
+	END	
+	ELSE IF @mode = 'LiveCasino'
+	BEGIN
+		if @isauto_v162mpositiontaking_1101 >0 --Use AUTO MPT
+		BEGIN
+			--m1=min(m3-a1,u2)
+			select @maxpos = mpositiontaking from CustSettingGame with (NOLOCK) where custid = @mrecommend and sporttype=162 and bettype = 1101
+			update cs 
+				set mpositiontaking = case when @maxpos - apositiontaking > @auto_v162mpositiontaking_1101 then @auto_v162mpositiontaking_1101 else @maxpos -apositiontaking end
+			from CustSettingGame as cs with (ROWLOCK, UPDLOCK) 
+				inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
+			where c.recommend = @recommend and c.roleid = 1 and c.SyncLiveCasino = 1
+				and cs.bettype = 1101 and cs.sporttype=162
+			
+		END
+		else if @isauto_v162mpositiontaking_1101 <> @old_isauto_v162mpositiontaking_1101 --Not use AUTO MPT
+		BEGIN
+			if @updateallmembers = 1 --all member
+			BEGIN
+				--m1=min(m2,@newmpositiontaking)
+				update cs 
+					set mpositiontaking = case when acs.mpositiontaking < @newmpositiontaking then acs.mpositiontaking else @newmpositiontaking end
+				from CustSettingGame as cs with (ROWLOCK, UPDLOCK) 
+				inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
+				inner join CustSettingGame as acs with (NOLOCK) on acs.custid = @recommend and cs.sporttype=acs.sporttype and cs.bettype=acs.bettype
+				where c.recommend = @recommend and c.roleid = 1 and c.SyncLiveCasino = 1
+					and cs.bettype = 1101 and cs.sporttype = 162
+				
+			END
+		END
+	END
 END

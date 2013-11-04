@@ -36,6 +36,8 @@ Revisions:
  - 20130131@Scott: Fix bug (5291,5297)  
  - 20130131@Dan: fix bug - do not apply new m1 from popup when unchecking auto PT
  - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+ - 20131104@Johnson: apply execrep when update pt on agent
+		and check total downlines before UPDATEs 
 Param's Explanation:        
 • @ErrCode:        
     = 0: Update successfully.        
@@ -67,7 +69,19 @@ BEGIN
    @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)        
  return        
 END        
---end        
+--end 
+
+---- Johnson@20131104: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=2,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN        
         
 SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend         
 FROM custinfo with (NOLOCK)         
@@ -532,10 +546,29 @@ BEGIN
     @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)        
   return          
  END        
-        
+          
  ---------------------------------        
  if (@um2 <> @old_um2 or @im2 <> @old_im2 )        
  BEGIN        
+	EXEC dbo.Acc_CustSetting3rd_05 
+		@mrecommend = @mrecommend,
+		@recommend = @custid,
+		@roleid = 2,
+		@mode = 'virtual-sports',
+		
+		@vs_sporttype = @sporttype,
+		@vs_bettype = @bettype,
+		
+		@vs_mpositiontaking_max = @m3, --m3
+		@vs_auto_mpositiontaking = @um2, --um2
+		
+		@vs_isauto_mpositiontaking = @im2, --im2
+		@old_vs_isauto_mpositiontaking = @old_im2,--old_im2
+		
+		@updateautopositiontakingvs = 1,
+		@updateallmembers = @updateallmembers,				
+		@newmpositiontaking = @m1
+ /*
   if @im2 >0 --Use AUTO MPT        
   BEGIN        
    --m1=min(m3-a1,u2)        
@@ -586,13 +619,28 @@ BEGIN
      return             
     END        
    END        
-  END        
- END         
+  END  */       
+ END        
 END        
-        
+      
 IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND        
  @Updateallmembers = 1 AND @im2=0        
-BEGIN             
+BEGIN   
+	EXEC dbo.Acc_CustSetting3rd_05 
+		@mrecommend = @mrecommend,
+		@recommend = @custid,
+		@roleid = 2,
+		@mode = 'virtual-sports',
+		
+		@vs_sporttype = @sporttype,
+		@vs_bettype = @bettype,
+		
+		@vs_isauto_mpositiontaking = @im2, --im2
+		@old_vs_isauto_mpositiontaking = @old_im2,--old_im2
+		
+		@updateautopositiontakingvs = 1,						
+		@newmpositiontaking = @m1          
+/*
  UPDATE cs        
  SET mpositiontaking = b.mpositiontaking        
  FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)        
@@ -614,12 +662,18 @@ BEGIN
   SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),        
       @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)          
   RETURN            
- END        
+ END  
+ */      
 END        
         
 IF @UpdateAutoPositiontaking = 1 OR @UpdatePositiontaking =1         
-BEGIN         
+BEGIN        
+
+/* 
  EXEC dbo.Acc_CustomerUpdAgentVS_MaxPositiontaking @recommend = @custid        
+ */
+EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'virtual-sports'
+ 
  IF (@@error <> 0)        
  BEGIN          
   SELECT @ErrMsg_Cur = @UserName + ': '+        
@@ -632,7 +686,7 @@ BEGIN
     @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)        
   return          
  END        
- ELSE        
+ ELSE         
   SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)        
 END        
         
@@ -685,7 +739,7 @@ Select @TrackingValueDB ='<Acc_CustomerUpdAgentVS_PositionTaking custid="'+ coal
         
 set @endRun = getdate()        
 set @duration  = datediff (millisecond,@startRun,@endRun)        
-        
+      
 --Log positiontaking 
 BEGIN TRY       
 	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP        
@@ -726,7 +780,8 @@ BEGIN CATCH
 	 @TrackingValue2 = @TrackingValueDB,        
 	 @duration = @duration
 END CATCH
-	
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_PositionTaking] TO [bodbAdminNet]
 GO

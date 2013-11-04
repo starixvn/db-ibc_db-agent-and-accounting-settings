@@ -18,6 +18,8 @@ AS
 		Revisions:
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20131104@Johnson: Apply execrep when recalculate pt on members
+					 and check total downlines before UPDATEs 
 		Parameters Explanation:
 		
 		Note:
@@ -51,6 +53,17 @@ BEGIN
 END
 --end
 
+---- Johnson@20131104: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=4,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 
 DECLARE @db_v162spositiontaking_1101 SMALLMONEY
 
@@ -124,6 +137,8 @@ END
 
 --u = (i3 or i1)?(u3 or u1)
 --s1 = min(s4-m1-a1, u)
+EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'LiveCasino'
+/*
 UPDATE cs 
 SET spositiontaking = CASE WHEN @v162spositiontaking_1101 - cs.mpositiontaking - cs.apositiontaking >
 							 CASE WHEN cs.isautopositiontaking = 1 THEN cs.autopositiontaking ELSE mcs.autopositiontaking END THEN
@@ -148,6 +163,7 @@ BEGIN
 	
 	RETURN
 END
+*/
 
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(4000)
