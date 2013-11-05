@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_AutoPositiontaking]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMaster_AutoPositiontaking]    Script Date: 11/05/2013 18:14:17 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_AutoPositiontaking]
 	@mrecommend int,
 	@srecommend int,
 	@auto_spositiontaking_1 smallmoney = 0, 
@@ -826,6 +833,7 @@ EXEC Acc_CustSetting_05
 
 	-- mixed sports
 	@isauto_v99spositiontaking_9 = @isauto_v99spositiontaking_9,
+	@isauto_v154spositiontaking_20 = @isauto_v154spositiontaking_20,
 	
 	@old_isauto_spositiontaking_1 = @old_isauto_spositiontaking_1, 
 	@old_isauto_spositiontaking_2 = @old_isauto_spositiontaking_2, 
@@ -878,6 +886,7 @@ EXEC Acc_CustSetting_05
 
 	-- mixed sports
 	@old_isauto_v99spositiontaking_9 = @old_isauto_v99spositiontaking_9,
+	@old_isauto_v154spositiontaking_20 = @old_isauto_v154spositiontaking_20,
 	
 	@auto_spositiontaking_1 = @auto_spositiontaking_1, 
 	@auto_spositiontaking_2 = @auto_spositiontaking_2,
@@ -931,6 +940,7 @@ EXEC Acc_CustSetting_05
 
 	--- mixed sports
 	@auto_v99spositiontaking_9 = @auto_v99spositiontaking_9,
+	@auto_v154spositiontaking_20 = @auto_v154spositiontaking_20,
 
 	@old_auto_spositiontaking_1 = @old_auto_spositiontaking_1, 
 	@old_auto_spositiontaking_2 = @old_auto_spositiontaking_2,
@@ -984,6 +994,7 @@ EXEC Acc_CustSetting_05
 
 	--- mixed sports
 	@old_auto_v99spositiontaking_9 = @old_auto_v99spositiontaking_9,
+	@old_auto_v154spositiontaking_20 = @old_auto_v154spositiontaking_20,
 
 	--update auto pt on agent 
 	
@@ -1000,6 +1011,7 @@ EXEC Acc_CustSetting_05
 
 	-- mixed sports
 	@updatepositiontakingv99mp = @updatepositiontakingv99mp,
+	@updatepositiontakingv154 = @updatepositiontakingv154,
 	
 	@updateallmembers = @updateallmembers,
 	@newspositiontaking = @newspositiontaking
@@ -1842,6 +1854,7 @@ union all  	select 90 as bettype,	   0 as isautopositiontaking							,								0 
 	CLOSE CUR
 	DEALLOCATE CUR
 --END*/
+
 
 
 GO
