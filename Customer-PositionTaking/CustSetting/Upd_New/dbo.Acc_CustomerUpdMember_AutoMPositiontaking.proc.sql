@@ -678,8 +678,9 @@ FETCH NEXT FROM CUR INTO
 	@isautov11positiontaking, @autov11positiontaking, 
 	@isautov99positiontaking, @autov99positiontaking,
 	@isautov99mppositiontaking, @autov99mppositiontaking,
-	@isautov154positiontaking, @autov154positiontaking, 
-	@isautov161positiontaking, @isautov161livepositiontaking,@autov161positiontaking,@autov161livepositiontaking
+	@isautov161positiontaking, @isautov161livepositiontaking,@autov161positiontaking,@autov161livepositiontaking,
+	@isautov154positiontaking, @autov154positiontaking
+
 
 
 --m1=min(u,m3-a1)
@@ -1034,12 +1035,15 @@ BEGIN
 		@isautov11positiontaking, @autov11positiontaking, 
 		@isautov99positiontaking, @autov99positiontaking,
 		@isautov99mppositiontaking, @autov99mppositiontaking,	
-		@isautov154positiontaking, @autov154positiontaking, 			
-		@isautov161positiontaking, @isautov161livepositiontaking,@autov161positiontaking,@autov161livepositiontaking
+		@isautov161positiontaking, @isautov161livepositiontaking,@autov161positiontaking,@autov161livepositiontaking,
+		@isautov154positiontaking, @autov154positiontaking
 END
 
 CLOSE CUR
 DEALLOCATE CUR
+
+
+
 
 
 GO
