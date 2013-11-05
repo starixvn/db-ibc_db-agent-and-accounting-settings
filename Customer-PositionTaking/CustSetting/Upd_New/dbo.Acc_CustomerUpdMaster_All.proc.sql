@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	@custid int,-- masterid	
 	@disCasino bit = 0,	
 	@firstname nvarchar(50),
@@ -49,6 +48,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	@minbetv99mp money = 0,
 	@maxbetv99mp money = 0,
 	@maxpermatchv99mp money = 0,
+	
+	--HR Fixed Odds
+	@MinBetv154 MONEY = 0,
+	@MaxBetv154 MONEY = 0 ,
+	@MaxPerMatchv154 MONEY = 0,
 	
 	-- number game
 	@minbetv161 money,
@@ -112,6 +116,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	-- mixed sports
 	@v99spositiontaking_9 smallmoney = 0,	
 
+	-- HR fixOdds
+	@v154spositiontaking_20 smallmoney = 0,	
+	
 	-- number game
 	@v161spositiontaking_81 smallmoney,
 	@v161spositiontaking_83 smallmoney,	
@@ -131,6 +138,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	@discountcs decimal(9,8),
 	@discount1x2 decimal(9,8)=0, --1x2	
 	@discountnumber decimal(9,8) = 0,
+	@discountHRFixedOdds DECIMAL(9,8)=0,
+	
 	@UpdateCommission bit = 1,
 	
 	@UpdateMinMaxBet bit = 1,
@@ -144,6 +153,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	
 	-- new setting
 	@UpdateMinMaxBetv99MP bit = 1,
+	@UpdateMinMaxBetv154 bit = 1,
 	@UpdateMinMaxBetv161 bit = 1,
 
 	@UpdatePositiontaking bit = 1,
@@ -156,6 +166,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	@UpdatePositiontakingv99 bit = 1,
 
 	@UpdatePositiontakingv99MP bit = 1,
+	
+	@UpdatePositiontakingv154 bit = 1,
 	@UpdatePositiontakingv161 bit = 1,
 
 	@UpdateClosed bit = 1,
@@ -213,6 +225,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	
 	-- mixed sports
 	@auto_v99spositiontaking_9 smallmoney = 0,
+	
+	-- HR fixodds
+	@auto_v154spositiontaking_20 smallmoney = 0,
 	
 	-- number game
 	@auto_v161spositiontaking_81 smallmoney = 0,
@@ -281,6 +296,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 
 	-- mixed sports
 	@isauto_v99spositiontaking_9 bit = 0,
+	
+	-- HR fixodds
+	@isauto_v154spositiontaking_20 bit = 0,
 
 	-- number game
 	@isauto_v161spositiontaking_81 bit = 0,
@@ -348,6 +366,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
 	-- mixed sports
 	@v99mpositiontaking_9 smallmoney = 0.7,
 	
+	-- HR fixodds
+	@v154mpositiontaking_20 smallmoney = 0.7,
+	
 	-- number game
 	@v161mpositiontaking_81 smallmoney = 0.7,
 	@v161mpositiontaking_83 smallmoney = 0.7,	
@@ -394,6 +415,8 @@ Revisions:
 	- 20110709@Johnson: Change to use new server BD053 instead DB052
 	- 20120704@Johnson: Remove setting hard code of number group
 	- 20130218@Dan: Change linked server DB053 to DBAGE
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -552,7 +575,8 @@ BEGIN
 		@groupd_old decimal(9,8),
 		@discountcs_old decimal(9,8),
 		@discount1x2_old decimal(9,8),
-		@discountnumber_old decimal(9,8)
+		@discountnumber_old decimal(9,8),
+		@discountHRFixedOdds_old decimal(9,8)
 
 	select @groupa_old = groupa, @groupb_old = groupb, @groupc_old = groupc, @groupd_old = groupd
 	from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 1
@@ -562,13 +586,17 @@ BEGIN
 
 	select @discount1x2_old = adiscount
 	from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 5
+	
+	--v154
+	select @discountHRFixedOdds_old = adiscount
+	from custsetting (nolock) where custid = @custid and sporttype = 154 and bettype = 20
 
 	---
 	select @discountnumber_old = adiscount
 	from custsetting3rd with(nolock) where custid = @custid and sporttype = 161 and bettype = 81
 
 	if (@groupa_old <> @groupa) or (@groupb_old <> @groupb) or (@groupc_old <> @groupc) or (@groupd_old <> @groupd)
-		or (@discountcs_old <> @discountcs) or (@discount1x2_old <> @discount1x2) or (@discountnumber_old <> @discountnumber)
+		or (@discountcs_old <> @discountcs) or (@discount1x2_old <> @discount1x2) or (@discountHRFixedOdds_old <> @discountHRFixedOdds) or (@discountnumber_old <> @discountnumber)
 		set @updatecomm_old = 1
 	else 
 		set @updatecomm_old = 0
@@ -584,6 +612,7 @@ BEGIN
 			@discountcs = @discountcs,
 			@discount1x2 = @discount1x2,
 			@discountnumber = @discountnumber,
+			@discountHRFixedOdds =@discountHRFixedOdds,
 			@updatecomm_old = @updatecomm_old,
 			@SubAccID = @SubAccID,
 			@UserID = @UserID,
@@ -615,6 +644,7 @@ if 	@UpdateMinMaxBet  = 1 or
 	@UpdateMinMaxBetv11  = 1 or
 	@UpdateMinMaxBetv99  = 1 or
 	@UpdateMinMaxBetv99MP = 1 or
+	@UpdateMinMaxBetv154  = 1 or
 	@UpdateMinMaxBetv161 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
@@ -649,7 +679,11 @@ BEGIN
 		@minbetv99mp = @minbetv99mp,
 		@maxbetv99mp = @maxbetv99mp,
 		@maxpermatchv99mp = @maxpermatchv99mp,
-
+		
+		@MinBetv154 = @MinBetv154,
+		@MaxBetv154 = @MaxBetv154,
+		@MaxPerMatchv154 = @MaxPerMatchv154,
+		
 		-- number game
 		@minbetv161 = @minbetv161,
 		@maxbetv161 = @maxbetv161,
@@ -668,6 +702,7 @@ BEGIN
 		@UpdateMinMaxBetv99 = @UpdateMinMaxBetv99,
 		
 		@UpdateMinMaxBetv99MP = @UpdateMinMaxBetv99MP,
+		@UpdateMinMaxBetv154 = @UpdateMinMaxBetv154,
 		@UpdateMinMaxBetv161 = @UpdateMinMaxBetv161,
 
 		@SubAccID = @SubAccID,
@@ -699,6 +734,7 @@ if	@UpdatePositiontaking   = 1  or
 	@UpdatePositiontakingv11   = 1  or
 	@UpdatePositiontakingv99   = 1  or
 	@UpdatePositiontakingv99MP = 1 or
+	@UpdatePositiontakingv154   = 1  or
 	@UpdatePositiontakingv161 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
@@ -756,6 +792,8 @@ BEGIN
 
 		-- mixed sports
 		@v99spositiontaking_9_old smallmoney,	
+		@v154spositiontaking_20_old smallmoney,
+
 		-- number game
 		@v161spositiontaking_81_old smallmoney,	
 		@v161spositiontaking_83_old smallmoney,			
@@ -820,6 +858,7 @@ BEGIN
 
 		-- mixed sports
 		@auto_v99spositiontaking_9_old smallmoney ,
+		@auto_v154spositiontaking_20_old smallmoney ,
 
 		-- number game
 		@auto_v161spositiontaking_81_old smallmoney ,
@@ -885,6 +924,7 @@ BEGIN
 
 		-- mixed sports
 		@isauto_v99spositiontaking_9_old bit ,
+		@isauto_v154spositiontaking_20_old bit ,
 
 		-- number game
 		@isauto_v161spositiontaking_81_old bit ,
@@ -950,6 +990,7 @@ BEGIN
 
 		-- mixed sports
 		@v99mpositiontaking_9_old smallmoney,
+		@v154mpositiontaking_20_old smallmoney,
 
 		-- number game
 		@v161mpositiontaking_81_old smallmoney,
@@ -1013,6 +1054,7 @@ BEGIN
 
 	-- mixed sports
 	select @v99spositiontaking_9_old = spositiontaking, @v99mpositiontaking_9_old = mpositiontaking, @auto_v99spositiontaking_9_old = autopositiontaking, @isauto_v99spositiontaking_9_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=99
+	select @v154spositiontaking_20_old = spositiontaking, @v154mpositiontaking_20_old = mpositiontaking, @auto_v154spositiontaking_20_old = autopositiontaking, @isauto_v154spositiontaking_20_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=154
 
 	-- number game
 	select @v161spositiontaking_81_old = spositiontaking, @v161mpositiontaking_81_old = mpositiontaking, @auto_v161spositiontaking_81_old = autopositiontaking, @isauto_v161spositiontaking_81_old = isautopositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype = 81 and sporttype = 161
@@ -1078,7 +1120,8 @@ BEGIN
 
 		-- mixed sports
 		@v99spositiontaking_9 <> @v99spositiontaking_9_old or
-		
+		@v154spositiontaking_20 <> @v154spositiontaking_20_old or
+
 		-- number game
 		@v161spositiontaking_81 <> @v161spositiontaking_81_old or
 		@v161spositiontaking_83 <> @v161spositiontaking_83_old or		
@@ -1142,6 +1185,7 @@ BEGIN
 
 		-- mixed sports
 		@auto_v99spositiontaking_9 <> @auto_v99spositiontaking_9_old or
+		@auto_v154spositiontaking_20 <> @auto_v154spositiontaking_20_old or
 
 		-- number game
 		@auto_v161spositiontaking_81 <> @auto_v161spositiontaking_81_old or
@@ -1207,6 +1251,7 @@ BEGIN
 
 		-- mixed sports
 		@isauto_v99spositiontaking_9 <> @isauto_v99spositiontaking_9_old or
+		@isauto_v154spositiontaking_20 <> @isauto_v154spositiontaking_20_old or
 
 		-- number game
 		@isauto_v161spositiontaking_81 <> @isauto_v161spositiontaking_81_old or
@@ -1272,6 +1317,7 @@ BEGIN
 		
 		-- mixed sports
 		@v99mpositiontaking_9 <> @v99mpositiontaking_9_old or
+		@v154mpositiontaking_20 <> @v154mpositiontaking_20_old or
 
 		-- number game
 		@v161mpositiontaking_81 <> @v161mpositiontaking_81_old or
@@ -1334,6 +1380,7 @@ BEGIN
 
 			-- mixed sports
 			@v99spositiontaking_9 = @v99spositiontaking_9,
+			@v154spositiontaking_20 = @v154spositiontaking_20,
 
 			-- number game
 			@v161spositiontaking_81 = @v161spositiontaking_81,
@@ -1359,6 +1406,7 @@ BEGIN
 			
 			---- mixed sports
 			@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
+			@UpdatePositiontakingv154 = @UpdatePositiontakingv154,
 
 			-- number game
 			@UpdatePositiontakingv161 = @UpdatePositiontakingv161,
@@ -1409,6 +1457,7 @@ BEGIN
 
 			-- mixed sports
 			@auto_v99spositiontaking_9 = @auto_v99spositiontaking_9,
+			@auto_v154spositiontaking_20 = @auto_v154spositiontaking_20,
 	
 			-- number game
 			@auto_v161spositiontaking_81 = @auto_v161spositiontaking_81,
@@ -1469,6 +1518,7 @@ BEGIN
 		
 			-- mixed sports
 			@isauto_v99spositiontaking_9 = @isauto_v99spositiontaking_9,
+			@isauto_v154spositiontaking_20 = @isauto_v154spositiontaking_20,
 
 			-- number game
 			@isauto_v161spositiontaking_81 = @isauto_v161spositiontaking_81,
@@ -1527,6 +1577,7 @@ BEGIN
 
 			-- mixed sports
 			@v99mpositiontaking_9 = @v99mpositiontaking_9,
+			@v154mpositiontaking_20 = @v154mpositiontaking_20,
 
 			-- number game
 			@v161mpositiontaking_81 = @v161mpositiontaking_81,
@@ -1559,12 +1610,11 @@ BEGIN
 END
 
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_All] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_All] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_All] TO [vnteam] AS [dbo]

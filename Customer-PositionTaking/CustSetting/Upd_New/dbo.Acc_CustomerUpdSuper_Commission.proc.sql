@@ -7,8 +7,8 @@
 	@groupd DECIMAL(9,8),
 	@discountcs DECIMAL(9,8),	
 	@discount1x2 DECIMAL(9,8)=0,
+	@discountHRFixedOdds DECIMAL(9,8)=0,
 	@discountnumber DECIMAL(9,8)=0,
-	--@discountHRFixedOdds decimal (9,8) = 0,
 	@updatecomm_old BIT =1,
 	@UserID INT = 0,	
 	@Language VARCHAR(2) = 'E',
@@ -37,6 +37,7 @@ Revisions:
 	- 20120522@Sophia: Remove hardcode not to update commission for member under agent BARM.
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
 • @ErrCode:
@@ -61,11 +62,13 @@ declare @Old_groupa DECIMAL(9,8),
 	@Old_groupd DECIMAL(9,8),
 	@Old_discountcs DECIMAL(9,8),	
 	@Old_discount1x2 DECIMAL(9,8),
+	@Old_discountHRFixedOdds DECIMAL(9,8),
 	@Old_discountnumber DECIMAL(9,8)
 
 IF 
 	@discountcs<0 OR @discountcs>0.2
 		OR @discount1x2<0 OR @discount1x2>0.2
+		OR @discountHRFixedOdds<0 OR @discountHRFixedOdds>0.2
 		OR @discountnumber<0 OR @discountnumber>0.2
 		OR @groupa<0 OR @groupa>0.2
 		OR @groupb<0 OR @groupb>0.2
@@ -90,9 +93,11 @@ BEGIN
 		@Old_groupd = groupd 
 	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND bettype=1 AND sporttype=1
 	
-	SELECT @Old_discountcs = adiscount FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 4
-	SELECT @Old_discount1x2 = adiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
-	SELECT @Old_discountnumber = adiscount FROM custsetting3rd AS cs3 WITH (NOLOCK) WHERE custid = @custid AND sporttype = 161 AND bettype = 81
+	SELECT @Old_discountcs = sdiscount FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 4
+	SELECT @Old_discount1x2 = sdiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
+	SELECT @Old_discountHRFixedOdds = sdiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 154 AND bettype = 20
+	SELECT @Old_discountnumber = sdiscount FROM custsetting3rd AS cs3 WITH (NOLOCK) WHERE custid = @custid AND sporttype = 161 AND bettype = 81
+	
 	
 	Declare @RoleId int
 
@@ -110,6 +115,7 @@ BEGIN
 		@groupc = @groupc,
 		@groupd = @groupd,
 		@discountcs = @discountcs,
+		@discountHRFixedOdds = @discountHRFixedOdds,		
 		@discount1x2 = @discount1x2
 
 	exec Acc_CustSetting3rd_06
@@ -129,6 +135,7 @@ Select @LogSPData = '<Acc_CustomerUpdSuper_Commission custid="'+ coalesce(cast(@
 'groupd="'+ coalesce(cast(@groupd as varchar(50)),space(1)) + '" ' +
 'discountcs="'+ coalesce(cast(@discountcs as varchar(50)),space(1)) + '" ' +
 'discount1x2="'+ coalesce(cast(@discount1x2 as varchar(50)),space(1)) + '" ' +
+'discountHRFixedOdds="'+ coalesce(cast(@discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'discountnumber="'+ coalesce(cast(@discountnumber as varchar(50)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -143,6 +150,7 @@ Select @TrackingValue2 = '<Acc_CustomerUpdSuper_Commission custid="'+ coalesce(c
 'groupd="'+ coalesce(cast(@Old_groupd as varchar(50)),space(1)) + '" ' +
 'discountcs="'+ coalesce(cast(@Old_discountcs as varchar(50)),space(1)) + '" ' +
 'discount1x2="'+ coalesce(cast(@Old_discount1x2 as varchar(50)),space(1)) + '" ' +
+'discountHRFixedOdds="'+ coalesce(cast(@Old_discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 'discountnumber="'+ coalesce(cast(@Old_discountnumber as varchar(50)),space(1)) + '" ' +
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -172,6 +180,7 @@ BEGIN CATCH
 	'groupd="'+ coalesce(cast(@groupd as varchar(50)),space(1)) + '" ' +
 	'discountcs="'+ coalesce(cast(@discountcs as varchar(50)),space(1)) + '" ' +
 	'discount1x2="'+ coalesce(cast(@discount1x2 as varchar(50)),space(1)) + '" ' +
+	'discountHRFixedOdds="'+ coalesce(cast(@discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 	'discountnumber="'+ coalesce(cast(@discountnumber as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -186,6 +195,7 @@ BEGIN CATCH
 	'groupd="'+ coalesce(cast(@Old_groupd as varchar(50)),space(1)) + '" ' +
 	'discountcs="'+ coalesce(cast(@Old_discountcs as varchar(50)),space(1)) + '" ' +
 	'discount1x2="'+ coalesce(cast(@Old_discount1x2 as varchar(50)),space(1)) + '" ' +
+	'discountHRFixedOdds="'+ coalesce(cast(@Old_discountHRFixedOdds as varchar(50)),space(1)) + '" ' +
 	'discountnumber="'+ coalesce(cast(@Old_discountnumber as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -203,7 +213,8 @@ BEGIN CATCH
 		@duration = @duration	
 END CATCH
 	
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [vnteam] AS [dbo]

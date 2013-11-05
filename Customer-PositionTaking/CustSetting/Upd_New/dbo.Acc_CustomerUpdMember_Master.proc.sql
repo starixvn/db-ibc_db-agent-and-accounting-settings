@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master] 
 	@CustID INT,--memberid
 	@Closed BIT = null,
 	@UpdateClosed bit = 0,
@@ -60,6 +59,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master]
 
 	-- mixed sports
 	@v99mpositiontaking_9 SMALLMONEY OUTPUT,
+	--HR Fixed Odds
+	@v154mpositiontaking_20 SMALLMONEY = 0 OUTPUT,
+	
 	-- number game
 	@v161mpositiontaking_81 SMALLMONEY OUTPUT,
 	@v161mpositiontaking_83 SMALLMONEY OUTPUT,
@@ -124,6 +126,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master]
 
 	-- mixed sports
 	@isauto_v99mpositiontaking_9 BIT = 0,
+	--HR Fixed Odds
+	@isauto_v154mpositiontaking_20 BIT = 0,
 	-- number game
 	@isauto_v161mpositiontaking_81 BIT = 0,
 	@isauto_v161mpositiontaking_83 BIT = 0,
@@ -188,6 +192,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master]
 
 	-- mixed sports
 	@isauto_v99mpositiontaking_mem_9 BIT = 0,
+	--HR Fixed Odds
+	@isauto_v154mpositiontaking_mem_20 BIT = 0,
 	-- number game
 	@isauto_v161mpositiontaking_mem_81 BIT = 0,
 	@isauto_v161mpositiontaking_mem_83 BIT = 0,
@@ -252,6 +258,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master]
 
 	-- mixed sports
 	@auto_v99mpositiontaking_mem_9 SMALLMONEY = 0,
+	--HR Fixed Odds
+	@auto_v154mpositiontaking_mem_20 SMALLMONEY = 0,
 	-- number game
 	@auto_v161mpositiontaking_mem_81 SMALLMONEY = 0,
 	@auto_v161mpositiontaking_mem_83 SMALLMONEY = 0,
@@ -273,6 +281,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Master]
 	@UpdatePositiontakingv11 BIT = 1,
 	@UpdatePositiontakingv99 BIT = 1,
 	@UpdatePositiontakingv99MP BIT = 1,
+	@UpdatePositiontakingv154 BIT = 1,
 	@UpdatePositiontakingv161 BIT = 1,
 
 
@@ -325,6 +334,7 @@ Revisions:
 	- 20120831@Johnson: check m1_max = min(m3,m4) 
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20131016@Kathy: Add HR Fixed Odds(154) [Redmine:#6505]
 	- 20131030@Johnson: Apply execrep when update pt on member
 Param's Explanation:
 • @ErrCode:
@@ -488,6 +498,7 @@ if	@UpdatePositiontaking   = 1  or
 	@UpdatePositiontakingv11   = 1  or
 	@UpdatePositiontakingv99   = 1  or
 	@UpdatePositiontakingv99MP = 1 or
+	@UpdatePositiontakingv154 = 1 or
 	@UpdatePositiontakingv161 = 1
 	
 	BEGIN--Update Position Taking
@@ -545,6 +556,8 @@ if	@UpdatePositiontaking   = 1  or
 
 		--- mixed sports
 		@v99apositiontaking_9 SMALLMONEY,
+		-- HR fixed odds
+		@v154apositiontaking_20 smallmoney,
 		-- number game
 		@v161apositiontaking_81 SMALLMONEY,
 		@v161apositiontaking_83 SMALLMONEY,
@@ -609,6 +622,9 @@ if	@UpdatePositiontaking   = 1  or
 		
 		-- mixed sports
 		@max_v99apositiontaking_9 SMALLMONEY,
+		-- hr fixed odds
+		@max_v154apositiontaking_20 smallmoney,
+
 		-- number game
 		@max_v161apositiontaking_81 SMALLMONEY,
 		@max_v161apositiontaking_83 SMALLMONEY,
@@ -674,6 +690,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@old_v99mpositiontaking_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@old_v154mpositiontaking_20 smallmoney,
+
 		-- number game
 		@old_v161mpositiontaking_81 SMALLMONEY,
 		@old_v161mpositiontaking_83 SMALLMONEY,
@@ -739,6 +759,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@old_auto_v99mpositiontaking_mem_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@old_auto_v154mpositiontaking_mem_20 smallmoney,
+
 		-- number game
 		@old_auto_v161mpositiontaking_mem_81 SMALLMONEY,
 		@old_auto_v161mpositiontaking_mem_83 SMALLMONEY,
@@ -804,6 +828,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@old_isauto_v99mpositiontaking_mem_9 BIT,
+
+		-- hr fixed odds
+		@old_isauto_v154mpositiontaking_mem_20 bit,
+
 		-- number game
 		@old_isauto_v161mpositiontaking_mem_81 BIT,
 		@old_isauto_v161mpositiontaking_mem_83 BIT,
@@ -870,6 +898,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@max_v99spositiontaking_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@max_v154spositiontaking_20 smallmoney,
+
 		-- number game
 		@max_v161spositiontaking_81 SMALLMONEY,
 		@max_v161spositiontaking_83 SMALLMONEY,
@@ -934,6 +966,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@v99spositiontaking_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@v154spositiontaking_20 smallmoney,
+
 		-- number game
 		@v161spositiontaking_81 SMALLMONEY,
 		@v161spositiontaking_83 SMALLMONEY,
@@ -999,6 +1035,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@auto_v99spositiontaking_mem_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@auto_v154spositiontaking_mem_20 smallmoney,
+
 		-- number game
 		@auto_v161spositiontaking_mem_81 SMALLMONEY,
 		@auto_v161spositiontaking_mem_83 SMALLMONEY,
@@ -1064,6 +1104,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@isauto_v99spositiontaking_mem_9 BIT,
+
+		-- hr fixed odds
+		@isauto_v154spositiontaking_mem_20 bit,
+
 		-- number game
 		@isauto_v161spositiontaking_mem_81 BIT,
 		@isauto_v161spositiontaking_mem_83 BIT,
@@ -1128,6 +1172,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@auto_v99spositiontaking_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@auto_v154spositiontaking_20 smallmoney,
+
 		-- number game
 		@auto_v161spositiontaking_81 SMALLMONEY,
 		@auto_v161spositiontaking_83 SMALLMONEY,
@@ -1192,6 +1240,9 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@isauto_v99spositiontaking_9 BIT,
+		-- hr fixed odds
+		@isauto_v154spositiontaking_20 bit,
+
 		-- number game
 		@isauto_v161spositiontaking_81 BIT,
 		@isauto_v161spositiontaking_83 BIT,
@@ -1256,6 +1307,8 @@ if	@UpdatePositiontaking   = 1  or
 		
 		-- mixed sports
 		@auto_v99mpositiontaking_9 SMALLMONEY,
+		-- hr fixed odds
+		@auto_v154mpositiontaking_20 smallmoney,
 		-- number game
 		@auto_v161mpositiontaking_81 SMALLMONEY,
 		@auto_v161mpositiontaking_83 SMALLMONEY,
@@ -1323,6 +1376,8 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@max_v99mapositiontaking_9 SMALLMONEY,
+		-- hr fixed odds
+		@max_v154mapositiontaking_20 smallmoney,
 		-- number game
 		@max_v161mapositiontaking_81 SMALLMONEY,
 		@max_v161mapositiontaking_83 SMALLMONEY,
@@ -1387,6 +1442,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@min_v99mapositiontaking_9 SMALLMONEY,
+
+		-- hr fixed odds
+		@min_v154mapositiontaking_20 smallmoney,
+
 		-- number game
 		@min_v161mapositiontaking_81 SMALLMONEY,
 		@min_v161mapositiontaking_83 SMALLMONEY,
@@ -1454,6 +1513,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		@max_v99mp_9 smallmoney,
+
+		-- hr fixed odds
+		@max_v154_20 smallmoney,
+
 		-- number game
 		@max_v161mp_81 smallmoney,
 		@max_v161mp_83 smallmoney,
@@ -1470,55 +1533,69 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @isvalid = 1 
 
 		--s1,a1,old_m1,u1,i1
-		SELECT	@spositiontaking_1	=	spositiontaking,	@slivepositiontaking_1	=	slivepositiontaking,	@apositiontaking_1	=	apositiontaking,	@alivepositiontaking_1	=	alivepositiontaking,	@auto_spositiontaking_mem_1	=	autopositiontaking,	@auto_slivepositiontaking_mem_1	=	autolivepositiontaking,	@isauto_spositiontaking_mem_1	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_1	=	isautolivepositiontaking,	@old_mpositiontaking_1	=	mpositiontaking,	@old_auto_mpositiontaking_mem_1	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_1	=	isautompositiontaking,	@old_mlivepositiontaking_1	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_1	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_1	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
-		SELECT	@spositiontaking_3	=	spositiontaking,	@slivepositiontaking_3	=	slivepositiontaking,	@apositiontaking_3	=	apositiontaking,	@alivepositiontaking_3	=	alivepositiontaking,	@auto_spositiontaking_mem_3	=	autopositiontaking,	@auto_slivepositiontaking_mem_3	=	autolivepositiontaking,	@isauto_spositiontaking_mem_3	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_3	=	isautolivepositiontaking,	@old_mpositiontaking_3	=	mpositiontaking,	@old_auto_mpositiontaking_mem_3	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_3	=	isautompositiontaking,	@old_mlivepositiontaking_3	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_3	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_3	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
-		SELECT	@spositiontaking_7	=	spositiontaking,	@slivepositiontaking_7	=	slivepositiontaking,	@apositiontaking_7	=	apositiontaking,	@alivepositiontaking_7	=	alivepositiontaking,	@auto_spositiontaking_mem_7	=	autopositiontaking,	@auto_slivepositiontaking_mem_7	=	autolivepositiontaking,	@isauto_spositiontaking_mem_7	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_7	=	isautolivepositiontaking,	@old_mpositiontaking_7	=	mpositiontaking,	@old_auto_mpositiontaking_mem_7	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_7	=	isautompositiontaking,	@old_mlivepositiontaking_7	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_7	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_7	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=7	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
-		SELECT	@spositiontaking_8	=	spositiontaking,	@slivepositiontaking_8	=	slivepositiontaking,	@apositiontaking_8	=	apositiontaking,	@alivepositiontaking_8	=	alivepositiontaking,	@auto_spositiontaking_mem_8	=	autopositiontaking,	@auto_slivepositiontaking_mem_8	=	autolivepositiontaking,	@isauto_spositiontaking_mem_8	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_8	=	isautolivepositiontaking,	@old_mpositiontaking_8	=	mpositiontaking,	@old_auto_mpositiontaking_mem_8	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_8	=	isautompositiontaking,	@old_mlivepositiontaking_8	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_8	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_8	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=8	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
+		SELECT	@spositiontaking_1	=	spositiontaking,	@slivepositiontaking_1	=	slivepositiontaking,	@apositiontaking_1	=	apositiontaking,	@alivepositiontaking_1	=	alivepositiontaking,	@auto_spositiontaking_mem_1	=	autopositiontaking,	@auto_slivepositiontaking_mem_1	=	autolivepositiontaking,	@isauto_spositiontaking_mem_1	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_1	=	isautolivepositiontaking,	@old_mpositiontaking_1	=	mpositiontaking,	@old_auto_mpositiontaking_mem_1	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_1	=	isautompositiontaking,	@old_mlivepositiontaking_1	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_1	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_1	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=1																																						
+		SELECT	@spositiontaking_3	=	spositiontaking,	@slivepositiontaking_3	=	slivepositiontaking,	@apositiontaking_3	=	apositiontaking,	@alivepositiontaking_3	=	alivepositiontaking,	@auto_spositiontaking_mem_3	=	autopositiontaking,	@auto_slivepositiontaking_mem_3	=	autolivepositiontaking,	@isauto_spositiontaking_mem_3	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_3	=	isautolivepositiontaking,	@old_mpositiontaking_3	=	mpositiontaking,	@old_auto_mpositiontaking_mem_3	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_3	=	isautompositiontaking,	@old_mlivepositiontaking_3	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_3	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_3	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=1																												
 
-		SELECT	@spositiontaking_2	=	spositiontaking,	@apositiontaking_2	=	apositiontaking,	@old_mpositiontaking_2	=	mpositiontaking,	@auto_spositiontaking_mem_2	=	autopositiontaking,	@isauto_spositiontaking_mem_2	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@spositiontaking_4	=	spositiontaking,	@apositiontaking_4	=	apositiontaking,	@old_mpositiontaking_4	=	mpositiontaking,	@auto_spositiontaking_mem_4	=	autopositiontaking,	@isauto_spositiontaking_mem_4	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_4	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_4	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=4	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@spositiontaking_5	=	spositiontaking,	@apositiontaking_5	=	apositiontaking,	@old_mpositiontaking_5	=	mpositiontaking,	@auto_spositiontaking_mem_5	=	autopositiontaking,	@isauto_spositiontaking_mem_5	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_5	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_5	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=5	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@spositiontaking_6	=	spositiontaking,	@apositiontaking_6	=	apositiontaking,	@old_mpositiontaking_6	=	mpositiontaking,	@auto_spositiontaking_mem_6	=	autopositiontaking,	@isauto_spositiontaking_mem_6	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_6	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_6	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=6	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@spositiontaking_9	=	spositiontaking,	@apositiontaking_9	=	apositiontaking,	@old_mpositiontaking_9	=	mpositiontaking,	@auto_spositiontaking_mem_9	=	autopositiontaking,	@isauto_spositiontaking_mem_9	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_9	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_9	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@spositiontaking_10	=	spositiontaking,	@apositiontaking_10	=	apositiontaking,	@old_mpositiontaking_10	=	mpositiontaking,	@auto_spositiontaking_mem_10	=	autopositiontaking,	@isauto_spositiontaking_mem_10	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_10	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_10	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=10	AND	sporttype=1																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v2spositiontaking_1	=	spositiontaking,	@v2apositiontaking_1	=	apositiontaking,	@auto_v2spositiontaking_mem_1	=	autopositiontaking,	@isauto_v2spositiontaking_mem_1	=	isautopositiontaking,	@old_v2mpositiontaking_1	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v2spositiontaking_2	=	spositiontaking,	@v2apositiontaking_2	=	apositiontaking,	@auto_v2spositiontaking_mem_2	=	autopositiontaking,	@isauto_v2spositiontaking_mem_2	=	isautopositiontaking,	@old_v2mpositiontaking_2	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v2spositiontaking_3	=	spositiontaking,	@v2apositiontaking_3	=	apositiontaking,	@auto_v2spositiontaking_mem_3	=	autopositiontaking,	@isauto_v2spositiontaking_mem_3	=	isautopositiontaking,	@old_v2mpositiontaking_3	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v2spositiontaking_7	=	spositiontaking,	@v2apositiontaking_7	=	apositiontaking,	@auto_v2spositiontaking_mem_7	=	autopositiontaking,	@isauto_v2spositiontaking_mem_7	=	isautopositiontaking,	@old_v2mpositiontaking_7	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_7	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_7	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=7	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v2spositiontaking_8	=	spositiontaking,	@v2apositiontaking_8	=	apositiontaking,	@auto_v2spositiontaking_mem_8	=	autopositiontaking,	@isauto_v2spositiontaking_mem_8	=	isautopositiontaking,	@old_v2mpositiontaking_8	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_8	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_8	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=8	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		--SELECT	@v2spositiontaking_9	=	spositiontaking,	@v2apositiontaking_9	=	apositiontaking,	@auto_v2spositiontaking_mem_9	=	autopositiontaking,	@isauto_v2spositiontaking_mem_9	=	isautopositiontaking,	@old_v2mpositiontaking_9	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_9	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_9	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v2spositiontaking_20	=	spositiontaking,	@v2apositiontaking_20	=	apositiontaking,	@auto_v2spositiontaking_mem_20	=	autopositiontaking,	@isauto_v2spositiontaking_mem_20	=	isautopositiontaking,	@old_v2mpositiontaking_20	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=2																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v3spositiontaking_1	=	spositiontaking,	@v3apositiontaking_1	=	apositiontaking,	@auto_v3spositiontaking_mem_1	=	autopositiontaking,	@isauto_v3spositiontaking_mem_1	=	isautopositiontaking,	@old_v3mpositiontaking_1	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=3																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v3spositiontaking_2	=	spositiontaking,	@v3apositiontaking_2	=	apositiontaking,	@auto_v3spositiontaking_mem_2	=	autopositiontaking,	@isauto_v3spositiontaking_mem_2	=	isautopositiontaking,	@old_v3mpositiontaking_2	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=3																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v3spositiontaking_3	=	spositiontaking,	@v3apositiontaking_3	=	apositiontaking,	@auto_v3spositiontaking_mem_3	=	autopositiontaking,	@isauto_v3spositiontaking_mem_3	=	isautopositiontaking,	@old_v3mpositiontaking_3	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=3																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v3spositiontaking_20	=	spositiontaking,	@v3apositiontaking_20	=	apositiontaking,	@auto_v3spositiontaking_mem_20	=	autopositiontaking,	@isauto_v3spositiontaking_mem_20	=	isautopositiontaking,	@old_v3mpositiontaking_20	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=3																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v5spositiontaking_1	=	spositiontaking,	@v5apositiontaking_1	=	apositiontaking,	@auto_v5spositiontaking_mem_1	=	autopositiontaking,	@isauto_v5spositiontaking_mem_1	=	isautopositiontaking,	@old_v5mpositiontaking_1	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=5																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v5spositiontaking_2	=	spositiontaking,	@v5apositiontaking_2	=	apositiontaking,	@auto_v5spositiontaking_mem_2	=	autopositiontaking,	@isauto_v5spositiontaking_mem_2	=	isautopositiontaking,	@old_v5mpositiontaking_2	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=5																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v5spositiontaking_3	=	spositiontaking,	@v5apositiontaking_3	=	apositiontaking,	@auto_v5spositiontaking_mem_3	=	autopositiontaking,	@isauto_v5spositiontaking_mem_3	=	isautopositiontaking,	@old_v5mpositiontaking_3	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=5																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v5spositiontaking_20	=	spositiontaking,	@v5apositiontaking_20	=	apositiontaking,	@auto_v5spositiontaking_mem_20	=	autopositiontaking,	@isauto_v5spositiontaking_mem_20	=	isautopositiontaking,	@old_v5mpositiontaking_20	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=5																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v8spositiontaking_1	=	spositiontaking,	@v8apositiontaking_1	=	apositiontaking,	@auto_v8spositiontaking_mem_1	=	autopositiontaking,	@isauto_v8spositiontaking_mem_1	=	isautopositiontaking,	@old_v8mpositiontaking_1	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=8																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v8spositiontaking_3	=	spositiontaking,	@v8apositiontaking_3	=	apositiontaking,	@auto_v8spositiontaking_mem_3	=	autopositiontaking,	@isauto_v8spositiontaking_mem_3	=	isautopositiontaking,	@old_v8mpositiontaking_3	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=8																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v8spositiontaking_20	=	spositiontaking,	@v8apositiontaking_20	=	apositiontaking,	@auto_v8spositiontaking_mem_20	=	autopositiontaking,	@isauto_v8spositiontaking_mem_20	=	isautopositiontaking,	@old_v8mpositiontaking_20	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=8																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v10spositiontaking_1	=	spositiontaking,	@v10apositiontaking_1	=	apositiontaking,	@auto_v10spositiontaking_mem_1	=	autopositiontaking,	@isauto_v10spositiontaking_mem_1	=	isautopositiontaking,	@old_v10mpositiontaking_1	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=10																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v10spositiontaking_2	=	spositiontaking,	@v10apositiontaking_2	=	apositiontaking,	@auto_v10spositiontaking_mem_2	=	autopositiontaking,	@isauto_v10spositiontaking_mem_2	=	isautopositiontaking,	@old_v10mpositiontaking_2	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=10																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v10spositiontaking_3	=	spositiontaking,	@v10apositiontaking_3	=	apositiontaking,	@auto_v10spositiontaking_mem_3	=	autopositiontaking,	@isauto_v10spositiontaking_mem_3	=	isautopositiontaking,	@old_v10mpositiontaking_3	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=10																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v10spositiontaking_20	=	spositiontaking,	@v10apositiontaking_20	=	apositiontaking,	@auto_v10spositiontaking_mem_20	=	autopositiontaking,	@isauto_v10spositiontaking_mem_20	=	isautopositiontaking,	@old_v10mpositiontaking_20	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=10																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
-		SELECT	@v11spositiontaking_1	=	spositiontaking,	@v11apositiontaking_1	=	apositiontaking,	@auto_v11spositiontaking_mem_1	=	autopositiontaking,	@isauto_v11spositiontaking_mem_1	=	isautopositiontaking,	@old_v11mpositiontaking_1	=	mpositiontaking	,	@old_auto_v11mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v11mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=11																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-		SELECT	@v11spositiontaking_20	=	spositiontaking,	@v11apositiontaking_20	=	apositiontaking,	@auto_v11spositiontaking_mem_20	=	autopositiontaking,	@isauto_v11spositiontaking_mem_20	=	isautopositiontaking,	@old_v11mpositiontaking_20	=	mpositiontaking	,	@old_auto_v11mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v11mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=11																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	
+		SELECT	@spositiontaking_7	=	spositiontaking,	@slivepositiontaking_7	=	slivepositiontaking,	@apositiontaking_7	=	apositiontaking,	@alivepositiontaking_7	=	alivepositiontaking,	@auto_spositiontaking_mem_7	=	autopositiontaking,	@auto_slivepositiontaking_mem_7	=	autolivepositiontaking,	@isauto_spositiontaking_mem_7	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_7	=	isautolivepositiontaking,	@old_mpositiontaking_7	=	mpositiontaking,	@old_auto_mpositiontaking_mem_7	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_7	=	isautompositiontaking,	@old_mlivepositiontaking_7	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_7	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_7	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=7	AND	sporttype=1																													
+		SELECT	@spositiontaking_8	=	spositiontaking,	@slivepositiontaking_8	=	slivepositiontaking,	@apositiontaking_8	=	apositiontaking,	@alivepositiontaking_8	=	alivepositiontaking,	@auto_spositiontaking_mem_8	=	autopositiontaking,	@auto_slivepositiontaking_mem_8	=	autolivepositiontaking,	@isauto_spositiontaking_mem_8	=	isautopositiontaking,	@isauto_slivepositiontaking_mem_8	=	isautolivepositiontaking,	@old_mpositiontaking_8	=	mpositiontaking,	@old_auto_mpositiontaking_mem_8	=	autompositiontaking,	@old_isauto_mpositiontaking_mem_8	=	isautompositiontaking,	@old_mlivepositiontaking_8	=	mlivepositiontaking	,@old_auto_mlivepositiontaking_mem_8	=	autolivempositiontaking,	@old_isauto_mlivepositiontaking_mem_8	=	isautolivempositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=8	AND	sporttype=1																																																														
+		SELECT	@spositiontaking_2	=	spositiontaking,	@apositiontaking_2	=	apositiontaking,	@old_mpositiontaking_2	=	mpositiontaking,	@auto_spositiontaking_mem_2	=	autopositiontaking,	@isauto_spositiontaking_mem_2	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=1																																										
+		SELECT	@spositiontaking_4	=	spositiontaking,	@apositiontaking_4	=	apositiontaking,	@old_mpositiontaking_4	=	mpositiontaking,	@auto_spositiontaking_mem_4	=	autopositiontaking,	@isauto_spositiontaking_mem_4	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_4	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_4	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=4	AND	sporttype=1																																											
+		SELECT	@spositiontaking_5	=	spositiontaking,	@apositiontaking_5	=	apositiontaking,	@old_mpositiontaking_5	=	mpositiontaking,	@auto_spositiontaking_mem_5	=	autopositiontaking,	@isauto_spositiontaking_mem_5	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_5	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_5	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=5	AND	sporttype=1																																										
+		SELECT	@spositiontaking_6	=	spositiontaking,	@apositiontaking_6	=	apositiontaking,	@old_mpositiontaking_6	=	mpositiontaking,	@auto_spositiontaking_mem_6	=	autopositiontaking,	@isauto_spositiontaking_mem_6	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_6	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_6	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=6	AND	sporttype=1																																										
+		SELECT	@spositiontaking_9	=	spositiontaking,	@apositiontaking_9	=	apositiontaking,	@old_mpositiontaking_9	=	mpositiontaking,	@auto_spositiontaking_mem_9	=	autopositiontaking,	@isauto_spositiontaking_mem_9	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_9	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_9	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=1																																										
+		SELECT	@spositiontaking_10	=	spositiontaking,	@apositiontaking_10	=	apositiontaking,	@old_mpositiontaking_10	=	mpositiontaking,	@auto_spositiontaking_mem_10	=	autopositiontaking,	@isauto_spositiontaking_mem_10	=	isautopositiontaking	,	@old_auto_mpositiontaking_mem_10	=	autompositiontaking	,	@old_isauto_mpositiontaking_mem_10	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=10	AND	sporttype=1																																																										
+		SELECT	@v2spositiontaking_1	=	spositiontaking,	@v2apositiontaking_1	=	apositiontaking,	@auto_v2spositiontaking_mem_1	=	autopositiontaking,	@isauto_v2spositiontaking_mem_1	=	isautopositiontaking,	@old_v2mpositiontaking_1	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=2																																																																											
+		SELECT	@v2spositiontaking_2	=	spositiontaking,	@v2apositiontaking_2	=	apositiontaking,	@auto_v2spositiontaking_mem_2	=	autopositiontaking,	@isauto_v2spositiontaking_mem_2	=	isautopositiontaking,	@old_v2mpositiontaking_2	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=2								
+		SELECT	@v2spositiontaking_3	=	spositiontaking,	@v2apositiontaking_3	=	apositiontaking,	@auto_v2spositiontaking_mem_3	=	autopositiontaking,	@isauto_v2spositiontaking_mem_3	=	isautopositiontaking,	@old_v2mpositiontaking_3	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=2								
+		SELECT	@v2spositiontaking_7	=	spositiontaking,	@v2apositiontaking_7	=	apositiontaking,	@auto_v2spositiontaking_mem_7	=	autopositiontaking,	@isauto_v2spositiontaking_mem_7	=	isautopositiontaking,	@old_v2mpositiontaking_7	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_7	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_7	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=7	AND	sporttype=2								
+		SELECT	@v2spositiontaking_8	=	spositiontaking,	@v2apositiontaking_8	=	apositiontaking,	@auto_v2spositiontaking_mem_8	=	autopositiontaking,	@isauto_v2spositiontaking_mem_8	=	isautopositiontaking,	@old_v2mpositiontaking_8	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_8	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_8	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=8	AND	sporttype=2								
+		--SELECT	@v2spositiontaking_9	=	spositiontaking,	@v2apositiontaking_9	=	apositiontaking,	@auto_v2spositiontaking_mem_9	=	autopositiontaking,	@isauto_v2spositiontaking_mem_9	=	isautopositiontaking,	@old_v2mpositiontaking_9	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_9	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_9	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=2																																											
+		SELECT	@v2spositiontaking_20	=	spositiontaking,	@v2apositiontaking_20	=	apositiontaking,	@auto_v2spositiontaking_mem_20	=	autopositiontaking,	@isauto_v2spositiontaking_mem_20	=	isautopositiontaking,	@old_v2mpositiontaking_20	=	mpositiontaking	,	@old_auto_v2mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v2mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=2																																																																								
+		SELECT	@v3spositiontaking_1	=	spositiontaking,	@v3apositiontaking_1	=	apositiontaking,	@auto_v3spositiontaking_mem_1	=	autopositiontaking,	@isauto_v3spositiontaking_mem_1	=	isautopositiontaking,	@old_v3mpositiontaking_1	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=3																																																																														
+		SELECT	@v3spositiontaking_2	=	spositiontaking,	@v3apositiontaking_2	=	apositiontaking,	@auto_v3spositiontaking_mem_2	=	autopositiontaking,	@isauto_v3spositiontaking_mem_2	=	isautopositiontaking,	@old_v3mpositiontaking_2	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=3							
+		SELECT	@v3spositiontaking_3	=	spositiontaking,	@v3apositiontaking_3	=	apositiontaking,	@auto_v3spositiontaking_mem_3	=	autopositiontaking,	@isauto_v3spositiontaking_mem_3	=	isautopositiontaking,	@old_v3mpositiontaking_3	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=3								
+		SELECT	@v3spositiontaking_20	=	spositiontaking,	@v3apositiontaking_20	=	apositiontaking,	@auto_v3spositiontaking_mem_20	=	autopositiontaking,	@isauto_v3spositiontaking_mem_20	=	isautopositiontaking,	@old_v3mpositiontaking_20	=	mpositiontaking	,	@old_auto_v3mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v3mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=3																																																																									
+		SELECT	@v5spositiontaking_1	=	spositiontaking,	@v5apositiontaking_1	=	apositiontaking,	@auto_v5spositiontaking_mem_1	=	autopositiontaking,	@isauto_v5spositiontaking_mem_1	=	isautopositiontaking,	@old_v5mpositiontaking_1	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=5																																											
+		SELECT	@v5spositiontaking_2	=	spositiontaking,	@v5apositiontaking_2	=	apositiontaking,	@auto_v5spositiontaking_mem_2	=	autopositiontaking,	@isauto_v5spositiontaking_mem_2	=	isautopositiontaking,	@old_v5mpositiontaking_2	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=5																																											
+		SELECT	@v5spositiontaking_3	=	spositiontaking,	@v5apositiontaking_3	=	apositiontaking,	@auto_v5spositiontaking_mem_3	=	autopositiontaking,	@isauto_v5spositiontaking_mem_3	=	isautopositiontaking,	@old_v5mpositiontaking_3	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=5								
+		SELECT	@v5spositiontaking_20	=	spositiontaking,	@v5apositiontaking_20	=	apositiontaking,	@auto_v5spositiontaking_mem_20	=	autopositiontaking,	@isauto_v5spositiontaking_mem_20	=	isautopositiontaking,	@old_v5mpositiontaking_20	=	mpositiontaking	,	@old_auto_v5mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v5mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=5																																							
+		SELECT	@v8spositiontaking_1	=	spositiontaking,	@v8apositiontaking_1	=	apositiontaking,	@auto_v8spositiontaking_mem_1	=	autopositiontaking,	@isauto_v8spositiontaking_mem_1	=	isautopositiontaking,	@old_v8mpositiontaking_1	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=8							
+		SELECT	@v8spositiontaking_3	=	spositiontaking,	@v8apositiontaking_3	=	apositiontaking,	@auto_v8spositiontaking_mem_3	=	autopositiontaking,	@isauto_v8spositiontaking_mem_3	=	isautopositiontaking,	@old_v8mpositiontaking_3	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=8								
+		SELECT	@v8spositiontaking_20	=	spositiontaking,	@v8apositiontaking_20	=	apositiontaking,	@auto_v8spositiontaking_mem_20	=	autopositiontaking,	@isauto_v8spositiontaking_mem_20	=	isautopositiontaking,	@old_v8mpositiontaking_20	=	mpositiontaking	,	@old_auto_v8mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v8mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=8																																							
+		SELECT	@v10spositiontaking_1	=	spositiontaking,	@v10apositiontaking_1	=	apositiontaking,	@auto_v10spositiontaking_mem_1	=	autopositiontaking,	@isauto_v10spositiontaking_mem_1	=	isautopositiontaking,	@old_v10mpositiontaking_1	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=10																																										
+		SELECT	@v10spositiontaking_2	=	spositiontaking,	@v10apositiontaking_2	=	apositiontaking,	@auto_v10spositiontaking_mem_2	=	autopositiontaking,	@isauto_v10spositiontaking_mem_2	=	isautopositiontaking,	@old_v10mpositiontaking_2	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=10																																											
+		SELECT	@v10spositiontaking_3	=	spositiontaking,	@v10apositiontaking_3	=	apositiontaking,	@auto_v10spositiontaking_mem_3	=	autopositiontaking,	@isauto_v10spositiontaking_mem_3	=	isautopositiontaking,	@old_v10mpositiontaking_3	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=10																																																																												
+		SELECT	@v10spositiontaking_20	=	spositiontaking,	@v10apositiontaking_20	=	apositiontaking,	@auto_v10spositiontaking_mem_20	=	autopositiontaking,	@isauto_v10spositiontaking_mem_20	=	isautopositiontaking,	@old_v10mpositiontaking_20	=	mpositiontaking	,	@old_auto_v10mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v10mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=10																																					
+		SELECT	@v11spositiontaking_1	=	spositiontaking,	@v11apositiontaking_1	=	apositiontaking,	@auto_v11spositiontaking_mem_1	=	autopositiontaking,	@isauto_v11spositiontaking_mem_1	=	isautopositiontaking,	@old_v11mpositiontaking_1	=	mpositiontaking	,	@old_auto_v11mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v11mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=11																																												
+		SELECT	@v11spositiontaking_20	=	spositiontaking,	@v11apositiontaking_20	=	apositiontaking,	@auto_v11spositiontaking_mem_20	=	autopositiontaking,	@isauto_v11spositiontaking_mem_20	=	isautopositiontaking,	@old_v11mpositiontaking_20	=	mpositiontaking	,	@old_auto_v11mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v11mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=11																																					
 		SELECT	@v99spositiontaking_1	=	spositiontaking,	@v99apositiontaking_1	=	apositiontaking,	@auto_v99spositiontaking_mem_1	=	autopositiontaking,	@isauto_v99spositiontaking_mem_1	=	isautopositiontaking,	@old_v99mpositiontaking_1	=	mpositiontaking	,	@old_auto_v99mpositiontaking_mem_1	=	autompositiontaking	,	@old_isauto_v99mpositiontaking_mem_1	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=1	AND	sporttype=99
 		SELECT	@v99spositiontaking_2	=	spositiontaking,	@v99apositiontaking_2	=	apositiontaking,	@auto_v99spositiontaking_mem_2	=	autopositiontaking,	@isauto_v99spositiontaking_mem_2	=	isautopositiontaking,	@old_v99mpositiontaking_2	=	mpositiontaking	,	@old_auto_v99mpositiontaking_mem_2	=	autompositiontaking	,	@old_isauto_v99mpositiontaking_mem_2	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=2	AND	sporttype=99
 		SELECT	@v99spositiontaking_3	=	spositiontaking,	@v99apositiontaking_3	=	apositiontaking,	@auto_v99spositiontaking_mem_3	=	autopositiontaking,	@isauto_v99spositiontaking_mem_3	=	isautopositiontaking,	@old_v99mpositiontaking_3	=	mpositiontaking	,	@old_auto_v99mpositiontaking_mem_3	=	autompositiontaking	,	@old_isauto_v99mpositiontaking_mem_3	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=3	AND	sporttype=99
 		SELECT	@v99spositiontaking_20	=	spositiontaking,	@v99apositiontaking_20	=	apositiontaking,	@auto_v99spositiontaking_mem_20	=	autopositiontaking,	@isauto_v99spositiontaking_mem_20	=	isautopositiontaking,	@old_v99mpositiontaking_20	=	mpositiontaking	,	@old_auto_v99mpositiontaking_mem_20	=	autompositiontaking	,	@old_isauto_v99mpositiontaking_mem_20	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=20	AND	sporttype=99
 
 		-- mixed sports
-		SELECT	@v99spositiontaking_9	=	spositiontaking,	@v99apositiontaking_9	=	apositiontaking,	@auto_v99spositiontaking_mem_9	=	autopositiontaking,	@isauto_v99spositiontaking_mem_9	=	isautopositiontaking,	@old_v99mpositiontaking_9	=	mpositiontaking	,	@old_auto_v99mpositiontaking_mem_9	=	autompositiontaking	,	@old_isauto_v99mpositiontaking_mem_9	=	isautompositiontaking	FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=99
+		SELECT	@v99spositiontaking_9	=	spositiontaking,	
+		@v99apositiontaking_9	=	apositiontaking,	
+		@auto_v99spositiontaking_mem_9	=	autopositiontaking,
+			@isauto_v99spositiontaking_mem_9	=	isautopositiontaking,	
+			@old_v99mpositiontaking_9	=	mpositiontaking	,	
+			@old_auto_v99mpositiontaking_mem_9	=	autompositiontaking	,	
+			@old_isauto_v99mpositiontaking_mem_9	=	isautompositiontaking	
+		FROM	custsetting	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=9	AND	sporttype=99
+
+		-- hr fixed odds
+		select @v154spositiontaking_20  = spositiontaking, 
+		@v154apositiontaking_20 = apositiontaking,
+			@auto_v154spositiontaking_mem_20 = autopositiontaking, 
+			@isauto_v154spositiontaking_mem_20 = isautopositiontaking,
+			@old_v154mpositiontaking_20 = mpositiontaking,
+			@old_auto_v154mpositiontaking_mem_20 = autompositiontaking,
+			@old_isauto_v154mpositiontaking_mem_20 = isautompositiontaking
+		from custSetting with (NOLOCK)
+		where custid = @custid
+		and bettype = 20
+		and sporttype = 154
+
 
 		-- number game
 		SELECT	@v161spositiontaking_81	=	spositiontaking,	@v161apositiontaking_81	=	apositiontaking,	@auto_v161spositiontaking_mem_81	=	autopositiontaking,		@isauto_v161spositiontaking_mem_81	=	isautopositiontaking,	@old_v161mpositiontaking_81	=	mpositiontaking,	@old_auto_v161mpositiontaking_mem_81	=	autompositiontaking,	@old_isauto_v161mpositiontaking_mem_81	=	isautompositiontaking	FROM	custsetting3rd	WITH	(NOLOCK)	WHERE	custid	=	@custid	AND	bettype=81	AND	sporttype=161
@@ -1578,7 +1655,20 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @max_v99mapositiontaking_20 =mpositiontaking, @auto_v99spositiontaking_20 = autopositiontaking, @isauto_v99spositiontaking_20 = isautopositiontaking FROM custsetting WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=20 AND sporttype=99
 
 		---mixed sports
-		SELECT @max_v99mapositiontaking_9 =mpositiontaking, @auto_v99spositiontaking_9 = autopositiontaking, @isauto_v99spositiontaking_9 = isautopositiontaking FROM custsetting WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=9 AND sporttype=99
+		SELECT @max_v99mapositiontaking_9 =mpositiontaking, 
+			@auto_v99spositiontaking_9 = autopositiontaking, 
+			@isauto_v99spositiontaking_9 = isautopositiontaking 
+		FROM custsetting WITH (NOLOCK) 
+		WHERE custid = @mrecommend AND bettype=9 AND sporttype=99
+
+		-- hr fixed odds
+		select @max_v154mapositiontaking_20 = mpositiontaking,
+			@auto_v154spositiontaking_20 = autopositiontaking,
+			@isauto_v154spositiontaking_20 = isautopositiontaking
+		from custSetting with(NOLOCK)
+		where custid = @mrecommend 
+		and bettype = 20
+		and sporttype = 154
 		--- number game
 		SELECT @max_v161mapositiontaking_81 =mpositiontaking, @auto_v161spositiontaking_81 = autopositiontaking, @isauto_v161spositiontaking_81 = isautopositiontaking FROM custsetting3rd WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=81 AND sporttype=161
 		SELECT @max_v161mapositiontaking_83 =mpositiontaking, @auto_v161spositiontaking_83 = autopositiontaking, @isauto_v161spositiontaking_83 = isautopositiontaking FROM custsetting3rd WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=83 AND sporttype=161
@@ -1638,7 +1728,18 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @min_v99mapositiontaking_20 = minpositiontaking FROM custoverride WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=20 AND sporttype=99
 
 		-- mixed sports
-		SELECT @min_v99mapositiontaking_9 = minpositiontaking FROM custoverride WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=9 AND sporttype=99
+		SELECT @min_v99mapositiontaking_9 = minpositiontaking 
+		FROM custoverride WITH (NOLOCK)
+		WHERE custid = @mrecommend 
+		AND bettype=9 
+		AND sporttype=99
+
+		-- hr fixed odds
+		select @min_v154mapositiontaking_20 = minpositiontaking
+		from custOverride with(NOLOCK)
+		where custid = @mrecommend
+			and bettype = 20
+			and sporttype = 154
 		-- number game
 		SELECT @min_v161mapositiontaking_81 = minpositiontaking FROM custoverride3rd WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=81 AND sporttype=161
 		SELECT @min_v161mapositiontaking_83 = minpositiontaking FROM custoverride3rd WITH (NOLOCK) WHERE custid = @mrecommend AND bettype=83 AND sporttype=161
@@ -1698,7 +1799,26 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @max_v99mapositiontaking_20 = case when @max_v99mapositiontaking_20 > mpositiontaking then mpositiontaking else @max_v99mapositiontaking_20 end ,@max_v99spositiontaking_20 = spositiontaking FROM custsetting WITH (NOLOCK) WHERE custid = @srecommend AND bettype=20 AND sporttype=99
 
 		-- mixed sports
-		SELECT @max_v99mapositiontaking_9 = case when @max_v99mapositiontaking_9 > mpositiontaking then mpositiontaking else @max_v99mapositiontaking_9 end ,@max_v99spositiontaking_9 = spositiontaking FROM custsetting WITH (NOLOCK) WHERE custid = @srecommend AND bettype=9 AND sporttype=99
+		SELECT @max_v99mapositiontaking_9 = case when 
+														@max_v99mapositiontaking_9 > mpositiontaking 
+															then mpositiontaking 
+												else @max_v99mapositiontaking_9 
+											end ,
+				@max_v99spositiontaking_9 = spositiontaking 
+		FROM custsetting WITH (NOLOCK) 
+		WHERE custid = @srecommend AND bettype=9 AND sporttype=99
+
+		-- hr fixed odds
+		select @max_v154mapositiontaking_20 = case WHEN
+														@max_v154mapositiontaking_20 > mpositiontaking	
+															then mpositiontaking															
+													ELSE @max_v154mapositiontaking_20
+											END,
+			@max_v154spositiontaking_20 = spositiontaking
+		from custsetting with(NOLOCK)
+		where custid = @srecommend
+		and bettype = 20 and sporttype = 154
+
 		-- number game
 		SELECT @max_v161mapositiontaking_81 = case when @max_v161mapositiontaking_81 > mpositiontaking then mpositiontaking else @max_v161mapositiontaking_81 end ,@max_v161spositiontaking_81 = spositiontaking FROM custsetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=81 AND sporttype=161
 		SELECT @max_v161mapositiontaking_83 = case when @max_v161mapositiontaking_83 > mpositiontaking then mpositiontaking else @max_v161mapositiontaking_83 end ,@max_v161spositiontaking_83 = spositiontaking FROM custsetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=83 AND sporttype=161
@@ -1765,6 +1885,8 @@ if	@UpdatePositiontaking   = 1  or
 			-- mixed sports
 			@auto_v99mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.autompositiontaking ELSE 0 END),
 			
+			-- hr fixed odds
+			@auto_v154mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype = 154 THEN acs.autompositiontaking ELSE 0 END),
 			--a2	
 			@max_apositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=1 THEN acs.apositiontaking ELSE 0 END),
 			@max_apositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=1 THEN acs.apositiontaking ELSE 0 END),
@@ -1820,6 +1942,9 @@ if	@UpdatePositiontaking   = 1  or
 			-- mixed sports
 			@max_v99apositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.apositiontaking ELSE 0 END),
 			
+			-- hr fixed odds
+			@max_v154apositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype = 154 THEN acs.apositiontaking ELSE 0 END),
+
 			--im2
 			@isauto_mpositiontaking_1 = MAX(CASE WHEN acs.bettype = 1 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
 			@isauto_mpositiontaking_2 = MAX(CASE WHEN acs.bettype = 2 AND acs.sporttype=1 THEN acs.isautompositiontaking ELSE 0 END),
@@ -1872,8 +1997,9 @@ if	@UpdatePositiontaking   = 1  or
 			@isauto_v99mpositiontaking_3 = MAX(CASE WHEN acs.bettype = 3 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
 			@isauto_v99mpositiontaking_20 = MAX(CASE WHEN acs.bettype = 20 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
 			
-			@isauto_v99mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END)
+			@isauto_v99mpositiontaking_9 = MAX(CASE WHEN acs.bettype = 9 AND acs.sporttype=99 THEN acs.isautompositiontaking ELSE 0 END),
 			
+			@isauto_v154mpositiontaking_20 = max(case when acs.bettype = 20 and acs.sporttype = 154 then acs.isautompositiontaking else 0 END)
 		FROM custsetting acs WITH(NOLOCK)		
 		WHERE acs.custid = @recommend
 
@@ -1974,7 +2100,29 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v99mp_20 = max(case when cs.bettype = 20 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end),
 
 			-- mixed sports
-			@max_v99mp_9 = max(case when cs.bettype = 9 and cs.sporttype=99 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking end end else 0 end)
+			@max_v99mp_9 = max(case when cs.bettype = 9 and cs.sporttype=99 
+										then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) 
+													then mcs.mpositiontaking-cs.apositiontaking 
+													else case when mcs.mpositiontaking-cs.apositiontaking<=scs.spositiontaking-cs.spositiontaking-cs.apositiontaking	 
+																then  mcs.mpositiontaking-cs.apositiontaking 
+																else scs.spositiontaking-cs.spositiontaking-cs.apositiontaking 
+														end 
+											end 
+										else 0 
+									end
+								),
+
+			-- v154: hr fixed odds
+			@max_v154_20 = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 
+										THEN CASE WHEN NOT(cs.isautopositiontaking = 0 AND mcs.isautopositiontaking = 0) 
+													then mcs.mpositiontaking - cs.apositiontaking 
+													ELSE CASE WHEN mcs.mpositiontaking - cs.apositiontaking <=scs.spositiontaking - cs.spositiontaking - cs.apositiontaking
+																THEN mcs.mpositiontaking - cs.apositiontaking
+																ELSE scs.spositiontaking - cs.spositiontaking - cs.apositiontaking
+															END
+											END
+										else 0
+								END )
 			
 		From CustSetting as cs with (NOLOCK) 			
 			inner join custsetting as mcs with (nolock) on mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
@@ -2060,7 +2208,29 @@ if	@UpdatePositiontaking   = 1  or
 			@max_v99mp_3 = case when isnull(@max_v99mp_3, 0)  < @max_v99mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_3, 0)  else @max_v99mapositiontaking_3 - max(case when cs.bettype = 3 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
 			@max_v99mp_20 = case when isnull(@max_v99mp_20, 0)  < @max_v99mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_20, 0)  else @max_v99mapositiontaking_20 - max(case when cs.bettype = 20 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end,
 
-			@max_v99mp_9 = case when isnull(@max_v99mp_9, 0)  < @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=99 then cs.apositiontaking else 0 end)  then isnull(@max_v99mp_9, 0)  else @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=99 then cs.apositiontaking else 0 end)  end
+			@max_v99mp_9 = case when isnull(@max_v99mp_9, 0)  < @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 
+																											and cs.sporttype=99 
+																										then cs.apositiontaking 
+																										else 0 
+																								 end)  
+								then isnull(@max_v99mp_9, 0)  
+								else @max_v99mapositiontaking_9 - max(case when cs.bettype = 9 and cs.sporttype=99 
+																			then cs.apositiontaking 
+																			else 0 
+																	  end)  
+							end,
+			-- hr fixed odds
+			@max_v154_20 = CASE WHEN ISNULL(@max_v154_20,0) < @max_v154mapositiontaking_20 - MAX(CASE when cs.bettype = 20
+																											AND cs.sporttype = 154
+																										then cs.apositiontaking
+																										ELSE 0
+																								  END )
+								then ISNULL(@max_v154_20, 0)
+								ELSE @max_v154mapositiontaking_20 - MAX( CASE when cs.bettype = 20 and cs.sporttype = 154
+																				then cs.apositiontaking
+																				else 0
+																			END)
+							END
 			
 		FROM 
 			CustSetting cs WITH(NOLOCK) 
@@ -2138,6 +2308,9 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@v99mpositiontaking_9 = @old_v99mpositiontaking_9 AND
+
+			-- hr fixed odds
+			@v154mpositiontaking_20 = @old_v154mpositiontaking_20 and
 			-- number game
 			@v161mpositiontaking_81 = @old_v161mpositiontaking_81 AND
 			@v161mpositiontaking_83 = @old_v161mpositiontaking_83 AND
@@ -2202,6 +2375,8 @@ if	@UpdatePositiontaking   = 1  or
 			
 			-- mixed sports
 			@auto_v99mpositiontaking_mem_9 = @old_auto_v99mpositiontaking_mem_9 AND
+			-- hr fixed odds
+			@auto_v154mpositiontaking_mem_20 = @old_auto_v154mpositiontaking_mem_20 and
 			-- number game
 			@auto_v161mpositiontaking_mem_81 = @old_auto_v161mpositiontaking_mem_81 AND
 			@auto_v161mpositiontaking_mem_83 = @old_auto_v161mpositiontaking_mem_83 AND
@@ -2265,6 +2440,9 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@isauto_v99mpositiontaking_mem_9 = @old_isauto_v99mpositiontaking_mem_9 AND
+
+			-- hr fixed odds
+			@isauto_v154mpositiontaking_mem_20 = @old_isauto_v154mpositiontaking_mem_20 and
 			-- number game
 			@isauto_v161mpositiontaking_mem_81 = @old_isauto_v161mpositiontaking_mem_81 AND
 			@isauto_v161mpositiontaking_mem_83 = @old_isauto_v161mpositiontaking_mem_83 AND
@@ -3786,6 +3964,156 @@ if	@UpdatePositiontaking   = 1  or
 				
 			END--@UpdatePositiontakingv99MP
 		
+
+		-- v154 HR Fixed Odds
+		IF(@UpdateMultiple = 0 or @UpdatePositiontakingv154 = 1)
+		begin
+			IF @v154mpositiontaking_20< 0 or @v154mpositiontaking_20 > 0.9
+			begin
+				select @isvalid = 0, @ErrCode_cur = 5
+				Select @ErrMsg_cur = CASE @language WHEN 'E' THEN 'Wrong position taking.'
+													ELSE dbo.f_Get_MsgNamebyMsgID(20001, @Language)
+										END
+				select @ErrCode = @ErrCode + CAST(@ErrCode_cur AS varchar(300)) + CHAR(7),
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+				return
+			end
+
+			-- check um1<=l3
+			select @ErrType = ''
+			Select @ErrType = @ErrType + SportName + '-' + bt.typenamee + '-Max: ' + CAST(co.maxpositiontaking AS varchar(10))
+			from custOverride co with(NOLOCK) 
+			inner JOIN (
+				SELECT 154 as sporttype, 20 as bettype, @auto_v154mpositiontaking_mem_20 as autopositiontaking,
+					@isauto_v154mpositiontaking_mem_20 as isautopositiontaking
+			) as b ON co.bettype = b.bettype and co.sporttype = b.sporttype
+			inner JOIN Sports with (NOLOCK) ON b.sporttype = Sports.SportType
+			inner JOIN bettype bt with(NOLOCK) ON b.bettype = bt.typeid
+			where co.custid = @mrecommend
+			and	b.isautopositiontaking > 0 AND b.autopositiontaking > co.maxpositiontaking
+
+			IF @ErrType <>''
+				BEGIN
+					SELECT @ErrCode_cur = 6,
+						   @ErrMsg_cur = CASE @Language 
+										WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
+								END
+					SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+
+					RETURN
+				END
+
+			--Check um1<=min(m3,m4)
+			select @ErrType = ''
+			select @ErrType = @ErrType 
+			from (
+				SELECT 154 as sporttype, 20 as bettype, 
+					@max_v154mapositiontaking_20 as maxmpositiontaking,
+					@auto_v154mpositiontaking_mem_20 as autopositiontaking,
+					@isauto_v154mpositiontaking_mem_20 as isautopositiontaking
+			) b
+			inner JOIN sports with(NOLOCK) ON b.sporttype = Sports.SportType
+			inner JOIN bettype with(NOLOCK) on b.bettype = bettype.typeid
+			where b.isautopositiontaking > 0
+			and b.autopositiontaking > b.maxmpositiontaking
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 7,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END		
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+												
+				RETURN
+			END	
+
+			--Check m1<=min(m3,m4)
+			select @ErrType = ''
+			select @ErrType = @ErrType +SportName + '-' + typenamee + '-Max: ' + CAST(b.maxmpositiontaking AS varchar(10))
+			from (
+				SELECT 154 as sporttype, 20 as bettype, 
+						@v154mpositiontaking_20 as mpositiontaking,
+						@max_v154mapositiontaking_20 as maxmpositiontaking
+			)b
+			inner JOIN Sports with(NOLOCK) ON b.sporttype = Sports.SportType
+			inner JOIN bettype with(NOLOCK) ON b.bettype = typeid
+			where b.mpositiontaking > b.maxmpositiontaking
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 8,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+						
+				RETURN
+			END
+
+			--Check m1<=l3
+			select @ErrType = ''
+			select @ErrType = @ErrType + SportName + '-' + typenamee + '-Max: ' + CAST(co.maxpositiontaking as varchar(10))
+			from custOverride co with(NOLOCK)
+			inner JOIN (
+				SELECT 154 as sporttype, 20 as bettype,
+					@v154mpositiontaking_20 as mpositiontaking
+			) b ON b.sporttype = co.sporttype and b.bettype = co.bettype
+			inner JOIN Sports with(NOLOCK) ON Sports.SportType = b.sporttype
+			inner JOIN bettype WITH(NOLOCK) ON b.bettype = bettype.typeid
+			where co.custid = @mrecommend 
+			and b.mpositiontaking > co.maxpositiontaking
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 9,
+  						@ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
+							END
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				RETURN
+			END	
+				
+			--check m1<=m1_max	
+			select @ErrType = ''
+			select @ErrType = @ErrType + SportName + '-' + typenamee + '-Max: ' + CAST(b.maxmpositiontaking AS varchar(10)) + '<br>'
+			from (
+				SELECT 154 as sporttype, 20 as bettype,
+					@v154mpositiontaking_20 as mpositiontaking,
+					@max_v154_20 as maxmpositiontaking,
+					@isauto_v154mpositiontaking_mem_20 as isauto_mpositiontaking_mem,
+					@isauto_v154mpositiontaking_20 as isauto_mpositiontaking
+			)b
+			inner JOIN Sports with(NOLOCK) on b.sporttype = Sports.SportType
+			inner JOIN bettype with(NOLOCK) ON b.bettype = typeid
+			where b.mpositiontaking > b.maxmpositiontaking
+			and b.isauto_mpositiontaking_mem = 0 and b.isauto_mpositiontaking = 0
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 10,
+						@ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END							
+				SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					
+				RETURN
+			END		
+		end
 		--v161 number game
 		if (@UpdateMultiple = 0 or  @UpdatePositiontakingv161 = 1)
 		BEGIN --@UpdatePositiontakingv161
@@ -3981,24 +4309,6 @@ if	@UpdatePositiontaking   = 1  or
 				
 		END --@UpdatePositiontakingv161
 
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
-
 		--m1=m1+a1>min(m3,m4)?min(m3,m4)-a1:m1
 		SELECT 
 			@mpositiontaking_1 = CASE WHEN @mpositiontaking_1+@apositiontaking_1>@max_mapositiontaking_1 THEN @max_mapositiontaking_1-@apositiontaking_1 ELSE @mpositiontaking_1 END,
@@ -4055,6 +4365,11 @@ if	@UpdatePositiontaking   = 1  or
 			-- mixed sports
 			@v99mpositiontaking_9 = CASE WHEN @v99apositiontaking_9+@v99mpositiontaking_9>@max_v99mapositiontaking_9 THEN @max_v99mapositiontaking_9-@v99apositiontaking_9 ELSE @v99mpositiontaking_9 END,
 			
+			-- hr fixed odds
+			@v154mpositiontaking_20 = CASE when @v154apositiontaking_20 + @v154mpositiontaking_20 > @max_v154mapositiontaking_20 
+											THEN @max_v154mapositiontaking_20 - @v154apositiontaking_20
+											ELSE @v154mpositiontaking_20 
+									END,
 			-- number game
 			@v161mpositiontaking_81 = CASE WHEN @v161apositiontaking_81+@v161mpositiontaking_81>@max_v161mapositiontaking_81 THEN @max_v161mapositiontaking_81-@v161apositiontaking_81 ELSE @v161mpositiontaking_81 END,
 			@v161mpositiontaking_83 = CASE WHEN @v161apositiontaking_83+@v161mpositiontaking_83>@max_v161mapositiontaking_83 THEN @max_v161mapositiontaking_83-@v161apositiontaking_83 ELSE @v161mpositiontaking_83 END,
@@ -4121,6 +4436,12 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@v99mpositiontaking_9 = CASE WHEN @v99apositiontaking_9+@v99mpositiontaking_9<@min_v99mapositiontaking_9 THEN @min_v99mapositiontaking_9-@v99apositiontaking_9 ELSE @v99mpositiontaking_9 END,
+
+			-- hr fixed odds
+			@v154mpositiontaking_20 = CASE WHEN @v154apositiontaking_20 + @v154mpositiontaking_20 < @min_v154mapositiontaking_20
+											THEN @min_v154mapositiontaking_20 - @v154apositiontaking_20 
+											ELSE @v154mpositiontaking_20 
+									END,
 			-- number game
 			@v161mpositiontaking_81 = CASE WHEN @v161apositiontaking_81+@v161mpositiontaking_81<@min_v161mapositiontaking_81 THEN @min_v161mapositiontaking_81-@v161apositiontaking_81 ELSE @v161mpositiontaking_81 END,
 			@v161mpositiontaking_83 = CASE WHEN @v161apositiontaking_83+@v161mpositiontaking_83<@min_v161mapositiontaking_83 THEN @min_v161mapositiontaking_83-@v161apositiontaking_83 ELSE @v161mpositiontaking_83 END,
@@ -4186,6 +4507,9 @@ if	@UpdatePositiontaking   = 1  or
 			
 			-- mixed sports
 			@v99mpositiontaking_9 = CASE WHEN @v99mpositiontaking_9<0 THEN 0 ELSE @v99mpositiontaking_9 END,
+
+			-- HR fixed odds
+			@v154mpositiontaking_20 = CASE WHEN @v154mpositiontaking_20 < 0 then 0 ELSE @v154mpositiontaking_20 END,
 			-- number game
 			@v161mpositiontaking_81 = CASE WHEN @v161mpositiontaking_81<0 THEN 0 ELSE @v161mpositiontaking_81 END,
 			@v161mpositiontaking_83 = CASE WHEN @v161mpositiontaking_83<0 THEN 0 ELSE @v161mpositiontaking_83 END,
@@ -4259,6 +4583,12 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@auto_v99mpositiontaking_9 = CASE WHEN @isauto_v99mpositiontaking_mem_9>0 THEN @auto_v99mpositiontaking_mem_9 ELSE @auto_v99mpositiontaking_9 END,
+
+			-- hr fixed odds
+			@auto_v154mpositiontaking_20 = CASE WHEN @isauto_v154mpositiontaking_mem_20 > 0 
+												THEN @auto_v154mpositiontaking_mem_20
+												ELSE @auto_v154mpositiontaking_20 
+											END,
 			-- number game
 			@auto_v161mpositiontaking_81 = CASE WHEN @isauto_v161mpositiontaking_mem_81>0 THEN @auto_v161mpositiontaking_mem_81 ELSE @auto_v161mpositiontaking_81 END,
 			@auto_v161mpositiontaking_83 = CASE WHEN @isauto_v161mpositiontaking_mem_83>0 THEN @auto_v161mpositiontaking_mem_83 ELSE @auto_v161mpositiontaking_83 END,
@@ -4324,6 +4654,10 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@isauto_v99mpositiontaking_9 = CASE WHEN @isauto_v99mpositiontaking_mem_9>0 THEN @isauto_v99mpositiontaking_mem_9 ELSE @isauto_v99mpositiontaking_9 END,
+
+			-- hr fixed odds
+			@isauto_v154mpositiontaking_20 = CASE WHEN @isauto_v154mpositiontaking_mem_20 > 0 THEN @isauto_v154mpositiontaking_mem_20 
+													ELSE @isauto_v154mpositiontaking_20 END,
 			-- number game
 			@isauto_v161mpositiontaking_81 = CASE WHEN @isauto_v161mpositiontaking_mem_81>0 THEN @isauto_v161mpositiontaking_mem_81 ELSE @isauto_v161mpositiontaking_81 END,
 			@isauto_v161mpositiontaking_83 = CASE WHEN @isauto_v161mpositiontaking_mem_83>0 THEN @isauto_v161mpositiontaking_mem_83 ELSE @isauto_v161mpositiontaking_83 END,
@@ -4393,6 +4727,16 @@ if	@UpdatePositiontaking   = 1  or
 
 		--- mixed sports
 		SELECT @v99mpositiontaking_9 = CASE WHEN ISNULL(@isauto_v99mpositiontaking_9, 0)<=0 THEN @v99mpositiontaking_9 ELSE CASE WHEN @auto_v99mpositiontaking_9 < @max_v99mapositiontaking_9 - @v99apositiontaking_9 THEN @auto_v99mpositiontaking_9 ELSE @max_v99mapositiontaking_9 - @v99apositiontaking_9 END END
+
+		-- hr fixed odds
+		SELECT @v154mpositiontaking_20 = CASE WHEN ISNULL(@isauto_v154mpositiontaking_20, 0) <=0 
+												THEN @v154mpositiontaking_20 
+												ELSE CASE WHEN @auto_v154mpositiontaking_20 
+																			< @max_v154mapositiontaking_20  - @v154apositiontaking_20 
+															then @auto_v154mpositiontaking_20 
+															ELSE @max_v154mapositiontaking_20 - @v154apositiontaking_20 
+													END
+										END
 		-- number game
 		SELECT @v161mpositiontaking_81 = CASE WHEN ISNULL(@isauto_v161mpositiontaking_81, 0)<=0 THEN @v161mpositiontaking_81 ELSE CASE WHEN @auto_v161mpositiontaking_81 < @max_v161mapositiontaking_81 - @v161apositiontaking_81 THEN @auto_v161mpositiontaking_81 ELSE @max_v161mapositiontaking_81 - @v161apositiontaking_81 END END
 		SELECT @v161mpositiontaking_83 = CASE WHEN ISNULL(@isauto_v161mpositiontaking_83, 0)<=0 THEN @v161mpositiontaking_83 ELSE CASE WHEN @auto_v161mpositiontaking_83 < @max_v161mapositiontaking_83 - @v161apositiontaking_83 THEN @auto_v161mpositiontaking_83 ELSE @max_v161mapositiontaking_83 - @v161apositiontaking_83 END END
@@ -4573,6 +4917,12 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@auto_v99spositiontaking_9 = CASE WHEN @isauto_v99spositiontaking_mem_9>0 THEN @auto_v99spositiontaking_mem_9 ELSE @auto_v99spositiontaking_9 END,
+			-- hr fixed odds
+			@auto_v154spositiontaking_20 = CASE WHEN @isauto_v154spositiontaking_mem_20 > 0 
+												THEN @auto_v154spositiontaking_mem_20
+												ELSE @auto_v154spositiontaking_20
+											END		,			
+
 			-- number game
 			@auto_v161spositiontaking_81 = CASE WHEN @isauto_v161spositiontaking_mem_81>0 THEN @auto_v161spositiontaking_mem_81 ELSE @auto_v161spositiontaking_81 END,
 			@auto_v161spositiontaking_83 = CASE WHEN @isauto_v161spositiontaking_mem_83>0 THEN @auto_v161spositiontaking_mem_83 ELSE @auto_v161spositiontaking_83 END,
@@ -4637,6 +4987,11 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@isauto_v99spositiontaking_9 = CASE WHEN @isauto_v99spositiontaking_mem_9>0 THEN @isauto_v99spositiontaking_mem_9 ELSE @isauto_v99spositiontaking_9 END,
+
+			-- hr fixed odds
+			@isauto_v154spositiontaking_20 = case when @isauto_v154spositiontaking_mem_20 > 0
+													then @isauto_v154spositiontaking_mem_20
+												else @isauto_v154spositiontaking_20 END,
 			-- number game
 			@isauto_v161spositiontaking_81 = CASE WHEN @isauto_v161spositiontaking_mem_81>0 THEN @isauto_v161spositiontaking_mem_81 ELSE @isauto_v161spositiontaking_81 END,
 			@isauto_v161spositiontaking_83 = CASE WHEN @isauto_v161spositiontaking_mem_83>0 THEN @isauto_v161spositiontaking_mem_83 ELSE @isauto_v161spositiontaking_83 END,
@@ -4704,7 +5059,24 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @v99spositiontaking_20 = CASE WHEN ISNULL(@isauto_v99spositiontaking_20, 0)<=0 THEN @v99spositiontaking_20 ELSE CASE WHEN @auto_v99spositiontaking_20 < @max_v99spositiontaking_20 - @v99mpositiontaking_20 - @v99apositiontaking_20 THEN @auto_v99spositiontaking_20 ELSE @max_v99spositiontaking_20 - @v99mpositiontaking_20 - @v99apositiontaking_20 END END
 
 		-- mixed sports
-		SELECT @v99spositiontaking_9 = CASE WHEN ISNULL(@isauto_v99spositiontaking_9, 0)<=0 THEN @v99spositiontaking_9 ELSE CASE WHEN @auto_v99spositiontaking_9 < @max_v99spositiontaking_9 - @v99mpositiontaking_9 - @v99apositiontaking_9 THEN @auto_v99spositiontaking_9 ELSE @max_v99spositiontaking_9 - @v99mpositiontaking_9 - @v99apositiontaking_9 END END
+		SELECT @v99spositiontaking_9 = CASE WHEN ISNULL(@isauto_v99spositiontaking_9, 0)<=0 
+											THEN @v99spositiontaking_9 
+											ELSE CASE WHEN @auto_v99spositiontaking_9 
+															< @max_v99spositiontaking_9 - @v99mpositiontaking_9 - @v99apositiontaking_9 
+														THEN @auto_v99spositiontaking_9 
+														ELSE @max_v99spositiontaking_9 - @v99mpositiontaking_9 - @v99apositiontaking_9 
+												END
+									 END
+
+		-- hr fixed odds
+		SELECT @v154spositiontaking_20 = CASE WHEN ISNULL(@isauto_v154spositiontaking_20,0)<=0
+											THEN @v154spositiontaking_20
+											ELSE CASE WHEN @auto_v154spositiontaking_20
+														< @max_v154spositiontaking_20 - @v154mpositiontaking_20 - @v154apositiontaking_20
+													THEN @auto_v154spositiontaking_20
+													ELSE @max_v154spositiontaking_20 - @v154mpositiontaking_20 - @v154apositiontaking_20
+												end
+										END 
 		-- number game
 		SELECT @v161spositiontaking_81 = CASE WHEN ISNULL(@isauto_v161spositiontaking_81, 0)<=0 THEN @v161spositiontaking_81 ELSE CASE WHEN @auto_v161spositiontaking_81 < @max_v161spositiontaking_81 - @v161mpositiontaking_81 - @v161apositiontaking_81 THEN @auto_v161spositiontaking_81 ELSE @max_v161spositiontaking_81 - @v161mpositiontaking_81 - @v161apositiontaking_81 END END
 		SELECT @v161spositiontaking_83 = CASE WHEN ISNULL(@isauto_v161spositiontaking_83, 0)<=0 THEN @v161spositiontaking_83 ELSE CASE WHEN @auto_v161spositiontaking_83 < @max_v161spositiontaking_83 - @v161mpositiontaking_83 - @v161apositiontaking_83 THEN @auto_v161spositiontaking_83 ELSE @max_v161spositiontaking_83 - @v161mpositiontaking_83 - @v161apositiontaking_83 END END
@@ -4771,6 +5143,11 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		SELECT @max_v99spositiontaking_9 = CASE WHEN ISNULL(@isauto_v99spositiontaking_9, 0)>0 THEN @max_v99spositiontaking_9 ELSE @max_v99spositiontaking_9-@max_v99mapositiontaking_9 END
+
+		-- hr fixed odds
+		SELECT @max_v154spositiontaking_20 = CASE WHEN ISNULL(@isauto_v154spositiontaking_20, 0) > 0 
+													then @max_v154spositiontaking_20
+													ELSE @max_v154spositiontaking_20 - @max_v154mapositiontaking_20 END 
 		-- number game
 		SELECT @max_v161spositiontaking_81 = CASE WHEN ISNULL(@isauto_v161spositiontaking_81, 0)>0 THEN @max_v161spositiontaking_81 ELSE @max_v161spositiontaking_81-@max_v161mapositiontaking_81 END
 		SELECT @max_v161spositiontaking_83 = CASE WHEN ISNULL(@isauto_v161spositiontaking_83, 0)>0 THEN @max_v161spositiontaking_83 ELSE @max_v161spositiontaking_83-@max_v161mapositiontaking_83 END
@@ -4781,6 +5158,7 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @max_v161slivepositiontaking_87 = CASE WHEN ISNULL(@isauto_v161slivepositiontaking_87, 0)>0 THEN @max_v161slivepositiontaking_87 ELSE @max_v161slivepositiontaking_87-@max_v161malivepositiontaking_87 END
 		SELECT @max_v161slivepositiontaking_89 = CASE WHEN ISNULL(@isauto_v161slivepositiontaking_89, 0)>0 THEN @max_v161slivepositiontaking_89 ELSE @max_v161slivepositiontaking_89-@max_v161malivepositiontaking_89 END
 		SELECT @max_v161slivepositiontaking_90 = CASE WHEN ISNULL(@isauto_v161slivepositiontaking_90, 0)>0 THEN @max_v161slivepositiontaking_90 ELSE @max_v161slivepositiontaking_90-@max_v161malivepositiontaking_90 END
+
 		--s1=s1>maxs1?maxs1:s1
 		SELECT @spositiontaking_1 = CASE WHEN @spositiontaking_1 > @max_spositiontaking_1 THEN @max_spositiontaking_1 ELSE @spositiontaking_1 END
 		SELECT @spositiontaking_3 = CASE WHEN @spositiontaking_3 > @max_spositiontaking_3 THEN @max_spositiontaking_3 ELSE @spositiontaking_3 END
@@ -4835,7 +5213,17 @@ if	@UpdatePositiontaking   = 1  or
 		SELECT @v99spositiontaking_20 = CASE WHEN @v99spositiontaking_20 > @max_v99spositiontaking_20 THEN @max_v99spositiontaking_20 ELSE @v99spositiontaking_20 END
 
 		-- mixed sports
-		SELECT @v99spositiontaking_9 = CASE WHEN @v99spositiontaking_9 > @max_v99spositiontaking_9 THEN @max_v99spositiontaking_9 ELSE @v99spositiontaking_9 END
+		SELECT @v99spositiontaking_9 = CASE WHEN @v99spositiontaking_9 > @max_v99spositiontaking_9 
+											THEN @max_v99spositiontaking_9 
+											ELSE @v99spositiontaking_9 
+										END
+
+		-- hr fixed odds
+		SELECT @v154spositiontaking_20 = CASE WHEN @v154spositiontaking_20 > @max_v154spositiontaking_20
+												THEN @max_v154spositiontaking_20
+												ELSE @v154spositiontaking_20
+										END
+
 		-- number game
 		SELECT @v161spositiontaking_81 = CASE WHEN @v161spositiontaking_81 > @max_v161spositiontaking_81 THEN @max_v161spositiontaking_81 ELSE @v161spositiontaking_81 END
 		SELECT @v161spositiontaking_83 = CASE WHEN @v161spositiontaking_83 > @max_v161spositiontaking_83 THEN @max_v161spositiontaking_83 ELSE @v161spositiontaking_83 END
@@ -4904,6 +5292,7 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@v99mpositiontaking_9  = @v99mpositiontaking_9,
+			@v154mpositiontaking_20 = @v154mpositiontaking_20,
 			
 			@spositiontaking_1 = @spositiontaking_1,
 			@spositiontaking_2 = @spositiontaking_2,
@@ -4958,7 +5347,9 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			@v99spositiontaking_9 = @v99spositiontaking_9,
-			
+			@v154spositiontaking_20 = @v154spositiontaking_20,
+
+
 			@UpdateMultiple = @UpdateMultiple,
 			@UpdatePositiontaking = @UpdatePositiontaking,
 			@UpdatePositiontakingv2 = @UpdatePositiontakingv2,
@@ -4968,7 +5359,8 @@ if	@UpdatePositiontaking   = 1  or
 			@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
 			@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
 			@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
-			@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP
+			@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
+			@UpdatePositiontakingv154 = @UpdatePositiontakingv154
 		
 		IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
 		BEGIN
@@ -5012,6 +5404,7 @@ if	@UpdatePositiontaking   = 1  or
 									OR (cs.sporttype=10 AND @UpdatePositiontakingv10 = 0) 
 									OR (cs.sporttype=11 AND @UpdatePositiontakingv11 = 0) 
 									OR (cs.sporttype=99 AND cs.bettype<>9 AND @UpdatePositiontakingv99 = 0) 
+									OR (cs.sporttype = 154 AND @UpdatePositiontakingv154 = 0)
 									OR (cs.sporttype=99 AND cs.bettype=9 AND @UpdatePositiontakingv99MP = 0) )) 
 							THEN
 								cs.mpositiontaking		
@@ -5024,6 +5417,7 @@ if	@UpdatePositiontaking   = 1  or
 							WHEN 10 THEN CASE cs.bettype WHEN 1 THEN @v10mpositiontaking_1 WHEN 2 THEN @v10mpositiontaking_2 WHEN 3 THEN @v10mpositiontaking_3 WHEN 20 THEN @v10mpositiontaking_20 ELSE 0 END
 							WHEN 11 THEN CASE cs.bettype WHEN 1 THEN @v11mpositiontaking_1 WHEN 20 THEN @v11mpositiontaking_20 ELSE 0 END
 							WHEN 99 THEN CASE cs.bettype WHEN 1 THEN @v99mpositiontaking_1 WHEN 2 THEN @v99mpositiontaking_2 WHEN 3 THEN @v99mpositiontaking_3 WHEN 20 THEN @v99mpositiontaking_20 WHEN 9 THEN @v99mpositiontaking_9 ELSE 0 END
+							WHEN 154 THEN CASE cs.bettype WHEN 20 THEN @v154mpositiontaking_20 ELSE 0 END 
 							ELSE cs.mpositiontaking END
 						END,
 			spositiontaking =  
@@ -5036,6 +5430,7 @@ if	@UpdatePositiontaking   = 1  or
 									OR (cs.sporttype=10 AND @UpdatePositiontakingv10 = 0) 
 									OR (cs.sporttype=11 AND @UpdatePositiontakingv11 = 0) 
 									OR (cs.sporttype=99 AND cs.bettype<>9 AND @UpdatePositiontakingv99 = 0) 
+									OR (cs.sporttype = 154 AND @UpdatePositiontakingv154 = 0)
 									OR (cs.sporttype=99 AND cs.bettype=9 AND @UpdatePositiontakingv99MP = 0) )) 
 								THEN			
 									cs.spositiontaking
@@ -5048,6 +5443,7 @@ if	@UpdatePositiontaking   = 1  or
 								WHEN 10 THEN CASE cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 ELSE 0 END
 								WHEN 11 THEN CASE cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 ELSE 0 END
 								WHEN 99 THEN CASE cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 20 THEN @v99spositiontaking_20 WHEN 9 THEN @v99spositiontaking_9 ELSE 0 END
+								WHEN 154 then CASE cs.bettype WHEN 20 then @v154spositiontaking_20 ELSE 0 END 
 								ELSE cs.spositiontaking END
 							END
 		FROM Custsetting cs INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
@@ -5186,6 +5582,7 @@ if	@UpdatePositiontaking   = 1  or
 			@auto_v99mpositiontaking_mem_20 = @auto_v99mpositiontaking_mem_20,
 			-- mixed sprots
 			@auto_v99mpositiontaking_mem_9 = @auto_v99mpositiontaking_mem_9,
+			@auto_v154mpositiontaking_mem_20 = @auto_v154mpositiontaking_mem_20,
 			
 			@isauto_mpositiontaking_mem_1 = @isauto_mpositiontaking_mem_1,
 			@isauto_mpositiontaking_mem_2 = @isauto_mpositiontaking_mem_2,
@@ -5231,7 +5628,8 @@ if	@UpdatePositiontaking   = 1  or
 			@isauto_v99mpositiontaking_mem_20 = @isauto_v99mpositiontaking_mem_20,
 			
 			-- mixed sports
-			@isauto_v99mpositiontaking_mem_9 = @isauto_v99mpositiontaking_mem_9
+			@isauto_v99mpositiontaking_mem_9 = @isauto_v99mpositiontaking_mem_9,
+			@isauto_v154mpositiontaking_mem_20 = @isauto_v154mpositiontaking_mem_20
 		
 		EXEC dbo.Acc_CustSetting3rd_09
 			@custid = @custid,
@@ -5309,6 +5707,10 @@ if	@UpdatePositiontaking   = 1  or
 			@auto_v99mpositiontaking_mem_20 = @auto_v99mpositiontaking_mem_20,
 			-- mixed sprots
 			@auto_v99mpositiontaking_mem_9 = @auto_v99mpositiontaking_mem_9,
+
+			-- HR fixed odds
+			@auto_v154mpositiontaking_mem_20 = @auto_v154mpositiontaking_mem_20,
+
 			-- number game
 			@auto_v161mpositiontaking_mem_81 = @auto_v161mpositiontaking_mem_81,
 			@auto_v161mpositiontaking_mem_83 = @auto_v161mpositiontaking_mem_83,
@@ -5365,6 +5767,10 @@ if	@UpdatePositiontaking   = 1  or
 			
 			-- mixed sports
 			@isauto_v99mpositiontaking_mem_9 = @isauto_v99mpositiontaking_mem_9,
+
+			-- hr fixed odds
+			@isauto_v154mpositiontaking_mem_20 = @isauto_v154mpositiontaking_mem_20,
+
 			-- number game
 			@isauto_v161mpositiontaking_mem_81 = @isauto_v161mpositiontaking_mem_81,
 			@isauto_v161mpositiontaking_mem_83 = @isauto_v161mpositiontaking_mem_83,
@@ -5421,6 +5827,7 @@ if	@UpdatePositiontaking   = 1  or
 		'UpdatePositiontakingv11="'+ coalesce(cast(@UpdatePositiontakingv11 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv99="'+ coalesce(cast(@UpdatePositiontakingv99 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv99MP="'+ coalesce(cast(@UpdatePositiontakingv99MP as varchar(1)),space(1)) + '" ' +
+		'UpdatePositiontakingv154="'+ coalesce(cast(@UpdatePositiontakingv154 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv161="'+ coalesce(cast(@UpdatePositiontakingv161 as varchar(1)),space(1)) + '" />' +
 
 		'<m mpt_1="'+ coalesce(cast(@mpositiontaking_1 as varchar(50)),space(1)) + '" ' +
@@ -5475,6 +5882,10 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		'v99mpt_9="'+ coalesce(cast(@v99mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
+
+		-- hr fixed odds
+		'v154mpt_20="'+ coalesce(cast(@v154mpositiontaking_20 as varchar(50)),space(1)) + '" ' +
+
 		-- number game
 		'v161mpt_81="'+ coalesce(cast(@v161mpositiontaking_81 as varchar(50)),space(1)) + '" ' +
 		'v161mpt_83="'+ coalesce(cast(@v161mpositiontaking_83 as varchar(50)),space(1)) + '" ' +
@@ -5598,6 +6009,9 @@ if	@UpdatePositiontaking   = 1  or
 		'isa_v99mpt_mem_20="'+ coalesce(cast(@isauto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'isa_v99mpt_mem_9="'+ coalesce(cast(@isauto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+
+		-- HR fixed odds
+		'isa_v154mpt_mem_20="'+ coalesce(cast(@isauto_v154spositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		--- number game
 		'isa_v161mpt_mem_81="'+ coalesce(cast(@isauto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 		'isa_v161mpt_mem_83="'+ coalesce(cast(@isauto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -5660,6 +6074,8 @@ if	@UpdatePositiontaking   = 1  or
 		'a_v99mpt_mem_20="'+ coalesce(cast(@auto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'a_v99mpt_mem_9="'+ coalesce(cast(@auto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+		-- hr fixed odds
+		'a_v154mpt_mem_20="'+ coalesce(cast(@auto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- number game
 		'a_v161mpt_mem_81="'+ coalesce(cast(@auto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 		'a_v161mpt_mem_83="'+ coalesce(cast(@auto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -5685,6 +6101,7 @@ if	@UpdatePositiontaking   = 1  or
 		'UpdatePositiontakingv11="'+ coalesce(cast(@UpdatePositiontakingv11 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv99="'+ coalesce(cast(@UpdatePositiontakingv99 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv99MP="'+ coalesce(cast(@UpdatePositiontakingv99MP as varchar(1)),space(1)) + '" ' +
+		'UpdatePositiontakingv154="'+ coalesce(cast(@UpdatePositiontakingv154 as varchar(1)),space(1)) + '" ' +
 		'UpdatePositiontakingv161="'+ coalesce(cast(@UpdatePositiontakingv161 as varchar(1)),space(1)) + '" />' +
 
 		'<m mpt_1="'+ coalesce(cast(@Old_mpositiontaking_1 as varchar(50)),space(1)) + '" ' +
@@ -5738,6 +6155,8 @@ if	@UpdatePositiontaking   = 1  or
 
 		-- mixed sports
 		'v99mpt_9="'+ coalesce(cast(@Old_v99mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
+		-- hr fixed odds
+		'v154mpt_20="'+ coalesce(cast(@Old_v154mpositiontaking_20 as varchar(50)),space(1)) + '" ' +
 		-- number game
 		'v161mpt_81="'+ coalesce(cast(@Old_v161mpositiontaking_81 as varchar(50)),space(1)) + '" ' +
 		'v161mpt_83="'+ coalesce(cast(@Old_v161mpositiontaking_83 as varchar(50)),space(1)) + '" ' +
@@ -5800,6 +6219,8 @@ if	@UpdatePositiontaking   = 1  or
 		'isa_v99mpt_mem_20="'+ coalesce(cast(@Old_isauto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'isa_v99mpt_mem_9="'+ coalesce(cast(@Old_isauto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+		-- hr fixed odds
+		'isa_v154mpt_mem_20="'+ coalesce(cast(@Old_isauto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		--- number game
 		'isa_v161mpt_mem_81="'+ coalesce(cast(@Old_isauto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 		'isa_v161mpt_mem_83="'+ coalesce(cast(@Old_isauto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -5861,6 +6282,9 @@ if	@UpdatePositiontaking   = 1  or
 		'a_v99mpt_mem_20="'+ coalesce(cast(@Old_auto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- mixed sports
 		'a_v99mpt_mem_9="'+ coalesce(cast(@Old_auto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+
+		-- hr fixed odds
+		'a_v154mpt_mem_20="'+ coalesce(cast(@Old_auto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 		-- number game
 		'a_v161mpt_mem_81="'+ coalesce(cast(@Old_auto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 		'a_v161mpt_mem_83="'+ coalesce(cast(@Old_auto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -5902,6 +6326,7 @@ if	@UpdatePositiontaking   = 1  or
 			'UpdatePositiontakingv11="'+ coalesce(cast(@UpdatePositiontakingv11 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv99="'+ coalesce(cast(@UpdatePositiontakingv99 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv99MP="'+ coalesce(cast(@UpdatePositiontakingv99MP as varchar(1)),space(1)) + '" ' +
+			'UpdatePositiontakingv154="'+ coalesce(cast(@UpdatePositiontakingv154 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv161="'+ coalesce(cast(@UpdatePositiontakingv161 as varchar(1)),space(1)) + '" />' +
 
 			'<m mpt_1="'+ coalesce(cast(@mpositiontaking_1 as varchar(50)),space(1)) + '" ' +
@@ -5956,6 +6381,9 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			'v99mpt_9="'+ coalesce(cast(@v99mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
+
+			-- hr fixed odds
+			'v154mpt_20="'+ coalesce(cast(@v154mpositiontaking_20 as varchar(50)),space(1)) + '" ' +
 			-- number game
 			'v161mpt_81="'+ coalesce(cast(@v161mpositiontaking_81 as varchar(50)),space(1)) + '" ' +
 			'v161mpt_83="'+ coalesce(cast(@v161mpositiontaking_83 as varchar(50)),space(1)) + '" ' +
@@ -6018,6 +6446,8 @@ if	@UpdatePositiontaking   = 1  or
 			'isa_v99mpt_mem_20="'+ coalesce(cast(@isauto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- mixed sports
 			'isa_v99mpt_mem_9="'+ coalesce(cast(@isauto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+			-- hr fixed odds
+			'isa_v154mpt_mem_20="'+ coalesce(cast(@isauto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			--- number game
 			'isa_v161mpt_mem_81="'+ coalesce(cast(@isauto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 			'isa_v161mpt_mem_83="'+ coalesce(cast(@isauto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -6080,6 +6510,8 @@ if	@UpdatePositiontaking   = 1  or
 			'a_v99mpt_mem_20="'+ coalesce(cast(@auto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- mixed sports
 			'a_v99mpt_mem_9="'+ coalesce(cast(@auto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+			-- hr fixed odds
+			'a_v154mpt_mem_20="'+ coalesce(cast(@auto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- number game
 			'a_v161mpt_mem_81="'+ coalesce(cast(@auto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 			'a_v161mpt_mem_83="'+ coalesce(cast(@auto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -6107,6 +6539,7 @@ if	@UpdatePositiontaking   = 1  or
 			'UpdatePositiontakingv11="'+ coalesce(cast(@UpdatePositiontakingv11 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv99="'+ coalesce(cast(@UpdatePositiontakingv99 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv99MP="'+ coalesce(cast(@UpdatePositiontakingv99MP as varchar(1)),space(1)) + '" ' +
+			'UpdatePositiontakingv154="'+ coalesce(cast(@UpdatePositiontakingv154 as varchar(1)),space(1)) + '" ' +
 			'UpdatePositiontakingv161="'+ coalesce(cast(@UpdatePositiontakingv161 as varchar(1)),space(1)) + '" />' +
 
 			'<m mpt_1="'+ coalesce(cast(@Old_mpositiontaking_1 as varchar(50)),space(1)) + '" ' +
@@ -6160,6 +6593,8 @@ if	@UpdatePositiontaking   = 1  or
 
 			-- mixed sports
 			'v99mpt_9="'+ coalesce(cast(@Old_v99mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
+			-- hr fixed odds
+			'v154mpt_20="'+ coalesce(cast(@Old_v154mpositiontaking_20 as varchar(50)),space(1)) + '" ' +
 			-- number game
 			'v161mpt_81="'+ coalesce(cast(@Old_v161mpositiontaking_81 as varchar(50)),space(1)) + '" ' +
 			'v161mpt_83="'+ coalesce(cast(@Old_v161mpositiontaking_83 as varchar(50)),space(1)) + '" ' +
@@ -6222,6 +6657,9 @@ if	@UpdatePositiontaking   = 1  or
 			'isa_v99mpt_mem_20="'+ coalesce(cast(@Old_isauto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- mixed sports
 			'isa_v99mpt_mem_9="'+ coalesce(cast(@Old_isauto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+
+			-- hr fixed odds
+			'isa_v154mpt_mem_20="'+ coalesce(cast(@Old_isauto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			--- number game
 			'isa_v161mpt_mem_81="'+ coalesce(cast(@Old_isauto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 			'isa_v161mpt_mem_83="'+ coalesce(cast(@Old_isauto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -6283,6 +6721,8 @@ if	@UpdatePositiontaking   = 1  or
 			'a_v99mpt_mem_20="'+ coalesce(cast(@Old_auto_v99mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- mixed sports
 			'a_v99mpt_mem_9="'+ coalesce(cast(@Old_auto_v99mpositiontaking_mem_9 as varchar(50)),space(1)) + '" ' +
+			--  hr fixed odds
+			'a_v154mpt_mem_20="'+ coalesce(cast(@Old_auto_v154mpositiontaking_mem_20 as varchar(50)),space(1)) + '" ' +
 			-- number game
 			'a_v161mpt_mem_81="'+ coalesce(cast(@Old_auto_v161mpositiontaking_mem_81 as varchar(50)),space(1)) + '" ' +
 			'a_v161mpt_mem_83="'+ coalesce(cast(@Old_auto_v161mpositiontaking_mem_83 as varchar(50)),space(1)) + '" ' +
@@ -6304,6 +6744,9 @@ if	@UpdatePositiontaking   = 1  or
 		END CATCH
 
 	END--UpdatePositiontaking
+
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Master] TO [bodbAdminNet]
 GO

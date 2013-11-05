@@ -9,6 +9,7 @@
 	@maxpermatchv11 money,
 	@maxpermatchv99 money,
 	@maxpermatchv99MP money,
+	@maxpermatchv154 money,
 	@maxpermatchv161 money,
 	@UpdateMultiple bit = 0,	
 	@UpdateMinMaxBet bit = 1,
@@ -20,6 +21,7 @@
 	@UpdateMinMaxBetv11 bit = 1,
 	@UpdateMinMaxBetv99 bit = 1,
 	@UpdateMinMaxBetv99MP bit = 1,
+	@UpdateMinMaxBetv154 bit = 1,	
 	@UpdateMinMaxBetv161 bit = 1,
 	@Language varchar(2) = 'E',
 	@ErrCode int = 0 OUTPUT,
@@ -29,7 +31,7 @@ AS
 /*
 Created: 20081118@Phuc
 Task : Update Maxpermatch
-DB: DBTRANS.bodb02
+DB: DBTXN/bodb02
 Original:
 
 Revisions:
@@ -37,6 +39,7 @@ Revisions:
     - 20090424@Phuc:Separate finance sporttype(201).
     - 20100830@Henry: Amend to update for Number Game + Mix Parlay Mixed Sports
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
+    - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -56,6 +59,7 @@ set
 	MaxPerMatch11=case when @UpdateMultiple = 0 or @UpdateMinMaxBetv11=1 then @MaxPerMatchv11 else MaxPerMatch11 end,
 	MaxPerMatch99=case when @UpdateMultiple = 0 or @UpdateMinMaxBetv99=1 then @MaxPerMatchv99 else MaxPerMatch99 end,
 	MaxPerMatch99MP=case when @UpdateMultiple = 0 or @UpdateMinMaxBetv99MP=1 then @MaxPerMatchv99MP else MaxPerMatch99MP end,
+	MaxPerMatch154=case when @UpdateMultiple = 0 or @UpdateMinMaxBetv154=1 then @MaxPerMatchv154 else MaxPerMatch154 end,
 	MaxPerMatch161=case when @UpdateMultiple = 0 or @UpdateMinMaxBetv161=1 then @MaxPerMatchv161 else MaxPerMatch161 end
 where custid = @custid 
 if (@@error <> 0)
@@ -67,9 +71,10 @@ begin
 	return
 end
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaxPerMatch] TO [vnteam] AS [dbo]

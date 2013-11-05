@@ -34,6 +34,7 @@ Revisions:
 	- 20120927@Johnson: - Get super list by double comm status
 						- output total records affects
 	- 20130121@Dan: call to bodb_AGE for Acc_CustGroup
+	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 	- 20131029@Elodie: Put link server DBAGE [Redmine:#7261]
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -98,7 +99,8 @@ BEGIN
 
 		max(case when cs.bettype = 4 and cs.sporttype=1 then cs.sdiscount else 0 end) as discountcs,
 		max(case when cs.bettype = 5 and cs.sporttype=1 then cs.sdiscount else 0 end) as discount1x2,
-		max(case when cs3rd.bettype = 81 and cs3rd.sporttype = 161 then cs3rd.sdiscount else 0 end) as discountNumber,		
+		max(case when cs3rd.bettype = 81 and cs3rd.sporttype = 161 then cs3rd.sdiscount else 0 end) as discountNumber,	
+		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds,
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
@@ -193,7 +195,7 @@ BEGIN
 		max(case when cs.bettype = 4 and cs.sporttype=1 then cs.sdiscount else 0 end) as discountcs,
 		max(case when cs.bettype = 5 and cs.sporttype=1 then cs.sdiscount else 0 end) as discount1x2,
 		max(case when cs3rd.bettype = 81 and cs3rd.sporttype = 161 then cs3rd.sdiscount else 0 end) as discountNumber,		
-		
+		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds,
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
@@ -234,6 +236,7 @@ BEGIN
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
+
 
 
 	

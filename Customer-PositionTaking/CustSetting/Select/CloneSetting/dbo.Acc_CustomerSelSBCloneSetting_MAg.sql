@@ -11,7 +11,7 @@ AS
  DB: DBAGE/bodb02, DBTXN/bodb02
   
  History:   
-  
+		- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
  Explanation's Param:  	
 */
 
@@ -47,6 +47,9 @@ BEGIN
 		--Number Game commission
 		,v161discount_81=MAX(CASE WHEN cs3rd.bettype=81 AND cs3rd.sporttype=161 THEN cs3rd.discount ELSE 0 END)
 		
+		--HR Fixed Odds commission
+		,max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.discount else 0 end) as v154discount_20
+
 		,dbo.F_Decimal_Binary(ISNULL(TransferOption,0))  as TransferOption
 			
 	---------- bet setting section---------------------------------------------------------------------------------------
@@ -117,6 +120,7 @@ BEGIN
 			,TransferOption
 	SET NOCOUNT OFF
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSBCloneSetting_MAg] TO [bodbDownlineNet]

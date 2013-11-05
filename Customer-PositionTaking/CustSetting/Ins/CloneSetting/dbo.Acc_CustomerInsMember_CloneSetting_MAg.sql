@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE dbo.[Acc_CustomerInsMember_CloneSetting_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_MAg]
 	@Custid int output
 	,@UserName varchar(30)
 	,@Userpwd varchar(40)
@@ -41,7 +41,7 @@ AS
 	- 20130328@Jamie: Add CustLoginInfo
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
-
+	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -335,6 +335,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,DoubleCommLosing
 			,DisableCasinoBonus
+			, DisableHRFixedOdds
+			,maxpermatch154
 			)
      SELECT
 			@custid
@@ -399,6 +401,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,@doubleCommLosingUpline as DoubleCommLosing
 			,1
+			,DisableHRFixedOdds
+			,maxpermatch154
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         

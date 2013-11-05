@@ -1,173 +1,181 @@
-﻿
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
+	@custid INT,--memberid  
 
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
- @custid INT,--memberid  
-   
- @firstname NVARCHAR(50),  
- @lastname NVARCHAR(50),  
- @phone NVARCHAR(50),  
- @mobilephone NVARCHAR(50),  
- @email NVARCHAR(50) = '',  
- @fax NVARCHAR(50),  
-   
- @UpdateMultiple BIT = 0,  
-   
- @playerdiscount DECIMAL(9,8),  
- @playerdiscountcs DECIMAL(9,8),  
- @playerdiscount1x2 DECIMAL(9,8)=0,  
- @playerdiscountnumber DECIMAL(9,8)=0,  
- @UpdateCommission BIT = 1,  
-   
- @MinBet MONEY,  
- @MaxBet MONEY,  
- @MaxPerMatch MONEY,  
-   
- @MinBetv2 MONEY,  
- @MaxBetv2 MONEY,  
- @MaxPerMatchv2 MONEY,  
-  
- @MinBetv3 MONEY,  
- @MaxBetv3 MONEY,  
- @MaxPerMatchv3 MONEY,  
-  
- @MinBetv5 MONEY,  
- @MaxBetv5 MONEY,  
- @MaxPerMatchv5 MONEY,  
-  
- @MinBetv8 MONEY,  
- @MaxBetv8 MONEY,  
- @MaxPerMatchv8 MONEY,  
-  
- @MinBetv10 MONEY,  
- @MaxBetv10 MONEY,  
- @MaxPerMatchv10 MONEY,  
-  
- @MinBetv11 MONEY,  
- @MaxBetv11 MONEY,  
- @MaxPerMatchv11 MONEY,  
-  
- @MinBetv99 MONEY,  
- @MaxBetv99 MONEY,  
- @MaxPerMatchv99 MONEY,  
-   
- --Mix Parlay Mixed Sports  
- @MinBetv99MP MONEY,  
- @MaxBetv99MP MONEY,  
- @MaxPerMatchv99MP MONEY,  
-   
- --Number Game  
- @MinBetv161 MONEY,  
- @MaxBetv161 MONEY,  
- @MaxPerMatchv161 MONEY,  
+	@firstname NVARCHAR(50),  
+	@lastname NVARCHAR(50),  
+	@phone NVARCHAR(50),  
+	@mobilephone NVARCHAR(50),  
+	@email NVARCHAR(50) = '',  
+	@fax NVARCHAR(50),  
 
- @MaxPerBallv161 money = 0,
-   
- @UpdateMinMaxBet BIT = 1,   
- @UpdateMinMaxBetv2 BIT = 1,   
- @UpdateMinMaxBetv3 BIT = 1,   
- @UpdateMinMaxBetv5 BIT = 1,   
- @UpdateMinMaxBetv8 BIT = 1,   
- @UpdateMinMaxBetv10 BIT = 1,  
- @UpdateMinMaxBetv11 BIT = 1,  
- @UpdateMinMaxBetv99 BIT = 1,  
-   
- @UpdateMinMaxBetv99MP BIT = 1,  
- @UpdateMinMaxBetv161 BIT = 1,  
-   
- @credit MONEY,  
-   
- @closed BIT,  
- @Suspended bit,   
- @UpdateClosed BIT = 1,  
- @UpdateSuspended BIT = 1,  
- @disCasino bit = 0,  
-   
- @apositiontaking_1 SMALLMONEY,  
- @apositiontaking_2 SMALLMONEY,  
- @apositiontaking_3 SMALLMONEY,  
- @apositiontaking_4 SMALLMONEY,  
- @apositiontaking_5 SMALLMONEY,  
- @apositiontaking_6 SMALLMONEY,  
- @apositiontaking_7 SMALLMONEY,  
- @apositiontaking_8 SMALLMONEY,  
- @apositiontaking_9 SMALLMONEY,  
- @apositiontaking_10 SMALLMONEY,  
-   
- @alivepositiontaking_1 SMALLMONEY,  
- @alivepositiontaking_3 SMALLMONEY,  
- @alivepositiontaking_7 SMALLMONEY,  
- @alivepositiontaking_8 SMALLMONEY,  
-   
- @v2apositiontaking_1 SMALLMONEY,  
- @v2apositiontaking_2 SMALLMONEY,  
- @v2apositiontaking_3 SMALLMONEY,  
- @v2apositiontaking_7 SMALLMONEY,  
- @v2apositiontaking_8 SMALLMONEY,  
- --@v2apositiontaking_9 SMALLMONEY,  
- @v2apositiontaking_20 SMALLMONEY,  
-   
- @v3apositiontaking_1 SMALLMONEY,  
- @v3apositiontaking_2 SMALLMONEY,  
- @v3apositiontaking_3 SMALLMONEY,  
- @v3apositiontaking_20 SMALLMONEY,  
-  
- @v5apositiontaking_1 SMALLMONEY,  
- @v5apositiontaking_2 SMALLMONEY,  
- @v5apositiontaking_3 SMALLMONEY,  
- @v5apositiontaking_20 SMALLMONEY,  
-  
- @v8apositiontaking_1 SMALLMONEY,  
- @v8apositiontaking_3 SMALLMONEY,  
- @v8apositiontaking_20 SMALLMONEY,  
-  
- @v10apositiontaking_1 SMALLMONEY,  
- @v10apositiontaking_2 SMALLMONEY,  
- @v10apositiontaking_3 SMALLMONEY,  
- @v10apositiontaking_20 SMALLMONEY,  
-  
- @v11apositiontaking_1 SMALLMONEY,  
- @v11apositiontaking_20 SMALLMONEY,  
-      
- @v99apositiontaking_1 SMALLMONEY,  
- @v99apositiontaking_2 SMALLMONEY,  
- @v99apositiontaking_3 SMALLMONEY,  
- @v99apositiontaking_9 SMALLMONEY,  
- @v99apositiontaking_20 SMALLMONEY,  
-   
-   
- --v161  
- @v161apositiontaking_81 smallmoney,   
- @v161apositiontaking_83 smallmoney,       
- @v161apositiontaking_86 smallmoney,   
- @v161apositiontaking_88 smallmoney = 0,	
- @v161alivepositiontaking_85 smallmoney,  
- @v161alivepositiontaking_86 smallmoney,  
- @v161alivepositiontaking_87 smallmoney,  
- @v161alivepositiontaking_89 smallmoney = 0,
- @v161alivepositiontaking_90 smallmoney = 0,
-   
-   
-   
- @UpdatePositiontaking BIT = 1,   
- @UpdatePositiontakingv2 BIT = 1,  
- @UpdatePositiontakingv3 BIT = 1,  
- @UpdatePositiontakingv5 BIT = 1,  
- @UpdatePositiontakingv8 BIT = 1,  
- @UpdatePositiontakingv10 BIT = 1,  
- @UpdatePositiontakingv11 BIT = 1,  
- @UpdatePositiontakingv99 BIT = 1,  
- @UpdatePositiontakingv99MP BIT = 1,  
- @UpdatePositiontakingv161 BIT = 1,  
-   
- @UserID INT,    
-   
- @IP varchar(15)='',   
- @Language VARCHAR(2)= 'E',  
-   
- @SubAccID INT = 0, --Sub-AccountID  
- @Username varchar(30) = '' OUTPUT,  
- @ErrCode varchar(300) = '' OUTPUT,  
- @ErrMsg nvarchar(4000) = '' OUTPUT  
+	@UpdateMultiple BIT = 0,  
+
+	@playerdiscount DECIMAL(9,8),  
+	@playerdiscountcs DECIMAL(9,8),  
+	@playerdiscount1x2 DECIMAL(9,8)=0,  
+	@playerdiscountnumber DECIMAL(9,8)=0,  
+	@playerdiscountHRFixedOdds decimal(9,8)=0,
+	@UpdateCommission BIT = 1,  
+
+	@MinBet MONEY,  
+	@MaxBet MONEY,  
+	@MaxPerMatch MONEY,  
+
+	@MinBetv2 MONEY,  
+	@MaxBetv2 MONEY,  
+	@MaxPerMatchv2 MONEY,  
+
+	@MinBetv3 MONEY,  
+	@MaxBetv3 MONEY,  
+	@MaxPerMatchv3 MONEY,  
+
+	@MinBetv5 MONEY,  
+	@MaxBetv5 MONEY,  
+	@MaxPerMatchv5 MONEY,  
+
+	@MinBetv8 MONEY,  
+	@MaxBetv8 MONEY,  
+	@MaxPerMatchv8 MONEY,  
+
+	@MinBetv10 MONEY,  
+	@MaxBetv10 MONEY,  
+	@MaxPerMatchv10 MONEY,  
+
+	@MinBetv11 MONEY,  
+	@MaxBetv11 MONEY,  
+	@MaxPerMatchv11 MONEY,  
+
+	@MinBetv99 MONEY,  
+	@MaxBetv99 MONEY,  
+	@MaxPerMatchv99 MONEY,  
+
+	--Mix Parlay Mixed Sports  
+	@MinBetv99MP MONEY,  
+	@MaxBetv99MP MONEY,  
+	@MaxPerMatchv99MP MONEY,  
+	
+	--HR Fixed Odds
+	@MinBetv154 MONEY = 0,
+	@MaxBetv154 MONEY = 0,
+	@MaxPerMatchv154 MONEY = 0,
+	
+	--Number Game  
+	@MinBetv161 MONEY,  
+	@MaxBetv161 MONEY,  
+	@MaxPerMatchv161 MONEY,  
+
+	@MaxPerBallv161 money = 0,
+
+	@UpdateMinMaxBet BIT = 1,   
+	@UpdateMinMaxBetv2 BIT = 1,   
+	@UpdateMinMaxBetv3 BIT = 1,   
+	@UpdateMinMaxBetv5 BIT = 1,   
+	@UpdateMinMaxBetv8 BIT = 1,   
+	@UpdateMinMaxBetv10 BIT = 1,  
+	@UpdateMinMaxBetv11 BIT = 1,  
+	@UpdateMinMaxBetv99 BIT = 1,  
+
+	@UpdateMinMaxBetv99MP BIT = 1,  
+	@UpdateMinMaxBetv154 bit = 1,
+	@UpdateMinMaxBetv161 BIT = 1,  
+
+	@credit MONEY,  
+
+	@closed BIT,  
+	@Suspended bit,   
+	@UpdateClosed BIT = 1,  
+	@UpdateSuspended BIT = 1,  
+	@disCasino bit = 0,  
+
+	@apositiontaking_1 SMALLMONEY,  
+	@apositiontaking_2 SMALLMONEY,  
+	@apositiontaking_3 SMALLMONEY,  
+	@apositiontaking_4 SMALLMONEY,  
+	@apositiontaking_5 SMALLMONEY,  
+	@apositiontaking_6 SMALLMONEY,  
+	@apositiontaking_7 SMALLMONEY,  
+	@apositiontaking_8 SMALLMONEY,  
+	@apositiontaking_9 SMALLMONEY,  
+	@apositiontaking_10 SMALLMONEY,  
+
+	@alivepositiontaking_1 SMALLMONEY,  
+	@alivepositiontaking_3 SMALLMONEY,  
+	@alivepositiontaking_7 SMALLMONEY,  
+	@alivepositiontaking_8 SMALLMONEY,  
+
+	@v2apositiontaking_1 SMALLMONEY,  
+	@v2apositiontaking_2 SMALLMONEY,  
+	@v2apositiontaking_3 SMALLMONEY,  
+	@v2apositiontaking_7 SMALLMONEY,  
+	@v2apositiontaking_8 SMALLMONEY,  
+	--@v2apositiontaking_9 SMALLMONEY,  
+	@v2apositiontaking_20 SMALLMONEY,  
+
+	@v3apositiontaking_1 SMALLMONEY,  
+	@v3apositiontaking_2 SMALLMONEY,  
+	@v3apositiontaking_3 SMALLMONEY,  
+	@v3apositiontaking_20 SMALLMONEY,  
+
+	@v5apositiontaking_1 SMALLMONEY,  
+	@v5apositiontaking_2 SMALLMONEY,  
+	@v5apositiontaking_3 SMALLMONEY,  
+	@v5apositiontaking_20 SMALLMONEY,  
+
+	@v8apositiontaking_1 SMALLMONEY,  
+	@v8apositiontaking_3 SMALLMONEY,  
+	@v8apositiontaking_20 SMALLMONEY,  
+
+	@v10apositiontaking_1 SMALLMONEY,  
+	@v10apositiontaking_2 SMALLMONEY,  
+	@v10apositiontaking_3 SMALLMONEY,  
+	@v10apositiontaking_20 SMALLMONEY,  
+
+	@v11apositiontaking_1 SMALLMONEY,  
+	@v11apositiontaking_20 SMALLMONEY,  
+	  
+	@v99apositiontaking_1 SMALLMONEY,  
+	@v99apositiontaking_2 SMALLMONEY,  
+	@v99apositiontaking_3 SMALLMONEY,  
+	@v99apositiontaking_9 SMALLMONEY,  
+	@v99apositiontaking_20 SMALLMONEY,  
+
+	--HR Fixed Odds
+	@v154apositiontaking_20 SMALLMONEY = 0,
+	
+	--v161  
+	@v161apositiontaking_81 smallmoney,   
+	@v161apositiontaking_83 smallmoney,       
+	@v161apositiontaking_86 smallmoney,   
+	@v161apositiontaking_88 smallmoney = 0,	
+	@v161alivepositiontaking_85 smallmoney,  
+	@v161alivepositiontaking_86 smallmoney,  
+	@v161alivepositiontaking_87 smallmoney,  
+	@v161alivepositiontaking_89 smallmoney = 0,
+	@v161alivepositiontaking_90 smallmoney = 0,
+
+
+
+	@UpdatePositiontaking BIT = 1,   
+	@UpdatePositiontakingv2 BIT = 1,  
+	@UpdatePositiontakingv3 BIT = 1,  
+	@UpdatePositiontakingv5 BIT = 1,  
+	@UpdatePositiontakingv8 BIT = 1,  
+	@UpdatePositiontakingv10 BIT = 1,  
+	@UpdatePositiontakingv11 BIT = 1,  
+	@UpdatePositiontakingv99 BIT = 1,  
+	@UpdatePositiontakingv99MP BIT = 1,  
+	@UpdatePositiontakingv154 BIT = 1,
+	@UpdatePositiontakingv161 BIT = 1,  
+
+	@UserID INT,    
+
+	@IP varchar(15)='',   
+	@Language VARCHAR(2)= 'E',  
+
+	@SubAccID INT = 0, --Sub-AccountID  
+	@Username varchar(30) = '' OUTPUT,  
+	@ErrCode varchar(300) = '' OUTPUT,  
+	@ErrMsg nvarchar(4000) = '' OUTPUT  
 as  
 --@Source Control  
 /*  
@@ -197,6 +205,8 @@ Revisions:
  - 20110709@Johnson: Change to use new server BD053 instead DB052
  - 20120704@Johnson: Remove setting hard code of number group
  - 20130218@Dan: Change linked server DB053 to DBAGE
+ - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+ 
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -351,27 +361,31 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
  Declare @playerdiscount_old DECIMAL(9,8),  
    @playerdiscountcs_old DECIMAL(9,8),  
    @playerdiscount1x2_old DECIMAL(9,8),  
+   @playerdiscountHRFixedOdds_old decimal(9,8),
    @playerdiscountnumber_old DECIMAL(9,8),  
    @updatecomm_old bit  
   
- select @playerdiscount_old = playerdiscount  
- from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 1  
-  
- select @playerdiscountcs_old = playerdiscount  
- from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 4  
-  
- select @playerdiscount1x2_old = playerdiscount  
- from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 5  
-   
- select @playerdiscountnumber_old = playerdiscount  
- from custsetting3rd (nolock) where custid = @custid and sporttype = 161 and bettype = 81  
-  
- if @playerdiscount_old <> @playerdiscount or @playerdiscountcs_old <> @playerdiscountcs   
-   or @playerdiscount1x2_old <> @playerdiscount1x2 or @playerdiscountnumber_old <> @playerdiscountnumber  
-  set @updatecomm_old = 1  
- else   
-  set @updatecomm_old = 0  
-   
+	select @playerdiscount_old = playerdiscount  
+	from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 1  
+
+	select @playerdiscountcs_old = playerdiscount  
+	from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 4  
+
+	select @playerdiscount1x2_old = playerdiscount  
+	from custsetting (nolock) where custid = @custid and sporttype = 1 and bettype = 5  
+
+	select @playerdiscountHRFixedOdds_old = playerdiscount
+	from custsetting (nolock) where custid = @custid and sporttype = 154 and bettype = 20
+	   
+	select @playerdiscountnumber_old = playerdiscount  
+	from custsetting3rd (nolock) where custid = @custid and sporttype = 161 and bettype = 81  
+
+	if @playerdiscount_old <> @playerdiscount or @playerdiscountcs_old <> @playerdiscountcs   
+		or @playerdiscount1x2_old <> @playerdiscount1x2 or @playerdiscountnumber_old <> @playerdiscountnumber or @playerdiscountHRFixedOdds_old <> @playerdiscountHRFixedOdds
+		set @updatecomm_old = 1  
+	else   
+		set @updatecomm_old = 0  
+		
  if @updatecomm_old <> 0  
  begin  
     
@@ -380,6 +394,7 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
    @playerdiscount = @playerdiscount,  
    @playerdiscountcs = @playerdiscountcs,  
    @playerdiscount1x2 = @playerdiscount1x2,  
+   @playerdiscountHRFixedOdds = @playerdiscountHRFixedOdds,
    @playerdiscountnumber = @playerdiscountnumber,  
    @updatecomm_old = @updatecomm_old,  
    @SubAccID = @SubAccID,  
@@ -401,20 +416,19 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
  END  
 END  
   
-
-
 ----------------------------------------------  
 --Update MinBet, MaxBet, MaxPerMatch  
 if  @UpdateMinMaxBet  = 1 or  
- @UpdateMinMaxBetv2  = 1 or  
- @UpdateMinMaxBetv3  = 1 or  
- @UpdateMinMaxBetv5  = 1 or  
- @UpdateMinMaxBetv8  = 1 or  
- @UpdateMinMaxBetv10  = 1 or  
- @UpdateMinMaxBetv11  = 1 or  
- @UpdateMinMaxBetv99  = 1 or  
- @UpdateMinMaxBetv99MP = 1 or  
- @UpdateMinMaxBetv161 = 1  
+	@UpdateMinMaxBetv2  = 1 or  
+	@UpdateMinMaxBetv3  = 1 or  
+	@UpdateMinMaxBetv5  = 1 or  
+	@UpdateMinMaxBetv8  = 1 or  
+	@UpdateMinMaxBetv10  = 1 or  
+	@UpdateMinMaxBetv11  = 1 or  
+	@UpdateMinMaxBetv99  = 1 or  
+	@UpdateMinMaxBetv99MP = 1 or  
+	@UpdateMinMaxBetv11  = 1 or  
+	@UpdateMinMaxBetv161 = 1  
 BEGIN  
  Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''  
  EXEC dbo.Acc_CustomerUpdMember_MinMaxBet   
@@ -446,6 +460,9 @@ BEGIN
   @minbetv99MP = @minbetv99MP,  
   @maxbetv99MP = @maxbetv99MP,  
   @maxpermatchv99MP = @maxpermatchv99MP,  
+  @minbetv154 = @minbetv154,  
+  @maxbetv154 = @maxbetv154,  
+  @maxpermatchv154 = @maxpermatchv154,  
   @minbetv161 = @minbetv161,  
   @maxbetv161 = @maxbetv161,  
   @maxpermatchv161 = @maxpermatchv161,  
@@ -460,6 +477,7 @@ BEGIN
   @UpdateMinMaxBetv11 = @UpdateMinMaxBetv11,  
   @UpdateMinMaxBetv99 = @UpdateMinMaxBetv99,  
   @UpdateMinMaxBetv99MP = @UpdateMinMaxBetv99MP,  
+  @UpdateMinMaxBetv154 = @UpdateMinMaxBetv154,  
   @UpdateMinMaxBetv161 = @UpdateMinMaxBetv161,  
   @SubAccID = @SubAccID,  
   @UserID = @UserID,  
@@ -549,7 +567,8 @@ BEGIN
   @v99apositiontaking_9_old SMALLMONEY,  
   @v99apositiontaking_20_old SMALLMONEY,  
     
-    
+  @v154apositiontaking_20_old SMALLMONEY,  
+  
   @v161apositiontaking_81_old SMALLMONEY,   
   @v161apositiontaking_83_old SMALLMONEY,        
   @v161apositiontaking_86_old SMALLMONEY,   
@@ -610,7 +629,8 @@ BEGIN
  select @v99apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=99  
  select @v99apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=99  
    
-   
+ select @v154apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=154 
+  
  select @v161apositiontaking_81_old = apositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=81 and sporttype=161  
  select @v161apositiontaking_83_old = apositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=83 and sporttype=161  
  select @v161apositiontaking_88_old = apositiontaking from custsetting3rd with (NOLOCK) where custid = @custid and bettype=88 and sporttype=161  
@@ -666,6 +686,8 @@ BEGIN
    @v99apositiontaking_3 <> @v99apositiontaking_3_old or  
    @v99apositiontaking_9 <> @v99apositiontaking_9_old or  
    @v99apositiontaking_20 <> @v99apositiontaking_20_old or  
+
+   @v154apositiontaking_20 <> @v154apositiontaking_20_old or  
      
    @v161apositiontaking_81 <> @v161apositiontaking_81_old or  
    @v161apositiontaking_83 <> @v161apositiontaking_83_old or    
@@ -725,6 +747,8 @@ BEGIN
    @v99apositiontaking_3 = @v99apositiontaking_3,  
    @v99apositiontaking_9 = @v99apositiontaking_9,  
    @v99apositiontaking_20 = @v99apositiontaking_20,  
+
+   @v154apositiontaking_20 = @v154apositiontaking_20,  
      
    @v161apositiontaking_81 = @v161apositiontaking_81,  
    @v161apositiontaking_83 = @v161apositiontaking_83,  
@@ -746,6 +770,7 @@ BEGIN
    @UpdatePositiontakingv11 = @UpdatePositiontakingv11,  
    @UpdatePositiontakingv99 = @UpdatePositiontakingv99,  
    @UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,  
+   @UpdatePositiontakingv154 = @UpdatePositiontakingv154,  
    @UpdatePositiontakingv161 = @UpdatePositiontakingv161,  
    @UserID = @UserID,  
    @IP = @IP,  
@@ -770,10 +795,10 @@ END
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_All] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_All] TO [vnteam] AS [dbo]
