@@ -11,7 +11,7 @@ AS
  DB: DBAGE/bodb02, DBTXN/bodb02
   
  History:   
-		- 20131018@Kathy: Add HR Fixed Odds [Redmine:#6505] HR Fixed Odds
+		- 20131018@Kathy: Add HR Fixed Odds [Redmine:#6505]
 
  Explanation's Param:  	
 */
