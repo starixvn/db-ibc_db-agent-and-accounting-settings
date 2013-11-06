@@ -852,7 +852,7 @@ EXEC dbo.Acc_CustSetting_05
 
 	-- mixed sports
 	@isauto_v99mpositiontaking_9 = @isauto_v99mpositiontaking_9,
-	@isauto_v1154mpositiontaking_20 = @isauto_v154mpositiontaking_20,
+	@isauto_v154mpositiontaking_20 = @isauto_v154mpositiontaking_20,
 
 	
 	@old_isauto_mpositiontaking_1 = @old_isauto_mpositiontaking_1, 
