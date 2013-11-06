@@ -80,6 +80,8 @@ Revisions:
 	- 20110511@Johnson: Write log for old setting
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: write log on DBTXN if DBLOG failure
+	- 20131105@Johnson: Apply execrep when update pt on members
+				and check total downlines before UPDATEs 
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -102,6 +104,18 @@ select @username = username from custinfo with (NOLOCK) where custid = @custid
 Declare @ErrAcc nvarchar(4000)
 declare @ErrType varchar(1000)
 
+---- Johnson@20131105: Checking total downlines before UPDATEs 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=4,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+	
 if 	@v151spositiontaking_31 < 0
 	or @v151spositiontaking_32 < 0
 	or @v151spositiontaking_41 < 0
@@ -561,6 +575,9 @@ where custid=@custid
 
 
 --exec dbo.Acc_CustomerUpdSuper_AutoPositiontaking @srecommend = @custid
+EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid, @roleid = 4, @mode = 'horse' 
+
+/*
 Update cs
 	set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
 							(case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
@@ -583,6 +600,7 @@ begin
 					end, @ErrCode = 107	
 	return
 end
+*/
 
 --Update l4=s4
 update CustOverride3rd with (ROWLOCK, UPDLOCK)

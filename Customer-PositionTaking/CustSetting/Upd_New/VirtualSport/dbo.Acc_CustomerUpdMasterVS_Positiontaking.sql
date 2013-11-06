@@ -92,10 +92,14 @@ SET NOCOUNT ON
 		@isUpdatePT = 1,
 		@Sporttype = 0,
 		@Language='E',
-		@ErrMsg=@ErrMsg output,
-		@ErrCode=@ErrCode output
-	IF	@ErrCode <> 0 
-		RETURN    
+		@ErrMsg=@ErrMsg_Cur output,
+		@ErrCode=@ErrCode_Cur output
+	IF @ErrCode_Cur > 0
+	BEGIN
+		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+		return
+	END  
 		
 	--Get old values for tracking 
 	SELECT @s3_old		= mcs.spositiontaking,
