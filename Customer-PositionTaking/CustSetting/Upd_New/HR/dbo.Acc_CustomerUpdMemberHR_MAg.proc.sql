@@ -100,6 +100,8 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130610@Johnson: check m1 with valid range of m1
+	- 20131106@Johnson: Apply execrep when update pt on member
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1447,6 +1449,46 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 	END --@UpdatePositiontakingv153
 
 --don't update m1,s1 for member under agent was set im2=1
+EXEC dbo.Acc_CustSetting3rd_08
+	@custid = @custid,
+	@roleid = 3,
+	@mode = 'horse',
+	
+	@v151spositiontaking_31 = @v151spositiontaking_31,
+	@v151spositiontaking_32 = @v151spositiontaking_32,
+	@v151spositiontaking_41 = @v151spositiontaking_41,
+	@v151spositiontaking_42 = @v151spositiontaking_42,
+	@v151spositiontaking_51 = @v151spositiontaking_51,
+	@v151spositiontaking_52 = @v151spositiontaking_52,
+	@v152spositiontaking_41 = @v152spositiontaking_41,
+	@v152spositiontaking_42 = @v152spositiontaking_42,
+	@v152spositiontaking_51 = @v152spositiontaking_51,
+	@v152spositiontaking_52 = @v152spositiontaking_52,
+	@v153spositiontaking_51 = @v153spositiontaking_51,
+	@v153spositiontaking_52 = @v153spositiontaking_52,
+	
+	@v151mpositiontaking_31 = @v151mpositiontaking_31,
+	@v151mpositiontaking_32 = @v151mpositiontaking_32,
+	@v151mpositiontaking_41 = @v151mpositiontaking_41,
+	@v151mpositiontaking_42 = @v151mpositiontaking_42,
+	@v151mpositiontaking_51 = @v151mpositiontaking_51,
+	@v151mpositiontaking_52 = @v151mpositiontaking_52,
+	@v152mpositiontaking_41 = @v152mpositiontaking_41,
+	@v152mpositiontaking_42 = @v152mpositiontaking_42,
+	@v152mpositiontaking_51 = @v152mpositiontaking_51,
+	@v152mpositiontaking_52 = @v152mpositiontaking_52,
+	@v153mpositiontaking_51 = @v153mpositiontaking_51,
+	@v153mpositiontaking_52 = @v153mpositiontaking_52 ,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+	
+/*
 UPDATE cs WITH (ROWLOCK, UPDLOCK)
 SET
 	mpositiontaking = CASE WHEN @UpdateMultiple = 1 
@@ -1490,11 +1532,78 @@ SET
 FROM CustSetting3rd cs INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
 	INNER JOIN CustSetting3rd acs WITH(NOLOCK) ON acs.custid = c.recommend AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype 
 WHERE c.custid=@custid AND c.roleid = 1 AND acs.isautompositiontaking = 0 AND cs.sporttype in (151,152,153)
-
+*/
 
 --Update auto PT
 --------------------------------------------------------
 --Update Member account (autompositiontaking field)
+EXEC dbo.Acc_CustSetting3rd_09
+	@custid = @custid,
+	@mrecommend = @mrecommend,
+	@roleid = 3,
+	@mode = 'horse',
+	
+	@auto_v151mpositiontaking_31 = @auto_v151mpositiontaking_31,
+	@auto_v151mpositiontaking_32 = @auto_v151mpositiontaking_32,
+	@auto_v151mpositiontaking_41 = @auto_v151mpositiontaking_41,
+	@auto_v151mpositiontaking_42 = @auto_v151mpositiontaking_42,
+	@auto_v151mpositiontaking_51 = @auto_v151mpositiontaking_51,
+	@auto_v151mpositiontaking_52 = @auto_v151mpositiontaking_52,
+	@auto_v152mpositiontaking_41 = @auto_v152mpositiontaking_41,
+	@auto_v152mpositiontaking_42 = @auto_v152mpositiontaking_42,
+	@auto_v152mpositiontaking_51 = @auto_v152mpositiontaking_51,
+	@auto_v152mpositiontaking_52 = @auto_v152mpositiontaking_52,
+	@auto_v153mpositiontaking_51 = @auto_v153mpositiontaking_51,
+	@auto_v153mpositiontaking_52 = @auto_v153mpositiontaking_52,
+	
+	@auto_v151mpositiontaking_mem_31 = @auto_v151mpositiontaking_mem_31,
+	@auto_v151mpositiontaking_mem_32 = @auto_v151mpositiontaking_mem_32,  
+	@auto_v151mpositiontaking_mem_41 = @auto_v151mpositiontaking_mem_41,
+	@auto_v151mpositiontaking_mem_42 = @auto_v151mpositiontaking_mem_42,
+	@auto_v151mpositiontaking_mem_51 = @auto_v151mpositiontaking_mem_51,
+	@auto_v151mpositiontaking_mem_52 = @auto_v151mpositiontaking_mem_52,
+	@auto_v152mpositiontaking_mem_41 = @auto_v152mpositiontaking_mem_41,
+	@auto_v152mpositiontaking_mem_42 = @auto_v152mpositiontaking_mem_42,
+	@auto_v152mpositiontaking_mem_51 = @auto_v152mpositiontaking_mem_51,
+	@auto_v152mpositiontaking_mem_52 = @auto_v152mpositiontaking_mem_52,
+	@auto_v153mpositiontaking_mem_51 = @auto_v153mpositiontaking_mem_51,
+	@auto_v153mpositiontaking_mem_52 = @auto_v153mpositiontaking_mem_52, 
+	
+	@isauto_v151mpositiontaking_31 = @isauto_v151mpositiontaking_31,
+	@isauto_v151mpositiontaking_32 = @isauto_v151mpositiontaking_32,
+	@isauto_v151mpositiontaking_41 = @isauto_v151mpositiontaking_41,
+	@isauto_v151mpositiontaking_42 = @isauto_v151mpositiontaking_42,
+	@isauto_v151mpositiontaking_51 = @isauto_v151mpositiontaking_51,
+	@isauto_v151mpositiontaking_52 = @isauto_v151mpositiontaking_52,
+	@isauto_v152mpositiontaking_41 = @isauto_v152mpositiontaking_41,
+	@isauto_v152mpositiontaking_42 = @isauto_v152mpositiontaking_42,
+	@isauto_v152mpositiontaking_51 = @isauto_v152mpositiontaking_51,
+	@isauto_v152mpositiontaking_52 = @isauto_v152mpositiontaking_52,
+	@isauto_v153mpositiontaking_51 = @isauto_v153mpositiontaking_51,
+	@isauto_v153mpositiontaking_52 = @isauto_v153mpositiontaking_52,
+	
+	@isauto_v151mpositiontaking_mem_31 = @isauto_v151mpositiontaking_mem_31,
+	@isauto_v151mpositiontaking_mem_32 = @isauto_v151mpositiontaking_mem_32,
+	@isauto_v151mpositiontaking_mem_41 = @isauto_v151mpositiontaking_mem_41,
+	@isauto_v151mpositiontaking_mem_42 = @isauto_v151mpositiontaking_mem_42,
+	@isauto_v151mpositiontaking_mem_51 = @isauto_v151mpositiontaking_mem_51,
+	@isauto_v151mpositiontaking_mem_52 = @isauto_v151mpositiontaking_mem_52,
+	@isauto_v152mpositiontaking_mem_41 = @isauto_v152mpositiontaking_mem_41,
+	@isauto_v152mpositiontaking_mem_42 = @isauto_v152mpositiontaking_mem_42,
+	@isauto_v152mpositiontaking_mem_51 = @isauto_v152mpositiontaking_mem_51,
+	@isauto_v152mpositiontaking_mem_52 = @isauto_v152mpositiontaking_mem_52,
+	@isauto_v153mpositiontaking_mem_51 = @isauto_v153mpositiontaking_mem_51,
+	@isauto_v153mpositiontaking_mem_52 = @isauto_v153mpositiontaking_mem_52,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51 
+
+/*
 update CustSetting3rd with (ROWLOCK, UPDLOCK) 
 set autompositiontaking =  CASE WHEN @UpdateMultiple = 1 
 								AND (	(cs.sporttype=151 AND @UpdatePositiontakingv151_31 = 0 AND @UpdatePositiontakingv151_41 = 0 AND @UpdatePositiontakingv151_51 = 0 )
@@ -1779,6 +1888,8 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 		END
 	END
 END--@UpdatePositiontakingv153
+*/
+
 EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 

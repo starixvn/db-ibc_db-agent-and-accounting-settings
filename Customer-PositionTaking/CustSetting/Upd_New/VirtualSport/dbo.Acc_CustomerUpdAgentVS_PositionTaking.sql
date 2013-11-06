@@ -78,10 +78,14 @@ EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 	@isUpdatePT = 1,
 	@Sporttype = 0,
 	@Language='E',
-	@ErrMsg=@ErrMsg output,
-	@ErrCode=@ErrCode output
-IF	@ErrCode <> 0 
-	RETURN        
+	@ErrMsg=@ErrMsg_Cur output,
+	@ErrCode=@ErrCode_Cur output
+IF @ErrCode_Cur > 0        
+BEGIN        
+ select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7),         
+   @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)        
+ return        
+END         
         
 SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend         
 FROM custinfo with (NOLOCK)         
@@ -626,8 +630,7 @@ END
 IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND        
  @Updateallmembers = 1 AND @im2=0        
 BEGIN   
-	EXEC dbo.Acc_CustSetting3rd_05 
-		@mrecommend = @mrecommend,
+	EXEC dbo.Acc_CustSetting3rd_05 		
 		@recommend = @custid,
 		@roleid = 2,
 		@mode = 'virtual-sports',
@@ -638,7 +641,7 @@ BEGIN
 		@vs_isauto_mpositiontaking = @im2, --im2
 		@old_vs_isauto_mpositiontaking = @old_im2,--old_im2
 		
-		@updateautopositiontakingvs = 1,						
+		@updateautopositiontakingvs = 0,						
 		@newmpositiontaking = @m1          
 /*
  UPDATE cs        

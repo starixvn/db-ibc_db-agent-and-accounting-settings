@@ -22,9 +22,11 @@ AS
 					Acc_CustomerUpdSuperLiveCS_Positiontaking	
 					Acc_CustomerUpdMasterLiveCS_MaxPositiontaking	
 					Acc_CustomerUpdAgentLiveCS_MaxPositionTaking
-					
+					Acc_CustomerUpdSuperHR_Positiontaking
+					Acc_CustomerUpdMasterHR_MaxPositiontaking
+					Acc_CustomerUpdAgentHR_MaxPositiontaking					
 		Revision:
-		
+			- 20131104@Johnson: Add virtual sports, live casino, racing
 		Parameter's Explanation:
 	*/ 
 BEGIN
@@ -108,6 +110,21 @@ SET NOCOUNT ON
 				AND cs.sporttype = 162 AND cs.bettype = 1101 
 				AND (cs.isautopositiontaking = 1 OR mcs.isautopositiontaking = 1)	 
 			
+		END
+		ELSE IF @mode = 'horse'
+		BEGIN
+			Update cs
+				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
+										(case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+			from
+				CustSetting3rd as cs with(ROWLOCK, UPDLOCK)
+				inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = c.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
+			where
+				c.srecommend = @srecommend 
+				and c.roleid = 1 and cs.sporttype between 151 and 153
+				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
 		END
 	END
 	ELSE IF @roleid = 3
@@ -540,6 +557,132 @@ SET NOCOUNT ON
 				AND cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking 
 			
 		END
+		ELSE IF @mode = 'horse'
+		BEGIN
+			--Recal AUTO MPT m1=min(m3-a1,u2)
+			-------------------------------------------------------------------------------------
+			Update cs 
+				set mpositiontaking = 
+					case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
+						then case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
+					else  mcs.mpositiontaking-cs.apositiontaking end
+			from
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK) 
+				inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = c.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustSetting3rd as acs with (NOLOCK) on acs.custid = c.recommend and acs.sporttype=cs.sporttype and acs.bettype=cs.bettype
+			where
+				c.mrecommend = @mrecommend
+				and c.roleid = 1
+				and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------
+
+
+
+			----------------------------------------------------------------------------
+			--check master min/max
+			--m1=n3-a1
+			Update cs
+				set mpositiontaking = mco.minpositiontaking-cs.apositiontaking
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK) 
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.mrecommend=@mrecommend and mb.roleid=1
+				inner join CustOverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=cs.sporttype and mco.bettype=cs.bettype
+			where cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			----------------------------------------------------------------------------
+
+
+			----------------------------------------------------------------------------
+			-- Update m1,a1 when m1+a1>l3
+			-- m1=min(m3,l3)-a1
+			Update cs
+				set @maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
+					@mpos = case when @maxmapos-cs.apositiontaking<0 then 0 else @maxmapos-cs.apositiontaking end,
+					mpositiontaking = @mpos,
+					@apos = case when cs.apositiontaking + @mpos>@maxmapos then @maxmapos-@mpos else cs.apositiontaking end,
+					apositiontaking = case when @apos<aco.minpositiontaking then aco.minpositiontaking else @apos end
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.mrecommend=@mrecommend and mb.roleid=1
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = @mrecommend  and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustOverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=cs.sporttype and mco.bettype=cs.bettype
+				inner join CustOverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=cs.sporttype and aco.bettype=cs.bettype
+			where cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			----------------------------------------------------------------------------
+
+
+			----------------------------------------------------------------------------
+			--recal autopos
+			-- s1=min(s4-m1-a1,u)
+			Update cs 
+				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
+										(case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+			from
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = c.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
+			where
+				c.mrecommend = @mrecommend
+				and c.roleid = 1
+				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
+				and cs.sporttype in (151,152,153)
+
+			----------------------------------------------------------------------------
+
+
+
+			----------------------------------------------------------------------------
+			--check super min/max when a1+m1+s1<n4
+			-- s1=n4-m1-a1
+			Update cs
+				set spositiontaking = sco.minpositiontaking-cs.mpositiontaking-cs.apositiontaking
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.mrecommend=@mrecommend and mb.roleid=1
+				inner join CustOverride3rd as sco with (NOLOCK) on sco.custid = @srecommend  and sco.sporttype=cs.sporttype and sco.bettype=cs.bettype
+			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking<sco.minpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			----------------------------------------------------------------------------
+
+
+			--update s1,m1,a1 in case s1+m1+a1>s4
+			--s1=max(0,s4-m1-a1)
+			--@mapos1=iif(s1_new+m1+a1>s4,s4-s1_new,m1+a1)
+			--@maxmapos=min(m3,l3)
+			--@mapos2=min(@mapos1,@maxmapos)
+			--@mapos=max(@mapos2,n3)
+			--m1=max(0,@mapos-a1)
+			--a1=iif(m1_new+a1>@mapos,@mapos-m1_new,a1)
+			Update cs 
+				set @spos = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking<0 then 0 else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end,
+					spositiontaking = @spos,
+					@mapos1 = case when @spos+cs.mpositiontaking+cs.apositiontaking>scs.spositiontaking then scs.spositiontaking-@spos else cs.mpositiontaking+cs.apositiontaking end,
+					@maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
+					@mapos2 = case when @mapos1>@maxmapos then @maxmapos else @mapos1 end,
+					@mapos = case when @mapos2<mco.minpositiontaking then mco.minpositiontaking else @mapos2 end,
+					@mpos = case when @mapos-cs.apositiontaking<0 then 0 else @mapos-cs.apositiontaking end,
+					mpositiontaking = @mpos,
+					@apos = case when cs.apositiontaking + @mpos>@mapos then @mapos-@mpos else cs.apositiontaking end,
+					apositiontaking = case when @apos<aco.minpositiontaking then aco.minpositiontaking else @apos end
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.mrecommend=@mrecommend and mb.roleid=1
+				inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend  and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = @mrecommend  and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustOverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=cs.sporttype and mco.bettype=cs.bettype
+				inner join CustOverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=cs.sporttype and aco.bettype=cs.bettype
+			where cs.spositiontaking+cs.apositiontaking+cs.mpositiontaking>scs.spositiontaking
+				and cs.sporttype in (151,152,153)
+
+		END
 	END
 	ELSE IF @roleid = 2
 	BEGIN
@@ -948,6 +1091,128 @@ SET NOCOUNT ON
 				AND cs.sporttype = 162 AND cs.bettype = 1101 
 				AND cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking
 			
+		END
+		ELSE IF @mode = 'horse'
+		BEGIN
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+			update cs 
+				set apositiontaking = aco.minpositiontaking 
+			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
+				inner join CustOverride3rd aco with(nolock) on aco.custid = @recommend and aco.sporttype = cs.sporttype and aco.bettype = cs.bettype 
+			where cs.apositiontaking < aco.minpositiontaking 
+				and cs.sporttype in (151,152,153)
+
+
+			--Nonlive(max)
+			update cs 
+				set apositiontaking = aco.maxpositiontaking 
+			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
+				inner join CustOverride3rd aco with(nolock) on aco.custid = @recommend and aco.sporttype = cs.sporttype and aco.bettype = cs.bettype 
+			where cs.apositiontaking > aco.maxpositiontaking 
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+
+			--Check m1+a1: m1+a1>m3 => modify m1 set m1=m3-a1
+			--Nonlive
+			update cs 
+				set mpositiontaking = macs.mpositiontaking - cs.apositiontaking
+			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
+				inner join CustSetting3rd macs with(nolock) on macs.custid = mb.mrecommend and macs.sporttype = cs.sporttype and macs.bettype = cs.bettype 
+			where cs.apositiontaking + cs.mpositiontaking > macs.mpositiontaking 
+				and cs.sporttype in (151,152,153)
+
+
+			--Recal um2
+			--Recal AUTO MPT m1=min(m3-a1,um2)
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+			--Nonlive
+			Update cs
+				set mpositiontaking = 
+					case when mcs.mpositiontaking-cs.apositiontaking > (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+						then (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+					else  mcs.mpositiontaking-cs.apositiontaking end
+			from
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = mb.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustSetting3rd as acs with (NOLOCK) on acs.custid = mb.recommend and acs.sporttype=cs.sporttype and acs.bettype=cs.bettype
+			where
+				mb.recommend = @recommend
+				and mb.roleid = 1
+				and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+			--Check min max n3<=m1+a1<=l3 => modify m1
+			--Nonlive(min)
+			update cs
+				set cs.mpositiontaking = mco.minpositiontaking - cs.apositiontaking
+			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
+				inner join CustOverride3rd mco with(nolock) on mco.custid = mb.mrecommend and cs.sporttype = mco.sporttype and cs.bettype = mco.bettype 
+			where cs.mpositiontaking + cs.apositiontaking < mco.minpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			--Nonlive(max)
+			update cs
+				set cs.mpositiontaking = mco.maxpositiontaking - cs.apositiontaking
+			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
+				inner join CustOverride3rd mco with(nolock) on mco.custid = mb.mrecommend and cs.sporttype = mco.sporttype and cs.bettype = mco.bettype 
+			where cs.mpositiontaking + cs.apositiontaking > mco.maxpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+			--Recal u3,u1
+			-- s1=min(s4-m1-a1,u)
+			--Nonlive
+			Update cs
+				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
+										(case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+			from
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid
+				inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = mb.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+				inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = mb.srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
+			where
+				mb.recommend = @recommend
+				and mb.roleid = 1
+				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+
+				
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
+			--check super min/max when a1+m1+s1<n4
+			-- s1=n4-m1-a1
+			--Nonlive(min)
+			Update cs
+				set spositiontaking = sco.minpositiontaking-cs.mpositiontaking-cs.apositiontaking
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1
+				inner join CustOverride3rd as sco with (NOLOCK) on sco.custid = mb.srecommend  and sco.sporttype=cs.sporttype and sco.bettype=cs.bettype
+			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking<sco.minpositiontaking
+				and cs.sporttype in (151,152,153)
+
+
+			--Nonlive(max)
+			Update cs
+				set spositiontaking = sco.maxpositiontaking-cs.mpositiontaking-cs.apositiontaking
+			from 
+				CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1
+				inner join CustOverride3rd as sco with (NOLOCK) on sco.custid = mb.srecommend  and sco.sporttype=cs.sporttype and sco.bettype=cs.bettype
+			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking>sco.maxpositiontaking
+				and cs.sporttype in (151,152,153)
+
+			-------------------------------------------------------------------------------------------------------------------------------------------------  
 		END
 	END
 END

@@ -106,6 +106,8 @@ Revisions:
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto positiontaking negative
 	- 20131010@Johnson: fix wrong call table custoverride3rd instead of custoverride
+	- 20131105@Johnson: Apply execrep when update pt on members
+			and check total downlines before UPDATEs 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -125,6 +127,19 @@ set @startRun = getdate()
 declare @ErrAcc varchar(4000), @ErrType varchar(4000)
 declare @UserName nvarchar(20), @srecommend int,
 		@maxpos smallmoney,	@maxdownlinepos smallmoney
+
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=3,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+
+		
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Select @UserName  = username, @srecommend = srecommend 
 from custinfo with (NOLOCK) 
@@ -133,7 +148,6 @@ where CustID = @CustID
 Select @maxpos = 0.5, @maxdownlinepos = 0 --Max pos for HR = 0.5
 -- th: @maxpos and @maxdownlinepos are no longer used
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 --v201
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1193,6 +1207,109 @@ BEGIN
 	return
 END
 
+---20131105@Johnson: Apply execrep when update pt on members
+EXEC dbo.Acc_CustSetting3rd_05 
+	@srecommend = @srecommend,
+	@mrecommend = @custid,
+	@roleid = 3,
+	@mode = 'horse',
+	
+	@v151spositiontaking_31 = @v151spositiontaking_31,
+	@v151spositiontaking_32 = @v151spositiontaking_32,
+	@v151spositiontaking_41 = @v151spositiontaking_41,
+	@v151spositiontaking_42 = @v151spositiontaking_42,
+	@v151spositiontaking_51 = @v151spositiontaking_51,
+	@v151spositiontaking_52 = @v151spositiontaking_52,
+	@v152spositiontaking_41 = @v152spositiontaking_41,
+	@v152spositiontaking_42 = @v152spositiontaking_42,
+	@v152spositiontaking_51 = @v152spositiontaking_51,
+	@v152spositiontaking_52 = @v152spositiontaking_52,
+	@v153spositiontaking_51 = @v153spositiontaking_51,
+	@v153spositiontaking_52 = @v153spositiontaking_52,
+	
+	@auto_v151spositiontaking_31 = @auto_v151spositiontaking_31,
+	@auto_v151spositiontaking_32 = @auto_v151spositiontaking_32,
+	@auto_v151spositiontaking_41 = @auto_v151spositiontaking_41,
+	@auto_v151spositiontaking_42 = @auto_v151spositiontaking_42,
+	@auto_v151spositiontaking_51 = @auto_v151spositiontaking_51,
+	@auto_v151spositiontaking_52 = @auto_v151spositiontaking_52,
+	@auto_v152spositiontaking_41 = @auto_v152spositiontaking_41,
+	@auto_v152spositiontaking_42 = @auto_v152spositiontaking_42,
+	@auto_v152spositiontaking_51 = @auto_v152spositiontaking_51,
+	@auto_v152spositiontaking_52 = @auto_v152spositiontaking_52,
+	@auto_v153spositiontaking_51 = @auto_v153spositiontaking_51,
+	@auto_v153spositiontaking_52 = @auto_v153spositiontaking_52,
+	
+	@old_v151spositiontaking_31 = @old_v151spositiontaking_31,
+	@old_v151spositiontaking_32 = @old_v151spositiontaking_32,
+	@old_v151spositiontaking_41 = @old_v151spositiontaking_41,
+	@old_v151spositiontaking_42 = @old_v151spositiontaking_42,
+	@old_v151spositiontaking_51 = @old_v151spositiontaking_51,
+	@old_v151spositiontaking_52 = @old_v151spositiontaking_52,
+	@old_v152spositiontaking_41 = @old_v152spositiontaking_41,
+	@old_v152spositiontaking_42 = @old_v152spositiontaking_42,
+	@old_v152spositiontaking_51 = @old_v152spositiontaking_51,
+	@old_v152spositiontaking_52 = @old_v152spositiontaking_52,
+	@old_v153spositiontaking_51 = @old_v153spositiontaking_51,
+	@old_v153spositiontaking_52 = @old_v153spositiontaking_52,
+	
+	@old_auto_v151spositiontaking_31 = @old_auto_v151spositiontaking_31,
+	@old_auto_v151spositiontaking_32 = @old_auto_v151spositiontaking_32,
+	@old_auto_v151spositiontaking_41 = @old_auto_v151spositiontaking_41,
+	@old_auto_v151spositiontaking_42 = @old_auto_v151spositiontaking_42,
+	@old_auto_v151spositiontaking_51 = @old_auto_v151spositiontaking_51,
+	@old_auto_v151spositiontaking_52 = @old_auto_v151spositiontaking_52,
+	@old_auto_v152spositiontaking_41 = @old_auto_v152spositiontaking_41,
+	@old_auto_v152spositiontaking_42 = @old_auto_v152spositiontaking_42,
+	@old_auto_v152spositiontaking_51 = @old_auto_v152spositiontaking_51,
+	@old_auto_v152spositiontaking_52 = @old_auto_v152spositiontaking_52,
+	@old_auto_v153spositiontaking_51 = @old_auto_v153spositiontaking_51,
+	@old_auto_v153spositiontaking_52 = @old_auto_v153spositiontaking_52,
+	
+	@isauto_v151spositiontaking_31 = @isauto_v151spositiontaking_31,
+	@isauto_v151spositiontaking_32 = @isauto_v151spositiontaking_32,
+	@isauto_v151spositiontaking_41 = @isauto_v151spositiontaking_41,
+	@isauto_v151spositiontaking_42 = @isauto_v151spositiontaking_42,
+	@isauto_v151spositiontaking_51 = @isauto_v151spositiontaking_51,
+	@isauto_v151spositiontaking_52 = @isauto_v151spositiontaking_52,
+	@isauto_v152spositiontaking_41 = @isauto_v152spositiontaking_41,
+	@isauto_v152spositiontaking_42 = @isauto_v152spositiontaking_42,
+	@isauto_v152spositiontaking_51 = @isauto_v152spositiontaking_51,
+	@isauto_v152spositiontaking_52 = @isauto_v152spositiontaking_52,
+	@isauto_v153spositiontaking_51 = @isauto_v153spositiontaking_51,
+	@isauto_v153spositiontaking_52 = @isauto_v153spositiontaking_52,
+	
+	@old_isauto_v151spositiontaking_31 = @old_isauto_v151spositiontaking_31,
+	@old_isauto_v151spositiontaking_32 = @old_isauto_v151spositiontaking_32,
+	@old_isauto_v151spositiontaking_41 = @old_isauto_v151spositiontaking_41,
+	@old_isauto_v151spositiontaking_42 = @old_isauto_v151spositiontaking_42,
+	@old_isauto_v151spositiontaking_51 = @old_isauto_v151spositiontaking_51,
+	@old_isauto_v151spositiontaking_52 = @old_isauto_v151spositiontaking_52,
+	@old_isauto_v152spositiontaking_41 = @old_isauto_v152spositiontaking_41,
+	@old_isauto_v152spositiontaking_42 = @old_isauto_v152spositiontaking_42,
+	@old_isauto_v152spositiontaking_51 = @old_isauto_v152spositiontaking_51,
+	@old_isauto_v152spositiontaking_52 = @old_isauto_v152spositiontaking_52,
+	@old_isauto_v153spositiontaking_51 = @old_isauto_v153spositiontaking_51,
+	@old_isauto_v153spositiontaking_52 = @old_isauto_v153spositiontaking_52,
+	
+	@IsCopyPreset151_31 = @IsCopyPreset151_31,
+	@IsCopyPreset151_41 = @IsCopyPreset151_41,
+	@IsCopyPreset151_51 = @IsCopyPreset151_51,
+	@IsCopyPreset152_41 = @IsCopyPreset152_41,
+	@IsCopyPreset152_51 = @IsCopyPreset152_51,
+	@IsCopyPreset153_51 = @IsCopyPreset153_51,
+	
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51,
+	@updateallmembers = @updateallmembers,
+	@updatemultiple = @updatemultiple,
+	@newspositiontaking = @newspositiontaking
+	
+/*
 if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
 BEGIN --@UpdatePositiontakingv151 
 	--31
@@ -1861,8 +1978,13 @@ BEGIN --@UpdatePositiontakingv153
 	END
 	
 END--@UpdatePositiontakingv153
+*/
 
+EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @srecommend, @mrecommend = @custid, @roleid = 3, @mode = 'horse'
+/*
 EXEC dbo.Acc_CustomerUpdMasterHR_MaxPositiontaking @mrecommend = @custid
+
+*/
 if (@@error <> 0)
 begin
 	
