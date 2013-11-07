@@ -1,11 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_Custsetting3rd_08]    Script Date: 11/07/2013 16:30:31 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-  ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_08]
+﻿ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_08]
 	@custid INT = 0,
 	@mode VARCHAR(50) ='',
 	@roleid INT,

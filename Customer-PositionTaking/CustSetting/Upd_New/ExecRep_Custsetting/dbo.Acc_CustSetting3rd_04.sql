@@ -1,11 +1,5 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustSetting3rd_04]    Script Date: 11/07/2013 16:23:03 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] @srecommend INT = 0,
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
+	@srecommend INT = 0,
 	@mrecommend INT =0,
 	@recommend INT = 0,
 	@mode varchar(50)='',
@@ -1335,9 +1329,6 @@ BEGIN
 	END
 	
 END
-
-
-
 
 
 GO
