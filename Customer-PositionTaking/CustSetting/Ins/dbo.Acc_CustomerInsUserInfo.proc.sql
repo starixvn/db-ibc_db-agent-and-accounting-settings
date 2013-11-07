@@ -31,6 +31,7 @@
 	@postal NVARCHAR(50),
 	@TransferOption VARCHAR(8) = NULL, --pass value (not NULL) in case direct master add new agent
 	@suspended BIT = NULL,
+
 	@closed BIT = NULL,
 	@Disable151_31 BIT = 0, --@DisableHorseRacing -> @Disable151_31
 	@Disable151_41 BIT=0, -- @DisableOpenTote -> @Disable151_41
@@ -45,6 +46,9 @@
 	@DisableAutoMPT BIT = 1,
 	@IsInternal BIT = 0,
 	
+	@autosuspend BIT = 0,
+	@autosuspend2 BIT = 0,
+
 	@MaxPerMatch MONEY,
 	@MaxPerMatchv2 MONEY,
 	@MaxPerMatchv3 MONEY,
@@ -139,6 +143,8 @@ Revisions:
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	- 20131107@Kathy: Add @autosuspend, @autosuspend2 [Redmine:#5520]
+
 Param's Explanation:
 • @ErrCode:
     = 0: Insert successfully.
@@ -190,7 +196,6 @@ BEGIN
 	INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption) 
 	VALUES(@CustID,0,0,0,0,0,0, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END)
 	
-	
 END
 ELSE IF @roleid = 3
 BEGIN
@@ -217,8 +222,8 @@ BEGIN
 
 	INSERT INTO CustAgent(custId, MaxCredit, IsInternal, TransferOption, Site)
 	VALUES(@CustID, @MaxCredit, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END, @site)
-END
 
+END
 IF @@ERROR <> 0
 BEGIN
 	SELECT @ErrMsg = CASE @Language 
@@ -276,16 +281,16 @@ END
 
 INSERT INTO [dbo].[custinfo](
 	[custId], [currency], [maxpermatch], [maxpermatch2], [maxpermatch3], [maxpermatch5], [maxpermatch8], [maxpermatch10], [maxpermatch11], [maxpermatch201],[maxpermatch151],[maxpermatch151_OT], MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, [maxpermatch99]
-	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
+	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend],[autosuspend2], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
 	,DisableHorseRacing,DisableOpenTote,Disable151_AU,Disable152_UK,Disable152_AU,Disable153_AU,DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo
 	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161, MaxPerMatch180, MaxPerMatch181,MaxPerMatch186, danger,danger2,danger3,Abnormal,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports, HideVirtualSports, DoubleCommLosing
-	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus, MaxPerMatch154, DisableHRFixedOdds )
+	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus )
 VALUES(
 	@custid, @currency, @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31, @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
-	,@roleid, @srecommend, @mrecommend, @recommend, 0, 0, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
+	,@roleid, @srecommend, @mrecommend, @recommend, 0,@autosuspend, @autosuspend2, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
 	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181,@MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds)
+	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus)
 
 IF @@ERROR <> 0
 BEGIN 
@@ -318,6 +323,8 @@ BEGIN
 
 	RETURN
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet] AS [dbo]
