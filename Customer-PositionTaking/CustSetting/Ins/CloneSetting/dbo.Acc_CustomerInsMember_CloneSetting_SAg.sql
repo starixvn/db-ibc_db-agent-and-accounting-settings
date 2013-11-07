@@ -40,6 +40,7 @@ AS
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
 	- 20131017@Kathy: Add HR Fixed Odds [Redmine:#6505]
+	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -248,11 +249,16 @@ BEGIN
 	END  
 
 	DECLARE @enableUpline bit, @doubleCommLosingUpline bit
-	
-	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing
+	-- get autosuspend's upline
+	Declare @autosuspend BIT,
+		@autosuspend2 BIT
+
+	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing,
+		 @autosuspend = ISNULL(autosuspend, 0),
+		 @autosuspend2 = ISNULL(autosuspend2, 0)
 	from custinfo with (nolock)
 	where custid = @srecommend
-	
+
 	-- insert CustInfo info
 	INSERT INTO dbo.custInfo
 			(custid
@@ -264,6 +270,7 @@ BEGIN
 			,recommend
 			,dangercust
 			,autosuspend
+			,autosuspend2
 			,reject
 			,credit
 			,closed
@@ -329,7 +336,8 @@ BEGIN
 			,@mrecommend
 			,0 as recommend
 			,0 AS dangercust
-			,0 AS autosuspend
+			,@autosuspend AS autosuspend
+			,@autosuspend2 as autosuspend2
 			,reject
 			,@Credit AS Credit
 			,closed
@@ -838,6 +846,8 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].Acc_CustomerInsMember_CloneSetting_SAg TO [bodbDownlineNet]
