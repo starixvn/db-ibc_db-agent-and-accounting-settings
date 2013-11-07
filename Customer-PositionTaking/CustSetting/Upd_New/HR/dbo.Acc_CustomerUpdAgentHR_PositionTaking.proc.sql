@@ -108,6 +108,8 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto posititiontaking negative
+	- 20131107@Johnson: Apply execrep when update pt on members	
+			and check total downlines before UPDATEs
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -127,6 +129,17 @@ Declare @UserName nvarchar(20), @mrecommend int, @srecommend int, @maxpos smallm
 declare @ErrAcc varchar(4000), @ErrType varchar(4000)
 Set @maxpos = 0.5 --max pt for HR
 
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	@roleid=2,
+	@isExecRep=1,
+	@isUpdatePT = 1,
+	@Sporttype = 0,
+	@Language='E',
+	@ErrMsg=@ErrMsg output,
+	@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+	
 Select @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend 
 from custinfo with (NOLOCK) 
 where CustID = @CustID
