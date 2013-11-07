@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_All]
 	@custid		INT,
 	@recommend	INT,
 	@v162apositiontaking_1101	SMALLMONEY,
@@ -78,9 +78,12 @@ BEGIN
 END
 
 
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_All] TO [vnteam] AS [dbo]

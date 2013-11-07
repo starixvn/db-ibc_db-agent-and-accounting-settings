@@ -55,7 +55,25 @@ declare @duration int
 set @startRun = getdate()
 
 declare @err1 int, @err2 int
+		,@RoleId int
 
+	Select
+		@RoleId = roleid
+	from custInfo with(NOLOCK)
+	where custid = @custid
+
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+		
 declare @Old_groupa DECIMAL(9,8),
 	@Old_groupb DECIMAL(9,8),
 	@Old_groupc DECIMAL(9,8),
@@ -97,14 +115,7 @@ BEGIN
 	SELECT @Old_discount1x2 = sdiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
 	SELECT @Old_discountHRFixedOdds = sdiscount	FROM custsetting AS cs WITH (NOLOCK) WHERE custid = @custid AND sporttype = 154 AND bettype = 20
 	SELECT @Old_discountnumber = sdiscount FROM custsetting3rd AS cs3 WITH (NOLOCK) WHERE custid = @custid AND sporttype = 161 AND bettype = 81
-	
-	
-	Declare @RoleId int
-
-	Select
-		@RoleId = roleid
-	from custInfo with(NOLOCK)
-	where custid = @custid
+		
 
 	-- Apply exec rep: 
 	exec Acc_CustSetting_06
@@ -213,6 +224,8 @@ BEGIN CATCH
 		@duration = @duration	
 END CATCH
 	
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet] AS [dbo]

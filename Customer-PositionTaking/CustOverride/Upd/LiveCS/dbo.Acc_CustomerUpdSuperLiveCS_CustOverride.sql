@@ -1,6 +1,4 @@
-﻿
-
- ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
 	@custid		INT,
 	@UplineID	INT = 0,
 	@min_v162positiontaking_1101	SMALLMONEY,
@@ -54,6 +52,19 @@ SET NOCOUNT ON
 		return
 	END
 	--end
+	
+	--Check Allowed downlines	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+				@roleid=@roleid,
+				@isExecRep=1,
+				@isUpdatePT = 1,
+				@Sporttype = 1,
+				@Language='E',
+				@ErrMsg=@ErrMsg output,
+				@ErrCode=@ErrCode output
+	IF	@ErrCode <> 0 
+		RETURN 
+	
 	SELECT @old_min_v162positiontaking_1101 = minpositiontaking
 	FROM CustOverrideGame WITH(NOLOCK)
 	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
@@ -75,13 +86,13 @@ SET NOCOUNT ON
 	IF @roleid = 3
 	BEGIN
 		--EXEC Acc_CustomerUpdMasterLiveCS_MinPositiontaking @custid = @custid, @srecommend = @UplineID
-		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mod = 'LiveCasino'
+		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'LiveCasino'
 	END
 
 	IF @roleid = 2
 	BEGIN
 		--EXEC Acc_CustomerUpdAgentLiveCS_MinPositiontaking @custid = @custid, @mrecommend = @UplineID
-		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mod = 'LiveCasino'
+		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'LiveCasino'
 	END
 
 	DECLARE @LogSPData VARCHAR(MAX),
@@ -136,6 +147,8 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]

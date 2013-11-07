@@ -2131,11 +2131,12 @@ END CATCH
 Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbAdminNet]
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [vnteam]
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbDownlineNet]
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [vnteam] AS [dbo]

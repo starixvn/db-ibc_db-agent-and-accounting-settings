@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_CommissionHR]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_CommissionHR]
 	@custid INT,-- superid
 	@v151discount_31 DECIMAL(9,8),--commission for tote.
 	@v151discount_41 DECIMAL(9,8),--commission for FO.	
@@ -54,6 +53,19 @@ declare @endRun datetime
 declare @duration int
 set @startRun = getdate()
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=4,--@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+	
+	
 IF @v151discount_31 <0 OR @v151discount_31 > 0.01
 BEGIN	
 	SELECT @ErrMsg = 	CASE @Language 
@@ -216,13 +228,7 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH	
 	
-	
-
-	
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [vnteam]
-
-
-
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [vnteam] AS [dbo]

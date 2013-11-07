@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Commission]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Commission]
 	@custid INT,-- MemberId
 	@playerdiscount DECIMAL(9,8),
 	@playerdiscountcs DECIMAL(9,8),	
@@ -231,6 +230,7 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
 END CATCH
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbAdminNet] AS [dbo]

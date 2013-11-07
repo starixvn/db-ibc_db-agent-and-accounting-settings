@@ -70,7 +70,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdMasterLiveCS_Commission 
+				EXEC Acc_CustomerUpdMasterLiveCS_Commission 
 		@custid				= @custid, 
 		@v162discount_1101	= @v162discount_1101, 
 		@SubAccID			= @SubAccID, 
@@ -137,7 +137,7 @@ END
 
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustOverrideUpdLiveCS 
+				EXEC Acc_CustOverrideUpdLiveCS 
 		@custid		= @custid, 
 		@UplineID	=  @srecommend ,
 		@min_v162positiontaking_1101 = @v162mpositiontaking_1101_min, 
@@ -160,7 +160,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking 
+				EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking 
 		@custid		= @custid, 
 		
 		@v162spositiontaking_1101		= @v162spositiontaking_1101, 
@@ -190,11 +190,11 @@ BEGIN
 
 END
 
-
-
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [vnteam] AS [dbo]

@@ -85,10 +85,22 @@ BEGIN
 END
 
 ---------------------------------------
-DECLARE @username VARCHAR(40), @mrecommend INT
-SELECT @UserName  = username, @mrecommend = mrecommend
+DECLARE @username VARCHAR(40), @mrecommend INT, @roleid INT
+SELECT @UserName  = username, @mrecommend = mrecommend, @roleid = roleid
 FROM customer WITH (NOLOCK) WHERE CustID = @CustID
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+	
 IF @updatecomm_old = 1
 BEGIN
 	
@@ -139,11 +151,7 @@ BEGIN
 	FROM custsetting3rd AS cs3 WITH (NOLOCK) 
 	WHERE custid = @mrecommend AND sporttype = 161 AND bettype = 81
 	---------------------------------------
-	Declare @RoleId int
-	Select
-		@RoleId = roleid
-	from custInfo with(NOLOCK)
-	where custid = @custid
+	
 
 	-- Apply exec rep
 	exec Acc_CustSetting_06
@@ -256,6 +264,8 @@ BEGIN CATCH
 		@duration = @duration
 		
 END CATCH
+
+
 
 
 GO

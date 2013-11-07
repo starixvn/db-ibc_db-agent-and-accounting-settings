@@ -97,7 +97,6 @@ SET NOCOUNT ON
 		*/
 
 		--Recal AUTO MPT m1=min(m3-a1,u2)
-		-------------------------------------------------------------------------------------
 		Update custsetting with (ROWLOCK, UPDLOCK) 
 			set mpositiontaking = 
 				case when mcs.mpositiontaking-custsetting.apositiontaking > case when custsetting.isautompositiontaking = 1 then custsetting.autompositiontaking else acs.autompositiontaking end
@@ -129,10 +128,6 @@ SET NOCOUNT ON
 			and c.roleid = 1
 			and (acs.isautolivempositiontaking = 1 or custsetting.isautolivempositiontaking = 1)
 
-		-------------------------------------------------------------------------------------
-
-
-		----------------------------------------------------------------------------
 		--check master min/max
 		--m1=n3-a1
 		Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -150,10 +145,6 @@ SET NOCOUNT ON
 			inner join custoverride as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting.sporttype and mco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking<mco.minlivepositiontaking
 
-		----------------------------------------------------------------------------
-
-
-		----------------------------------------------------------------------------
 		-- Update m1,a1 when m1+a1>l3
 		-- m1=min(m3,l3)-a1
 		Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -183,10 +174,6 @@ SET NOCOUNT ON
 			inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking>mco.maxlivepositiontaking
 
-		----------------------------------------------------------------------------
-
-
-		----------------------------------------------------------------------------
 		--recal autopos
 		-- s1=min(s4-m1-a1,u)
 		Update custsetting with (ROWLOCK, UPDLOCK) 
@@ -216,11 +203,6 @@ SET NOCOUNT ON
 			and c.roleid = 1
 			and (custsetting.isautolivepositiontaking=1 or mcs.isautolivepositiontaking=1)
 		
-		----------------------------------------------------------------------------
-
-
-
-		----------------------------------------------------------------------------
 		--check super min/max when a1+m1+s1<n4
 		-- s1=n4-m1-a1
 		Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -237,9 +219,6 @@ SET NOCOUNT ON
 			custsetting inner join custinfo as mb with (NOLOCK) on custsetting.custid = mb.custid and mb.mrecommend=@mrecommend and mb.roleid=1
 			inner join custoverride as sco with (NOLOCK) on sco.custid = @srecommend  and sco.sporttype=custsetting.sporttype and sco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking+custsetting.slivepositiontaking<sco.minlivepositiontaking
-
-		----------------------------------------------------------------------------
-
 
 		--update s1,m1,a1 in case s1+m1+a1>s4
 		--s1=max(0,s4-m1-a1)
@@ -289,11 +268,9 @@ SET NOCOUNT ON
 			inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.slivepositiontaking+custsetting.alivepositiontaking+custsetting.mlivepositiontaking>scs.slivepositiontaking
 
-		----------------------------------------------------------------------------
 	END
 	ELSE IF @roleid = 2
 	BEGIN				
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
 		--Check min max a1: n2<=a1<=l2 => modify a1
 		--Nonlive(min)
 		update cs 
@@ -323,8 +300,6 @@ SET NOCOUNT ON
 			inner join custoverride aco with(nolock) on aco.custid = @recommend and aco.sporttype = cs.sporttype and aco.bettype = cs.bettype 
 		where cs.sporttype=1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking > aco.maxlivepositiontaking 
 
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
-
 		--Check m1+a1: m1+a1>m3 => modify m1 set m1=m3-a1
 		--Nonlive
 		update cs 
@@ -342,7 +317,6 @@ SET NOCOUNT ON
 		
 		--Recal u2
 		--Recal AUTO MPT m1=min(m3-a1,u2)
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
 		--Nonlive
 		Update custsetting with (ROWLOCK, UPDLOCK) 
 			set mpositiontaking = 
@@ -374,10 +348,6 @@ SET NOCOUNT ON
 			and mb.roleid = 1
 			and (acs.isautolivempositiontaking = 1 or custsetting.isautolivempositiontaking = 1)
 
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
-
-
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
 		--Check min max n3<=m1+a1<=l3 => modify m1
 		--Nonlive(min)
 		update cs
@@ -406,10 +376,6 @@ SET NOCOUNT ON
 			inner join custoverride mco with(nolock) on mco.custid = mb.mrecommend and cs.sporttype = mco.sporttype and cs.bettype = mco.bettype 
 		where cs.sporttype=1 and cs.bettype in (1,3,7,8) and cs.mlivepositiontaking + cs.alivepositiontaking > mco.maxlivepositiontaking
 		
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
-
-
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
 		--Recal u3,u1
 		-- s1=min(s4-m1-a1,u)
 		--Nonlive
@@ -440,10 +406,6 @@ SET NOCOUNT ON
 			and mb.roleid = 1
 			and (custsetting.isautolivepositiontaking=1 or mcs.isautolivepositiontaking=1)
 
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
-
-			
-		-------------------------------------------------------------------------------------------------------------------------------------------------  
 		--check super min/max when a1+m1+s1<n4
 		-- s1=n4-m1-a1
 		--Nonlive(min)
@@ -478,6 +440,5 @@ SET NOCOUNT ON
 			inner join custoverride as sco with (NOLOCK) on sco.custid = mb.srecommend  and sco.sporttype=custsetting.sporttype and sco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking+custsetting.slivepositiontaking>sco.maxlivepositiontaking
 	
-		-------------------------------------------------------------------------------------------------------------------------------------------------
 	END	
 END

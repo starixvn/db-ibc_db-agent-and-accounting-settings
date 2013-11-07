@@ -1,12 +1,11 @@
 ﻿USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustSetting3rd_05]    Script Date: 11/5/2013 1:37:17 PM ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustSetting3rd_05]    Script Date: 11/07/2013 16:26:24 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05] 
-	@srecommend INT = 0,
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05] @srecommend INT = 0,
 	@mrecommend INT =0,
 	@recommend INT = 0,
 	@roleid INT,
@@ -152,7 +151,6 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05]
 	@old_isauto_v153spositiontaking_51 bit = 0,
 	@old_isauto_v153spositiontaking_52 bit = 0,
 		
-	------------------------------------------------------------------------
 	--update auto pt on agent
 	--number game
 	@isauto_v161mpositiontaking_81 bit = 0,
@@ -319,11 +317,25 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting3rd', 'CustOverride3rd')
-			AND xtype = 'U'
+	SET @IsExistTables = 0
 
-	if @IsExistTables <> 3 RETURN
+	IF @mode = 'LiveCasino'
+	BEGIN	
+		SELECT @IsExistTables = COUNT(*) 
+		FROM dbo.sysobjects
+		WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
+				AND xtype = 'U'
+	END
+	ELSE
+	BEGIN
+		SELECT @IsExistTables = COUNT(*) 
+		FROM dbo.sysobjects
+		WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
+				AND xtype = 'U'
+	END
+
+	IF @IsExistTables <> 3 
+		RETURN
 
 	Declare
 		@bettype int,
@@ -363,7 +375,6 @@ BEGIN
 			
 				WHILE @@FETCH_STATUS = 0
 					BEGIN
-						---------------------------------
 						--Update Number game
 						if @bettype in (81,83,86,88) and (@autov161positiontaking <> @old_autov161positiontaking or @isautov161positiontaking <> @old_isautov161positiontaking ) and (@updatepositiontakingv161 = 1 or @updatemultiple=0)
 							BEGIN
@@ -387,7 +398,7 @@ BEGIN
 										END
 									END					
 							END
-						--- number game live        
+						-- number game live        
 						if @bettype in (85,86,87,89,90) and (@autov161livepositiontaking <> @old_autov161livepositiontaking or @isautov161livepositiontaking <> @old_isautov161livepositiontaking ) and (@updatepositiontakingv161 = 1 or @updatemultiple=0)
 							BEGIN
 								if @isautov161livepositiontaking > 0
@@ -409,7 +420,7 @@ BEGIN
 							
 											END
 									END 
-							END		---- end live
+							END		-- end live
 
 							FETCH NEXT FROM CUR INTO
 								@bettype, @isautov161positiontaking, @isautov161livepositiontaking, @autov161positiontaking, @autov161livepositiontaking, @old_autov161positiontaking, @old_autov161livepositiontaking, @old_isautov161positiontaking, @old_isautov161livepositiontaking
@@ -990,7 +1001,6 @@ BEGIN
 			
 				WHILE @@FETCH_STATUS = 0
 					BEGIN
-						---------------------------------
 							--Update Number game
 							if @bettype in (81,83,86,88) and (@autov161positiontaking <> @old_autov161positiontaking or @isautov161positiontaking <> @old_isautov161positiontaking ) and (@updatepositiontakingv161 = 1 or @updatemultiple=0)
 								BEGIN
@@ -1042,7 +1052,6 @@ BEGIN
 												END
 										END
 								END
-							-------------
 							FETCH NEXT FROM CUR INTO
 								@bettype, @isautov161positiontaking, @isautov161livepositiontaking, @autov161positiontaking, @autov161livepositiontaking, @old_autov161positiontaking, @old_autov161livepositiontaking, @old_isautov161positiontaking, @old_isautov161livepositiontaking
 						END
@@ -1157,7 +1166,6 @@ BEGIN
 								END
 						END	
 
-					---------------------------------
 					if (@auto_v151mpositiontaking_32 <> @old_auto_v151mpositiontaking_32 or @isauto_v151mpositiontaking_32 <> @old_isauto_v151mpositiontaking_32 ) and @UpdatePositiontakingv151_31 = 1
 						BEGIN
 							if @isauto_v151mpositiontaking_32 >0 --Use AUTO MPT
@@ -1187,7 +1195,6 @@ BEGIN
 								END
 						END
 
-					---------------------------------
 					if (@auto_v151mpositiontaking_41 <> @old_auto_v151mpositiontaking_41 or @isauto_v151mpositiontaking_41 <> @old_isauto_v151mpositiontaking_41 ) and @UpdatePositiontakingv151_41 = 1
 						BEGIN
 							if @isauto_v151mpositiontaking_41 >0 --Use AUTO MPT
@@ -1217,7 +1224,6 @@ BEGIN
 								END
 						END
 
-					---------------------------------
 					if (@auto_v151mpositiontaking_42 <> @old_auto_v151mpositiontaking_42 or @isauto_v151mpositiontaking_42 <> @old_isauto_v151mpositiontaking_42 ) and @UpdatePositiontakingv151_41 = 1
 						BEGIN
 							if @isauto_v151mpositiontaking_42 >0 --Use AUTO MPT
@@ -1246,7 +1252,6 @@ BEGIN
 										END
 								END
 						END
-					------------------
 					if (@auto_v151mpositiontaking_51 <> @old_auto_v151mpositiontaking_51 or @isauto_v151mpositiontaking_51 <> @old_isauto_v151mpositiontaking_51 ) and @UpdatePositiontakingv151_51 = 1
 						BEGIN
 							if @isauto_v151mpositiontaking_51 >0 --Use AUTO MPT
@@ -1276,7 +1281,6 @@ BEGIN
 								END
 						END
 
-					--------------------
 					if (@auto_v151mpositiontaking_52 <> @old_auto_v151mpositiontaking_52 or @isauto_v151mpositiontaking_52 <> @old_isauto_v151mpositiontaking_52 ) and @UpdatePositiontakingv151_51 = 1
 						BEGIN
 							if @isauto_v151mpositiontaking_52 >0 --Use AUTO MPT
@@ -1348,7 +1352,7 @@ BEGIN
 							where b.isautopositiontaking = 0 and b.oldisautopositiontaking = 0  
 						END
 				END--@UpdatePositiontakingv151 	
-			-----------------
+			
 			if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositiontakingv152_51 = 1)
 				BEGIN --@UpdatePositiontakingv152 
 					if (@auto_v152mpositiontaking_41 <> @old_auto_v152mpositiontaking_41 or @isauto_v152mpositiontaking_41 <> @old_isauto_v152mpositiontaking_41 ) and @UpdatePositiontakingv152_41 = 1
@@ -1379,7 +1383,7 @@ BEGIN
 										END
 								END
 						END
-					----------------
+					
 					if (@auto_v152mpositiontaking_42 <> @old_auto_v152mpositiontaking_42 or @isauto_v152mpositiontaking_42 <> @old_isauto_v152mpositiontaking_42 ) and @UpdatePositiontakingv152_41 = 1
 						BEGIN
 							if @isauto_v152mpositiontaking_42 >0 --Use AUTO MPT
@@ -1408,7 +1412,7 @@ BEGIN
 										END
 								END
 						END
-					----------------------
+					
 					if (@auto_v152mpositiontaking_51 <> @old_auto_v152mpositiontaking_51 or @isauto_v152mpositiontaking_51 <> @old_isauto_v152mpositiontaking_51 ) and @UpdatePositiontakingv152_51 = 1
 						BEGIN
 							if @isauto_v152mpositiontaking_51 >0 --Use AUTO MPT
@@ -1438,7 +1442,6 @@ BEGIN
 							END
 						END
 
-					---------------
 					if (@auto_v152mpositiontaking_52 <> @old_auto_v152mpositiontaking_52 or @isauto_v152mpositiontaking_52 <> @old_isauto_v152mpositiontaking_52 ) and @UpdatePositiontakingv152_51 = 1
 						BEGIN
 							if @isauto_v152mpositiontaking_52 >0 --Use AUTO MPT
@@ -1497,7 +1500,7 @@ BEGIN
 							where b.isautopositiontaking = 0 and b.oldisautopositiontaking = 0  
 						END
 				END --@UpdatePositiontakingv152
-			-----------------
+			
 			if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 				BEGIN --@UpdatePositiontakingv153
 					if (@auto_v153mpositiontaking_51 <> @old_auto_v153mpositiontaking_51 or @isauto_v153mpositiontaking_51 <> @old_isauto_v153mpositiontaking_51 ) 
@@ -1528,7 +1531,7 @@ BEGIN
 										END
 								END
 						END
-					----------------------
+					
 					if (@auto_v153mpositiontaking_52 <> @old_auto_v153mpositiontaking_52 or @isauto_v153mpositiontaking_52 <> @old_isauto_v153mpositiontaking_52 ) and @UpdatePositiontakingv153_51 = 1
 						BEGIN
 							if @isauto_v153mpositiontaking_52 >0 --Use AUTO MPT
@@ -1575,3 +1578,7 @@ BEGIN
 		END
 	END	
 END
+
+
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_05] TO [vnteam] AS [dbo]

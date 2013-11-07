@@ -160,7 +160,7 @@
 	@auto_v99spositiontaking_3 smallmoney = 0,
 	@auto_v99spositiontaking_20 smallmoney = 0,
 
-	--- mixed sports
+	-- mixed sports
 	@auto_v99spositiontaking_9 smallmoney = 0,
 	@auto_v154spositiontaking_20 smallmoney = 0,
 
@@ -214,11 +214,10 @@
 	@old_auto_v99spositiontaking_3 smallmoney = 0,
 	@old_auto_v99spositiontaking_20 smallmoney = 0,
 
-	--- mixed sports
+	-- mixed sports
 	@old_auto_v99spositiontaking_9 smallmoney = 0,
 	@old_auto_v154spositiontaking_20 smallmoney = 0,
 	
-	------------------------------------------------------------------------
 	--update auto pt on agent
 	@isauto_mpositiontaking_1 bit = 0, 
 	@isauto_mpositiontaking_2 bit = 0, 
@@ -375,7 +374,7 @@
 	@auto_v99mpositiontaking_3 smallmoney = 0,
 	@auto_v99mpositiontaking_20 smallmoney = 0,
 	
-	--- mixed sports
+	-- mixed sports
 	@auto_v99mpositiontaking_9 smallmoney = 0,
 	@auto_v154mpositiontaking_20 smallmoney = 0,
 	
@@ -428,7 +427,7 @@
 	@old_auto_v99mpositiontaking_3 smallmoney = 0,
 	@old_auto_v99mpositiontaking_20 smallmoney = 0,
 	
-	--- mixed sports
+	-- mixed sports
 	@old_auto_v99mpositiontaking_9 smallmoney = 0,
 	@old_auto_v154mpositiontaking_20 smallmoney = 0,
 	
@@ -605,7 +604,6 @@ BEGIN
 						END
 					END
 				END
-				---------------------------------
 				--Update LIVE
 				if @bettype in (1,3,7,8) and (@autolivepositiontaking <> @old_autolivepositiontaking or @isautolivepositiontaking <> @old_isautolivepositiontaking ) and (@updatepositiontaking = 1 or @updatemultiple=0)
 				BEGIN
@@ -628,7 +626,6 @@ BEGIN
 						END
 					END
 				END
-				---------------------------------
 				--Update Basketball
 				if @bettype in (1,2,3,7,8,9,20) and (@autov2positiontaking <> @old_autov2positiontaking or @isautov2positiontaking <> @old_isautov2positiontaking ) and (@updatepositiontakingv2 = 1 or @updatemultiple=0)
 				BEGIN
@@ -653,7 +650,6 @@ BEGIN
 					END
 				END	
 				
-						---------------------------------
 				--Update Football
 				if @bettype in (1,2,3,20) and (@autov3positiontaking <> @old_autov3positiontaking or @isautov3positiontaking <> @old_isautov3positiontaking ) and (@updatepositiontakingv3 = 1 or @updatemultiple=0)
 				BEGIN
@@ -678,7 +674,6 @@ BEGIN
 					END
 				END	
 
-				---------------------------------
 				--Update Tennis
 				if @bettype in (1,2,3,20) and (@autov5positiontaking <> @old_autov5positiontaking or @isautov5positiontaking <> @old_isautov5positiontaking ) and (@updatepositiontakingv5 = 1 or @updatemultiple=0)
 				BEGIN
@@ -703,7 +698,6 @@ BEGIN
 					END
 				END	
 
-				---------------------------------
 				--Update Baseball
 				if @bettype in (1,3,20) and (@autov8positiontaking <> @old_autov8positiontaking or @isautov8positiontaking <> @old_isautov8positiontaking ) and (@updatepositiontakingv8 = 1 or @updatemultiple=0)
 				BEGIN
@@ -728,7 +722,6 @@ BEGIN
 					END
 				END	
 
-				---------------------------------
 				--Update Golf
 				if @bettype in (1,2,3,20) and (@autov10positiontaking <> @old_autov10positiontaking or @isautov10positiontaking <> @old_isautov10positiontaking ) and (@updatepositiontakingv10 = 1 or @updatemultiple=0)
 				BEGIN
@@ -753,7 +746,6 @@ BEGIN
 					END
 				END	
 
-				---------------------------------
 				--Update Motorsports
 				if @bettype in (1,20) and (@autov11positiontaking <> @old_autov11positiontaking or @isautov11positiontaking <> @old_isautov11positiontaking ) and (@updatepositiontakingv11 = 1 or @updatemultiple=0)
 				BEGIN
@@ -777,7 +769,6 @@ BEGIN
 						END
 					END
 				END	
-				---------------------------------
 				--Update Other sports
 				if @bettype in (1,2,3,20) and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking ) and (@updatepositiontakingv99 = 1 or @updatemultiple=0)
 				BEGIN
@@ -802,7 +793,6 @@ BEGIN
 					END
 				END			
 				
-				---------------------------------
 				--Update Mixed sports
 				if @bettype =9 and (@autov99mppositiontaking <> @old_autov99mppositiontaking or @isautov99mppositiontaking <> @old_isautov99mppositiontaking ) and (@updatepositiontakingv99mp = 1 or @updatemultiple=0)
 				BEGIN
@@ -825,9 +815,8 @@ BEGIN
 							
 						END
 					END
-				END---- end live
+				END-- end live
 				
-				---------------------------------
 				--Update HR Fixed Odds
 				if @bettype in (20) and (@autov154positiontaking <> @old_autov154positiontaking or @isautov154positiontaking <> @old_isautov154positiontaking ) and (@updatepositiontakingv154 = 1 or @updatemultiple=0)
 				BEGIN
@@ -935,7 +924,6 @@ BEGIN
 							END
 						END
 					END
-					---------------------------------
 					--Update LIVE
 					if @bettype in (1,3,7,8) and (@autolivepositiontaking <> @old_autolivepositiontaking or @isautolivepositiontaking <> @old_isautolivepositiontaking ) and (@updatepositiontaking = 1 or @updatemultiple=0)
 					BEGIN
@@ -961,7 +949,6 @@ BEGIN
 							END
 						END
 					END
-					---------------------------------
 					--Update Basketball
 					if @bettype in (1,2,3,7,8,9,20) and (@autov2positiontaking <> @old_autov2positiontaking or @isautov2positiontaking <> @old_isautov2positiontaking ) and (@updatepositiontakingv2 = 1 or @updatemultiple=0)
 					BEGIN
@@ -988,7 +975,6 @@ BEGIN
 						END
 					END	
 					
-							---------------------------------
 					--Update Football
 					if @bettype in (1,2,3,20) and (@autov3positiontaking <> @old_autov3positiontaking or @isautov3positiontaking <> @old_isautov3positiontaking ) and (@updatepositiontakingv3 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1015,7 +1001,6 @@ BEGIN
 						END
 					END	
 
-					---------------------------------
 					--Update Tennis
 					if @bettype in (1,2,3,20) and (@autov5positiontaking <> @old_autov5positiontaking or @isautov5positiontaking <> @old_isautov5positiontaking ) and (@updatepositiontakingv5 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1042,7 +1027,6 @@ BEGIN
 						END
 					END	
 
-					---------------------------------
 					--Update Baseball
 					if @bettype in (1,3,20) and (@autov8positiontaking <> @old_autov8positiontaking or @isautov8positiontaking <> @old_isautov8positiontaking ) and (@updatepositiontakingv8 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1069,7 +1053,6 @@ BEGIN
 						END
 					END	
 
-					---------------------------------
 					--Update Golf
 					if @bettype in (1,2,3,20) and (@autov10positiontaking <> @old_autov10positiontaking or @isautov10positiontaking <> @old_isautov10positiontaking ) and (@updatepositiontakingv10 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1096,7 +1079,6 @@ BEGIN
 						END
 					END	
 
-					---------------------------------
 					--Update Motorsports
 					if @bettype in (1,20) and (@autov11positiontaking <> @old_autov11positiontaking or @isautov11positiontaking <> @old_isautov11positiontaking ) and (@updatepositiontakingv11 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1122,7 +1104,6 @@ BEGIN
 							END
 						END
 					END	
-					---------------------------------
 					--Update Other sports
 					if @bettype in (1,2,3,20) and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking ) and (@updatepositiontakingv99 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1149,7 +1130,6 @@ BEGIN
 						END
 					END			
 					
-					---------------------------------
 					--Update Mixed sports		
 					if @bettype =9 and (@autov99mppositiontaking <> @old_autov99mppositiontaking or @isautov99mppositiontaking <> @old_isautov99mppositiontaking ) and (@updatepositiontakingv99mp = 1 or @updatemultiple=0)
 					BEGIN
@@ -1175,7 +1155,6 @@ BEGIN
 							END
 						END
 					END				
-					---------------------------------
 					--Update HR Fixed Odds
 					if @bettype in (20) and (@autov154positiontaking <> @old_autov154positiontaking or @isautov154positiontaking <> @old_isautov154positiontaking ) and (@updatepositiontakingv154 = 1 or @updatemultiple=0)
 					BEGIN
@@ -1198,8 +1177,8 @@ BEGIN
 								where c.recommend = @recommend and c.roleid = 1 and custsetting.bettype = @bettype and custsetting.sporttype=154								
 							END
 						END
-					END								
-					-------------
+					END				
+									
 					FETCH NEXT FROM CUR INTO
 						@bettype, @isautopositiontaking, @isautolivepositiontaking, @autopositiontaking, @autolivepositiontaking, @old_autopositiontaking, @old_autolivepositiontaking, @old_isautopositiontaking, @old_isautolivepositiontaking,
 						@isautov2positiontaking, @autov2positiontaking, @old_autov2positiontaking, @old_isautov2positiontaking,	

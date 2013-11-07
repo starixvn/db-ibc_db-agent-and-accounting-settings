@@ -55,7 +55,7 @@ BEGIN
 		@roleid=2,
 		@isExecRep=1,
 		@isUpdatePT = 1,
-		@Sporttype = 0,
+		@Sporttype = 1,
 		@Language='E',
 		@ErrMsg=@ErrMsg output,
 		@ErrCode=@ErrCode output
@@ -417,11 +417,13 @@ END
 
 
 
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [vnteam]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [bodbDownlineNet]
 
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_PositionTaking] TO [vnteam] AS [dbo]

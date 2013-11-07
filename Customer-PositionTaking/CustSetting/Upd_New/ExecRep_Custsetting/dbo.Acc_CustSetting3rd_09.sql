@@ -1,9 +1,8 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_09]
+﻿ ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_09]
 	@mrecommend INT = 0,
 	@custid int = 0,
 	@roleid INT,
 	@mode VARCHAR(50)='',
-	------------------------------------------------------------------
 	--super update auto pt on member
 	--number game
 	@auto_v161spositiontaking_81 smallmoney = 0,
@@ -53,7 +52,6 @@
 	@isauto_v153spositiontaking_51 bit = 0,
 	@isauto_v153spositiontaking_52 bit = 0,	
 	
-	------------------------------------------------------------------
 	--master update auto pt on member
 	--number game
 	@auto_v161mpositiontaking_mem_81 smallmoney = 0,
@@ -225,7 +223,6 @@ BEGIN
 				@master_isauto_v161slivepositiontaking_90 bit
 				
 				
-				--------------------------------------------------------
 				select @srecommend = srecommend, @mrecommend = mrecommend from custinfo with (NOLOCK) where custid = @custid
 
 				-- number game
@@ -241,9 +238,7 @@ BEGIN
 						select 	@old_auto_v161slivepositiontaking_89	=	autolivepositiontaking		,	@old_isauto_v161slivepositiontaking_89	=	isautolivepositiontaking		from custsetting3rd with (nolock) where custid = @custid and sporttype=161	and bettype=89
 						select 	@old_auto_v161slivepositiontaking_90	=	autolivepositiontaking		,	@old_isauto_v161slivepositiontaking_90	=	isautolivepositiontaking		from custsetting3rd with (nolock) where custid = @custid and sporttype=161	and bettype=90
 					END  --UpdatePositiontakingv161
-				--------------------------------------------------------
 
-				--------------------------------------------------------
 				--Get Auto PT of member from Master
 				if (@UpdateMultiple = 0 or @UpdatePositiontakingv161 = 1)
 					BEGIN --UpdatePositiontakingv161
@@ -256,7 +251,6 @@ BEGIN
 						select															 @master_auto_v161slivepositiontaking_89 = autolivepositiontaking,																 @master_isauto_v161slivepositiontaking_89 = isautolivepositiontaking from custsetting3rd with (NOLOCK) where custid = @mrecommend and bettype=89 and sporttype=161
 						select															 @master_auto_v161slivepositiontaking_90 = autolivepositiontaking,																 @master_isauto_v161slivepositiontaking_90 = isautolivepositiontaking from custsetting3rd with (NOLOCK) where custid = @mrecommend and bettype=90 and sporttype=161
 					END  --UpdatePositiontakingv161
-				--------------------------------------------------------
 
 					--Update Member account (autopositiontaking field) - Number game
 				if (@UpdateMultiple = 0 or @UpdatePositiontakingv161 = 1)
@@ -276,7 +270,6 @@ BEGIN
 						where cs3.custid = @custid
 						
 					END --@UpdatePositiontakingv161
-					---------------------------------------------------------------------------------------------------------------------------------------------
 					--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in master account)
 					select 
 						-- number game
@@ -301,7 +294,6 @@ BEGIN
 						@isauto_v161slivepositiontaking_89 = case when @isauto_v161slivepositiontaking_89>0 then @isauto_v161slivepositiontaking_89 else @master_isauto_v161slivepositiontaking_89 end,
 						@isauto_v161slivepositiontaking_90 = case when @isauto_v161slivepositiontaking_90>0 then @isauto_v161slivepositiontaking_90 else @master_isauto_v161slivepositiontaking_90 end
 
-					---------------------------------------------------------------------------------------------------------------------------------------------
 
 					--Update member account
 					--Using Cursor (spositiontaking field)
@@ -315,7 +307,6 @@ BEGIN
 				union all  	select 87 as bettype, 0 as isautov161positiontaking									, @isauto_v161slivepositiontaking_87 as isautov161livepositiontaking, 0 as autov161positiontaking							, @auto_v161slivepositiontaking_87 as autov161livepositiontaking, 0 as old_autov161positiontaking									, @old_auto_v161slivepositiontaking_87 as old_autov161livepositiontaking	, 0 as old_isautov161positiontaking										, @old_isauto_v161slivepositiontaking_87 as old_isautov161livepositiontaking
 				union all  	select 89 as bettype, 0 as isautov161positiontaking									, @isauto_v161slivepositiontaking_89 as isautov161livepositiontaking, 0 as autov161positiontaking							, @auto_v161slivepositiontaking_89 as autov161livepositiontaking, 0 as old_autov161positiontaking									, @old_auto_v161slivepositiontaking_89 as old_autov161livepositiontaking	, 0 as old_isautov161positiontaking										, @old_isauto_v161slivepositiontaking_89 as old_isautov161livepositiontaking
 				union all  	select 90 as bettype, 0 as isautov161positiontaking									, @isauto_v161slivepositiontaking_90 as isautov161livepositiontaking, 0 as autov161positiontaking							, @auto_v161slivepositiontaking_90 as autov161livepositiontaking, 0 as old_autov161positiontaking									, @old_auto_v161slivepositiontaking_90 as old_autov161livepositiontaking	, 0 as old_isautov161positiontaking										, @old_isauto_v161slivepositiontaking_90 as old_isautov161livepositiontaking
-				-------------------------------------------
 					
 					OPEN CUR
 
@@ -324,7 +315,6 @@ BEGIN
 					
 					WHILE @@FETCH_STATUS = 0
 						BEGIN
-							---------------------------------
 							-- Update number game (non-live)
 							if @bettype in (81,83,86,88) --and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking )
 								BEGIN
@@ -341,7 +331,6 @@ BEGIN
 										END--@UpdatePositiontakingv161
 								END
 
-							---------------------------------
 
 							-- Update number game (live)
 							if @bettype in (85,86,87,89,90) --and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking )
@@ -359,7 +348,6 @@ BEGIN
 										END--@UpdatePositiontakingv161
 								END
 
-							---------------------------------	
 							FETCH NEXT FROM CUR INTO			
 								@bettype, @isautov161positiontaking, @isautov161livepositiontaking, @autov161positiontaking, @autov161livepositiontaking, @old_autov161positiontaking, @old_autov161livepositiontaking, @old_isautov161positiontaking, @old_isautov161livepositiontaking
 						END
@@ -427,7 +415,6 @@ BEGIN
 					select @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend from custinfo with (NOLOCK) where custid = @custid
 					
 								
-					--------------------------------------------------------
 					--Get Auto PT of member from agent
 					--um2,im2
 					select @auto_v161mpositiontaking_81 = autompositiontaking, @isauto_v161mpositiontaking_81 = isautompositiontaking from custsetting3rd with (NOLOCK) where custid = @recommend and bettype=81 and sporttype=161
@@ -439,7 +426,6 @@ BEGIN
 					select @auto_v161mlivepositiontaking_89 = autolivempositiontaking, @isauto_v161mlivepositiontaking_89 = isautolivempositiontaking from custsetting3rd with (NOLOCK) where custid = @recommend and bettype=89 and sporttype=161
 					select @auto_v161mlivepositiontaking_90 = autolivempositiontaking, @isauto_v161mlivepositiontaking_90 = isautolivempositiontaking from custsetting3rd with (NOLOCK) where custid = @recommend and bettype=90 and sporttype=161
 
-					--------------------------------------------------------
 					--Update Member account (autompositiontaking field)
 					update cs3 with (ROWLOCK, UPDLOCK) set autompositiontaking = b.autompositiontaking, autolivempositiontaking = b.autolivempositiontaking, isautompositiontaking = b.isautompositiontaking, isautolivempositiontaking = b.isautolivempositiontaking
 					from custsetting3rd cs3 inner join 
@@ -456,7 +442,6 @@ BEGIN
 							) as b on b.bettype = cs3.bettype and b.sporttype = cs3.sporttype
 					where cs3.custid = @custid	
 						
-					---------------------------------------------------------------------------------------------------------------------------------------------
 					--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in agent account)
 					-- number game
 					select
@@ -479,7 +464,6 @@ BEGIN
 						@isauto_v161mlivepositiontaking_87 = case when @isauto_v161mlivepositiontaking_mem_87>0 then @isauto_v161mlivepositiontaking_mem_87 else @isauto_v161mlivepositiontaking_87 end,
 						@isauto_v161mlivepositiontaking_89 = case when @isauto_v161mlivepositiontaking_mem_89>0 then @isauto_v161mlivepositiontaking_mem_89 else @isauto_v161mlivepositiontaking_89 end,
 						@isauto_v161mlivepositiontaking_90 = case when @isauto_v161mlivepositiontaking_mem_90>0 then @isauto_v161mlivepositiontaking_mem_90 else @isauto_v161mlivepositiontaking_90 end
-					---------------------------------------------------------------------------------------------------------------------------------------------
 
 						--Update member account
 						--Using Cursor (mpositiontaking field)
@@ -501,7 +485,6 @@ BEGIN
 					--m1=min(u,m3-a1)
 					WHILE @@FETCH_STATUS = 0
 					BEGIN		
-						---------------------------------
 						--Update Number game  -- non-live
 						if @bettype in (81,83,86,88) 
 						BEGIN
@@ -527,7 +510,6 @@ BEGIN
 								
 							END	
 						END		
-						---------------------------------	
 						FETCH NEXT FROM CUR INTO
 							@bettype, @isautov161positiontaking, @isautov161livepositiontaking,@autov161positiontaking,@autov161livepositiontaking
 					END

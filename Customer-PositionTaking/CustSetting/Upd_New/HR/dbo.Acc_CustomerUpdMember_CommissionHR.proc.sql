@@ -1,6 +1,4 @@
-﻿
-
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_CommissionHR]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_CommissionHR]
 	@custid INT,-- MemberId
 	@v151discount_31 DECIMAL(9,8),--commission for Tote.
 	@v151discount_41 DECIMAL(9,8),--commission for FO.	
@@ -362,16 +360,14 @@ END CATCH
 
 
 	
-
-
-	
 	
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [bodbDownlineNet] 
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [vnteam] 
 
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_CommissionHR] TO [vnteam] AS [dbo]
