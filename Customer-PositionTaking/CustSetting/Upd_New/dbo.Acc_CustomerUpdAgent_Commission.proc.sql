@@ -154,6 +154,7 @@ BEGIN
 		@groupc = @groupc,
 		@groupd = @groupd,
 		@discountcs = @discountcs,
+		@discountHRFixedOdds = @discountHRFixedOdds,
 		@discount1x2 = @discount1x2
 
 	exec Acc_CustSetting3rd_06

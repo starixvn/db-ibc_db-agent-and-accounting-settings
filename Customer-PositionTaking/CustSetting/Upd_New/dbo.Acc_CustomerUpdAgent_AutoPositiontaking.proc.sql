@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking]    Script Date: 11/05/2013 18:12:08 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking]
 	@recommend int,
 	@mrecommend int,
 	@auto_mpositiontaking_1 smallmoney = 0, 
@@ -845,6 +852,8 @@ EXEC dbo.Acc_CustSetting_05
 
 	-- mixed sports
 	@isauto_v99mpositiontaking_9 = @isauto_v99mpositiontaking_9,
+	@isauto_v154mpositiontaking_20 = @isauto_v154mpositiontaking_20,
+
 	
 	@old_isauto_mpositiontaking_1 = @old_isauto_mpositiontaking_1, 
 	@old_isauto_mpositiontaking_2 = @old_isauto_mpositiontaking_2, 
@@ -897,6 +906,7 @@ EXEC dbo.Acc_CustSetting_05
 
 	-- mixed sports
 	@old_isauto_v99mpositiontaking_9 = @old_isauto_v99mpositiontaking_9,
+	@old_isauto_v154mpositiontaking_20 = @old_isauto_v154mpositiontaking_20,
 	
 	@auto_mpositiontaking_1 = @auto_mpositiontaking_1, 
 	@auto_mpositiontaking_2 = @auto_mpositiontaking_2,
@@ -949,6 +959,7 @@ EXEC dbo.Acc_CustSetting_05
 	
 	--- mixed sports
 	@auto_v99mpositiontaking_9 = @auto_v99mpositiontaking_9,
+	@auto_v154mpositiontaking_20 = @auto_v154mpositiontaking_20,
 	
 	@old_auto_mpositiontaking_1 = @old_auto_mpositiontaking_1, 
 	@old_auto_mpositiontaking_2 = @old_auto_mpositiontaking_2,
@@ -1001,6 +1012,7 @@ EXEC dbo.Acc_CustSetting_05
 	
 	--- mixed sports
 	@old_auto_v99mpositiontaking_9 = @old_auto_v99mpositiontaking_9,
+	@old_auto_v154mpositiontaking_20 = @old_auto_v154mpositiontaking_20,
 	
 	@updatemultiple = @updatemultiple,
 	@updatepositiontaking = @updatepositiontaking,
@@ -1015,6 +1027,7 @@ EXEC dbo.Acc_CustSetting_05
 
 	-- mixed sports
 	@updatepositiontakingv99mp = @updatepositiontakingv99mp,
+	@updatepositiontakingv154 = @updatepositiontakingv154,
 
 	@updateallmembers = @updateallmembers,	
 	@newmpositiontaking = @newmpositiontaking
@@ -1851,11 +1864,12 @@ union all  	select 90 as bettype	,	   0					  as isautopositiontaking	,								 
 --END
 */
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [bodbDownlineNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [bodbDownlineNetView]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO vnteam
-GO
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [bodbDownlineNetView] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgent_AutoPositiontaking] TO [vnteam] AS [dbo]

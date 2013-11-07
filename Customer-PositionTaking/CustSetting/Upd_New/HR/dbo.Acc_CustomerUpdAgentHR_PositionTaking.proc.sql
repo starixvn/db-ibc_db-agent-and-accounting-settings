@@ -941,6 +941,96 @@ BEGIN
 END
 
 ---------------------------------
+--20131105@Johnson: Apply execrep when update pt on members
+EXEC dbo.Acc_CustSetting3rd_05
+	@mrecommend = @mrecommend,
+	@recommend = @custid,
+	@roleid = 2,
+	@mode = 'horse',
+	
+	@v151mpositiontaking_31 = @v151mpositiontaking_31,
+	@v151mpositiontaking_32 = @v151mpositiontaking_32,
+	@v151mpositiontaking_41 = @v151mpositiontaking_41,
+	@v151mpositiontaking_42 = @v151mpositiontaking_42,
+	@v151mpositiontaking_51 = @v151mpositiontaking_51,
+	@v151mpositiontaking_52 = @v151mpositiontaking_52,
+	@v152mpositiontaking_41 = @v152mpositiontaking_41,
+	@v152mpositiontaking_42 = @v152mpositiontaking_42,
+	@v152mpositiontaking_51 = @v152mpositiontaking_51,
+	@v152mpositiontaking_52 = @v152mpositiontaking_52,
+	@v153mpositiontaking_51 = @v153mpositiontaking_51,
+	@v153mpositiontaking_52 = @v153mpositiontaking_52, 
+	
+	@auto_v151mpositiontaking_31 = @auto_v151mpositiontaking_31,
+	@auto_v151mpositiontaking_32 = @auto_v151mpositiontaking_32,
+	@auto_v151mpositiontaking_41 = @auto_v151mpositiontaking_41,
+	@auto_v151mpositiontaking_42 = @auto_v151mpositiontaking_42,
+	@auto_v151mpositiontaking_51 = @auto_v151mpositiontaking_51,
+	@auto_v151mpositiontaking_52 = @auto_v151mpositiontaking_52,
+	@auto_v152mpositiontaking_41 = @auto_v152mpositiontaking_41,
+	@auto_v152mpositiontaking_42 = @auto_v152mpositiontaking_42,
+	@auto_v152mpositiontaking_51 = @auto_v152mpositiontaking_51,
+	@auto_v152mpositiontaking_52 = @auto_v152mpositiontaking_52,
+	@auto_v153mpositiontaking_51 = @auto_v153mpositiontaking_51,
+	@auto_v153mpositiontaking_52 = @auto_v153mpositiontaking_52,
+	
+	@old_auto_v151mpositiontaking_31 = @old_auto_v151mpositiontaking_31,
+	@old_auto_v151mpositiontaking_32 = @old_auto_v151mpositiontaking_32,
+	@old_auto_v151mpositiontaking_41 = @old_auto_v151mpositiontaking_41,
+	@old_auto_v151mpositiontaking_42 = @old_auto_v151mpositiontaking_42,
+	@old_auto_v151mpositiontaking_51 = @old_auto_v151mpositiontaking_51,
+	@old_auto_v151mpositiontaking_52 = @old_auto_v151mpositiontaking_52,
+	@old_auto_v152mpositiontaking_41 = @old_auto_v152mpositiontaking_41,
+	@old_auto_v152mpositiontaking_42 = @old_auto_v152mpositiontaking_42,
+	@old_auto_v152mpositiontaking_51 = @old_auto_v152mpositiontaking_51,
+	@old_auto_v152mpositiontaking_52 = @old_auto_v152mpositiontaking_52,
+	@old_auto_v153mpositiontaking_51 = @old_auto_v153mpositiontaking_51,
+	@old_auto_v153mpositiontaking_52 = @old_auto_v153mpositiontaking_52,
+	
+	@isauto_v151mpositiontaking_31 = @isauto_v151mpositiontaking_31,
+	@isauto_v151mpositiontaking_32 = @isauto_v151mpositiontaking_32,
+	@isauto_v151mpositiontaking_41 = @isauto_v151mpositiontaking_41,
+	@isauto_v151mpositiontaking_42 = @isauto_v151mpositiontaking_42,
+	@isauto_v151mpositiontaking_51 = @isauto_v151mpositiontaking_51,
+	@isauto_v151mpositiontaking_52 = @isauto_v151mpositiontaking_52,
+	@isauto_v152mpositiontaking_41 = @isauto_v152mpositiontaking_41,
+	@isauto_v152mpositiontaking_42 = @isauto_v152mpositiontaking_42,
+	@isauto_v152mpositiontaking_51 = @isauto_v152mpositiontaking_51,
+	@isauto_v152mpositiontaking_52 = @isauto_v152mpositiontaking_52,
+	@isauto_v153mpositiontaking_51 = @isauto_v153mpositiontaking_51,
+	@isauto_v153mpositiontaking_52 = @isauto_v153mpositiontaking_52,
+	
+	@old_isauto_v151mpositiontaking_31 = @old_isauto_v151mpositiontaking_31,
+	@old_isauto_v151mpositiontaking_32 = @old_isauto_v151mpositiontaking_32,
+	@old_isauto_v151mpositiontaking_41 = @old_isauto_v151mpositiontaking_41,
+	@old_isauto_v151mpositiontaking_42 = @old_isauto_v151mpositiontaking_42,
+	@old_isauto_v151mpositiontaking_51 = @old_isauto_v151mpositiontaking_51,
+	@old_isauto_v151mpositiontaking_52 = @old_isauto_v151mpositiontaking_52,
+	@old_isauto_v152mpositiontaking_41 = @old_isauto_v152mpositiontaking_41,
+	@old_isauto_v152mpositiontaking_42 = @old_isauto_v152mpositiontaking_42,
+	@old_isauto_v152mpositiontaking_51 = @old_isauto_v152mpositiontaking_51,
+	@old_isauto_v152mpositiontaking_52 = @old_isauto_v152mpositiontaking_52,
+	@old_isauto_v153mpositiontaking_51 = @old_isauto_v153mpositiontaking_51,
+	@old_isauto_v153mpositiontaking_52 = @old_isauto_v153mpositiontaking_52,
+	
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51,
+	@IsCopyPreset151_31 = @IsCopyPreset151_31,
+	@IsCopyPreset151_41 = @IsCopyPreset151_41,
+	@IsCopyPreset151_51 = @IsCopyPreset151_51,
+	@IsCopyPreset152_41 = @IsCopyPreset152_41,
+	@IsCopyPreset152_51 = @IsCopyPreset152_51,
+	@IsCopyPreset153_51 = @IsCopyPreset153_51,
+	
+	@updateallmembers = @updateallmembers,
+	@updatemultiple = @updatemultiple,
+	@newmpositiontaking = @newmpositiontaking
+	
+/*
 if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
 BEGIN --@UpdatePositiontakingv151 
 	if (@auto_v151mpositiontaking_31 <> @old_auto_v151mpositiontaking_31 or @isauto_v151mpositiontaking_31 <> @old_isauto_v151mpositiontaking_31 ) and @UpdatePositiontakingv151_31 = 1
@@ -1628,8 +1718,13 @@ BEGIN --@UpdatePositiontakingv153
 	END
 
 END --@UpdatePositiontakingv153 
-	
+*/
+
+EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode= 'horse'
+
+/*	
 EXEC dbo.Acc_CustomerUpdAgentHR_MaxPositiontaking @recommend = @custid
+*/
 if (@@error <> 0)
 begin
 	
