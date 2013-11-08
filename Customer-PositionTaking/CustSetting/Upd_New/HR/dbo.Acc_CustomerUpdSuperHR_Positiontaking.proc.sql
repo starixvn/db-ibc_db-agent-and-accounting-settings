@@ -81,6 +81,7 @@ Revisions:
 	- 20130227@Johnson: write log on DBTXN if DBLOG failure
 	- 20131105@Johnson: Apply execrep when update pt on members
 				and check total downlines before UPDATEs 
+	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link server)				
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -256,8 +257,8 @@ END
 		union all 	select 51 as bettype, 153 as sporttype, @v153spositiontaking_51 as spositiontaking
 		union all 	select 52 as bettype, 153 as sporttype, @v153spositiontaking_52 as spositiontaking
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
-	inner join sports s with(nolock) on co.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+	INNER JOIN bodb02.dbo.sports s with(nolock) on co.sporttype = s.sporttype
 where co.custid = @custid and (b.spositiontaking<co.minpositiontaking) 
 
 if @ErrType <>''

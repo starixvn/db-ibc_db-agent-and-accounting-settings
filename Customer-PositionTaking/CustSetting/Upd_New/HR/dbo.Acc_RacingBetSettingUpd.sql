@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_RacingBetSettingUpd]
+﻿ALTER PROCEDURE [dbo].[Acc_RacingBetSettingUpd]
 	@userid		INT,
 	
 	@sporttype	INT,
@@ -14,10 +14,11 @@
 		Created: Johnson
 		Date: 2013-03-07
 		Task: Update bet setting of 3rd
-		DB: DBTXN/bodb02
+		DB: DBCUST/CustDB
 		
 		Revisions:
 			- 20130520@Johnson: insert racing bet setting of 3rd incase of not exists
+			- 20130808@Elodie: Splitting DBTXN into DBCUST
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON
@@ -123,5 +124,6 @@ SET NOCOUNT ON
 				@duration = @duration	
 		END CATCH		
 	END
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_RacingBetSettingUpd] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_RacingBetSettingUpd] TO [bodbadminNet] AS [dbo]

@@ -99,6 +99,8 @@ Revisions:
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto positiontaking negative
 	- 20130607@Johnson: check s1 with max_s1
+	- 20131108@Johnson: Apply execrep when update pt on members
+	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link server)	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -453,8 +455,8 @@ BEGIN --@@UpdatePositiontakingv151
 	union all		select 151 as sporttype, 51 as bettype, @auto_v151spositiontaking_51 as autopositiontaking, @isauto_v151spositiontaking_51 as isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
 	union all		select 151 as sporttype, 52 as bettype, @auto_v151spositiontaking_52 as autopositiontaking, @isauto_v151spositiontaking_52 as isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 
 where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking))
 
@@ -487,8 +489,8 @@ END
 			union all	select 51 as bettype, 151 as sporttype, @auto_v151spositiontaking_51 as autopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
 			union all 	select 52 as bettype, 151 as sporttype, @auto_v151spositiontaking_52 as autopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.autopositiontaking))
@@ -518,8 +520,8 @@ END
 			union all	select 51 as bettype, 151 as sporttype, @v151spositiontaking_51 as positiontaking WHERE @UpdatePositiontakingv151_51 = 1
 			union all 	select 52 as bettype, 151 as sporttype, @v151spositiontaking_52 as positiontaking WHERE @UpdatePositiontakingv151_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.positiontaking))
@@ -607,8 +609,8 @@ END
 			UNION ALL SELECT 151 as sporttype, 51 as bettype, @v151spos_51_max as spositiontaking_max
 			UNION ALL SELECT 151 as sporttype, 52 as bettype, @v151spos_52_max as spositiontaking_max
 		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
-		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype 
 	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
 	
 	if @ErrType <>''
@@ -654,8 +656,8 @@ BEGIN --@@UpdatePositiontakingv152
 	union all		select 152 as sporttype, 51 as bettype, @auto_v152spositiontaking_51 as autopositiontaking, @isauto_v152spositiontaking_51 as isautopositiontaking where @UpdatePositiontakingv152_51 = 1
 	union all		select 152 as sporttype, 52 as bettype, @auto_v152spositiontaking_52 as autopositiontaking, @isauto_v152spositiontaking_52 as isautopositiontaking where @UpdatePositiontakingv152_51 = 1
 	) as b on co.sporttype=b.sporttype and co.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 
 	where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking))
 
@@ -686,8 +688,8 @@ BEGIN --@@UpdatePositiontakingv152
 			union all	select 51 as bettype, 152 as sporttype, @auto_v152spositiontaking_51 as autopositiontaking where @UpdatePositiontakingv152_51 = 1
 			union all 	select 52 as bettype, 152 as sporttype, @auto_v152spositiontaking_52 as autopositiontaking where @UpdatePositiontakingv152_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.autopositiontaking))
@@ -715,8 +717,8 @@ BEGIN --@@UpdatePositiontakingv152
 			union all	select 51 as bettype, 152 as sporttype, @v152spositiontaking_51 as positiontaking where @UpdatePositiontakingv152_51 = 1
 			union all 	select 52 as bettype, 152 as sporttype, @v152spositiontaking_52 as positiontaking where @UpdatePositiontakingv152_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.positiontaking))
@@ -783,8 +785,8 @@ BEGIN --@@UpdatePositiontakingv152
 			UNION ALL SELECT 152 as sporttype, 51 as bettype, @v152spos_51_max as spositiontaking_max
 			UNION ALL SELECT 152 as sporttype, 52 as bettype, @v152spos_52_max as spositiontaking_max
 		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
-		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype 
 	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
 	
 	if @ErrType <>''
@@ -823,8 +825,8 @@ BEGIN --@@UpdatePositiontakingv153
 	(				select 153 as sporttype, 51 as bettype, @auto_v153spositiontaking_51 as autopositiontaking, @isauto_v153spositiontaking_51 as isautopositiontaking	where @UpdatePositiontakingv153_51 = 1
 	union all		select 153 as sporttype, 52 as bettype, @auto_v153spositiontaking_52 as autopositiontaking, @isauto_v153spositiontaking_52 as isautopositiontaking	where @UpdatePositiontakingv153_51 = 1	
 	) as b on co.sporttype=b.sporttype and co.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 
 	where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking))
 
@@ -851,8 +853,8 @@ BEGIN --@@UpdatePositiontakingv153
 		(				select 51 as bettype, 153 as sporttype, @auto_v153spositiontaking_51 as autopositiontaking	where @UpdatePositiontakingv153_51 = 1
 			union all 	select 52 as bettype, 153 as sporttype, @auto_v153spositiontaking_52 as autopositiontaking	where @UpdatePositiontakingv153_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.autopositiontaking))
@@ -877,8 +879,8 @@ BEGIN --@@UpdatePositiontakingv153
 		(				select 51 as bettype, 153 as sporttype, @v153spositiontaking_51 as positiontaking	where @UpdatePositiontakingv153_51 = 1
 			union all 	select 52 as bettype, 153 as sporttype, @v153spositiontaking_52 as positiontaking	where @UpdatePositiontakingv153_51 = 1
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.positiontaking))
@@ -925,8 +927,8 @@ BEGIN --@@UpdatePositiontakingv153
 			SELECT 153 as sporttype, 51 as bettype, @v153spos_51_max as spositiontaking_max
 			UNION ALL SELECT 153 as sporttype, 52 as bettype, @v153spos_52_max as spositiontaking_max
 		) t ON b.sporttype = t.sporttype AND b.bettype = t.bettype 
-		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype 
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype 
 	WHERE b.spositiontaking > t.spositiontaking_max and isautopositiontaking = 0 and isauto_smpositiontaking = 0
 	
 	if @ErrType <>''
@@ -953,6 +955,32 @@ BEGIN --@@UpdatePositiontakingv153
 END --@@UpdatePositiontakingv153	
 
 --don't update s1 for member under master was set i3=1(normal)
+EXEC dbo.Acc_CustSetting3rd_08
+	@custid = @custid,	
+	@roleid = 4,
+	@mode = 'horse',
+	
+	@v151spositiontaking_31 = @v151spositiontaking_31,
+	@v151spositiontaking_32 = @v151spositiontaking_32,
+	@v151spositiontaking_41 = @v151spositiontaking_41,
+	@v151spositiontaking_42 = @v151spositiontaking_42,
+	@v151spositiontaking_51 = @v151spositiontaking_51,
+	@v151spositiontaking_52 = @v151spositiontaking_52,
+	@v152spositiontaking_41 = @v152spositiontaking_41,
+	@v152spositiontaking_42 = @v152spositiontaking_42,
+	@v152spositiontaking_51 = @v152spositiontaking_51,
+	@v152spositiontaking_52 = @v152spositiontaking_52,
+	@v153spositiontaking_51 = @v153spositiontaking_51,
+	@v153spositiontaking_52 = @v153spositiontaking_52,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+/*
 update cs with (ROWLOCK, UPDLOCK)
 set
 	cs.spositiontaking = case when @UpdateMultiple = 1 
@@ -978,8 +1006,48 @@ set
 from CustSetting3rd cs  inner join customer c (nolock) on cs.custid = c.custid
 	inner join CustSetting3rd scs (nolock) on scs.custid = c.mrecommend and cs.sporttype = scs.sporttype and cs.bettype = scs.bettype
 where cs.custid=@custid and cs.sporttype in (151,152,153) and c.roleid = 1 and scs.isautopositiontaking = 0
+*/
 
 --Update auto PT
+EXEC dbo.Acc_CustSetting3rd_09
+	@custid = @custid,
+	@roleid = 4,
+	@mode = 'horse',
+	
+	@auto_v151spositiontaking_31 = @auto_v151spositiontaking_31,
+	@auto_v151spositiontaking_32 = @auto_v151spositiontaking_32,
+	@auto_v151spositiontaking_41 = @auto_v151spositiontaking_41,
+	@auto_v151spositiontaking_42 = @auto_v151spositiontaking_42,
+	@auto_v151spositiontaking_51 = @auto_v151spositiontaking_51,
+	@auto_v151spositiontaking_52 = @auto_v151spositiontaking_52,
+	@auto_v152spositiontaking_41 = @auto_v152spositiontaking_41,
+	@auto_v152spositiontaking_42 = @auto_v152spositiontaking_42,
+	@auto_v152spositiontaking_51 = @auto_v152spositiontaking_51,
+	@auto_v152spositiontaking_52 = @auto_v152spositiontaking_52,
+	@auto_v153spositiontaking_51 = @auto_v153spositiontaking_51,
+	@auto_v153spositiontaking_52 = @auto_v153spositiontaking_52,
+
+	@isauto_v151spositiontaking_31 = @isauto_v151spositiontaking_31,
+	@isauto_v151spositiontaking_32 = @isauto_v151spositiontaking_32,
+	@isauto_v151spositiontaking_41 = @isauto_v151spositiontaking_41,
+	@isauto_v151spositiontaking_42 = @isauto_v151spositiontaking_42,
+	@isauto_v151spositiontaking_51 = @isauto_v151spositiontaking_51,
+	@isauto_v151spositiontaking_52 = @isauto_v151spositiontaking_52,
+	@isauto_v152spositiontaking_41 = @isauto_v152spositiontaking_41,
+	@isauto_v152spositiontaking_42 = @isauto_v152spositiontaking_42,
+	@isauto_v152spositiontaking_51 = @isauto_v152spositiontaking_51,
+	@isauto_v152spositiontaking_52 = @isauto_v152spositiontaking_52,
+	@isauto_v153spositiontaking_51 = @isauto_v153spositiontaking_51,
+	@isauto_v153spositiontaking_52 = @isauto_v153spositiontaking_52,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+/*
 update CustSetting3rd with (ROWLOCK, UPDLOCK) 
 	set autopositiontaking = case when @UpdateMultiple = 1 
 								and (	(cs.sporttype=151 AND @UpdatePositiontakingv151_31 = 0 AND @UpdatePositiontakingv151_41 = 0 AND @UpdatePositiontakingv151_51 = 0 )
@@ -1009,6 +1077,7 @@ from CustSetting3rd as cs inner join
 			union all 	select 52 as bettype, 153 as sporttype, @auto_v153spositiontaking_52 as autopositiontaking, @isauto_v153spositiontaking_52 as isautopositiontaking where @UpdatePositiontakingv153_51 = 1
 		) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
 where cs.custid = @custid
+
 if @@Error <> 0
 BEGIN
 	SELECT @ErrMsg_cur =  @UserName + ': '+
@@ -1020,6 +1089,7 @@ BEGIN
 			@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 	return
 END
+*/
 
 EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
@@ -1256,6 +1326,7 @@ END CATCH
 Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 	
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_SAg] TO [bodbAdminNet] AS [dbo]
