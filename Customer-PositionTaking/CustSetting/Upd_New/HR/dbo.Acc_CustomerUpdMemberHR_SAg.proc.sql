@@ -99,6 +99,7 @@ Revisions:
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130418@Johnson: check auto positiontaking negative
 	- 20130607@Johnson: check s1 with max_s1
+	- 20131108@Johnson: Apply execrep when update pt on members
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -953,6 +954,32 @@ BEGIN --@@UpdatePositiontakingv153
 END --@@UpdatePositiontakingv153	
 
 --don't update s1 for member under master was set i3=1(normal)
+EXEC dbo.Acc_CustSetting3rd_08
+	@custid = @custid,	
+	@roleid = 4,
+	@mode = 'horse',
+	
+	@v151spositiontaking_31 = @v151spositiontaking_31,
+	@v151spositiontaking_32 = @v151spositiontaking_32,
+	@v151spositiontaking_41 = @v151spositiontaking_41,
+	@v151spositiontaking_42 = @v151spositiontaking_42,
+	@v151spositiontaking_51 = @v151spositiontaking_51,
+	@v151spositiontaking_52 = @v151spositiontaking_52,
+	@v152spositiontaking_41 = @v152spositiontaking_41,
+	@v152spositiontaking_42 = @v152spositiontaking_42,
+	@v152spositiontaking_51 = @v152spositiontaking_51,
+	@v152spositiontaking_52 = @v152spositiontaking_52,
+	@v153spositiontaking_51 = @v153spositiontaking_51,
+	@v153spositiontaking_52 = @v153spositiontaking_52,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+/*
 update cs with (ROWLOCK, UPDLOCK)
 set
 	cs.spositiontaking = case when @UpdateMultiple = 1 
@@ -978,8 +1005,48 @@ set
 from CustSetting3rd cs  inner join customer c (nolock) on cs.custid = c.custid
 	inner join CustSetting3rd scs (nolock) on scs.custid = c.mrecommend and cs.sporttype = scs.sporttype and cs.bettype = scs.bettype
 where cs.custid=@custid and cs.sporttype in (151,152,153) and c.roleid = 1 and scs.isautopositiontaking = 0
+*/
 
 --Update auto PT
+EXEC dbo.Acc_CustSetting3rd_09
+	@custid = @custid,
+	@roleid = 4,
+	@mode = 'horse',
+	
+	@auto_v151spositiontaking_31 = @auto_v151spositiontaking_31,
+	@auto_v151spositiontaking_32 = @auto_v151spositiontaking_32,
+	@auto_v151spositiontaking_41 = @auto_v151spositiontaking_41,
+	@auto_v151spositiontaking_42 = @auto_v151spositiontaking_42,
+	@auto_v151spositiontaking_51 = @auto_v151spositiontaking_51,
+	@auto_v151spositiontaking_52 = @auto_v151spositiontaking_52,
+	@auto_v152spositiontaking_41 = @auto_v152spositiontaking_41,
+	@auto_v152spositiontaking_42 = @auto_v152spositiontaking_42,
+	@auto_v152spositiontaking_51 = @auto_v152spositiontaking_51,
+	@auto_v152spositiontaking_52 = @auto_v152spositiontaking_52,
+	@auto_v153spositiontaking_51 = @auto_v153spositiontaking_51,
+	@auto_v153spositiontaking_52 = @auto_v153spositiontaking_52,
+
+	@isauto_v151spositiontaking_31 = @isauto_v151spositiontaking_31,
+	@isauto_v151spositiontaking_32 = @isauto_v151spositiontaking_32,
+	@isauto_v151spositiontaking_41 = @isauto_v151spositiontaking_41,
+	@isauto_v151spositiontaking_42 = @isauto_v151spositiontaking_42,
+	@isauto_v151spositiontaking_51 = @isauto_v151spositiontaking_51,
+	@isauto_v151spositiontaking_52 = @isauto_v151spositiontaking_52,
+	@isauto_v152spositiontaking_41 = @isauto_v152spositiontaking_41,
+	@isauto_v152spositiontaking_42 = @isauto_v152spositiontaking_42,
+	@isauto_v152spositiontaking_51 = @isauto_v152spositiontaking_51,
+	@isauto_v152spositiontaking_52 = @isauto_v152spositiontaking_52,
+	@isauto_v153spositiontaking_51 = @isauto_v153spositiontaking_51,
+	@isauto_v153spositiontaking_52 = @isauto_v153spositiontaking_52,
+	
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+/*
 update CustSetting3rd with (ROWLOCK, UPDLOCK) 
 	set autopositiontaking = case when @UpdateMultiple = 1 
 								and (	(cs.sporttype=151 AND @UpdatePositiontakingv151_31 = 0 AND @UpdatePositiontakingv151_41 = 0 AND @UpdatePositiontakingv151_51 = 0 )
@@ -1009,6 +1076,7 @@ from CustSetting3rd as cs inner join
 			union all 	select 52 as bettype, 153 as sporttype, @auto_v153spositiontaking_52 as autopositiontaking, @isauto_v153spositiontaking_52 as isautopositiontaking where @UpdatePositiontakingv153_51 = 1
 		) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
 where cs.custid = @custid
+
 if @@Error <> 0
 BEGIN
 	SELECT @ErrMsg_cur =  @UserName + ': '+
@@ -1020,6 +1088,7 @@ BEGIN
 			@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 	return
 END
+*/
 
 EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
