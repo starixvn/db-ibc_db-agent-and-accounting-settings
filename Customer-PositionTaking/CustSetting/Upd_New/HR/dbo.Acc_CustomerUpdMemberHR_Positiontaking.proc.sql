@@ -54,6 +54,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: write log on DBTXN if DBLOG failure
 	- 20130606@Johnson: Check a1 in valid range
+	- 20131107@Johnson: Apply execrep when update pt on member
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -956,6 +957,62 @@ SELECT @v153spositiontaking_52 = CASE WHEN @v153spositiontaking_52 > @max_v153sp
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------
+EXEC dbo.Acc_CustSetting3rd_08
+	@custid = @custid,
+	@roleid = 2,
+	@mode = 'horse',
+	
+	@v151spositiontaking_31 = @v151spositiontaking_31,
+	@v151spositiontaking_32 = @v151spositiontaking_32,
+	@v151spositiontaking_41 = @v151spositiontaking_41,
+	@v151spositiontaking_42 = @v151spositiontaking_42,
+	@v151spositiontaking_51 = @v151spositiontaking_51,
+	@v151spositiontaking_52 = @v151spositiontaking_52,
+	@v152spositiontaking_41 = @v152spositiontaking_41,
+	@v152spositiontaking_42 = @v152spositiontaking_42,
+	@v152spositiontaking_51 = @v152spositiontaking_51,
+	@v152spositiontaking_52 = @v152spositiontaking_52,
+	@v153spositiontaking_51 = @v153spositiontaking_51,
+	@v153spositiontaking_52 = @v153spositiontaking_52,
+	
+	@v151mpositiontaking_31 = @v151mpositiontaking_31,
+	@v151mpositiontaking_32 = @v151mpositiontaking_32,
+	@v151mpositiontaking_41 = @v151mpositiontaking_41,
+	@v151mpositiontaking_42 = @v151mpositiontaking_42,
+	@v151mpositiontaking_51 = @v151mpositiontaking_51,
+	@v151mpositiontaking_52 = @v151mpositiontaking_52,
+	@v152mpositiontaking_41 = @v152mpositiontaking_41,
+	@v152mpositiontaking_42 = @v152mpositiontaking_42,
+	@v152mpositiontaking_51 = @v152mpositiontaking_51,
+	@v152mpositiontaking_52 = @v152mpositiontaking_52,
+	@v153mpositiontaking_51 = @v153mpositiontaking_51,
+	@v153mpositiontaking_52 = @v153mpositiontaking_52,
+	
+	@v151apositiontaking_31 = @v151apositiontaking_31,
+	@v151apositiontaking_32 = @v151apositiontaking_32,
+	@v151apositiontaking_41 = @v151apositiontaking_41,
+	@v151apositiontaking_42 = @v151apositiontaking_42,
+	@v151apositiontaking_51 = @v151apositiontaking_51,
+	@v151apositiontaking_52 = @v151apositiontaking_52,
+	@v152apositiontaking_41 = @v152apositiontaking_41,
+	@v152apositiontaking_42 = @v152apositiontaking_42,
+	@v152apositiontaking_51 = @v152apositiontaking_51,
+	@v152apositiontaking_52 = @v152apositiontaking_52,
+	@v153apositiontaking_51 = @v153apositiontaking_51,
+	@v153apositiontaking_52 = @v153apositiontaking_52,
+			
+	@UpdateMultiple = @UpdateMultiple,
+	@UpdatePositiontakingv151_31 = @UpdatePositiontakingv151_31,
+	@UpdatePositiontakingv151_41 = @UpdatePositiontakingv151_41,
+	@UpdatePositiontakingv151_51 = @UpdatePositiontakingv151_51,
+	@UpdatePositiontakingv152_41 = @UpdatePositiontakingv152_41,
+	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
+	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
+	
+	
+EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+
+/*
 BEGIN TRANSACTION
 ---------------------------------------
 
@@ -1025,6 +1082,7 @@ WHERE custid=@custid and sporttype BETWEEN 151 AND 153
 EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 COMMIT TRANSACTION
+*/
 
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(5000)
