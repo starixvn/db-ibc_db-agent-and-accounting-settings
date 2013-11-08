@@ -89,12 +89,26 @@ BEGIN
 END
 
 ---------------------------------------
-DECLARE @srecommend INT, @username VARCHAR(40)
-SELECT @username = username,
-	@srecommend = srecommend
+DECLARE @srecommend INT, @username VARCHAR(40), @roleid INT
+
+SELECT	@username = username,
+		@srecommend = srecommend,
+		@roleid = roleid
 FROM customer WITH (NOLOCK)
 WHERE custid = @custid AND roleid = 3
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+	
 --Check modify group(other) or financial
 IF @updatecomm_old = 1
 BEGIN
@@ -142,12 +156,7 @@ BEGIN
 	FROM custsetting3rd as cs3 with(nolock)
 	WHERE custid = @srecommend AND bettype = 81 AND sporttype = 161
 	
-	Declare @RoleId int
-	Select
-		@RoleId = roleid
-	from custInfo with(NOLOCK)
-	where custid = @custid
-
+	
 	-- Apply exec rep
 	exec Acc_CustSetting_06
 		@CustId = @custid,
@@ -260,6 +269,8 @@ BEGIN CATCH
 		@duration = @duration	
 END CATCH
 	
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [bodbAdminNet] AS [dbo]

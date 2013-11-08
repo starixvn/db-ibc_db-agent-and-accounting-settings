@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_All]
 	@custid		INT,		
 	
 	@v162spositiontaking_1101		SMALLMONEY,
@@ -67,7 +67,7 @@ END
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN		
-	EXEC Acc_CustomerUpdSuperLiveCS_Commission @custid = @custid, @v162discount_1101 = @v162discount_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
+				EXEC Acc_CustomerUpdSuperLiveCS_Commission @custid = @custid, @v162discount_1101 = @v162discount_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
 	
 	IF @ErrCode_Cur <> 0
 	BEGIN
@@ -82,7 +82,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdSuperLiveCS_Positiontaking @custid = @custid, @v162spositiontaking_1101 = @v162spositiontaking_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+				EXEC Acc_CustomerUpdSuperLiveCS_Positiontaking @custid = @custid, @v162spositiontaking_1101 = @v162spositiontaking_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
 	IF @ErrCode_Cur <> 0
 	BEGIN
@@ -97,7 +97,7 @@ END
 
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustOverrideUpdLiveCS @custid = @custid, @min_v162positiontaking_1101 = @v162spositiontaking_1101_min, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
+				EXEC Acc_CustOverrideUpdLiveCS @custid = @custid, @min_v162positiontaking_1101 = @v162spositiontaking_1101_min, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
 	
 	IF @ErrCode_Cur <> 0
 	BEGIN
@@ -110,8 +110,8 @@ BEGIN
 END
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbDownlineNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [vnteam] AS [dbo]

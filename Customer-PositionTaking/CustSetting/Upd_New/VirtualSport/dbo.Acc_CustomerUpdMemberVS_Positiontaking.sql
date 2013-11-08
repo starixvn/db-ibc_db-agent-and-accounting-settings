@@ -337,11 +337,12 @@ SET NOCOUNT ON
 	SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
 				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
 	
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbDownlineNet]
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [vnteam] AS [dbo]

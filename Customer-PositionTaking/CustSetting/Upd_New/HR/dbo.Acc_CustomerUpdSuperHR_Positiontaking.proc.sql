@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_Positiontaking]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_Positiontaking]
 	@custid int,-- superid	
 	@v151spositiontaking_31 smallmoney = 0.5,
 	@v151spositiontaking_32 smallmoney = 0.5,
@@ -109,7 +108,7 @@ EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 	@roleid=4,
 	@isExecRep=1,
 	@isUpdatePT = 1,
-	@Sporttype = 0,
+	@Sporttype = 1,
 	@Language='E',
 	@ErrMsg=@ErrMsg output,
 	@ErrCode=@ErrCode output
@@ -820,8 +819,9 @@ BEGIN CATCH
 END CATCH
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_Positiontaking] TO [bodbAdminNet]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperHR_Positiontaking] TO [vnteam]
 
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperHR_Positiontaking] TO [vnteam] AS [dbo]

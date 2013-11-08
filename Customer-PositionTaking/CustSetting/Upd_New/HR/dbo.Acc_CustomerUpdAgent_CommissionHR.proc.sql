@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgent_CommissionHR]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgent_CommissionHR]
 	@custid INT,-- AgentId
 	@v151discount_31 DECIMAL(9,8),--Comm for tote
 	@v151discount_41 DECIMAL(9,8),--Comm for OT
@@ -60,6 +59,18 @@ declare @endRun datetime
 declare @duration int
 set @startRun = getdate()
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=2,--@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+		
 --Check Param
 if (@UpdateMultiple = 0 or @Updatediscountv151_31 = 1 or @Updatediscountv151_41 = 1 or @Updatediscountv151_51 = 1)
 BEGIN --@Updatediscountv151
@@ -333,10 +344,10 @@ BEGIN CATCH
 		@duration  = @duration
 END CATCH	
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [bodbDownlineNet] 
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [vnteam]
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [vnteam] AS [dbo]

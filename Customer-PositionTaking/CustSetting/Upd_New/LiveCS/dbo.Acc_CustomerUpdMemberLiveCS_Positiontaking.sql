@@ -82,7 +82,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 IF @db_v162apositiontaking_1101 = @v162apositiontaking_1101 AND @SyncLiveCasino = 1
 	RETURN
 
-IF @v162apositiontaking_1101 < 0 OR @v162apositiontaking_1101 > 0.9
+IF @v162apositiontaking_1101 < 0 OR @v162apositiontaking_1101 > 1
 BEGIN
 	SELECT @ErrMsg = 
 				CASE @Language 
@@ -354,9 +354,14 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [vnteam]
-GO 
-GRANT EXECUTE ON  [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON  [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [vnteam] AS [dbo]

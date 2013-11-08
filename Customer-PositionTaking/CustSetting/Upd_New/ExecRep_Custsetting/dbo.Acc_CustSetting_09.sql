@@ -555,7 +555,6 @@ BEGIN
 			@master_isauto_v99spositiontaking_9 bit,
 			@master_isauto_v154spositiontaking_20 bit
 
-		--------------------------------------------------------
 		select @srecommend = srecommend, @mrecommend = mrecommend from custinfo with (NOLOCK) where custid = @custid
 		--Get old Auto PT of Member
 		if (@UpdateMultiple = 0 or @UpdatePositiontaking = 1)
@@ -644,7 +643,6 @@ BEGIN
 					select 	@old_auto_v154spositiontaking_20	=	autopositiontaking		,	@old_isauto_v154spositiontaking_20	=	isautopositiontaking		from custsetting with (nolock) where custid = @custid and sporttype=154	and bettype=20
 				END  --UpdatePositiontakingv11
 				
-		--------------------------------------------------------
 		--Get Auto PT of member from Master
 		if (@UpdateMultiple = 0 or @UpdatePositiontaking = 1)
 				BEGIN --UpdatePositiontaking
@@ -727,7 +725,6 @@ BEGIN
 					select @master_auto_v154spositiontaking_20 = autopositiontaking, @master_isauto_v154spositiontaking_20 = isautopositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and bettype=20 and sporttype=154
 				END  --UpdatePositiontakingv154
 				
-		--------------------------------------------------------
 
 			--Update Member account (autopositiontaking field)
 			update custsetting with (ROWLOCK, UPDLOCK) set autopositiontaking = b.autopositiontaking, autolivepositiontaking = b.autolivepositiontaking, isautopositiontaking = b.isautopositiontaking, isautolivepositiontaking = b.isautolivepositiontaking
@@ -786,7 +783,6 @@ BEGIN
 					) as b on b.bettype = custsetting.bettype and b.sporttype = custsetting.sporttype
 			where custsetting.custid = @custid
 
-			---------------------------------------------------------------------------------------------------------------------------------------------
 			--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in master account)
 			select 
 				@auto_spositiontaking_1 = case when @isauto_spositiontaking_1>0 then @auto_spositiontaking_1 else @master_auto_spositiontaking_1 end,
@@ -899,7 +895,6 @@ BEGIN
 				@isauto_v99spositiontaking_9 = case when @isauto_v99spositiontaking_9>0 then @isauto_v99spositiontaking_9 else @master_isauto_v99spositiontaking_9 end,
 				@isauto_v154spositiontaking_20 = case when @isauto_v154spositiontaking_20>0 then @isauto_v154spositiontaking_20 else @master_isauto_v154spositiontaking_20 end
 
-			---------------------------------------------------------------------------------------------------------------------------------------------
 
 			--Update member account
 			--Using Cursor (spositiontaking field)
@@ -917,7 +912,6 @@ BEGIN
 		union all 	select 20 as bettype,	   0 as isautopositiontaking							,								0 as isautolivepositiontaking	,							0 as autopositiontaking	,									0 as autolivepositiontaking	,									0 as old_autopositiontaking	,									  0 as old_autolivepositiontaking	,									 0 as old_isautopositiontaking	,									  0 as old_isautolivepositiontaking  	,		@isauto_v2spositiontaking_20 as isautov2positiontaking	,	   @auto_v2spositiontaking_20 as autov2positiontaking	,	   @old_auto_v2spositiontaking_20 as old_autov2positiontaking	,	   @old_isauto_v2spositiontaking_20 as old_isautov2positiontaking	,	@isauto_v3spositiontaking_20 as isautov3positiontaking	,	   @auto_v3spositiontaking_20 as autov3positiontaking	,	   @old_auto_v3spositiontaking_20 as old_autov3positiontaking	,	   @old_isauto_v3spositiontaking_20 as old_isautov3positiontaking	,	@isauto_v5spositiontaking_20 as isautov5positiontaking	,	   @auto_v5spositiontaking_20 as autov5positiontaking	,	   @old_auto_v5spositiontaking_20 as old_autov5positiontaking	,	   @old_isauto_v5spositiontaking_20 as old_isautov5positiontaking	,	@isauto_v8spositiontaking_20 as isautov8positiontaking	,	   @auto_v8spositiontaking_20 as autov8positiontaking	,	   @old_auto_v8spositiontaking_20 as old_autov8positiontaking	,	   @old_isauto_v8spositiontaking_20 as old_isautov8positiontaking	,	@isauto_v10spositiontaking_20 as isautov10positiontaking,		@auto_v10spositiontaking_20 as autov10positiontaking,	   @old_auto_v10spositiontaking_20 as old_autov10positiontaking	,	   @old_isauto_v10spositiontaking_20 as old_isautov10positiontaking	,	@isauto_v11spositiontaking_20 as isautov11positiontaking,	   @auto_v11spositiontaking_20 as autov11positiontaking	,	   @old_auto_v11spositiontaking_20 as old_autov11positiontaking	,	   @old_isauto_v11spositiontaking_20 as old_isautov11positiontaking	,	@isauto_v99spositiontaking_20 as isautov99positiontaking,		@auto_v99spositiontaking_20 as autov99positiontaking,	   @old_auto_v99spositiontaking_20 as old_autov99positiontaking	,	   @old_isauto_v99spositiontaking_20 as old_isautov99positiontaking	, 0 as isautov99mppositiontaking							, 0 as autov99mppositiontaking							, 0 as old_isautov99mppositiontaking								, 0 as old_autov99mppositiontaking								,@isauto_v154spositiontaking_20 AS isautov154positiontaking	,@auto_v154spositiontaking_20 AS autov154positiontaking	,@old_auto_v154spositiontaking_20 AS old_autov154positiontaking	,@old_isauto_v154spositiontaking_20 AS old_isautov154positiontaking
 		union all  	select 21 as bettype,	   0 as isautopositiontaking							,								0 as isautolivepositiontaking	,							0 as autopositiontaking	,									0 as autolivepositiontaking	,									0 as old_autopositiontaking	,										0 as old_autolivepositiontaking	,									0 as old_isautopositiontaking	,									  0 as old_isautolivepositiontaking	    ,								 0 as isautov2positiontaking	,								0 as autov2positiontaking	,									 0 as old_autov2positiontaking	,									  0 as old_isautov2positiontaking	,								0 as isautov3positiontaking	,								0 as autov3positiontaking	,									0 as old_autov3positiontaking	,									  0 as old_isautov3positiontaking	,							 0 as isautov5positiontaking	,								 0 as autov5positiontaking	,							       0 as old_autov5positiontaking	,									  0 as old_isautov5positiontaking	,							  0 as isautov8positiontaking	,								 0 as autov8positiontaking	,								    0 as old_autov8positiontaking	,									 0 as old_isautov8positiontaking	,							0 as isautov10positiontaking	,								0 as autov10positiontaking	,									0 as old_autov10positiontaking	,									0 as old_isautov10positiontaking	,							0 as isautov11positiontaking	,								0 as autov11positiontaking	,									0 as old_autov11positiontaking	,									0 as old_isautov11positiontaking	,	0 as isautov99positiontaking							,		0 as autov99positiontaking							,			0 as old_autov99positiontaking							,	       0 as old_isautov99positiontaking								, 0 as isautov99mppositiontaking							, 0 as autov99mppositiontaking							, 0 as old_isautov99mppositiontaking								, 0 as old_autov99mppositiontaking								,0 AS isautov154positiontaking								,0 AS autov154positiontaking							,0 AS old_autov154positiontaking								,0 AS old_isautov154positiontaking
 		union all  	select 22 as bettype,	   0 as isautopositiontaking							,								0 as isautolivepositiontaking	,							0 as autopositiontaking	,									0 as autolivepositiontaking	,									0 as old_autopositiontaking	,										0 as old_autolivepositiontaking	,									 0 as old_isautopositiontaking	,									  0 as old_isautolivepositiontaking	    ,								 0 as isautov2positiontaking	,								0 as autov2positiontaking	,									 0 as old_autov2positiontaking	,									 0 as old_isautov2positiontaking	,								0 as isautov3positiontaking	,								0 as autov3positiontaking	,									0 as old_autov3positiontaking	,									  0 as old_isautov3positiontaking	,							 0 as isautov5positiontaking	,								 0 as autov5positiontaking	,								   0 as old_autov5positiontaking	,									  0 as old_isautov5positiontaking	,							  0 as isautov8positiontaking	,								 0 as autov8positiontaking	,									0 as old_autov8positiontaking	,									 0 as old_isautov8positiontaking	,							0 as isautov10positiontaking	,								0 as autov10positiontaking	,									0 as old_autov10positiontaking	,									0 as old_isautov10positiontaking	,							0 as isautov11positiontaking	,								0 as autov11positiontaking	,									0 as old_autov11positiontaking	,									0 as old_isautov11positiontaking	,   0 as isautov99positiontaking							,		0 as autov99positiontaking							,			0 as old_autov99positiontaking							,	       0 as old_isautov99positiontaking								, 0 as isautov99mppositiontaking							, 0 as autov99mppositiontaking							, 0 as old_isautov99mppositiontaking								, 0 as old_autov99mppositiontaking								,0 AS isautov154positiontaking								,0 AS autov154positiontaking							,0 AS old_autov154positiontaking								,0 AS old_isautov154positiontaking
-		-------------------------------------------
 			
 			OPEN CUR
 
@@ -947,7 +941,6 @@ BEGIN
 						
 					END
 		--		END
-				---------------------------------
 				--Update LIVE
 					if @bettype in (1,3,7,8) --and (@autolivepositiontaking <> @old_autolivepositiontaking or @isautolivepositiontaking <> @old_isautolivepositiontaking)
 					BEGIN
@@ -961,7 +954,7 @@ BEGIN
 						END
 					END		
 				End --@UpdatePositiontaking
-				---------------------------------
+				
 				--Update Basketball
 				if @bettype in (1,2,3,7,8,9,20) --and (@autov2positiontaking <> @old_autov2positiontaking or @isautov2positiontaking <> @old_isautov2positiontaking )
 				BEGIN
@@ -978,7 +971,6 @@ BEGIN
 					End --@UpdatePositiontakingv2
 				END
 				
-				---------------------------------
 				--Update Football
 				if @bettype in (1,2,3,20) --and (@autov3positiontaking <> @old_autov3positiontaking or @isautov3positiontaking <> @old_isautov3positiontaking )
 				BEGIN
@@ -995,7 +987,6 @@ BEGIN
 					End --@UpdatePositiontakingv3
 				END
 
-				---------------------------------
 				--Update Tennis
 				if @bettype in (1,2,3,20) --and (@autov5positiontaking <> @old_autov5positiontaking or @isautov5positiontaking <> @old_isautov5positiontaking )
 				BEGIN
@@ -1012,7 +1003,6 @@ BEGIN
 					End--@UpdatePositiontakingv5
 				END
 
-				---------------------------------
 				--Update Baseball
 				if @bettype in (1,3,20) --and (@autov8positiontaking <> @old_autov8positiontaking or @isautov8positiontaking <> @old_isautov8positiontaking )
 				BEGIN
@@ -1029,7 +1019,6 @@ BEGIN
 					End--@UpdatePositiontakingv8
 				END
 
-				---------------------------------
 				--Update Golf
 				if @bettype in (1,2,3,20) --and (@autov10positiontaking <> @old_autov10positiontaking or @isautov10positiontaking <> @old_isautov10positiontaking )
 				BEGIN
@@ -1046,7 +1035,6 @@ BEGIN
 					End--@UpdatePositiontakingv10
 				END
 
-				---------------------------------
 				--Update Motorsports
 				if @bettype in (1,20) --and (@autov11positiontaking <> @old_autov11positiontaking or @isautov11positiontaking <> @old_isautov11positiontaking )
 				BEGIN
@@ -1063,7 +1051,6 @@ BEGIN
 					End--@UpdatePositiontakingv11
 				END
 
-				---------------------------------
 				--Update Other sports
 				if @bettype in (1,2,3,20) --and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking )
 				BEGIN
@@ -1080,7 +1067,6 @@ BEGIN
 					End--@UpdatePositiontakingv99
 				END
 
-				---------------------------------
 				-- Update mixed sports
 				if @bettype = 9 --and (@autov99positiontaking <> @old_autov99positiontaking or @isautov99positiontaking <> @old_isautov99positiontaking )
 				BEGIN
@@ -1113,7 +1099,6 @@ BEGIN
 						END
 					END
 				END
-				---------------------------------	
 				FETCH NEXT FROM CUR INTO			
 					@bettype, @isautopositiontaking, @isautolivepositiontaking, @autopositiontaking, @autolivepositiontaking, @old_autopositiontaking, @old_autolivepositiontaking, @old_isautopositiontaking, @old_isautolivepositiontaking,
 					@isautov2positiontaking, @autov2positiontaking, @old_autov2positiontaking, @old_isautov2positiontaking,	
@@ -1247,7 +1232,6 @@ BEGIN
 
 		select @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend from custinfo with (NOLOCK) where custid = @custid
 
-		--------------------------------------------------------
 		--Get Auto PT of member from agent
 		--um2,im2
 		select @auto_mpositiontaking_1 = autompositiontaking, @auto_mlivepositiontaking_1 = autolivempositiontaking, @isauto_mpositiontaking_1 = isautompositiontaking, @isauto_mlivepositiontaking_1 = isautolivempositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=1 and sporttype=1
@@ -1300,7 +1284,6 @@ BEGIN
 		select @auto_v99mpositiontaking_9 = autompositiontaking, @isauto_v99mpositiontaking_9 = isautompositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=9 and sporttype=99
 		select @auto_v154mpositiontaking_20 = autompositiontaking, @isauto_v154mpositiontaking_20 = isautompositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=20 and sporttype=154
 
-		--------------------------------------------------------
 
 		--Update Member account (autompositiontaking field)
 		update custsetting with (ROWLOCK, UPDLOCK) set autompositiontaking = b.autompositiontaking, autolivempositiontaking = b.autolivempositiontaking, isautompositiontaking = b.isautompositiontaking, isautolivempositiontaking = b.isautolivempositiontaking
@@ -1359,7 +1342,6 @@ BEGIN
 				) as b on b.bettype = custsetting.bettype and b.sporttype = custsetting.sporttype
 		where custsetting.custid = @custid
 			
-		---------------------------------------------------------------------------------------------------------------------------------------------
 		--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in agent account)
 		select 
 			@auto_mpositiontaking_1 = case when @isauto_mpositiontaking_mem_1>0 then @auto_mpositiontaking_mem_1 else @auto_mpositiontaking_1 end,
@@ -1472,7 +1454,6 @@ BEGIN
 			@isauto_v99mpositiontaking_9 = case when @isauto_v99mpositiontaking_mem_9>0 then @isauto_v99mpositiontaking_mem_9 else @isauto_v99mpositiontaking_9 end,
 			@isauto_v154mpositiontaking_20 = case when @isauto_v154mpositiontaking_mem_20>0 then @isauto_v154mpositiontaking_mem_20 else @isauto_v154mpositiontaking_20 end
 
-			---------------------------------------------------------------------------------------------------------------------------------------------
 
 			--Update member account
 			--Using Cursor (mpositiontaking field)
@@ -1513,7 +1494,6 @@ BEGIN
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=1
 					
 				END
-			---------------------------------
 			--Update LIVE
 			if @bettype in (1,3,7,8) 
 			BEGIN
@@ -1526,7 +1506,6 @@ BEGIN
 					
 				END
 			END		
-			---------------------------------
 			--Update Basketball
 			if @bettype in (1,2,3,7,8,9,20) 
 			BEGIN
@@ -1540,7 +1519,6 @@ BEGIN
 				END
 			END
 			
-			---------------------------------
 			--Update Football
 			if @bettype in (1,2,3,20) 
 			BEGIN
@@ -1554,7 +1532,6 @@ BEGIN
 				END
 			END
 
-			---------------------------------
 			--Update Tennis
 			if @bettype in (1,2,3,20) 
 			BEGIN
@@ -1568,7 +1545,6 @@ BEGIN
 				END
 			END
 
-			---------------------------------
 			--Update Baseball
 			if @bettype in (1,3,20) 
 			BEGIN
@@ -1582,7 +1558,6 @@ BEGIN
 				END
 			END
 
-			---------------------------------
 			--Update Golf
 			if @bettype in (1,2,3,20)
 			BEGIN
@@ -1596,7 +1571,6 @@ BEGIN
 				END
 			END
 
-			---------------------------------
 			--Update Motorsports
 			if @bettype in (1,20)
 			BEGIN
@@ -1610,7 +1584,6 @@ BEGIN
 				END
 			END
 
-			---------------------------------
 			--Update Other sports
 			if @bettype in (1,2,3,20) 
 			BEGIN
@@ -1624,7 +1597,6 @@ BEGIN
 				END
 			END
 			
-			---------------------------------
 			--Update mixed sports
 			if @bettype in (9) 
 			BEGIN
@@ -1637,7 +1609,6 @@ BEGIN
 					
 				END
 			END				
-			---------------------------------	
 			--Update HR Fixed Odds
 			if @bettype in (20)
 			BEGIN

@@ -1,6 +1,4 @@
-﻿
-
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_All]	
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_All]	
 	@custid								INT,
 	@mrecommend							INT,
 	@v162mpositiontaking_1101			SMALLMONEY,
@@ -73,7 +71,7 @@ BEGIN
 	IF @v162UpdateCommission_1101 = 1
 	BEGIN
 
-		EXEC dbo.Acc_CustomerUpdAgentLiveCS_Commission
+								EXEC dbo.Acc_CustomerUpdAgentLiveCS_Commission
 					@custid				= @custid,
 					@v162discount_1101	= @v162discount_1101,
 					@UserID				= @UserID, 
@@ -135,7 +133,7 @@ BEGIN
 		
 	IF @v162UpdateMinPositiontaking_1101 = 1 
 	BEGIN
-		EXEC Acc_CustOverrideUpdLiveCS 
+								EXEC Acc_CustOverrideUpdLiveCS 
 				@custid						= @custid, 
 				@UplineID					= @mrecommend,
 				@min_v162positiontaking_1101= @min_v162apositiontaking_1101, 
@@ -164,7 +162,7 @@ BEGIN
 	BEGIN
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 
-		EXEC dbo.Acc_CustomerUpdAgentLiveCS_PositionTaking 
+								EXEC dbo.Acc_CustomerUpdAgentLiveCS_PositionTaking 
 					@custid								= @custid,
 					
 					@v162mpositiontaking_1101			= @v162mpositiontaking_1101,
@@ -197,12 +195,11 @@ BEGIN
 
 END
 
-
-
-
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_All]	 TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_All] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_All]	 TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_All] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_All]	 TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_All] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_All] TO [vnteam] AS [dbo]

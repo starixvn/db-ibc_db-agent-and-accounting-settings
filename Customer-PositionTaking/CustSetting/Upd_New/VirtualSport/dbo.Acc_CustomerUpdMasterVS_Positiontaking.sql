@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
 	@custid		INT,	
 	
 	@sporttype	INT,
@@ -90,7 +90,7 @@ SET NOCOUNT ON
 		@roleid=3,
 		@isExecRep=1,
 		@isUpdatePT = 1,
-		@Sporttype = 0,
+		@Sporttype = 1,
 		@Language='E',
 		@ErrMsg=@ErrMsg_Cur output,
 		@ErrCode=@ErrCode_Cur output
@@ -734,11 +734,13 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [vnteam] AS [dbo]

@@ -32,13 +32,11 @@ WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
 		AND xtype = 'U'
 
 if @IsExistTables <> 3 RETURN
------------------------
 Declare @_srecommend int
 select @_srecommend = @srecommend
 declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney
 
 
-----------------------------------------------------------------------------
 --s1=min(s1,s4-m3) if i=0
 update custsetting with (ROWLOCK, UPDLOCK) set custsetting.spositiontaking = scs.spositiontaking - mcs.mpositiontaking
 from 
@@ -57,7 +55,6 @@ where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8)
 	and custsetting.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0 and scs.slivepositiontaking - mcs.mlivepositiontaking<custsetting.slivepositiontaking
 	
 
-----------------------------------------------------------------------------
 --check agent min
 --a1=max(a1,n2)
 Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -78,7 +75,6 @@ from
 	inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking<aco.minlivepositiontaking
 
-----------------------------------------------------------------------------
 --check agent max
 --a1=min(a1,l2)
 Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -95,11 +91,7 @@ from
 	inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking>aco.maxlivepositiontaking
 
-----------------------------------------------------------------------------
-
-
 --Recal AUTO MPT m1=min(m3-a1,u2)
--------------------------------------------------------------------------------------
 Update custsetting with (ROWLOCK, UPDLOCK) 
 	set mpositiontaking = 
 			case when mcs.mpositiontaking-custsetting.apositiontaking > case when custsetting.isautompositiontaking = 1 then custsetting.autompositiontaking else acs.autompositiontaking end
@@ -130,9 +122,6 @@ where
 	and c.roleid = 1
 	and (acs.isautolivempositiontaking = 1 or custsetting.isautolivempositiontaking = 1)
 	
--------------------------------------------------------------------------------------
-
-
 --check master min
 --m1=max(m1,n3-a1)
 Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -149,7 +138,6 @@ from
 	inner join custoverride as mco with (NOLOCK) on mco.custid = mb.mrecommend  and mco.sporttype=custsetting.sporttype and mco.bettype=custsetting.bettype
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking<mco.minlivepositiontaking
 
-----------------------------------------------------------------------------
 --check master max
 Update custsetting with (ROWLOCK, UPDLOCK) set 
 	@maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
@@ -177,7 +165,6 @@ from
 	inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking>mco.maxlivepositiontaking
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --recal autopos
 Update custsetting with (ROWLOCK, UPDLOCK)
 	set spositiontaking = case when scs.spositiontaking-custsetting.mpositiontaking-custsetting.apositiontaking >
@@ -205,8 +192,6 @@ where
 	and c.roleid = 1
 	and (custsetting.isautolivepositiontaking=1 or mcs.isautolivepositiontaking=1)
 	
-----------------------------------------------------------------------------
-
 --check super min
 --s1=max(n4-m1-a1,s1)
 Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -222,9 +207,6 @@ from
 	custsetting inner join custinfo as mb with (NOLOCK) on custsetting.custid = mb.custid and mb.srecommend=@_srecommend and mb.roleid=1
 	inner join custoverride as sco with (NOLOCK) on sco.custid = @_srecommend  and sco.sporttype=custsetting.sporttype and sco.bettype=custsetting.bettype
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking+custsetting.slivepositiontaking<sco.minlivepositiontaking
-
-
-----------------------------------------------------------------------------
 
 
 --update s1,m1,a1 in case s1+m1+a1>s4
@@ -274,6 +256,6 @@ from
 where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.slivepositiontaking+custsetting.alivepositiontaking+custsetting.mlivepositiontaking>scs.slivepositiontaking
 
 -----------------
+
 GO
-GRANT EXECUTE ON [dbo].Acc_CustSetting_00 TO [bodbAdminNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_00] TO [bodbAdminNet] AS [dbo]

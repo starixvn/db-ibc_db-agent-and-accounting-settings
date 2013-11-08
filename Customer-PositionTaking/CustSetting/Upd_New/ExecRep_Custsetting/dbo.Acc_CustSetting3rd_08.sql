@@ -1,8 +1,7 @@
-﻿  ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_08]
+﻿ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_08]
 	@custid INT = 0,
 	@mode VARCHAR(50) ='',
 	@roleid INT,
-	--------------------------------------------------------------------
 	--super update pt on member
 	--number game
 	@v161spositiontaking_81 SMALLMONEY = 0,
@@ -29,7 +28,6 @@
 	@v153spositiontaking_51 SMALLMONEY = 0,
 	@v153spositiontaking_52 SMALLMONEY = 0,
 	
-	--------------------------------------------------------------------
 	---master update pt on member
 	--number game
 	@v161mpositiontaking_81 SMALLMONEY  = 0,
@@ -56,7 +54,6 @@
 	@v153mpositiontaking_51 smallmoney = 0,
 	@v153mpositiontaking_52 smallmoney = 0,
 	
-	--------------------------------------------------------------------
 	--agent update pt on member
 	--number game
 	@v161apositiontaking_81 smallmoney = 0, 
@@ -332,7 +329,6 @@ SET NOCOUNT ON
 												WHEN bettype = 52 and sporttype = 153  and @UpdatePositiontakingv153_51 = 1 THEN @v153apositiontaking_52 
 												ELSE apositiontaking END END,
 				--Auto Master PT
-				-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 				mpositiontaking = CASE WHEN @UpdateMultiple = 1 
 											AND (	(sporttype=151 AND @UpdatePositiontakingv151_31 = 0 AND @UpdatePositiontakingv151_41 = 0 AND @UpdatePositiontakingv151_51 = 0 )
 												OR  (sporttype=152 AND @UpdatePositiontakingv152_41 = 0 AND @UpdatePositiontakingv152_51 = 0 ) 
@@ -352,7 +348,6 @@ SET NOCOUNT ON
 													WHEN bettype = 52 and sporttype = 153 and @UpdatePositiontakingv153_51 = 1 THEN @v153mpositiontaking_52 
 													ELSE mpositiontaking END END,	
 								  
-				-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 				spositiontaking = CASE WHEN @UpdateMultiple = 1 
 											AND (	(sporttype=151 AND @UpdatePositiontakingv151_31 = 0 AND @UpdatePositiontakingv151_41 = 0 AND @UpdatePositiontakingv151_51 = 0 )
 												OR  (sporttype=152 AND @UpdatePositiontakingv152_41 = 0 AND @UpdatePositiontakingv152_51 = 0 ) 

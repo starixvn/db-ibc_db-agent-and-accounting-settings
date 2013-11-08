@@ -58,7 +58,7 @@ EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 	@roleid=4,
 	@isExecRep=1,
 	@isUpdatePT = 1,
-	@Sporttype = 0,
+	@Sporttype = 1,
 	@Language='E',
 	@ErrMsg=@ErrMsg output,
 	@ErrCode=@ErrCode output
@@ -217,9 +217,11 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbDownlineNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [vnteam] AS [dbo]
