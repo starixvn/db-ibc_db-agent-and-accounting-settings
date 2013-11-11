@@ -33,6 +33,7 @@ AS
 		- 20130516@Lukas: allow PT = 100%
 		- 20131104@Johnson: Apply execrep when recalculate pt on members
 				and check total downlines before UPDATEs 
+		- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)				
 	Parameters Explanation:
 */
 BEGIN
@@ -110,8 +111,8 @@ BEGIN
 			(
 				SELECT 1101 AS bettype, 162 AS sporttype, @v162apositiontaking_1101 AS apositiontaking, @v162mpositiontaking_1101 AS mpositiontaking, @isauto_v162mpositiontaking_1101 AS isauto_mpositiontaking, @auto_v162mpositiontaking_1101 AS auto_mpositiontaking
 			) b ON co.sporttype = b.sporttype AND co.bettype = b.bettype
-		INNER JOIN bettype WITH(NOLOCK) ON b.bettype = bettype.typeid
-		INNER JOIN sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
 	WHERE co.custid = @mrecommend AND (	
 						((b.isauto_mpositiontaking = 0) AND (b.mpositiontaking + b.apositiontaking < co.minpositiontaking)) or 
 						(b.isauto_mpositiontaking > 0 AND (b.apositiontaking + b.auto_mpositiontaking < co.minpositiontaking))
@@ -139,8 +140,8 @@ BEGIN
 		(
 			select 1101 AS bettype, 162 AS sporttype, @v162apositiontaking_1101 AS apositiontaking
 		) AS b ON co.sporttype = b.sporttype AND co.bettype = b.bettype
-		INNER JOIN bettype WITH(NOLOCK) ON b.bettype = bettype.typeid
-		INNER JOIN sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
 	WHERE b.apositiontaking < co.minpositiontaking
 
 	IF @ErrType <>''
@@ -165,8 +166,8 @@ BEGIN
 		(				
 			select 1101 as bettype, 162 as sporttype, @v162apositiontaking_1101 AS apositiontaking, @v162mpositiontaking_1101 AS mpositiontaking, @max_v162mapositiontaking_1101 AS max_mapositiontaking
 		) b
-		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-		INNER JOIN sports s witH(nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s witH(nolock) on b.sporttype = s.sporttype
 	WHERE (b.apositiontaking + b.mpositiontaking > b.max_mapositiontaking) 
 
 	IF @ErrType <>''
@@ -188,8 +189,8 @@ BEGIN
 	(
 		select 1101 AS bettype, 162 as sporttype, @auto_v162mpositiontaking_1101 as autopositiontaking, @isauto_v162mpositiontaking_1101 as isautopositiontaking, @max_v162mapositiontaking_1101 as max_mapositiontaking		
 	) as b 
-		INNER JOIN bettype with (nolock) on b.bettype = bettype.typeid
-		INNER JOIN sports s with(nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
 	where b.isautopositiontaking = 1 
 		AND b.autopositiontaking > max_mapositiontaking
 		
@@ -414,9 +415,6 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH	
 END
-
-
-
 
 
 GO

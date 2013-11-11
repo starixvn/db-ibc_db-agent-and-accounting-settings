@@ -107,7 +107,7 @@ Revisions:
 	- 20131010@Johnson: fix wrong call table custoverride3rd instead of custoverride
 	- 20131105@Johnson: Apply execrep when update pt on members
 			and check total downlines before UPDATEs 
-	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link server)				
+	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)				
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
