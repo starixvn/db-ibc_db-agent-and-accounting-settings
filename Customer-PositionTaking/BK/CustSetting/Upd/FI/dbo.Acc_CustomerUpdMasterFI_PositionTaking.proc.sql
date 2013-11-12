@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterFI_Positiontaking]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterFI_Positiontaking]
 	@custid int,-- masterid	
 	@v201spositiontaking_2 smallmoney,
 	@v201spositiontaking_3 smallmoney,
@@ -33,6 +32,7 @@ Revisions:
 	- 20091201@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
 	- 20100112@Kiwi: Amend to write log in xml format.
 	- 20101019@Henry: Record execution time
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -90,15 +90,15 @@ END
 --check n4<=s3+m3<=l4 if i3 = 0, 
 --m3<=l4 and u3+m3>=n4 if i3 = 1
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10))+ '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10))+ '<br>'
 from CustOverride3rd as co with (NOLOCK) inner join
 	(
 			 		select 2 as bettype, 201 as sporttype, @v201spositiontaking_2 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_2 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v201spositiontaking_2 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v201spositiontaking_2 as auto_spositiontaking
 		union all	select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v201spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v201spositiontaking_3 as auto_spositiontaking
 
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @srecommend and (	
 					((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 					(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -120,14 +120,14 @@ BEGIN
 END
 --n3<=m3<=l3
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
 from CustOverride3rd as co with (NOLOCK) inner join
 	(
 			 			select 2 as bettype, 201 as sporttype, @v201spositiontaking_2 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_2 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v201spositiontaking_2 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		union all	 	select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v201spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @custid and (	
 					(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 2 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -206,14 +206,14 @@ END
 
 --check m3<=m4
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((scs.mpositiontaking) as varchar(10)) + '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((scs.mpositiontaking) as varchar(10)) + '<br>'
 from CustSetting3rd as scs with (NOLOCK) inner join
 	(
 			 			select 2 as bettype, 201 as sporttype, @v201spositiontaking_2 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_2 as mpositiontaking, 0 as mlivepositiontaking, @auto_v201spositiontaking_2 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		union all	 	select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v201mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v201spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where scs.custid = @srecommend and (
 					scs.mpositiontaking<b.mpositiontaking 
 					)
@@ -268,14 +268,14 @@ END
 --v201
 --u3<=s4
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
 from CustSetting3rd as cs with (NOLOCK) inner join
 	(
 						select 2 as bettype, 201 as sporttype, @auto_v201spositiontaking_2 as autopositiontaking
 		union all		select 3 as bettype, 201 as sporttype, @auto_v201spositiontaking_3 as autopositiontaking
 	) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where cs.custid = @srecommend
 	and 
 	((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -295,15 +295,15 @@ BEGIN
 END
 --s3<=s4,s3+m3<=s4
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10))+ '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10))+ '<br>'
 from CustSetting3rd as cs with (NOLOCK) inner join
 	(
 						select 2 as bettype, 201 as sporttype, @v201spositiontaking_2 as spositiontaking, @v201mpositiontaking_2 as mpositiontaking
 
 		union all		select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as spositiontaking, @v201mpositiontaking_3 as mpositiontaking
 	) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where cs.custid = @srecommend
 	and 
 	((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -559,9 +559,12 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterFI_Positiontaking] TO [vnteam] AS [dbo]

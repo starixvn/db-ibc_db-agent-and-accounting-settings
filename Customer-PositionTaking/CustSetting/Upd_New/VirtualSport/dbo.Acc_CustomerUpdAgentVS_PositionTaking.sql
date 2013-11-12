@@ -38,7 +38,7 @@ Revisions:
 	- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20131104@Johnson: apply execrep when update pt on agent
 		and check total downlines before UPDATEs
-	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)						
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)						
 			
 Param's Explanation:        
 • @ErrCode:        

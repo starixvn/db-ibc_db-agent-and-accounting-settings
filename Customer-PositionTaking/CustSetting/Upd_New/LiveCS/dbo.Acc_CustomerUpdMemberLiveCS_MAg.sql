@@ -27,7 +27,7 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20130516@Lukas: allow PT = 100%
-		- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)
+		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 	Parameters Explanation:
 */
 BEGIN

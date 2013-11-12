@@ -22,7 +22,7 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20121204@Scott: Add more field Sporttype,bettype to Log
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
-			- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
+			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 		Parameter's Explanation:	
 	*/
 SET NOCOUNT ON 

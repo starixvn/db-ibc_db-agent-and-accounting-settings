@@ -100,7 +100,7 @@ Revisions:
 	- 20130418@Johnson: check auto positiontaking negative
 	- 20130607@Johnson: check s1 with max_s1
 	- 20131108@Johnson: Apply execrep when update pt on members
-	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)	
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.

@@ -109,7 +109,7 @@ Revisions:
 	- 20130418@Johnson: check auto posititiontaking negative
 	- 20131107@Johnson: Apply execrep when update pt on members	
 			and check total downlines before UPDATEs
-	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.

@@ -33,7 +33,7 @@ AS
 		- 20130516@Lukas: allow PT = 100%
 		- 20131104@Johnson: Apply execrep when recalculate pt on members
 				and check total downlines before UPDATEs 
-		- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)				
+		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)				
 	Parameters Explanation:
 */
 BEGIN

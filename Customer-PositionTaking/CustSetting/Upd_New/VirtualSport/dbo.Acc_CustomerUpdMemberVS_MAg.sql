@@ -30,7 +30,7 @@ AS
 	 - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language  
 	 - 20121224@Scott : Fix bug 5441( get @m3 before checking)
 	 - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
-	 - 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
+	 - 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  

@@ -36,7 +36,7 @@
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131101@Johnson: apply execrep when update min pt, auto pt 
 							and check total downlines before UPDATEs 
-			- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)										
+			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)										
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 

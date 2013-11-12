@@ -101,7 +101,7 @@ Revisions:
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130610@Johnson: check m1 with valid range of m1
 	- 20131106@Johnson: Apply execrep when update pt on member
-	- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)	
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
 	
 Param's Explanation:
 • @ErrCode:
