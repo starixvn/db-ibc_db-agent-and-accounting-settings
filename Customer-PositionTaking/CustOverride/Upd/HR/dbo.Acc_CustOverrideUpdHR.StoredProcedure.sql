@@ -71,6 +71,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20131029@Lukas: apply execRep
+	- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -562,7 +563,7 @@ BEGIN
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMinPos = 1
 BEGIN
-	EXEC dbo.Acc_CustSetting3rd_00 @srecommend = @srecommend, @mode = 'horse'
+	EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'horse'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1
 BEGIN
