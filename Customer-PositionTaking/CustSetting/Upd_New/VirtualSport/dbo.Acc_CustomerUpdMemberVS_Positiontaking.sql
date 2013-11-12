@@ -22,6 +22,7 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20121204@Scott: Add more field Sporttype,bettype to Log
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
 		Parameter's Explanation:	
 	*/
 SET NOCOUNT ON 
@@ -108,8 +109,8 @@ SET NOCOUNT ON
 		(
 			select @bettype as bettype, @sporttype as sporttype, @a1 as apositiontaking 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
-		inner join sports s with(nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
 	WHERE co.custid = @recommend and (( (b.apositiontaking>co.maxpositiontaking or b.apositiontaking<co.minpositiontaking))
 	)		
 	

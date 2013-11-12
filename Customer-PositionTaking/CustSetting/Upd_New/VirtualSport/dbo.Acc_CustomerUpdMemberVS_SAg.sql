@@ -1,35 +1,36 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberVS_SAg]   
- @CustID int,--memberid   
- @sporttype tinyint,  
- @bettype int,  
-    
- @s1 smallmoney = 0,   
- @us1 smallmoney = 0,   
- @is1 bit = 0,   
- @is3 bit = 0,--i3  
-   
- @UpdatePositiontaking BIT = 0,   
- @UpdateAutoPositiontaking BIT = 0,  
-     
- @UserID int,  
- @language varchar(2) = 'E',  
- @SubAccID int = 0, --Sub-AccountID  
- @IP varchar(15)='',  
- @Username varchar(30) = '',  
- @ErrCode varchar(300) = '' OUTPUT,  
- @ErrMsg nvarchar(4000) = '' OUTPUT  
+	@CustID int,--memberid   
+	@sporttype tinyint,  
+	@bettype int,  
+
+	@s1 smallmoney = 0,   
+	@us1 smallmoney = 0,   
+	@is1 bit = 0,   
+	@is3 bit = 0,--i3  
+
+	@UpdatePositiontaking BIT = 0,   
+	@UpdateAutoPositiontaking BIT = 0,  
+	 
+	@UserID int,  
+	@language varchar(2) = 'E',  
+	@SubAccID int = 0, --Sub-AccountID  
+	@IP varchar(15)='',  
+	@Username varchar(30) = '',  
+	@ErrCode varchar(300) = '' OUTPUT,  
+	@ErrMsg nvarchar(4000) = '' OUTPUT  
 AS  
 --@Source Control  
 /*  
 	Created: 20120820@Dan  
 	Task : Super edits Member(VS)  
-	DB: DBTRANS.bodb02  
+	DB: DBTXN/bodb02  
 	Original: Acc_CustomerUpdSuper_Member  
 	  
 	Revisions:  
 		 - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language  
 		 - 20130130@Scott : Fix bug 5325
 		 - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+		 - 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  
@@ -140,8 +141,8 @@ BEGIN
  (  
   select @sporttype as sporttype, @bettype as bettype, @us1 as autopositiontaking, @is1 as isautopositiontaking   
  ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
- inner join sports with (nolock) on b.sporttype = sports.sporttype  
- inner join bettype with (nolock) on b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
  where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking))  
   
   
@@ -168,8 +169,8 @@ when 'E' then 'Wrong position taking (min/max set by company) ('+@ErrType+').'
   (  
    select @bettype as bettype, @sporttype as sporttype, @us1 as autopositiontaking      
   ) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype  
- inner join sports with (nolock) on b.sporttype = sports.sporttype  
- inner join bettype with (nolock) on b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
  where cs.custid = @srecommend  
   and   
   ((cs.spositiontaking<b.autopositiontaking))  
@@ -195,8 +196,8 @@ when 'E' then 'Wrong position taking (min/max set by company) ('+@ErrType+').'
   @us1 as autopositiontaking, @is1 as isautopositiontaking ,  
   @a1 as apositiontaking, @m1 as mpositiontaking  
  ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
- inner join sports with (nolock) on b.sporttype = sports.sporttype  
- inner join bettype with (nolock) on b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
  where co.custid = @srecommend and   
   (b.isautopositiontaking>0 and b.autopositiontaking< case when co.minpositiontaking - mpositiontaking - apositiontaking >0 then co.minpositiontaking - mpositiontaking - apositiontaking else 0 end)  
   
@@ -231,8 +232,8 @@ BEGIN
   ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
   inner join CustSetting3rd as cs with (NOLOCK) ON cs.custid=co.custid and co.sporttype=cs.sporttype and co.bettype=cs.bettype  
   inner join CustSetting3rd as mcs with (NOLOCK) ON mcs.custid=@mrecommend and co.sporttype=mcs.sporttype and co.bettype=mcs.bettype  
-  inner join sports with (nolock) on b.sporttype = sports.sporttype  
-  inner join bettype with (nolock) on b.bettype = bettype.typeid  
+  INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
+  INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
  where co.custid = @srecommend  
   and (b.spositiontaking> case when co.minpositiontaking - b.mpositiontaking - b.apositiontaking > cs.spositiontaking - mcs.mpositiontaking  
          then co.minpositiontaking - b.mpositiontaking - b.apositiontaking  
@@ -261,8 +262,8 @@ BEGIN
   @s1 as spositiontaking, @is1 as isautopositiontaking ,  
   @a1 as apositiontaking, @m1 as mpositiontaking  
  ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
- inner join sports with (nolock) on b.sporttype = sports.sporttype  
- inner join bettype with (nolock) on b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
  where co.custid = @srecommend and   
   (b.isautopositiontaking=0 and b.spositiontaking< case when co.minpositiontaking - mpositiontaking - apositiontaking >0 then co.minpositiontaking - mpositiontaking - apositiontaking else 0 end)  
   
@@ -441,11 +442,13 @@ END CATCH
 Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [vnteam] AS [dbo]
