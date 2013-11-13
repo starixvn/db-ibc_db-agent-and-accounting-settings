@@ -335,7 +335,8 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20131016@Kathy: Add HR Fixed Odds(154) [Redmine:#6505]
-	- 20131030@Johnson: Apply execrep when update pt on member
+	- 20131030@Johnson: Apply execrep when update pt on member[redmine:#3244]
+	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -5799,14 +5800,29 @@ if	@UpdatePositiontaking   = 1  or
 			Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 		END
 		*/
-				
-		EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
+
+		EXEC dbo.Acc_CustSetting_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@updautomaster = 0
+			
+		EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'number',
+			@updautomaster = 0
+					
+		/*EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 			@custid = @custid, 
 			@recommend = @recommend, 
 			@mrecommend = @mrecommend, 
 			@srecommend = @srecommend,
 			@updautomaster = 0 -- ignore redundance update for auto master PT.
-
+		*/
 
 
 

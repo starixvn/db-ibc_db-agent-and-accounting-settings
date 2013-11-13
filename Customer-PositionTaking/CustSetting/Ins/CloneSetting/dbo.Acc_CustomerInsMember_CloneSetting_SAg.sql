@@ -41,6 +41,7 @@ AS
 	- 20130731@Elodie: Apply progressive bonus
 	- 20131017@Kathy: Add HR Fixed Odds [Redmine:#6505]
 	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
+	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -411,6 +412,23 @@ BEGIN
 		RETURN
 	END
 	
+	EXEC dbo.Acc_CustomerInfo_Execrep_02
+		@custid = @custid,
+		@ExistingCustid = @ExistingCustid,
+		@Language = @Language,
+		@ErrCode = @ErrCode output,
+		@ErrMsg = @ErrMsg output
+	
+	IF @ErrCode > 0 
+	BEGIN
+		-- ROLLBACK MANUALLY	
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID  
+		
+		RETURN
+	END
+	/*
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -729,6 +747,7 @@ BEGIN
 					
 		RETURN
 	END
+	*/
 	
 	
 	DECLARE	 @UplineSecurityCode			VARCHAR(50)

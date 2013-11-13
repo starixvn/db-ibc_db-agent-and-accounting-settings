@@ -29,6 +29,7 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20130516@Lukas: allow PT = 100%
+		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Parameters Explanation:
 */
 BEGIN
@@ -353,7 +354,14 @@ BEGIN
 	END
 	
 	--- modify late
-	EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'LiveCasino'
+		
+	---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

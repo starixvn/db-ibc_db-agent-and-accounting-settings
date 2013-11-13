@@ -25,6 +25,7 @@ AS
  DB: DBTXN/bodb02  
   
  History:  
+	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -339,6 +340,23 @@ BEGIN
 		RETURN
 	END
 	
+	EXEC dbo.Acc_CustomerInfo_Execrep_02
+		@custid = @custid,
+		@ExistingCustid = @ExistingCustid,
+		@Language = @Language,
+		@ErrCode = @ErrCode output,
+		@ErrMsg = @ErrMsg output
+	
+	IF @ErrCode > 0 
+	BEGIN
+		-- ROLLBACK MANUALLY	
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  
+		
+		RETURN
+	END
+	/*
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -659,7 +677,9 @@ BEGIN
 					
 		RETURN
 	END
-
+	*/
+	
+	
 	INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
 		,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
 	)
