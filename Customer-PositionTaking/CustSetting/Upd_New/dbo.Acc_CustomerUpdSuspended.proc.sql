@@ -12,7 +12,7 @@ AS
 /*
 Created: 20090121@Thien
 Task : Update suspended
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original:
 
 Revisions:
@@ -34,6 +34,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130527@Elodie: Change linked server DB053 to DBAGE for Acc_CustomerSelCheckAllowedDownlines
 	- 20130709@Jamie: Apply Exec Rep 
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
 	
 Param's Explanation:
 • @ErrCode:
@@ -165,7 +166,7 @@ end
 --20130709@Jamie: Apply ExecRep 
 IF @RoleID BETWEEN 2 AND 4 
 BEGIN
-	EXEC [Acc_ExecRep_04]
+	EXEC [Acc_ExecRep_Cust_04]
 		 @CustID		= @CustID
 		,@RoleID		= @RoleID
 		,@Action		= 'Suspended'
@@ -214,11 +215,13 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuspended] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuspended] TO [vnteam] AS [dbo]

@@ -1,4 +1,4 @@
-﻿  ALTER PROCEDURE [dbo].[Acc_UpdCSStatus]
+﻿ALTER PROCEDURE [dbo].[Acc_UpdCSStatus]
 	@custid INT,
 	@disabledCS BIT=NULL,
 	@syncCS BIT=NULL,
@@ -17,7 +17,7 @@ AS
 
 Created: 20090310@QuiNV
 Task: Update casino status
-DB: DBTXN/bodb02
+DB: DBTXN/bodbCust
 Original:
 
    Revisions:
@@ -42,8 +42,9 @@ Original:
 	- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130709@Jamie: Apply Exec Rep 
 	- 20130827@Johnson: check enabled status on DBTXN instead of DBAGE
-	
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
 */
+
 SET NOCOUNT ON
 declare @startRun datetime
 declare @endRun datetime
@@ -130,7 +131,7 @@ WHERE custid=@custid
 --	20130709@Jamie: Apply ExecRep 
 IF (@disabledCS = 1 OR @enableDownline = 1) AND @RoleID BETWEEN 2 AND 4 
 BEGIN
-	EXEC [Acc_ExecRep_04]
+	EXEC [Acc_ExecRep_Cust_04]
 		 @CustID		= @CustID
 		,@RoleID		= @RoleID
 		,@Action		= 'disabledCS'
@@ -208,12 +209,12 @@ BEGIN CATCH
 END CATCH
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_UpdCSStatus] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_UpdCSStatus] TO [vnteam]
-GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_UpdCSStatus] TO [vnteam] AS [dbo]

@@ -5,10 +5,11 @@ AS
 		Created: Dan	
 		Date: 20120927
 		Task: get current win limit  of customer
-		DB: DBTRANS.BODB02
+		DB: DBTXN/BODB02
 		
 		Revisions:
 			- 20121026@Jamie: Set Winlimit = 1 IN CASE credit = 0 
+			- 20131108@Elodie: Splitting bodb02 into CustDB (get custinfo by link database)
 		Parameters Explanation:	
 	*/
 SET NOCOUNT ON	
@@ -25,18 +26,22 @@ SET NOCOUNT ON
 	
 	SELECT MaxWinLiveCasino,
 		@Balance as Balance,
-		ci.MaxWinLiveCasino*credit as MaxWinCredit,
-		CASE WHEN @Balance > 0 AND ci.Credit = 0  AND MaxWinLiveCasino > 0 THEN @Balance * 100
-			 WHEN @Balance > 0 AND ci.Credit > 0 AND MaxWinLiveCasino > 0 THEN @Balance * 100/(ci.MaxWinLiveCasino*credit) 
+		MaxWinLiveCasino*credit as MaxWinCredit,
+		CASE WHEN @Balance > 0 AND Credit = 0  AND MaxWinLiveCasino > 0 THEN @Balance * 100
+			 WHEN @Balance > 0 AND Credit > 0 AND MaxWinLiveCasino > 0 THEN @Balance * 100/(MaxWinLiveCasino*credit) 
 			 ELSE 0 END AS LCSWinPercent
-	FROM custinfo ci WITH (NOLOCK) 		
-	WHERE ci.custid=@custid and roleid=1
+	FROM CustDB.dbo.Custinfo ci WITH (NOLOCK) 		
+	WHERE custid=@custid and roleid=1
+
+
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbDownlineNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbDownlineNetView] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbDownlineNetView] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelWinLimitLiveCS] TO [vnteam] AS [dbo]
