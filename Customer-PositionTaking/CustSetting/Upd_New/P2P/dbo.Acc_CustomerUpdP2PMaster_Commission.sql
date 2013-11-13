@@ -12,13 +12,14 @@ AS
 /*
 	Created: 20110421@Amy
 	Task : Update Master's P2P Commission
-	DB: DBTXN/bodb02
+	DB: DBCUST/CustDB
 	Original:
 
 	Revisions: 
 		- 20120224@Lukas: Remove upline comm for agent level
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130318@Elodie: Write more log on DBTXN server in case of DBLOG server failure
+		- 20130808@Elodie: Splitting DBTXN into DBCUST
 		
 	Param's Explanation:
 	@ErrCode:
@@ -191,11 +192,10 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH	
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO [bodbDownlineNet]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO vnteam
 
-
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO [bodbadminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdP2PMaster_Commission] TO [vnteam] AS [dbo]

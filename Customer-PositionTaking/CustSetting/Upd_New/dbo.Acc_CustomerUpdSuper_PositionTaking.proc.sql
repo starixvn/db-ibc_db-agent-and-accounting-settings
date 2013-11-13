@@ -234,6 +234,7 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131030@Johnson: Apply exec rep for recalculating pt on member
 				and check total downlines before UPDATEs
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)				
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -1137,8 +1138,8 @@ select @Old_v161slivepositiontaking_90 = slivepositiontaking, @Old_v161mliveposi
 		
 		union all 	select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as slivepositiontaking
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @custid and (	
 					(b.spositiontaking<co.minpositiontaking) or 
 					(b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.slivepositiontaking<co.minlivepositiontaking))
@@ -1170,8 +1171,8 @@ select @ErrType = ''
 		union all 	select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking
 		
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @custid and (	
 					(b.spositiontaking<co.minpositiontaking) or 
 					(b.sporttype = 161 and b.bettype in (85,86,87,89,90) and (b.slivepositiontaking<co.minlivepositiontaking))
@@ -2922,7 +2923,8 @@ BEGIN CATCH
 END CATCH
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [vnteam] AS [dbo]

@@ -3913,3 +3913,9 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH		
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [vnteam] AS [dbo]

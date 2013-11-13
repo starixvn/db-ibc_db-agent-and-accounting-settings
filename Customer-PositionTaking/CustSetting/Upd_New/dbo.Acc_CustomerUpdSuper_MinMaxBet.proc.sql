@@ -70,6 +70,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sportype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -191,8 +192,8 @@ begin
 end
 
 select @ErrType = ''
-select @ErrType = @ErrType +  (case when MP=0 then sportname else 'Mixed Sports' end )       + ', '
-from sports with (NOLOCK) inner join
+select @ErrType = @ErrType +  (case when MP=0 then s.sportname else 'Mixed Sports' end )       + ', '
+from bodb02.dbo.sports s with (NOLOCK) inner join
 (
 				select 1 as sporttype,0 as MP, @MinBet as MinBet, @MaxBet as MaxBet, @MaxPerMatch as MaxPerMatch
 	union all	select 2 as sporttype,0 as MP, @MinBetv2 as MinBet, @MaxBetv2 as MaxBet, @MaxPerMatchv2 as MaxPerMatch
@@ -205,7 +206,7 @@ from sports with (NOLOCK) inner join
 	union all	select 99 as sporttype,1 as MP, @MinBetv99MP as MinBet, @MaxBetv99MP as MaxBet, @MaxPerMatchv99MP as MaxPerMatch	 
 	union all	select 154 as sporttype,0 as MP, @MinBetv154 as MinBet, @MaxBetv154 as MaxBet, @MaxPerMatchv154 as MaxPerMatch	 
 	union all	select 161 as sporttype,0 as MP, @MinBetv161 as MinBet, @MaxBetv161 as MaxBet, @MaxPerMatchv161 as MaxPerMatch	 
-) as b on sports.sporttype = b.sporttype
+) as b on s.sporttype = b.sporttype
 where (MinBet<>0 and MaxBet <> 0 and  MinBet>MaxBet) 
 or (MaxBet<> 0 and MaxPerMatch <> 0 and MaxBet>MaxPerMatch) 
 or (MinBet <> 0 and MaxPerMatch <> 0 and MinBet>MaxPerMatch) 
@@ -493,7 +494,8 @@ BEGIN CATCH
 END CATCH
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [bodbadminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [vnteam] AS [dbo]
