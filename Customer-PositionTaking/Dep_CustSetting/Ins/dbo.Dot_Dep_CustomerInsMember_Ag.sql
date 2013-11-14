@@ -105,7 +105,9 @@ Revisions:
 					+ Currencies EURO, GBP, USD
 	- 20130830@Jery: Hard code MaxBet/MaxperMatch for SB of Agent 12betUS$KR05 (10842822)
 	- 20131009@Viet: Sportsbook - hardcode maxbet and maxpermatch for sportbooks.
-	
+	- 20131114@Viet: Hardcode maxbet and maxpermatch for fun88's basketball.
+	- 20131114@Jim: move ' EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns' command into front of 'EXEC DBAFF12BET.Affiliate_12BET.dbo.Aff_CustomerInsMember ' command 
+
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -911,6 +913,13 @@ BEGIN
 
 		
 END
+
+----- BEGIN: 20131114@Viet: Hardcode maxbet and maxpermatch for fun88's basketball.-----
+IF @site = 'asiabet88' AND @Currency = 13 -- CNY
+BEGIN
+	SELECT @maxpermatchv2 = 20000,@maxbetv2 = 10000		
+END
+----- END: 20131114@Viet: Hardcode maxbet and maxpermatch for fun88's basketball.-----
 
 select
 	@playerdiscount = 0,
@@ -1824,6 +1833,7 @@ select @custid, 51, 153, @v153apositiontaking_51, @v153mpositiontaking_51, @v153
 UNION ALL
 select @custid, 52, 153, @v153apositiontaking_52, @v153mpositiontaking_52, @v153spositiontaking_52, @v153playerdiscount_51, @v153discount_51, @v153adiscount_51, @v153sdiscount_51, @MinBetv153_51, @MaxBetv153_51, 0
 
+
 --v161
 UNION ALL 
 select @custid, 81, 161, @v161apositiontaking_81, @v161mpositiontaking_81, @v161spositiontaking_81, @v161playerdiscount, @v161discount, @v161adiscount, @v161sdiscount, @MinBetv161, @MaxBetv161, 0 
@@ -2068,6 +2078,14 @@ END
 */
 
 		
+--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
+EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
+	@CustID = @CustID,
+	@Recommend = @AgentID,
+	@Username = @Username,
+	@Username2=@DepositUserName,
+	@Currency = @currency
+	
 
 IF @AffiliateID is not NULL
 EXEC DBAFF12BET.Affiliate_12BET.dbo.Aff_CustomerInsMember 
@@ -2081,6 +2099,7 @@ EXEC DBAFF12BET.Affiliate_12BET.dbo.Aff_CustomerInsMember
 	@Currency = @currency,
 	@Recommend = @recommend,
 	@Email = @Email
+/*
 
 --Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
 EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
@@ -2089,6 +2108,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
 	@Username = @Username,
 	@Username2=@DepositUserName,
 	@Currency = @currency
+*/
 
 --Set default player comm
 EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
@@ -2227,19 +2247,17 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
-
-GO 
- GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam]
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [ITVivi]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet]
-GO 
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [ITVivi] AS [dbo]
+GO
+GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
