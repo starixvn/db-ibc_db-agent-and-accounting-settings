@@ -48,9 +48,9 @@
 	@MaxPerMatchv99MP money,
 	
 	--HR Fixed Odds
-	@MinBetv154 MONEY,
-	@MaxBetv154 MONEY,
-	@MaxPerMatchv154 MONEY,
+	@MinBetv154 MONEY = 0,
+	@MaxBetv154 MONEY = 0,
+	@MaxPerMatchv154 MONEY = 0,
 	
 	@MinBetv161 money ,
 	@MaxBetv161 money ,
