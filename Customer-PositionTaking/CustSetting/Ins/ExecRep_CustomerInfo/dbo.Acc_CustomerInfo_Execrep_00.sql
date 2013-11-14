@@ -1712,7 +1712,7 @@ SET NOCOUNT ON
 		UNION ALL select @custid, 20, 99, 0, 0.9, 0, 0.9
 
 		UNION ALL select @custid, 9, 99, 0, 0.9, 0, 0.9
-		UNION ALL select @custid, 20, 154, 0, 0.9, 0, 0.9
+		--UNION ALL select @custid, 20, 154, 0, 0.9, 0, 0.9
 
 		if @@error <> 0
 		BEGIN
