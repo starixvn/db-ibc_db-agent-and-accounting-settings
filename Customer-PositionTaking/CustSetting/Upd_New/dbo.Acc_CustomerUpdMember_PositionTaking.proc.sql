@@ -115,7 +115,8 @@ Revisions:
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20130614@Johnson: check a1 with valid range of a1
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
-	- 20131031@Johnson: Apply execrep when update pt on member
+	- 20131031@Johnson: Apply execrep when update pt on member [Redmine:#3244]
+	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -4134,8 +4135,21 @@ SELECT @v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90 > @ma
 			@v161alivepositiontaking_90 = @v161alivepositiontaking_90
 	END
 	
+	EXEC dbo.Acc_CustSetting_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend
+		
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'number'
 	
-	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+			
+---	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 	
 /*

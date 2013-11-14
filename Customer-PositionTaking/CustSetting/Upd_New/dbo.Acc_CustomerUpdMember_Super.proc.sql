@@ -349,7 +349,8 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130617@Johnson: check s1 with valid range of s1
 	- 20131014@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]	
-	- 20131031@Johnson: Aplly execrep when update pt on member
+	- 20131031@Johnson: Aplly execrep when update pt on member[redmine:#3244]
+	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -3652,7 +3653,7 @@ BEGIN--Update Position Taking
 		@UpdatePositiontakingv10 = @UpdatePositiontakingv10,
 		@UpdatePositiontakingv11 = @UpdatePositiontakingv11,
 		@UpdatePositiontakingv99 = @UpdatePositiontakingv99,
-		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP
+		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
 		@UpdatePositiontakingv154 = @UpdatePositiontakingv154
 		
 	EXEC dbo.Acc_CustSetting3rd_09
@@ -3818,12 +3819,31 @@ BEGIN--Update Position Taking
 				@language = @language,
 				@userid = @userid
 		*/
+	
+		EXEC dbo.Acc_CustSetting_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@updautosuper = 0
+			
+		EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'number',
+			@updautosuper = 0
+					
+		
+	/*
 	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 		@custid = @custid, 
 		@recommEND = @recommEND, 
 		@mrecommEND = @mrecommEND, 
 		@srecommEND = @srecommEND,
 		@updautosuper = 0
+	*/
 		
 	SELECT @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 

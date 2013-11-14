@@ -100,6 +100,7 @@ Revisions:
 	- 20130418@Johnson: check auto positiontaking negative
 	- 20130607@Johnson: check s1 with max_s1
 	- 20131108@Johnson: Apply execrep when update pt on members
+	- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1090,7 +1091,14 @@ BEGIN
 END
 */
 
-EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'horse'
+			
+--EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(5000)

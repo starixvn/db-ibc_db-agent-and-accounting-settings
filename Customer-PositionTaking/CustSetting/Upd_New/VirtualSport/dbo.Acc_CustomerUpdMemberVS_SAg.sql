@@ -30,6 +30,7 @@ AS
 		 - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language  
 		 - 20130130@Scott : Fix bug 5325
 		 - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+		 - 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  
@@ -337,13 +338,23 @@ BEGIN
  END  
 END  
   
-EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking   
+EXEC dbo.Acc_CustSetting3rd_00
+	@custid = @custid, 
+	@recommend = @recommend, 
+	@mrecommend = @mrecommend, 
+	@srecommend = @srecommend,
+	@mode = 'virtual-sports',
+	@sporttype =  @sporttype,   
+    @bettype = @bettype
+      
+/*EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking   
       @sporttype =  @sporttype,   
       @bettype = @bettype,   
       @custid = @custid,   
       @recommend = @recommend,   
       @mrecommend = @mrecommend,   
-      @srecommend = @srecommend  
+      @srecommend = @srecommend 
+*/       
 IF (@@error <> 0)  
 BEGIN    
  SELECT @ErrMsg_Cur = CASE @Language   

@@ -22,6 +22,7 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20121204@Scott: Add more field Sporttype,bettype to Log
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		Parameter's Explanation:	
 	*/
 SET NOCOUNT ON 
@@ -260,7 +261,15 @@ SET NOCOUNT ON
 		RETURN	
 	END	
 	
-	EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'virtual-sports',
+		@sporttype =  @sporttype,   
+		@bettype = @bettype
+	---EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking @sporttype = @sporttype, @bettype = @bettype, @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 	
 	IF (@@error <> 0)
 	BEGIN		

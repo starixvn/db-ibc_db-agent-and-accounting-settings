@@ -55,6 +55,8 @@ Revisions:
 	- 20130227@Johnson: write log on DBTXN if DBLOG failure
 	- 20130606@Johnson: Check a1 in valid range
 	- 20131107@Johnson: Apply execrep when update pt on member
+	- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1009,8 +1011,15 @@ EXEC dbo.Acc_CustSetting3rd_08
 	@UpdatePositiontakingv152_51 = @UpdatePositiontakingv152_51,
 	@UpdatePositiontakingv153_51 = @UpdatePositiontakingv153_51
 	
-	
-EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+
+
+EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'horse'	
+---EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 /*
 BEGIN TRANSACTION
