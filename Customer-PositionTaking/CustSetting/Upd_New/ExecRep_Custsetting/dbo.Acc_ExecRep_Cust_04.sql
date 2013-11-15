@@ -15,11 +15,11 @@
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
 	@rowcount INT = 0 OUTPUT
-AS
+AS 
 /*
-Created: 20130808@Elodie
+Created: 20131108@Elodie
 Task : Update customer/custinfo settings
-DB: DBCUST/CustDB
+DB: DBTXN/CustDB
 Original: Acc_ExecRep_04
 Revisions:
 	
@@ -39,16 +39,11 @@ Param's Explanation:
 		+ 'AutoSuspendSoccer': Auto suspend for Soccer[@AutoSuspendSoccer]
 		+ 'AutoSuspendOther': Auto suspend for Other Sports [@AutoSuspendOtherSports]
    
-*/ 
-
+*/
 SET NOCOUNT ON 
---IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
---	RETURN
-	
-IF ((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','customer') AND type = 'U') <> 2
-	AND (SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','customer') AND type = 'V') <> 2) 
+IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
 	RETURN
-	
+		
 if @action = 'VirtualMultiplier'
 BEGIN
 	if @roleid = 4
@@ -309,6 +304,7 @@ begin
 		WHERE recommend = @custID 
 	END
 end
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO

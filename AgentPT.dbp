@@ -555,6 +555,7 @@ Begin DataProject = "AgentPT"
             Script = "dbo.Dot_Dep_CustomerInsMember_Ag_xtest.sql"
             Script = "dbo.Dot_Member_InsertBet_MixParlay.sql"
             Script = "dbo.Dot_Member_PlaceBet3rd.sql"
+            Script = "dbo.Task_Cust_CheckBalance_Exception_Ins.sql"
          End
          Begin Folder = "Select"
             Script = "dbo.Acc_Dep_CustomerSelMember_Ag.sql"
