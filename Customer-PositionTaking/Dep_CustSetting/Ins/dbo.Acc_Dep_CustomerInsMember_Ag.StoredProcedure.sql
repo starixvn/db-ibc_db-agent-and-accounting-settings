@@ -1508,6 +1508,7 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
+
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [vnteam]
 GO 
