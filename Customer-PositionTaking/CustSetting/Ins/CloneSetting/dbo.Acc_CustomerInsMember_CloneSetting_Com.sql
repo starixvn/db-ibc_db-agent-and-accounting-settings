@@ -22,9 +22,10 @@ AS
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/bodb02  
+ DB: DBTXN/CustDB  
   
  History:  
+	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -339,6 +340,23 @@ BEGIN
 		RETURN
 	END
 	
+	EXEC dbo.Acc_CustomerInfo_Execrep_02
+		@custid = @custid,
+		@ExistingCustid = @ExistingCustid,
+		@Language = @Language,
+		@ErrCode = @ErrCode output,
+		@ErrMsg = @ErrMsg output
+	
+	IF @ErrCode > 0 
+	BEGIN
+		-- ROLLBACK MANUALLY	
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  
+		
+		RETURN
+	END
+	/*
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -659,7 +677,9 @@ BEGIN
 					
 		RETURN
 	END
-
+	*/
+	
+	
 	INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
 		,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
 	)
@@ -763,7 +783,8 @@ BEGIN
 	SET NOCOUNT OFF
 END
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]

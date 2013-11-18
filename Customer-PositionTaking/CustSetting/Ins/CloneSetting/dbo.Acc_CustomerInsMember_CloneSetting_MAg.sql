@@ -41,8 +41,8 @@ AS
 	- 20130328@Jamie: Add CustLoginInfo
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
-	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
-	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520]
+	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
+	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...[Redmine:#3244]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -111,6 +111,7 @@ BEGIN
 
 	--CREDIT CHECK
 	DECLARE @Credit_AllOtherAgent MONEY, @Credit_MAg MONEY
+
 	
 	SELECT @Credit_MAg = ISNULL(credit, 0)		
 	FROM CustInfo as ci with (NOLOCK) 
@@ -267,15 +268,20 @@ BEGIN
 	END  
 
 	DECLARE @enableUpline bit, @doubleCommLosingUpline bit
-	Declare @autosuspend BIT,
-			@autosuspend2 BIT
-
-	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing,
-		@autosuspend = ISNULL(autosuspend, 0),
-		@autosuspend2 = ISNULL(autosuspend2, 0)
+	
+	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing
 	from custinfo with (nolock)
 	where custid = @mrecommend
 	
+	-- autosuspend's upline
+	DECLARE @autosuspend BIT,
+		@autosuspend2 BIT
+
+	select @autosuspend = ISNULL(autosuspend, 0),
+		@autosuspend2 = ISNULL(autosuspend2, 0)
+	from custInfo with(NOLOCK)
+	where custid = @mrecommend
+
 
 	-- insert CustInfo info
 	INSERT INTO dbo.custInfo
@@ -342,8 +348,6 @@ BEGIN
 			,MaxWinLiveCasino
 			,DoubleCommLosing
 			,DisableCasinoBonus
-			, DisableHRFixedOdds
-			,maxpermatch154
 			)
      SELECT
 			@custid
@@ -409,8 +413,6 @@ BEGIN
 			,MaxWinLiveCasino
 			,@doubleCommLosingUpline as DoubleCommLosing
 			,1
-			,DisableHRFixedOdds
-			,maxpermatch154
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         
@@ -428,7 +430,24 @@ BEGIN
 
 		RETURN
 	END
+	
+	EXEC dbo.Acc_CustomerInfo_Execrep_02
+			@custid = @custid,
+			@ExistingCustid = @ExistingCustid,
+			@Language = @Language,
+			@ErrCode = @ErrCode output,
+			@ErrMsg = @ErrMsg output
+	
+	IF @ErrCode > 0 
+	BEGIN
+		-- ROLLBACK MANUALLY	
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID  
 		
+		RETURN
+	END	
+	/*
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -747,7 +766,8 @@ BEGIN
 					
 		RETURN
 	END
-	
+	*/
+
 	DECLARE	 @UplineSecurityCode			VARCHAR(50)
 			,@isForcedChangeSecurityCode	BIT
 			
@@ -866,10 +886,7 @@ BEGIN
 			
 	SET NOCOUNT OFF
 END
-
-
-
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerInsMember_CloneSetting_MAg TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].Acc_CustomerInsMember_CloneSetting_MAg TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [vnteam] AS [dbo]
