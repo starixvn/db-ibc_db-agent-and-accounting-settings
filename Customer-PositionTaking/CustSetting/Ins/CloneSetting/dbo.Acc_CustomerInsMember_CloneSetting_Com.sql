@@ -22,7 +22,7 @@ AS
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/CustDB  
+ DB: DBTXN/CustDB 
   
  History:  
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
@@ -785,6 +785,6 @@ END
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbadminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]

@@ -185,6 +185,8 @@ Begin DataProject = "AgentPT"
             Script = "dbo.Acc_CustomerInsUserInfo_Rollback.proc.sql"
             Begin Folder = "ExecRep_CustomerInfo"
                Script = "dbo.Acc_CustomerInfo_Execrep_00.sql"
+               Script = "dbo.Acc_CustomerInfo_Execrep_01.sql"
+               Script = "dbo.Acc_CustomerInfo_Execrep_02.sql"
             End
             Begin Folder = "Security Code"
                Script = "dbo.Acc_CustomerInsMember_Ag.sql"

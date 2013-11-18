@@ -13,11 +13,11 @@ AS
 /*
 Created: 20131011@Elodie
 Task : Update HR Fixed Odds status for customer [Redmine:#6505]
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original:
 
 Revisions:
-		
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)		
 Param's Explanation:
 • @custid: customer id.   
 • @DisabledHRFixedOdds: status
@@ -82,7 +82,7 @@ begin
 	IF @UplineDisableHRFixedOdds = 1
 	BEGIN
 		SELECT @ErrMsg =  CASE @Language 
-							WHEN 'E' THEN 'Your account was disabled Horse Racing betting. Cannot edit customer.'
+							WHEN 'E' THEN 'Your account was disabled Horse Racing Fixed Odds betting. Cannot edit customer.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](60017,@Language)
 						END, @ErrCode = 105
 		return
@@ -109,7 +109,7 @@ end
 IF (@DisableHRFixedOdds = 1 or (@DisableHRFixedOdds = 0 and @EnableDownlinesHRFixedOdds = 1)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130926@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_04]
+	EXEC [Acc_ExecRep_Cust_04]
 		@CustID		= @CustID,
 		@RoleID		= @RoleID,
 		@Action		= 'DisableHRFixedOdds',
@@ -170,6 +170,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	 ,
 		@duration = @duration		
 END CATCH
+
 
 
 GO

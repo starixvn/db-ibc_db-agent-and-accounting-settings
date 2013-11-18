@@ -25,7 +25,7 @@ AS
  Task: Add new agent from existing agents 
 	(#436.2 IRP - AgeSite - Search&Copy feature to feature to facilitate downline creation) 
  
- DB: DBTXN/bodb02
+ DB: DBTXN/CustDB
   
  History:  
 	- 20120323 @Dan: check roleid and the master of existing agent before copying 
@@ -41,7 +41,8 @@ AS
 	- 20130328@Jamie: Add CustLoginInfo
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
-	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
+	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
+	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520]
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...[Redmine:#3244]
  Explanation's Param:  
 	• @ErrCode:
@@ -111,7 +112,6 @@ BEGIN
 
 	--CREDIT CHECK
 	DECLARE @Credit_AllOtherAgent MONEY, @Credit_MAg MONEY
-
 	
 	SELECT @Credit_MAg = ISNULL(credit, 0)		
 	FROM CustInfo as ci with (NOLOCK) 
@@ -268,20 +268,15 @@ BEGIN
 	END  
 
 	DECLARE @enableUpline bit, @doubleCommLosingUpline bit
-	
-	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing
+	Declare @autosuspend BIT,
+			@autosuspend2 BIT
+
+	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing,
+		@autosuspend = ISNULL(autosuspend, 0),
+		@autosuspend2 = ISNULL(autosuspend2, 0)
 	from custinfo with (nolock)
 	where custid = @mrecommend
 	
-	-- autosuspend's upline
-	DECLARE @autosuspend BIT,
-		@autosuspend2 BIT
-
-	select @autosuspend = ISNULL(autosuspend, 0),
-		@autosuspend2 = ISNULL(autosuspend2, 0)
-	from custInfo with(NOLOCK)
-	where custid = @mrecommend
-
 
 	-- insert CustInfo info
 	INSERT INTO dbo.custInfo
@@ -348,6 +343,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,DoubleCommLosing
 			,DisableCasinoBonus
+			, DisableHRFixedOdds
+			,maxpermatch154
 			)
      SELECT
 			@custid
@@ -413,6 +410,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,@doubleCommLosingUpline as DoubleCommLosing
 			,1
+			,DisableHRFixedOdds
+			,maxpermatch154
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         
@@ -432,11 +431,11 @@ BEGIN
 	END
 	
 	EXEC dbo.Acc_CustomerInfo_Execrep_02
-			@custid = @custid,
-			@ExistingCustid = @ExistingCustid,
-			@Language = @Language,
-			@ErrCode = @ErrCode output,
-			@ErrMsg = @ErrMsg output
+		@custid = @custid,
+		@ExistingCustid = @ExistingCustid,
+		@Language = @Language,
+		@ErrCode = @ErrCode output,
+		@ErrMsg = @ErrMsg output
 	
 	IF @ErrCode > 0 
 	BEGIN
@@ -446,8 +445,8 @@ BEGIN
 		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID  
 		
 		RETURN
-	END	
-	/*
+	END
+	/*	
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -767,7 +766,7 @@ BEGIN
 		RETURN
 	END
 	*/
-
+	
 	DECLARE	 @UplineSecurityCode			VARCHAR(50)
 			,@isForcedChangeSecurityCode	BIT
 			
@@ -886,6 +885,10 @@ BEGIN
 			
 	SET NOCOUNT OFF
 END
+
+
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbDownlineNet] AS [dbo]
 GO

@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -65,7 +65,7 @@
 	@v99spositiontaking_20 SMALLMONEY = 0,
 	
 	--HR Fixed Odds
---	@v154spositiontaking_20 SMALLMONEY = 0,
+	@v154spositiontaking_20 SMALLMONEY = 0,
 	
 	@v151spositiontaking_31 smallmoney = 0,
 	@v151spositiontaking_32 smallmoney = 0,
@@ -157,7 +157,7 @@
 	@auto_v99spositiontaking_9 smallmoney = 0,
 	
 	--HR Fixed Odds
-	--@auto_v154spositiontaking_20 SMALLMONEY = 0,
+	@auto_v154spositiontaking_20 SMALLMONEY = 0,
 	
 	@auto_v161spositiontaking_81 smallmoney = 0,            
 	@auto_v161spositiontaking_83 smallmoney = 0,
@@ -294,7 +294,7 @@
 	@v99mpositiontaking_20 SMALLMONEY = 0,
 	
 	--HR Fixed Odds
---	@v154mpositiontaking_20 SMALLMONEY = 0,
+	@v154mpositiontaking_20 SMALLMONEY = 0,
 	
 	@v151mpositiontaking_31 smallmoney = 0,
 	@v151mpositiontaking_32 smallmoney = 0,
@@ -528,7 +528,7 @@
 	@v99apositiontaking_20 SMALLMONEY = 0,
 	
 	--HR Fixed Odds
---	@v154apositiontaking_20 SMALLMONEY = 0,
+	@v154apositiontaking_20 SMALLMONEY = 0,
 	
 	--v161
 	@v161apositiontaking_81 SMALLMONEY = 0,
@@ -568,8 +568,8 @@
 	@MinBetv99MP MONEY = 0,
 	@MaxBetv99MP MONEY = 0,		
 	--HR Fixed Odds
-	--@MinBetv154 MONEY = 0,
-	--@MaxBetv154 MONEY = 0,		
+	@MinBetv154 MONEY = 0,
+	@MaxBetv154 MONEY = 0,		
 	--Number game
 	@MinBetv161 MONEY = 0,
 	@MaxBetv161 MONEY = 0,	
@@ -594,7 +594,7 @@
 	@playerdiscount1x2 decimal(9,8)=0,	
 	
 	@playerdiscountnumber decimal(9,8)=0,
-	--@playerdiscountHRFixedOdds decimal(9,8)=0,
+	@playerdiscountHRFixedOdds decimal(9,8)=0,
 	
 	@v151playerdiscount_31 decimal(9,8) = 0,
 	@v151playerdiscount_41 decimal(9,8) = 0,
@@ -651,9 +651,9 @@
 	@v162sdiscount_1101 decimal(9,8) = 0,
 	
 	--v154
-	--@discountHRFixedOdds decimal(9,8) = 0,
-	--@adiscountHRFixedOdds decimal(9,8) = 0,
-	--@sdiscountHRFixedOdds decimal(9,8) = 0,
+	@discountHRFixedOdds decimal(9,8) = 0,
+	@adiscountHRFixedOdds decimal(9,8) = 0,
+	@sdiscountHRFixedOdds decimal(9,8) = 0,
 	
 	@UplineSyncLiveCasino BIT = 0,
 	
@@ -666,7 +666,7 @@
 		Created: Johnson
 		Date: 20131106
 		Task: Apply execrep when insert into custsetting/custsetting3rd
-		DB: DBTXN/bodb02
+		DB: DBTXN/CustDB
 		
 		Revisions:
 		
@@ -735,7 +735,7 @@ SET NOCOUNT ON
 		--Mix Sports Parlay
 		UNION ALL	SELECT @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, @v99spositiontaking_9, 0,0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0
 		--HR Fixed Odds
-	--	UNION ALL	SELECT @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0
+		UNION ALL	SELECT @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -853,7 +853,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 3, 99, 0, @v99spositiontaking_3, 0, 0.9
 		UNION ALL SELECT @custid, 9, 99, 0, @v99spositiontaking_9, 0, 0.9
 		UNION ALL SELECT @custid, 20, 99, 0, @v99spositiontaking_20, 0, 0.9
-		--UNION ALL SELECT @custid, 20, 154, 0, @v154spositiontaking_20, 0, 0.9
+		UNION ALL SELECT @custid, 20, 154, 0, @v154spositiontaking_20, 0, 0.9
 
 
 		IF @@ERROR <> 0
@@ -1134,7 +1134,7 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0
 		--UNION ALL
-		--select @custid, 20, 154, @v154spositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @auto_v154spositiontaking_20, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, @minbetv154, @maxbetv154, 0, 0, @isauto_v154spositiontaking_20, 0
+		select @custid, 20, 154, @v154spositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @auto_v154spositiontaking_20, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, @minbetv154, @maxbetv154, 0, 0, @isauto_v154spositiontaking_20, 0
 
 
 		if @@Error <> 0
@@ -1280,7 +1280,7 @@ SET NOCOUNT ON
 		UNION ALL select @custid, 9, 99, 0, 0.9, 0, 0.9
 
 		UNION ALL select @custid, 20, 99, 0, 0.9, 0, 0.9
-		--UNION ALL select @custid, 20, 154, 0, 0.9, 0, 0.9
+		UNION ALL select @custid, 20, 154, 0, 0.9, 0, 0.9
 
 
 		if @@Error <> 0
@@ -1567,7 +1567,7 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv99mp, @MaxBetv99mp, @auto_v99mpositiontaking_9, 0, @isauto_v99mpositiontaking_9, 0
 		--UNION ALL
-		--select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, @auto_v154mpositiontaking_20, 0, @isauto_v154mpositiontaking_20, 0
+		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, @auto_v154mpositiontaking_20, 0, @isauto_v154mpositiontaking_20, 0
 
 		if @@error <> 0
 		BEGIN
@@ -1990,7 +1990,7 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0
 		--UNION ALL
-		--select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, @playerdiscountHRFixedOdds, @discountHRFixedOdds, @adiscountHRFixedOdds, @sdiscountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0
+		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, @playerdiscountHRFixedOdds, @discountHRFixedOdds, @adiscountHRFixedOdds, @sdiscountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0
 
 
 		if @@Error <> 0
