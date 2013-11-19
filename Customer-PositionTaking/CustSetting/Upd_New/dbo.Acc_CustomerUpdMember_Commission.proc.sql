@@ -88,7 +88,7 @@ BEGIN
 	SELECT @Old_playerdiscountcs=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 4
 	SELECT @Old_playerdiscount1x2=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 1 AND bettype = 5
 	SELECT @Old_playerdiscountHRFixedOdds=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND sporttype = 154 AND bettype = 20	
-	SELECT @Old_playerdiscountnumber=playerdiscount FROM custsetting WITH (NOLOCK) WHERE custid = @custid AND Sporttype = 161 AND bettype = 81	
+	SELECT @Old_playerdiscountnumber=playerdiscount FROM custsetting3rd WITH (NOLOCK) WHERE custid = @custid AND Sporttype = 161 AND bettype = 81	
 
 	--Get g2
 	SELECT 
@@ -233,7 +233,7 @@ END CATCH
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Commission] TO [bodbDownlineNet] AS [dbo]
 GO
