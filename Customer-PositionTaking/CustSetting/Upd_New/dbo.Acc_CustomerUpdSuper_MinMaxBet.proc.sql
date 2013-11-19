@@ -70,7 +70,6 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
-	- 20131108@Elodie: Splitting bodb02 into CustDB (call sportype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -112,7 +111,7 @@ EXEC Acc_CustomerSelMinMax @custid,
 	@MinBetv11 = @old_MinBetv11 output, @MaxBetv11 =@old_MaxBetv11 output, @MaxPerMatchv11 =@old_MaxPerMatchv11 output,
 	@MinBetv99 = @old_MinBetv99 output, @MaxBetv99 =@old_MaxBetv99 output, @MaxPerMatchv99 =@old_MaxPerMatchv99 output,
 	@MinBetv99MP = @old_MinBetv99MP output, @MaxBetv99MP =@old_MaxBetv99MP output, @MaxPerMatchv99MP =@old_MaxPerMatchv99MP output,
-	@MinBetv154 = @old_MinBetv154 output, @MaxBetv154 = @old_MinBetv154 output, @MaxPerMatchv154 =@old_MinBetv154 output,    
+	@MinBetv154 = @old_MinBetv154 output, @MaxBetv154 = @old_MaxBetv154 output, @MaxPerMatchv154 =@old_MaxPerMatchv154 output,    
 	@MinBetv161 = @old_MinBetv161 output, @MaxBetv161 =@old_MaxBetv161 output, @MaxPerMatchv161 =@old_MaxPerMatchv161 output, @MaxPerBallv161 =@old_MaxPerBallv161 output
 	
    
@@ -192,8 +191,8 @@ begin
 end
 
 select @ErrType = ''
-select @ErrType = @ErrType +  (case when MP=0 then s.sportname else 'Mixed Sports' end )       + ', '
-from bodb02.dbo.sports s with (NOLOCK) inner join
+select @ErrType = @ErrType +  (case when MP=0 then sportname else 'Mixed Sports' end )       + ', '
+from sports with (NOLOCK) inner join
 (
 				select 1 as sporttype,0 as MP, @MinBet as MinBet, @MaxBet as MaxBet, @MaxPerMatch as MaxPerMatch
 	union all	select 2 as sporttype,0 as MP, @MinBetv2 as MinBet, @MaxBetv2 as MaxBet, @MaxPerMatchv2 as MaxPerMatch
@@ -206,7 +205,7 @@ from bodb02.dbo.sports s with (NOLOCK) inner join
 	union all	select 99 as sporttype,1 as MP, @MinBetv99MP as MinBet, @MaxBetv99MP as MaxBet, @MaxPerMatchv99MP as MaxPerMatch	 
 	union all	select 154 as sporttype,0 as MP, @MinBetv154 as MinBet, @MaxBetv154 as MaxBet, @MaxPerMatchv154 as MaxPerMatch	 
 	union all	select 161 as sporttype,0 as MP, @MinBetv161 as MinBet, @MaxBetv161 as MaxBet, @MaxPerMatchv161 as MaxPerMatch	 
-) as b on s.sporttype = b.sporttype
+) as b on sports.sporttype = b.sporttype
 where (MinBet<>0 and MaxBet <> 0 and  MinBet>MaxBet) 
 or (MaxBet<> 0 and MaxPerMatch <> 0 and MaxBet>MaxPerMatch) 
 or (MinBet <> 0 and MaxPerMatch <> 0 and MinBet>MaxPerMatch) 
@@ -495,7 +494,8 @@ END CATCH
 
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [vnteam] AS [dbo]
