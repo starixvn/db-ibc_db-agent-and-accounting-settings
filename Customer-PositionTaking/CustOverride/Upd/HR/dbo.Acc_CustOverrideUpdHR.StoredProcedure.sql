@@ -1,12 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdHR]    Script Date: 10/29/2013 03:54:12 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 7/23/2013 6:12:55 PM ******/
-
+﻿
 ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
 	@custid int,
 
@@ -99,30 +91,17 @@ declare @IsValid bit, @totalDownlines int
 declare @ErrAcc varchar(4000)
 
 
- --Disable on Weekend's peak hour, from 7PM - 2AM (GMT+8)
-if @roleid in (3, 4) and datename(weekday, getdate()) in ('Saturday','Sunday') and datepart(hour, getdate()) between 7 and  14
-BEGIN
-	SELECT @totalDownlines = count(custid) FROM Custinfo WITH (NOLOCK) WHERE case @roleid when 4 then srecommend else mrecommend end = @custID 
-	IF @totalDownlines >  500
-	BEGIN 		
-		Select @ErrCode = 100
-		Select @ErrMsg = 	case @Language 
-							when 'E' then 'This function is not available during peak hour at weekend since it might affect the performance of the whole system. Please contact IT for further assistance.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90010,@Language)
-					end
-		RETURN
-	END 
-END
-
-/*
-if not exists (select 1 from custinfo with (nolock) where custid = @custid and srecommend in (181940,197461))
-BEGIN
---	declare @ErrMsg varchar(200)
-	Select @ErrMsg = 'Sorry, please try again later.'
-	RaisError (@ErrMsg, 16, 1)
-	return
-END
-*/
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 
 --Check Old_minmax <> New_minmax
 Declare 	 
@@ -715,6 +694,7 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet] AS [dbo]
 GO
