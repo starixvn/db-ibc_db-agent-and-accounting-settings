@@ -13,7 +13,7 @@ DB: DBTXN/bodb02
 Original:
 
 Revisions:	
-	20130926@Kathy: Apply Exec Rep
+	- 20131118@Kathy: Apply exec rep [Redmine:#3244]
 
 Param's Explanation:
 	• @custid: super id.   
@@ -73,18 +73,12 @@ SELECT @db_v162discount_1101 = sdiscount
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
-BEGIN TRY
-	--20130924@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_04]
-				@CustID		= @CustID,
-				@RoleID		= @RoleID,
-				@Action		= 'UpdateLiveCasinoComm',
-				@UpdateLiveCasinoComm = @v162discount_1101
-END TRY
-BEGIN CATCH
-	SELECT @ErrMsg = 'Update process is unsuccessful!', @ErrCode = 102
-	RETURN
-END CATCH
+	-- exec rep
+EXEC Acc_CustSetting3rd_06
+	@CustId = @custid,
+	@RoleId = @roleid,
+	@v162discount_1101 = @v162discount_1101,-- Live Casino
+	@mode = 'LiveCasinoUpdAll'
 
 
 -- write log
@@ -143,7 +137,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH					
+END CATCH				
+					
 
 GO
 GRANT VIEW DEFINITION ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [vnteam]
