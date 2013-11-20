@@ -1013,7 +1013,7 @@ SET NOCOUNT ON
 			RETURN
 		END     
 
-		INSERT INTO [bodb02].[dbo].[CustOverrideGame]
+		INSERT INTO CustOverrideGame
 				   ([CustID]
 				   ,[Bettype]
 				   ,[Sporttype]
@@ -1133,7 +1133,7 @@ SET NOCOUNT ON
 		-- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0
-		--UNION ALL
+		UNION ALL
 		select @custid, 20, 154, @v154spositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @auto_v154spositiontaking_20, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, @minbetv154, @maxbetv154, 0, 0, @isauto_v154spositiontaking_20, 0
 
 
@@ -1448,7 +1448,7 @@ SET NOCOUNT ON
 			RETURN
 		END
 
-		INSERT INTO [bodb02].[dbo].[CustOverrideGame]
+		INSERT INTO [CustOverrideGame]
 				   ([CustID]
 				   ,[Bettype]
 				   ,[Sporttype]
@@ -1566,7 +1566,7 @@ SET NOCOUNT ON
 		--- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv99mp, @MaxBetv99mp, @auto_v99mpositiontaking_9, 0, @isauto_v99mpositiontaking_9, 0
-		--UNION ALL
+		UNION ALL
 		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, @auto_v154mpositiontaking_20, 0, @isauto_v154mpositiontaking_20, 0
 
 		if @@error <> 0
@@ -1989,7 +1989,7 @@ SET NOCOUNT ON
 		select @custid, 9, 99, @v99apositiontaking_9, isnull(@v99mpositiontaking_9,0), isnull(@v99spositiontaking_9,0), 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0
-		--UNION ALL
+		UNION ALL
 		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, @playerdiscountHRFixedOdds, @discountHRFixedOdds, @adiscountHRFixedOdds, @sdiscountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0
 
 

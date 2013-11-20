@@ -114,7 +114,7 @@
 	@v99spositiontaking_20 smallmoney,
 	
 	--HR Fixed Odds
-	@v154spositiontaking_20 SMALLMONEY = 0,
+	@v154spositiontaking_20 SMALLMONEY = 0.9,
 	
 	@v161spositiontaking_81 smallmoney,
 	@v161spositiontaking_83 smallmoney,
@@ -1185,8 +1185,9 @@ BEGIN
 	Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 END
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbExtAccNet] AS [dbo]
 GO
