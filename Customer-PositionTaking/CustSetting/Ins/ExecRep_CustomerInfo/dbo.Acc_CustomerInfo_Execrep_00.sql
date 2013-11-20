@@ -657,9 +657,8 @@
 	
 	@UplineSyncLiveCasino BIT = 0,
 	
-	@Language VARCHAR(3) = 'E',
-	@ErrCode INT = 0 OUTPUT,
-	@ErrMsg NVARCHAR(500) = '' OUTPUT
+	@ErrCode INT = 0 OUTPUT
+	
 	
  AS
 	/*
@@ -740,11 +739,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -793,11 +788,7 @@ SET NOCOUNT ON
 		BEGIN
 			--Error Occurs
 			
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -859,11 +850,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -909,11 +896,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -933,11 +916,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -957,11 +936,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -995,11 +970,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -1023,11 +994,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE custSetting WITH (ROWLOCK) WHERE custId  =@custid
@@ -1140,11 +1107,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error Occurs	
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE [custsetting] with (ROWLOCK) where custid =  @custid
@@ -1219,11 +1182,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error Occurs	
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=117
+			SELECT @ErrCode=117
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1286,11 +1245,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=118
+			SELECT @ErrCode=118
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1336,11 +1291,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=119
+			SELECT @ErrCode=119
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1362,11 +1313,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=119
+			SELECT @ErrCode=119
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1391,11 +1338,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end	
-					,  @ErrCode=119
+			SELECT @ErrCode=119
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1430,11 +1373,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1458,11 +1397,7 @@ SET NOCOUNT ON
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
-			SELECT @ErrMsg = CASE @Language 
-									when 'E' then 'Create customer fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								END	
-					, @ErrCode=116
+			SELECT @ErrCode=116
 			
 			-- ROLLBACK MANUALLY
 			DELETE [CustSetting] with (ROWLOCK) where custid =  @custid
@@ -1572,11 +1507,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error occur	
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 114
+			SELECT @ErrCode = 114
 			
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1651,11 +1582,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error occur	
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 114
+			SELECT @ErrCode = 114
 			
 			-- ROLLBACK MANUALLY
 			DELETE CustSetting with (ROWLOCK) where custid =  @custid
@@ -1718,11 +1645,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 115
+			SELECT @ErrCode = 115
 				
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1773,11 +1696,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 115
+			SELECT @ErrCode = 115
 				
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1800,11 +1719,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 115
+			SELECT @ErrCode = 115
 				
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1829,11 +1744,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 115
+			SELECT @ErrCode = 115
 				
 			-- ROLLBACK MANUALLY	
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1856,11 +1767,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 210
+			SELECT @ErrCode = 210
 				
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1881,11 +1788,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 211
+			SELECT @ErrCode = 211
 				
 			-- ROLLBACK MANUALLY
 			DELETE custsetting with (ROWLOCK) where custid =  @custid
@@ -1996,11 +1899,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create member fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40018,@Language)
-								end	
-					, @ErrCode=215
+			SELECT @ErrCode=215
 			
 			-- ROLLBACK MANUALLY
 			Delete custsetting with (ROWLOCK) where custid  =@custid
@@ -2072,11 +1971,7 @@ SET NOCOUNT ON
 		if @@Error <> 0
 		BEGIN
 			--Error occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create member fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40018,@Language)
-								end	
-					, @ErrCode=215
+			SELECT @ErrCode=215
 			
 			-- ROLLBACK MANUALLY
 			Delete custsetting with (ROWLOCK) where custid  =@custid
@@ -2096,11 +1991,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create member fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40018,@Language)
-								end	
-					, @ErrCode=216
+			SELECT @ErrCode=216
 			
 			-- ROLLBACK MANUALLY
 			Delete custsetting with (ROWLOCK) where custid  =@custid
@@ -2141,11 +2032,7 @@ SET NOCOUNT ON
 		if @@error <> 0
 		BEGIN
 			--Error occurs
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create member fail. Please try again'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40018,@Language)
-								end	
-					, @ErrCode=216
+			SELECT @ErrCode=216
 			
 			-- ROLLBACK MANUALLY
 			Delete custsetting with (ROWLOCK) where custid  =@custid
@@ -2164,11 +2051,7 @@ SET NOCOUNT ON
 		BEGIN
 
 			--Error occur
-			SELECT @ErrMsg = case @Language 
-									when 'E' then 'Create customer failed. Please try again.'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-								end,
-				@ErrCode = 210
+			SELECT @ErrCode = 210
 				
 			-- ROLLBACK MANUALLY
 			Delete custsetting with (ROWLOCK) where custid  =@custid

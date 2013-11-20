@@ -54,7 +54,6 @@ BEGIN
 	BEGIN		
 		if @mode = 'horse'
 		BEGIN
-			----------------------------------------------------------------------------
 			--s1=min(s1,s4-m3) if i=0
 			update cs
 				set cs.spositiontaking = scs.spositiontaking - mcs.mpositiontaking
@@ -68,7 +67,6 @@ BEGIN
 				and cs.sporttype between 151 and 153
 
 
-			----------------------------------------------------------------------------
 			--check agent min
 			--a1=max(a1,n2)
 			Update cs 
@@ -82,7 +80,6 @@ BEGIN
 			where cs.apositiontaking<aco.minpositiontaking
 				and cs.sporttype between 151 and 153
 
-			----------------------------------------------------------------------------
 			--check agent max
 			--a1=min(a1,l2)
 			Update cs 
@@ -93,11 +90,9 @@ BEGIN
 				inner join CustOverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=cs.sporttype and aco.bettype=cs.bettype
 			where cs.apositiontaking>aco.maxpositiontaking
 				and cs.sporttype between 151 and 153
-			----------------------------------------------------------------------------
-
+			
 
 			--Recal AUTO MPT m1=min(m3-a1,u2)
-			-------------------------------------------------------------------------------------
 			Update cs 
 				set mpositiontaking = 
 					case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
@@ -115,9 +110,7 @@ BEGIN
 				and cs.sporttype between 151 and 153
 
 		    	
-			-------------------------------------------------------------------------------------
-
-
+			
 			--check master min
 			--m1=max(m1,n3-a1)
 			Update cs
@@ -129,7 +122,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
 				and cs.sporttype between 151 and 153
 
-			----------------------------------------------------------------------------
 			--check master max
 			Update cs
 				set @maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
@@ -146,7 +138,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
 				and cs.sporttype between 151 and 153
 
-			----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			--recal autopos
 			Update cs
 				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
@@ -162,8 +153,7 @@ BEGIN
 				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
 				and cs.sporttype between 151 and 153
 
-			----------------------------------------------------------------------------
-
+			
 			--check super min
 			--s1=max(n4-m1-a1,s1)
 			Update cs
@@ -208,14 +198,12 @@ BEGIN
 			RETURN
 		    
 		END--end mode = horse
-		------------
-
+		
 		if @mode = 'number'
 		BEGIN
 			Declare @_srecommend int
 			select @_srecommend = @srecommend
 
-			----------------------------------------------------------------------------
 			--s1=min(s1,s4-m3) if i=0
 		    
 			--v161
@@ -235,7 +223,6 @@ BEGIN
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90)
 				and custsetting3rd.isautolivepositiontaking=0 and mcs.isautolivepositiontaking=0 and scs.slivepositiontaking - mcs.mlivepositiontaking<custsetting3rd.slivepositiontaking	
 		    	
-			----------------------------------------------------------------------------
 			--check agent min
 			--a1=max(a1,n2)    
 			--v161
@@ -258,7 +245,6 @@ BEGIN
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking<aco.minlivepositiontaking
 
 
-			----------------------------------------------------------------------------
 			--check agent max
 			--a1=min(a1,l2)    
 			--v161
@@ -276,12 +262,9 @@ BEGIN
 				inner join custoverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting3rd.sporttype and aco.bettype=custsetting3rd.bettype
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking>aco.maxlivepositiontaking
 
-			----------------------------------------------------------------------------
-
 
 			--Recal AUTO MPT m1=min(m3-a1,u2)
-			-------------------------------------------------------------------------------------
-		   
+			
 			--v161
 			Update custsetting3rd with (ROWLOCK, UPDLOCK) 
 				set mpositiontaking = 
@@ -316,9 +299,7 @@ BEGIN
 				and custsetting3rd.sporttype = 161
 				and custsetting3rd.bettype in (85,86,87,89,90)
 				and (acs.isautolivempositiontaking = 1 or custsetting3rd.isautolivempositiontaking = 1)	
-		    	
-			-------------------------------------------------------------------------------------
-
+		    
 
 			--check master min
 			--m1=max(m1,n3-a1)
@@ -338,7 +319,6 @@ BEGIN
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking<mco.minlivepositiontaking
 
 
-			----------------------------------------------------------------------------
 			--check master max   
 			--v161
 			Update custsetting3rd with (ROWLOCK, UPDLOCK) set 
@@ -367,7 +347,6 @@ BEGIN
 				inner join custoverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting3rd.sporttype and aco.bettype=custsetting3rd.bettype
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking>mco.maxlivepositiontaking
 
-			----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			--recal autopos   
 		    	
 			--v161
@@ -401,8 +380,7 @@ BEGIN
 				and custsetting3rd.bettype in (85,86,87,89,90)
 				and (custsetting3rd.isautolivepositiontaking=1 or mcs.isautolivepositiontaking=1)	
 		    	
-			----------------------------------------------------------------------------
-
+			
 			--check super min
 			--s1=max(n4-m1-a1,s1)    
 			--v161
@@ -420,8 +398,7 @@ BEGIN
 				inner join custoverride3rd as sco with (NOLOCK) on sco.custid = @_srecommend  and sco.sporttype=custsetting3rd.sporttype and sco.bettype=custsetting3rd.bettype
 			where custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking+custsetting3rd.slivepositiontaking<sco.minlivepositiontaking
 
-			----------------------------------------------------------------------------
-
+			
 
 			--update s1,m1,a1 in case s1+m1+a1>s4
 			--s1=max(0,s4-m1-a1)
@@ -476,7 +453,6 @@ BEGIN
 
 		if @mode = 'finance'
 		BEGIN
-			----------------------------------------------------------------------------
 			--s1=min(s1,s4-m3) if i=0
 			update cs
 				set cs.spositiontaking = scs.spositiontaking - mcs.mpositiontaking
@@ -490,7 +466,6 @@ BEGIN
 				and cs.sporttype = 201
 
 
-			----------------------------------------------------------------------------
 			--check agent min
 			--a1=max(a1,n2)
 			Update cs 
@@ -504,7 +479,6 @@ BEGIN
 			where cs.apositiontaking<aco.minpositiontaking
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------
 			--check agent max
 			--a1=min(a1,l2)
 			Update cs
@@ -516,11 +490,8 @@ BEGIN
 			where cs.apositiontaking>aco.maxpositiontaking
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------
-
 
 			--Recal AUTO MPT m1=min(m3-a1,um2)
-			-------------------------------------------------------------------------------------
 			Update cs 
 				set mpositiontaking = 
 					case when mcs.mpositiontaking-cs.apositiontaking > (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
@@ -537,9 +508,7 @@ BEGIN
 				and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
 				and cs.sporttype = 201
 
-		    	
-			-------------------------------------------------------------------------------------
-
+		   
 
 			--check master min
 			--m1=max(m1,n3-a1)
@@ -552,7 +521,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------
 			--check master max
 			Update cs 
 				set @maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
@@ -569,7 +537,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			--recal autopos
 			Update cs
 				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
@@ -585,8 +552,7 @@ BEGIN
 				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------
-
+			
 			--check super min
 			--s1=max(n4-m1-a1,s1)
 			Update cs
@@ -598,8 +564,7 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking<sco.minpositiontaking
 				and cs.sporttype = 201
 
-			----------------------------------------------------------------------------
-
+			
 			Update cs
 				set @spos = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking<0 then 0 else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end,
 					spositiontaking = @spos,
@@ -626,7 +591,6 @@ BEGIN
 		
 		if @mode = 'virtual-sports'
 		BEGIN
-			----------------------------------------------------------------------------
 			--s1=min(s1,s4-m3) if i=0
 			update cs
 				set cs.spositiontaking = scs.spositiontaking - mcs.mpositiontaking
@@ -639,7 +603,6 @@ BEGIN
 				and scs.spositiontaking - mcs.mpositiontaking<cs.spositiontaking
 				and cs.sporttype in(180, 181, 186)
 
-			----------------------------------------------------------------------------
 			--check agent min
 			--a1=max(a1,n2)
 			Update cs 
@@ -653,7 +616,6 @@ BEGIN
 			where cs.apositiontaking<aco.minpositiontaking
 				and cs.sporttype in(180, 181, 186)
 
-			----------------------------------------------------------------------------
 			--check agent max
 			--a1=min(a1,l2)
 			Update cs 
@@ -664,11 +626,9 @@ BEGIN
 				inner join CustOverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=cs.sporttype and aco.bettype=cs.bettype
 			where cs.apositiontaking>aco.maxpositiontaking
 				and cs.sporttype in(180, 181, 186)
-			----------------------------------------------------------------------------
-
+			
 
 			--Recal AUTO MPT m1=min(m3-a1,u2)
-			-------------------------------------------------------------------------------------
 			Update cs 
 				set mpositiontaking = 
 					case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
@@ -686,9 +646,7 @@ BEGIN
 				and cs.sporttype in(180, 181, 186)
 
 		    	
-			-------------------------------------------------------------------------------------
-
-
+			
 			--check master min
 			--m1=max(m1,n3-a1)
 			Update cs
@@ -700,7 +658,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
 				and cs.sporttype in(180, 181, 186)
 
-			----------------------------------------------------------------------------
 			--check master max
 			Update cs
 				set @maxmapos = case when mcs.mpositiontaking>mco.maxpositiontaking then mco.maxpositiontaking else mcs.mpositiontaking end,
@@ -717,7 +674,6 @@ BEGIN
 			where cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
 				and cs.sporttype in(180, 181, 186)
 
-			----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			--recal autopos
 			Update cs
 				set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
@@ -732,8 +688,6 @@ BEGIN
 				and c.roleid = 1
 				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
 				and cs.sporttype in(180, 181, 186)
-
-			----------------------------------------------------------------------------
 
 			--check super min
 			--s1=max(n4-m1-a1,s1)
@@ -780,7 +734,6 @@ BEGIN
 		END-- end mode = 'virtual-sports'
 		if @mode = 'LiveCasino'
 		BEGIN		
-			----------------------------------------------------------------------------
 			--s1=min(s1,s4-m3) if i=0 & syncLC = 1
 			UPDATE cs
 			SET cs.spositiontaking = scs.spositiontaking - mcs.mpositiontaking
@@ -793,7 +746,6 @@ BEGIN
 				AND (mcs.isautopositiontaking = 0 OR cs.isautopositiontaking = 0) AND scs.spositiontaking - mcs.mpositiontaking < cs.spositiontaking
 				
 
-			----------------------------------------------------------------------------
 			--check agent min
 			--a1=max(a1,n2)
 			--m1=min(m3-n2,m1)
@@ -810,7 +762,6 @@ BEGIN
 
 
 			--Recal AUTO MPT m1=min(m3-a1,u2)
-			-------------------------------------------------------------------------------------
 			UPDATE cs
 			SET cs.mpositiontaking = CASE WHEN mcs.mpositiontaking - cs.apositiontaking > CASE WHEN cs.isautompositiontaking = 1 THEN cs.autompositiontaking ELSE acs.autompositiontaking END
 							THEN CASE WHEN cs.isautompositiontaking = 1 THEN cs.autompositiontaking ELSE acs.autompositiontaking END
@@ -835,7 +786,6 @@ BEGIN
 				AND cs.sporttype = 162 AND cs.bettype = 1101 
 
 
-			----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			--recal autopos
 			UPDATE cs
 			SET cs.spositiontaking = CASE WHEN scs.spositiontaking - cs.mpositiontaking - cs.apositiontaking > CASE WHEN cs.isautopositiontaking = 1 THEN cs.autopositiontaking ELSE mcs.autopositiontaking END THEN
@@ -849,8 +799,6 @@ BEGIN
 				AND cs.sporttype = 162 AND cs.bettype = 1101 
 				AND (cs.isautopositiontaking = 1 OR mcs.isautopositiontaking = 1)
 				
-			----------------------------------------------------------------------------
-
 			--check super min
 			--s1=max(n4-m1-a1,s1)
 			UPDATE cs

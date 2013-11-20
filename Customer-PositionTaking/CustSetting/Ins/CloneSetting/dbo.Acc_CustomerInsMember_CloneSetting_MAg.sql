@@ -433,12 +433,17 @@ BEGIN
 	EXEC dbo.Acc_CustomerInfo_Execrep_02
 		@custid = @custid,
 		@ExistingCustid = @ExistingCustid,
-		@Language = @Language,
-		@ErrCode = @ErrCode output,
-		@ErrMsg = @ErrMsg output
+		
+		@ErrCode = @ErrCode output
+		
 	
 	IF @ErrCode > 0 
 	BEGIN
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+											
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID

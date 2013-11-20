@@ -1,9 +1,8 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
 	@custid INT =0,
 	@ExistingCustid INT = 0,
-	@Language VARCHAR(3) = 'E',
-	@ErrCode INT = 0 OUTPUT,
-	@ErrMsg NVARCHAR(500) = '' OUTPUT
+	
+	@ErrCode INT = 0 OUTPUT
 AS
 /*
 	Created: Johnson
@@ -62,11 +61,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 107
+		SELECT @ErrCode = 107
 		RETURN				
 	END
 	
@@ -101,11 +96,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 108
+		SELECT @ErrCode = 108
 					
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -134,11 +125,7 @@ BEGIN
 	if @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 109
+		SELECT @ErrCode = 109
 			
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -169,11 +156,7 @@ BEGIN
 	IF @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 110
+		SELECT @ErrCode = 110
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -194,11 +177,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 111
+		SELECT @ErrCode = 111
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -220,11 +199,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 112
+		SELECT @ErrCode = 112
 			
 		-- ROLLBACK MANUALLY			
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -274,11 +249,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 113
+		SELECT @ErrCode = 113
 			
 		-- ROLLBACK MANUALLY				
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -301,11 +272,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 114
+		SELECT @ErrCode = 114
 			
 		-- ROLLBACK MANUALLY		
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
