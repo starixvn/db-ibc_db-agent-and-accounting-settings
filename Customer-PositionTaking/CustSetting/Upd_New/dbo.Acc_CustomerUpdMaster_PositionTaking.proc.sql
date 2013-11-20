@@ -4360,7 +4360,7 @@ Select @TrackingValue2 = '<Acc_CustomerUpdMaster_PositionTaking><info Updallmemb
 -- mixed sports
 'a_v99spt_9="'+ coalesce(cast(@Old_auto_v99spositiontaking_9 as varchar(50)),space(1)) + '" ' +
 --v154
-'v154spt_20="'+ coalesce(cast(@Old_auto_v154spositiontaking_20 as varchar(50)),space(1)) + '" ' +
+'a_v154spt_20="'+ coalesce(cast(@Old_auto_v154spositiontaking_20 as varchar(50)),space(1)) + '" ' +
 -- number game
 'a_v161spt_81="'+ coalesce(cast(@Old_auto_v161spositiontaking_81 as varchar(50)),space(1)) + '" ' +
 'a_v161spt_83="'+ coalesce(cast(@Old_auto_v161spositiontaking_83 as varchar(50)),space(1)) + '" ' +
@@ -4940,7 +4940,7 @@ BEGIN CATCH
 	-- mixed sports
 	'a_v99spt_9="'+ coalesce(cast(@Old_auto_v99spositiontaking_9 as varchar(50)),space(1)) + '" ' +
 	--v154
-	'v154spt_20="'+ coalesce(cast(@Old_auto_v154spositiontaking_20 as varchar(50)),space(1)) + '" ' +
+	'a_v154spt_20="'+ coalesce(cast(@Old_auto_v154spositiontaking_20 as varchar(50)),space(1)) + '" ' +
 	-- number game
 	'a_v161spt_81="'+ coalesce(cast(@Old_auto_v161spositiontaking_81 as varchar(50)),space(1)) + '" ' +
 	'a_v161spt_83="'+ coalesce(cast(@Old_auto_v161spositiontaking_83 as varchar(50)),space(1)) + '" ' +

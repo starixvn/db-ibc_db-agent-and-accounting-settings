@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
+﻿USE [custDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_01]    Script Date: 11/20/2013 13:38:02 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -24,12 +31,23 @@ AS
 	*/	
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 6 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
 			AND xtype = 'U'
-
-	if @IsExistTables <> 6 RETURN
+	
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
 	declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 	

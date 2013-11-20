@@ -674,12 +674,23 @@
 	*/
 BEGIN
 SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 6 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
 			AND xtype = 'U'
 
-	if @IsExistTables <> 6 RETURN
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
 	IF @roleid = 4
 	BEGIN					
