@@ -1,16 +1,16 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_MinMaxBet]  
- @custid   INT,  
- @sporttype SMALLINT,
- @bettype SMALLINT, 
- @UpdDownlinesVS  BIT = 0,  
- @minbet  MONEY = 0,  
- @maxbet  MONEY = 0,  
- @maxpermatch MONEY = 0,   
- @UserID   INT,  
- @Language  VARCHAR(2) = 'E',  
- @ErrCode  INT = 0 OUTPUT,  
- @ErrMsg   NVARCHAR(200) = '' OUTPUT,  
- @IP    VARCHAR(15)=''  
+	@custid   INT,  
+	@sporttype SMALLINT,
+	@bettype SMALLINT, 
+	@UpdDownlinesVS  BIT = 0,  
+	@minbet  MONEY = 0,  
+	@maxbet  MONEY = 0,  
+	@maxpermatch MONEY = 0,   
+	@UserID   INT,  
+	@Language  VARCHAR(2) = 'E',  
+	@ErrCode  INT = 0 OUTPUT,  
+	@ErrMsg   NVARCHAR(200) = '' OUTPUT,  
+	@IP    VARCHAR(15)=''  
 AS  
  /*  
   Created: Scott  
@@ -19,9 +19,11 @@ AS
   DB: DBTXN/BODB02  
     
   Revisions:  
-     - 20130220@Johnson: - add virtual horse racing setting (sporttype: 181)
+    - 20130220@Johnson: - add virtual horse racing setting (sporttype: 181)
 						 - change linked server DB053 to DBAGE
 						 - write log on DBTXN if DBLOG failure
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
+											 
   Parameters Explanation:  
  */   
 SET NOCOUNT ON   
@@ -78,6 +80,8 @@ BEGIN
 
 	SELECT @MaxMaxPerMatch = (case	when @sporttype = 180 then maxpermatch180  
 									when @sporttype = 181 then maxpermatch181   
+									when @sporttype = 182 then maxpermatch182   
+									when @sporttype = 184 then maxpermatch184
 									when @sporttype = 186 then maxpermatch186 else 0 end )
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid = @srecommend  
@@ -93,6 +97,8 @@ BEGIN
     
 	SELECT @MaxMaxPerMatch = MIN(CASE	WHEN @sporttype = 180 then maxpermatch180
 										WHEN @sporttype = 181 then maxpermatch181
+										WHEN @sporttype = 182 then maxpermatch182   
+										WHEN @sporttype = 184 then maxpermatch184
 										WHEN @sporttype = 186 then maxpermatch186 else 0 end)  
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid IN (@srecommend,@mrecommend)  
@@ -108,6 +114,8 @@ BEGIN
     
 	SELECT @MaxMaxPerMatch = MIN(CASE	WHEN @sporttype = 180 then maxpermatch180
 										WHEN @sporttype = 181 then maxpermatch181
+										WHEN @sporttype = 182 then maxpermatch182   
+										WHEN @sporttype = 184 then maxpermatch184
 										WHEN @sporttype = 186 then maxpermatch186 else 0 end)
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid IN (@srecommend,@mrecommend,@recommend)  
@@ -161,6 +169,8 @@ WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 
 SELECT @MaxPerMatch_Old = (CASE WHEN @sporttype = 180 then MaxPerMatch180 
 								WHEN @sporttype = 181 then MaxPerMatch181
+								WHEN @sporttype = 182 then maxpermatch182   
+								WHEN @sporttype = 184 then maxpermatch184
 								WHEN @sporttype = 186 then MaxPermatch186 Else 0 End)
 FROM custinfo WITH(NOLOCK)  
 WHERE custid = @custid  
@@ -177,6 +187,20 @@ IF @sporttype =  181
 BEGIN
 	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
 		SET maxpermatch181 = @maxpermatch			
+	WHERE custid = @custid  
+END	
+
+IF @sporttype =  182
+BEGIN
+	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+		SET maxpermatch182 = @maxpermatch			
+	WHERE custid = @custid  
+END	
+
+IF @sporttype =  184
+BEGIN
+	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+		SET maxpermatch184 = @maxpermatch			
 	WHERE custid = @custid  
 END	
 
@@ -289,6 +313,8 @@ DECLARE @LogSPData VARCHAR(MAX),@LogSPData_Old VARCHAR(2000)
 	END CATCH
 
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [bodbAdminNet]
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [vnteam]
+
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [vnteam] AS [dbo]

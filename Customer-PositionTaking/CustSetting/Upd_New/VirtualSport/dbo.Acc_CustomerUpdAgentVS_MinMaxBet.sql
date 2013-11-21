@@ -24,6 +24,7 @@ Revisions:
 	- 20130221@Johnson: - add virtual horse racing setting (sporttype : 181)
 						- change linked server DB053 to DBAGE, DB03 to DBONUSER
 						- write log on DBTXN if DBLOG failure
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -95,6 +96,8 @@ where ci.custid = @MRecommend
 Select	
 	@MaxMaxperMatch = case	when @sporttype = 180 then isnull(Min(case when cs.MaxPerMatch180 = 0 then NULL else cs.MaxPerMatch180 end),0)
 							when @sporttype = 181 then isnull(Min(case when cs.MaxPerMatch181 = 0 then NULL else cs.MaxPerMatch181 end),0)
+							when @sporttype = 182 then isnull(Min(case when cs.MaxPerMatch182 = 0 then NULL else cs.MaxPerMatch182 end),0)
+							when @sporttype = 184 then isnull(Min(case when cs.MaxPerMatch184 = 0 then NULL else cs.MaxPerMatch184 end),0)
 							when @sporttype = 186 then isnull(Min(case when cs.MaxPerMatch186 = 0 then NULL else cs.MaxPerMatch186 end),0) end
 from 
 	custinfo as cs WITH (NOLOCK) 
@@ -212,6 +215,8 @@ END
 DECLARE @old_maxpermatch money
 SELECT @old_maxpermatch = case	when @sporttype = 180 then maxpermatch180
 								when @sporttype = 181 then maxpermatch181
+								when @sporttype = 182 then maxpermatch182
+								when @sporttype = 184 then maxpermatch184
 								when @sporttype = 186 then maxpermatch186 end
 FROM custinfo WITH(NOLOCK)
 WHERE custid = @custid
@@ -234,6 +239,28 @@ BEGIN
 	BEGIN
 	
 		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS181_1231 
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+	
+	IF (@sporttype = 182)
+	BEGIN
+	
+		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS182_1231 
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+	
+	IF (@sporttype = 184)
+	BEGIN
+	
+		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS184_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -334,11 +361,12 @@ BEGIN CATCH
 END CATCH
 ---------------------------------------------------------
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [vnteam] AS [dbo]

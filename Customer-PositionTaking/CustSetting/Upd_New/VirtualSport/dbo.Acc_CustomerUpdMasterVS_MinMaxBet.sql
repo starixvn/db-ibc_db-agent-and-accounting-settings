@@ -1,5 +1,4 @@
-﻿
- ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet]
 	@custid			INT,
 	@sporttype		INT,
 	@bettype		INT,
@@ -26,6 +25,8 @@
 			- 20121130@Scott:  Add virtual Tennis (sporttype = 186)
 			- 20130221@Johnson: - add virtual horse racing setting
 								- write log on DBTXN if DBLOG failure
+			- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
+											
 		Parameter's Explanation
 	*/
 SET NOCOUNT ON
@@ -52,6 +53,8 @@ SET NOCOUNT ON
 	SELECT @srecommend = srecommend ,
 			@maxpermatch_old = CASE WHEN @sporttype = 180 THEN maxpermatch180 
 									WHEN @sporttype = 181 THEN maxpermatch181 
+									WHEN @sporttype = 182 THEN maxpermatch182 
+									WHEN @sporttype = 184 THEN maxpermatch184
 									WHEN @sporttype = 186 THEN maxpermatch186  END 
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid AND roleid = 3
@@ -66,6 +69,8 @@ SET NOCOUNT ON
 	
 	SELECT @maxmaxpermatch = CASE	WHEN @sporttype = 180 THEN maxpermatch180 
 									WHEN @sporttype = 181 THEN maxpermatch181 
+									WHEN @sporttype = 182 THEN maxpermatch182 
+									WHEN @sporttype = 184 THEN maxpermatch184
 									WHEN @sporttype = 186 THEN maxpermatch186 END 
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @srecommend
@@ -206,6 +211,26 @@ SET NOCOUNT ON
 						@ErrCode = @ErrCode_cur OUTPUT,
 						@ErrMsg = @ErrMsg_Cur OUTPUT
 		END
+		IF (@sporttype = 182)
+		BEGIN 
+		
+			EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
+						@custid = @custid,
+						@MaxPerMatch = @MaxPerMatch,
+						@Language = @Language,
+						@ErrCode = @ErrCode_cur OUTPUT,
+						@ErrMsg = @ErrMsg_Cur OUTPUT
+		END
+		IF (@sporttype = 184)
+		BEGIN 
+		
+			EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
+						@custid = @custid,
+						@MaxPerMatch = @MaxPerMatch,
+						@Language = @Language,
+						@ErrCode = @ErrCode_cur OUTPUT,
+						@ErrMsg = @ErrMsg_Cur OUTPUT
+		END
 		IF (@sporttype = 186)
 		BEGIN
 			
@@ -290,13 +315,12 @@ SET NOCOUNT ON
 			@duration = @duration
 	END CATCH	
 	
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [vnteam]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbDownlineNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbExtAccNet]
 
-
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [vnteam] AS [dbo]
