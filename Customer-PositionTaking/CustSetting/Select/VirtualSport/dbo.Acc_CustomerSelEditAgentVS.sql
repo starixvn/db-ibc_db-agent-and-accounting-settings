@@ -9,6 +9,7 @@ DB: DB053.bodb02
 Revisions:
     	- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
     	- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
 Param's Explanation:
 	• @CustID: agent ID
 */
@@ -22,6 +23,8 @@ Param's Explanation:
 		@HideVirtualSports		BIT,
 		@MaxPerMatch180			MONEY,
 		@MaxPerMatch181			MONEY,
+		@MaxPerMatch182			MONEY,
+		@MaxPerMatch184			MONEY,
 		@MaxPerMatch186			MONEY,
 		
 		@downlines BIT, 
@@ -66,13 +69,17 @@ Param's Explanation:
 							CASE WHEN ci.maxpermatch180 = 0 THEN NULL ELSE ci.maxpermatch180 END
 						WHEN 181 then 
 							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch181 END
+						WHEN 182 then 
+							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch182 END
+						WHEN 184 then 
+							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch184 END
 						WHEN 186 then 
 							CASE WHEN ci.MaxPerMatch186 = 0 THEN NULL ELSE ci.MaxPerMatch186 END
 					END ),0 )AS MaxperMatch_Max
 	FROM CustSetting3rd as cs WITH (NOLOCK) JOIN custinfo as ci WITH (NOLOCK) 
 			ON cs.custid=ci.custid		
 	WHERE ci.custid IN (@Mrecommend, @srecommend)
-		AND sporttype in (180, 181, 186) and bettype  in (1201, 1231, 1220)
+		AND sporttype in (180, 181, 182, 184, 186) and bettype  in (1201, 1231, 1220)
 	GROUP BY sporttype, bettype
 	
 	-- get n3,l3, a4 for Web
@@ -91,7 +98,7 @@ Param's Explanation:
 					ELSE co.maxpositiontaking END) as m3
 	FROM CustSetting3rd as cs WITH (NOLOCK)
 		INNER JOIN CustOverride3rd as co with (nolock) on cs.custid = co.custid and cs.sporttype = co.sporttype and cs.bettype = co.bettype
-	WHERE cs.custid = @mrecommend and cs.sporttype in (180, 181, 186) and cs.bettype in (1201, 1231, 1220)
+	WHERE cs.custid = @mrecommend and cs.sporttype in (180, 181, 182, 184, 186) and cs.bettype in (1201, 1231, 1220)
 	GROUP BY cs.sporttype, cs.bettype
 	
 	--a4
@@ -106,12 +113,14 @@ Param's Explanation:
 		cs.mpositiontaking as m4,	
 		cs.apositiontaking as a4	
 	FROM CustSetting3rd as cs with (nolock)
-	WHERE custid = @srecommend and sporttype  in (180, 181, 186) and bettype in (1201, 1231, 1220)
+	WHERE custid = @srecommend and sporttype  in (180, 181, 182, 184, 186) and bettype in (1201, 1231, 1220)
 
 	SELECT @DisableVirtualSports	= ISNULL(DisableVirtualSports,0),
 			@HideVirtualSports		= ISNULL(HideVirtualSports,0),
 			@MaxPerMatch180			= MaxPerMatch180,
 			@MaxPerMatch181			= MaxPerMatch181,
+			@MaxPerMatch182			= MaxPerMatch182,
+			@MaxPerMatch184			= MaxPerMatch184,
 			@MaxPerMatch186			= MaxPerMatch186
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid
@@ -140,6 +149,8 @@ Param's Explanation:
 		cs.maxbet,
 		CASE cs.sporttype WHEN 180 then @MaxPerMatch180
 							WHEN 181 then @MaxPerMatch181
+							WHEN 182 then @MaxPerMatch182
+							WHEN 184 then @MaxPerMatch184
 							WHEN 186 then @MaxPerMatch186 END AS MaxPerMatch,
 				
 		MinBet_Min,
@@ -196,7 +207,9 @@ Param's Explanation:
 		JOIN @MinMaxBetUpline as mu on co.sporttype=mu.sporttype and mu.bettype=cs.bettype
 		JOIN @MasterPT m on co.sporttype=m.sporttype and m.bettype=cs.bettype
 		JOIN @SuperPT s on co.sporttype=s.sporttype and s.bettype=cs.bettype	
-	WHERE cs.custid = @custid AND cs.sporttype  in (180, 181, 186) and cs.bettype in (1201, 1231, 1220)
+	WHERE cs.custid = @custid AND cs.sporttype  in (180, 181, 182, 184, 186) and cs.bettype in (1201, 1231, 1220)
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentVS] TO [bodbadminNet]

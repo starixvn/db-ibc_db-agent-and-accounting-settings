@@ -10,6 +10,7 @@ AS
 		Revisions:
 			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
 			- 20130220@Johnson: get virtual horse racing setting (sporttype : 181, bettype: 1231)
+			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -22,6 +23,8 @@ SET NOCOUNT ON
 			@HideVirtualSports				BIT,
 			@v180MaxPerMatch_1201			MONEY,
 			@v181MaxPerMatch_1231			MONEY,
+			@v182MaxPerMatch_1231			MONEY,
+			@v184MaxPerMatch_1231			MONEY,
 			@v186MaxPerMatch_1220			MONEY,
 			@DisableAutoMPT					BIT,
 			@srecommend						INT			
@@ -42,6 +45,8 @@ SET NOCOUNT ON
 			@HideVirtualSports		= ISNULL(HideVirtualSports,0),
 			@v180MaxPerMatch_1201	= MaxPerMatch180,
 			@v181MaxPerMatch_1231	= MaxPerMatch181,
+			@v182MaxPerMatch_1231	= MaxPerMatch182,
+			@v184MaxPerMatch_1231	= MaxPerMatch184,
 			@v186MaxPerMatch_1220	= MaxPerMatch186,
 			@srecommend = srecommend
 	FROM custinfo WITH(NOLOCK)
@@ -75,12 +80,14 @@ SET NOCOUNT ON
 			cs.maxbet, 
 			CASE cs.sporttype WHEN 180 then ci.MaxPerMatch180
 								WHEN 181 then ci.MaxPerMatch181
+								WHEN 182 then ci.MaxPerMatch182
+								WHEN 184 then ci.MaxPerMatch184
 								WHEN 186 then ci.MaxPerMatch186 END AS MaxPerMatch
 	FROM custinfo ci WITH(NOLOCK)
 		INNER JOIN custsetting3rd cs WITH(NOLOCK) ON ci.custid = cs.custid 
 		LEFT JOIN CustOverride3rd as co with (NOLOCK) on cs.custid = co.custid and cs.sporttype=co.sporttype and cs.bettype=co.bettype
 	WHERE ci.custid = @srecommend 
-		AND cs.sporttype in (180, 181, 186)
+		AND cs.sporttype in (180, 181, 182, 184, 186)
 		AND cs.bettype  in (1201, 1231, 1220)
 			
 		
@@ -109,6 +116,8 @@ SET NOCOUNT ON
 			--@v180MaxPerMatch_1201 as MaxPerMatch,
 			CASE cs.sporttype WHEN 180 then @v180MaxPerMatch_1201
 								WHEN 181 then @v181MaxPerMatch_1231
+								WHEN 182 then @v182MaxPerMatch_1231
+								WHEN 184 then @v184MaxPerMatch_1231
 								WHEN 186 then @v186MaxPerMatch_1220 END AS MaxPerMatch,
 			
 			scs.MinBet as minbet_min,
@@ -153,9 +162,10 @@ SET NOCOUNT ON
 		INNER JOIN custoverride3rd co WITH(NOLOCK) ON cs.custid = co.custid AND cs.sporttype = co.sporttype AND cs.bettype = co.bettype
 		JOIN @SuperSetting scs ON cs.sporttype = scs.sporttype AND cs.bettype = scs.bettype
 	WHERE cs.custid = @custid
-		AND cs.sporttype in (180, 181, 186)
+		AND cs.sporttype in (180, 181, 182, 184, 186)
 		AND cs.bettype in (1201, 1231, 1220)
 	
+
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterVS] TO [vnteam]

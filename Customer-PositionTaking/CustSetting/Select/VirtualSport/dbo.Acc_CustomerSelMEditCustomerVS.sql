@@ -11,6 +11,7 @@ AS
 	Revisions:		
 		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
 		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
 */
 SET NOCOUNT ON
 
@@ -24,11 +25,15 @@ DECLARE @mrecommend				INT,
 		@HideVirtualSports		BIT,
 		@MaxPerMatch180			MONEY,
 		@MaxPerMatch181			MONEY,
+		@MaxPerMatch182			MONEY,
+		@MaxPerMatch184			MONEY,
 		@MaxPerMatch186			MONEY
 
 SELECT	@mrecommend = mrecommend, 
 		@MaxPerMatch180	= MaxPerMatch180,
 		@MaxPerMatch181	= MaxPerMatch181,
+		@MaxPerMatch182	= MaxPerMatch182,
+		@MaxPerMatch184	= MaxPerMatch184,
 		@MaxPerMatch186	= MaxPerMatch186,
 --		@DisableVirtualSports	= isnull(DisableVirtualSports,0),
 		@HideVirtualSports		= isnull(HideVirtualSports,0)
@@ -71,7 +76,7 @@ From
 	LEFT JOIN CustOverride3rd as co with (NOLOCK) on cs.custid = co.custid and cs.sporttype=co.sporttype and cs.bettype=co.bettype
 	LEFT JOIN CustSetting3rd as scs with (NOLOCK) on scs.custid=@SuperID and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
 Where cs.CustID = @MasterID
-		AND cs.sporttype in (180, 181, 186) and cs.bettype in (1201, 1231, 1220)
+		AND cs.sporttype in (180, 181, 182, 184, 186) and cs.bettype in (1201, 1231, 1220)
 
 /*
 DECLARE @MaxPT TABLE(
@@ -119,6 +124,8 @@ SELECT
 	cs.maxbet , 
 	CASE cs.sporttype WHEN 180 then @MaxPerMatch180 
 						WHEN 181 then @MaxPerMatch181 
+						WHEN 182 then @MaxPerMatch182 
+						WHEN 184 then @MaxPerMatch184 
 						WHEN 186 then @MaxPerMatch186 END AS MaxPerMatch,
 
 
@@ -152,7 +159,9 @@ FROM
 	JOIN @MinMaxPTMaster m on cs.sporttype=m.sporttype and cs.bettype=m.bettype
 	--JOIN @MaxPT maxPT on cs.sporttype=maxPT.sporttype and cs.bettype=maxPT.bettype	
 WHERE cs.custid=@custId 
-		AND cs.sporttype  in (180, 181, 186) and cs.bettype in (1201, 1231, 1220)
+		AND cs.sporttype  in (180, 181, 182, 184, 186) and cs.bettype in (1201, 1231, 1220)
+
+
 
 GO 
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerVS] TO [bodbAdminNet]

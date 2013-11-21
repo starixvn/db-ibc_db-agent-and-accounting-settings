@@ -10,6 +10,7 @@
 		Revisions:
 			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
 			- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON
@@ -19,12 +20,16 @@ SET NOCOUNT ON
 			@HideVirtualSports		BIT,
 			@v180MaxPerMatch_1201	MONEY,
 			@v181MaxPerMatch_1231	MONEY,
+			@v182MaxPerMatch_1231	MONEY,
+			@v184MaxPerMatch_1231	MONEY,
 			@v186MaxPerMatch_1220	MONEY
 	
 	SELECT @srecommend = srecommend,
 			@mrecommend = mrecommend,
 			@v180MaxPerMatch_1201 = maxpermatch180,
 			@v181MaxPerMatch_1231 = maxpermatch181,
+			@v182MaxPerMatch_1231 = maxpermatch182,
+			@v184MaxPerMatch_1231 = maxpermatch184,
 			@v186MaxPerMatch_1220 = MaxPerMatch186,
 			@HideVirtualSports	  = isnull(HideVirtualSports,0)
 	FROM custinfo WITH(NOLOCK)
@@ -49,6 +54,8 @@ SET NOCOUNT ON
 			cs.maxbet,
 			CASE cs.sporttype WHEN 180 then @v180MaxPerMatch_1201
 								WHEN 181 then @v181MaxPerMatch_1231 
+								WHEN 182 then @v182MaxPerMatch_1231 
+								WHEN 184 then @v184MaxPerMatch_1231 
 								WHEN 186 then @v186MaxPerMatch_1220 END AS MaxPerMatch,
 			
 			cs.apositiontaking as a1,
@@ -74,8 +81,12 @@ SET NOCOUNT ON
 		INNER JOIN custsetting3rd scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype
 		INNER JOIN custoverride3rd sco WITH(NOLOCK) ON sco.custid = @srecommend AND sco.sporttype = cs.sporttype AND sco.bettype = cs.bettype
 	WHERE cs.custid = @custid 
-		AND cs.sporttype  in (180, 181, 186)
+		AND cs.sporttype  in (180, 181, 182, 184, 186)
 		AND cs.bettype in (1201, 1231, 1220)
+		
+		
+		
+
 		
 		
 		
