@@ -74,7 +74,7 @@ SET NOCOUNT ON
 	SELECT @recommend = recommend ,
 			@maxpermatch_old = CASE WHEN @sporttype = 180 THEN maxpermatch180
 									WHEN @sporttype = 181 THEN maxpermatch181
-									WHEN @sporttype = 185 THEN maxpermatch182
+									WHEN @sporttype = 182 THEN maxpermatch182
 									WHEN @sporttype = 184 THEN maxpermatch184
 									WHEN @sporttype = 186 THEN maxpermatch186 end
 	FROM custinfo WITH(NOLOCK)
@@ -330,6 +330,7 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
