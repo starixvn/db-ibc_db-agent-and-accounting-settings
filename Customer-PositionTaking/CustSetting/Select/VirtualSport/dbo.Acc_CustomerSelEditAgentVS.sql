@@ -70,9 +70,9 @@ Param's Explanation:
 						WHEN 181 then 
 							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch181 END
 						WHEN 182 then 
-							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch182 END
+							CASE WHEN ci.maxpermatch182 = 0 THEN NULL ELSE ci.maxpermatch182 END
 						WHEN 184 then 
-							CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch184 END
+							CASE WHEN ci.maxpermatch184 = 0 THEN NULL ELSE ci.maxpermatch184 END
 						WHEN 186 then 
 							CASE WHEN ci.MaxPerMatch186 = 0 THEN NULL ELSE ci.MaxPerMatch186 END
 					END ),0 )AS MaxperMatch_Max
