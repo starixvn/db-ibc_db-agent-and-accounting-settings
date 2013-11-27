@@ -1,4 +1,5 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
+﻿USE [bodb02]
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
 	@custid int,
 	@sporttype tinyint,
 	@bettype int,
@@ -27,6 +28,7 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20131029@Elodie: Apply execrep when update min/max pt on master or agent
+		- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
 	Param's Explanation:
 	• @ErrCode:
 		= 0: Update successfully.
@@ -54,30 +56,18 @@ declare @IsValid bit, @totalDownlines int
 declare @ErrAcc varchar(4000)
 
 
- --Disable on Weekend's peak hour, from 7PM - 2AM (GMT+8)
-if @roleid in (3, 4) and datename(weekday, getdate()) in ('Saturday','Sunday') and datepart(hour, getdate()) between 7 and  14
-BEGIN
-	SELECT @totalDownlines = count(custid) FROM Custinfo WITH (NOLOCK) WHERE case @roleid when 4 then srecommend else mrecommend end = @custID 
-	IF @totalDownlines >  500
-	BEGIN 		
-		Select @ErrCode = 100
-		Select @ErrMsg = 	case @Language 
-							when 'E' then 'This function is not available during peak hour at weekend since it might affect the performance of the whole system. Please contact IT for further assistance.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](90010,@Language)
-					end
-		RETURN
-	END 
-END
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 
-/*
-if not exists (select 1 from custinfo with (nolock) where custid = @custid and srecommend in (181940,197461))
-BEGIN
---	declare @ErrMsg varchar(200)
-	Select @ErrMsg = 'Sorry, please try again later.'
-	RaisError (@ErrMsg, 16, 1)
-	return
-END
-*/
 
 --Check Old_minmax <> New_minmax
 Declare 	 
@@ -194,7 +184,7 @@ BEGIN
 END
 ELSE IF @roleid= 4 and @UpdateMinPos = 1 
 BEGIN	
-	EXEC dbo.Acc_CustSetting3rd_00 @srecommend = @srecommend, @mode = 'virtual-sports'
+	EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'virtual-sports'
 END
 ELSE IF @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1 -- process like SB, not correct when changing preset
 BEGIN	
@@ -279,13 +269,11 @@ BEGIN
 	END CATCH
 
 END
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbDownlineNet]
-Go
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdVS] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbExtAccNet] AS [dbo]
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdVS] TO [vnteam] AS [dbo]

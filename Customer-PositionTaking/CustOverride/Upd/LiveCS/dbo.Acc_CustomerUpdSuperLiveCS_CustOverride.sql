@@ -20,6 +20,7 @@ AS
 		Revisions:
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131030@Lukas: Apply execRep
+			- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -80,7 +81,7 @@ SET NOCOUNT ON
 	IF @roleid = 4
 	BEGIN
 		--EXEC Acc_CustomerUpdSuperLiveCS_MinPositiontaking @srecommend = @custid
-		EXEC [Acc_CustSetting3rd_00] @srecommend = @custid, @mode = 'LiveCasino'
+		EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'LiveCasino'
 	END
 
 	IF @roleid = 3
@@ -147,9 +148,6 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
-
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
