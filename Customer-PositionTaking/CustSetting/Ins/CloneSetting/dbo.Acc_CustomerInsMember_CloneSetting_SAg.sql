@@ -42,6 +42,8 @@ AS
 	- 20131017@Kathy: Add HR Fixed Odds [Redmine:#6505]
 	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
+	
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -320,6 +322,8 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
+			,maxpermatch182
+			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -387,6 +391,8 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
+			,maxpermatch182
+			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -413,14 +419,18 @@ BEGIN
 	END
 	
 	EXEC dbo.Acc_CustomerInfo_Execrep_02
-		@custid = @custid,
-		@ExistingCustid = @ExistingCustid,
-		@Language = @Language,
-		@ErrCode = @ErrCode output,
-		@ErrMsg = @ErrMsg output
+			@custid = @custid,
+			@ExistingCustid = @ExistingCustid,
+			
+			@ErrCode = @ErrCode output
 	
 	IF @ErrCode > 0 
 	BEGIN
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID

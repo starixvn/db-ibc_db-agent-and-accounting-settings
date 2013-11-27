@@ -896,6 +896,7 @@ BEGIN
 	SET NOCOUNT OFF
 END
 
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbDownlineNet] AS [dbo]
 GO
