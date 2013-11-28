@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableNumber]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableNumber]
 	@CustID int,
 	@DisableNumber bit,
 	@DisableDownline bit = true, --Disable all downline
@@ -22,6 +22,7 @@ Revisions:
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130926@Kathy: Apply exec rep
+	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 	
 Param's Explanation:
 • @custid: customer id.   
@@ -114,7 +115,7 @@ end
 IF (@DisableNumber = 1 or (@DisableNumber = 0 and @DisableDownline = 0)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130926@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_04]
+	EXEC [Acc_ExecRep_Cust_04]
 		@CustID		= @CustID,
 		@RoleID		= @RoleID,
 		@Action		= 'DisableNumberGame',
@@ -178,11 +179,12 @@ BEGIN CATCH
 		@duration = @duration		
 END CATCH
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbadminNet] AS [dbo]
 GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdDisableNumber]  TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableNumber] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableNumber] TO [vnteam] AS [dbo]

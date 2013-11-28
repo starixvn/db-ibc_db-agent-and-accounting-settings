@@ -28,6 +28,7 @@ AS
 		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20130516@Lukas: allow PT = 100%
 		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
+		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Parameters Explanation:
 */
 BEGIN
@@ -352,7 +353,14 @@ BEGIN
 	END
 	
 	--- modify late
-	EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'LiveCasino'
+		
+	---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -438,8 +446,9 @@ BEGIN
 	Select @ErrCode = @ErrCode + '-103'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 END
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbDownlineNet] AS [dbo]
 GO

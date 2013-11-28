@@ -21,6 +21,7 @@ Revisions:
     - 20121206@Scott : Check Allowed downlines during peak hour at weekend
     - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130926@Kathy: Apply execRep
+	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 Param's Explanation:
 • @custid: customer id.   
 • @Disable: status
@@ -106,7 +107,7 @@ end
 if (@Disable = 1 or (@Disable = 0 and @DisableDownlines = 0)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130924@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_04]
+	EXEC [Acc_ExecRep_Cust_04]
 			@CustID		= @CustID,
 			@RoleID		= @RoleID,
 			@Action		= 'DisableVS',
@@ -171,11 +172,10 @@ END CATCH
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbadminNet] AS [dbo]
 GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdDisableVS]  TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbDownlineNet] AS [dbo]
 GO
-
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableVS] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbExtAccNet] 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableVS] TO [vnteam] AS [dbo]

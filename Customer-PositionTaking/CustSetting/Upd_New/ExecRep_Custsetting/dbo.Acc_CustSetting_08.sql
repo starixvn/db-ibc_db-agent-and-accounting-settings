@@ -201,12 +201,25 @@ AS
 BEGIN
 SET NOCOUNT ON
 
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 3 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
 			AND xtype = 'U'
-
-	if @IsExistTables <> 3 RETURN
+	
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 3 AND @IsExistViews <> 3
+		RETURN
+	
 	IF @roleid = 4
 	BEGIN
 		--don't update s1 for member under master was set i3=1(normal)

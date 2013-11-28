@@ -101,6 +101,7 @@ Revisions:
 	- 20130607@Johnson: check s1 with max_s1
 	- 20131108@Johnson: Apply execrep when update pt on members
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
+	- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1091,7 +1092,14 @@ BEGIN
 END
 */
 
-EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'horse'
+			
+--EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(5000)
@@ -1328,8 +1336,9 @@ Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 	
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_SAg] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_SAg] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_SAg] TO [bodbDownlineNet] AS [dbo]
 GO

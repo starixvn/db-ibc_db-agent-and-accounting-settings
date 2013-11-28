@@ -41,9 +41,13 @@ Param's Explanation:
    
 */
 SET NOCOUNT ON 
+--IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
+--	RETURN
+
 IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
+	OR (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
 	RETURN
-		
+			
 if @action = 'VirtualMultiplier'
 BEGIN
 	if @roleid = 4

@@ -31,6 +31,7 @@ AS
 		 - 20130130@Scott : Fix bug 5325
 		 - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		 - 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
+		 - 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  
@@ -338,13 +339,23 @@ BEGIN
  END  
 END  
   
-EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking   
+EXEC dbo.Acc_CustSetting3rd_00
+	@custid = @custid, 
+	@recommend = @recommend, 
+	@mrecommend = @mrecommend, 
+	@srecommend = @srecommend,
+	@mode = 'virtual-sports',
+	@sporttype =  @sporttype,   
+    @bettype = @bettype
+      
+/*EXEC dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking   
       @sporttype =  @sporttype,   
       @bettype = @bettype,   
       @custid = @custid,   
       @recommend = @recommend,   
       @mrecommend = @mrecommend,   
-      @srecommend = @srecommend  
+      @srecommend = @srecommend 
+*/  
 IF (@@error <> 0)  
 BEGIN    
  SELECT @ErrMsg_Cur = CASE @Language   
@@ -444,8 +455,9 @@ Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbDownlineNet] AS [dbo]
 GO

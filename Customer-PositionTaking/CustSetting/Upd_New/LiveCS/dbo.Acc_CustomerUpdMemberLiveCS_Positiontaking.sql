@@ -20,6 +20,7 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: write log on DBTXN if DBLOG failure
 			- 20130516@Lukas: allow PT = 100%
+			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON 
@@ -212,16 +213,23 @@ BEGIN
 	--s1=min(s1,max_spositiontaking)
 	SELECT @v162spositiontaking_1101 = CASE WHEN @v162spositiontaking_1101 > @v162spositiontaking_1101_max THEN @v162spositiontaking_1101_max ELSE @v162spositiontaking_1101 END
 
-	BEGIN TRANSACTION
-		UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
-		SET	spositiontaking = @v162spositiontaking_1101,
-			mpositiontaking = @v162mpositiontaking_1101,
-			apositiontaking = @v162apositiontaking_1101
-		WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
-		
-		EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+	--BEGIN TRANSACTION
+	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
+	SET	spositiontaking = @v162spositiontaking_1101,
+		mpositiontaking = @v162mpositiontaking_1101,
+		apositiontaking = @v162apositiontaking_1101
+	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
+	
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'LiveCasino'
+	
+	---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
-	COMMIT TRANSACTION
+	--COMMIT TRANSACTION
 END
 ELSE -- if member is not sync, re-calculate all pt
 BEGIN
@@ -358,7 +366,7 @@ END CATCH
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO

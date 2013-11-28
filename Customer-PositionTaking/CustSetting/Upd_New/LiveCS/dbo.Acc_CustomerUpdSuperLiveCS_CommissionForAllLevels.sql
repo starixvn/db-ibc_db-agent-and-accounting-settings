@@ -13,7 +13,7 @@ DB: DBTXN/bodb02
 Original:
 
 Revisions:	
-	20130926@Kathy: Apply Exec Rep
+	- 20131118@Kathy: Apply exec rep [Redmine:#3244]
 
 Param's Explanation:
 	• @custid: super id.   
@@ -58,13 +58,15 @@ END
 
 -- Check Allowed downlines during peak hour at weekend 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
-											@roleid=@roleid,
-											@isExecRep=1,
-											@Language='E',
-											@ErrMsg=@ErrMsg output,
-											@ErrCode=@ErrCode output
-if @ErrCode <>0 return 
---End 
+						@roleid=@roleid,
+						@isExecRep=1,
+						@isUpdatePT = 1,
+						@Sporttype = 1,
+						@Language='E',
+						@ErrMsg=@ErrMsg output,
+						@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 
 DECLARE @db_v162discount_1101 DECIMAL(9,8)
 
@@ -73,18 +75,12 @@ SELECT @db_v162discount_1101 = sdiscount
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
-BEGIN TRY
-	--20130924@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_04]
-				@CustID		= @CustID,
-				@RoleID		= @RoleID,
-				@Action		= 'UpdateLiveCasinoComm',
-				@UpdateLiveCasinoComm = @v162discount_1101
-END TRY
-BEGIN CATCH
-	SELECT @ErrMsg = 'Update process is unsuccessful!', @ErrCode = 102
-	RETURN
-END CATCH
+	-- exec rep
+EXEC Acc_CustSetting3rd_06
+	@CustId = @custid,
+	@RoleId = @roleid,
+	@v162discount_1101 = @v162discount_1101,-- Live Casino
+	@mode = 'LiveCasinoUpdAll'
 
 
 -- write log
@@ -143,10 +139,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH					
-
+END CATCH
 GO
-GRANT VIEW DEFINITION ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [bodbAdminNet]
-
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [vnteam] AS [dbo]

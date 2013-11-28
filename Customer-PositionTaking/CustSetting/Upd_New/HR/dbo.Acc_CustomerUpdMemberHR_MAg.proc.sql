@@ -102,6 +102,7 @@ Revisions:
 	- 20130610@Johnson: check m1 with valid range of m1
 	- 20131106@Johnson: Apply execrep when update pt on member
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
+	- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	
 Param's Explanation:
 • @ErrCode:
@@ -1891,10 +1892,14 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 END--@UpdatePositiontakingv153
 */
 
-EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
-
-
-
+EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'horse'
+			
+---EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 DECLARE @LogSPData VARCHAR(MAX),

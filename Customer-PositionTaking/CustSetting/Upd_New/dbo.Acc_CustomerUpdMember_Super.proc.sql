@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super] 
+﻿USE [custDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMember_Super]    Script Date: 11/28/2013 14:17:27 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_Super] 
 	@CustID INT,--memberid
 	@Closed BIT,
 	@disCasino BIT = 0,
@@ -351,6 +358,7 @@ Revisions:
 	- 20131014@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]	
 	- 20131031@Johnson: Aplly execrep when update pt on member
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)					
+	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -3819,12 +3827,28 @@ BEGIN--Update Position Taking
 				@language = @language,
 				@userid = @userid
 		*/
+	EXEC dbo.Acc_CustSetting_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@updautosuper = 0
+		
+	EXEC dbo.Acc_CustSetting3rd_00
+		@custid = @custid, 
+		@recommend = @recommend, 
+		@mrecommend = @mrecommend, 
+		@srecommend = @srecommend,
+		@mode = 'number',
+		@updautosuper = 0
+	/*			
 	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 		@custid = @custid, 
 		@recommEND = @recommEND, 
 		@mrecommEND = @mrecommEND, 
 		@srecommEND = @srecommEND,
 		@updautosuper = 0
+	*/	
 		
 	SELECT @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 
@@ -4756,10 +4780,6 @@ BEGIN--Update Position Taking
 			@duration = @duration	
 	END CATCH		
 END--Update Position Taking
-
-
-
-
 
 
 GO

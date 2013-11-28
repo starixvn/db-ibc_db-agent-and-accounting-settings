@@ -1456,9 +1456,8 @@ END CATCH
 
 
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_MinMaxBet] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
 GO

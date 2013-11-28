@@ -23,6 +23,7 @@ AS
 			- 20130124@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20130924@Kathy: Apply Exec Rep 
+			- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 		Parameters Explanation:
 	*/ 
 SET NOCOUNT ON
@@ -111,7 +112,7 @@ BEGIN TRY
 		--20130924@Kathy: Apply ExecRep 
 		IF @RoleID BETWEEN 2 AND 4 
 		BEGIN
-			EXEC [Acc_ExecRep_04]
+			EXEC [Acc_ExecRep_Cust_04]
 				 @CustID		= @CustID,
 				 @RoleID		= @RoleID,
 				 @Action		= 'DisableLiveCasino',
@@ -181,10 +182,12 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
 END CATCH
-GO
 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbadminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [vnteam] AS [dbo]
