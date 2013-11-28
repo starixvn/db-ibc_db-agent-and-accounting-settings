@@ -1,7 +1,7 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_ExecRep_Cust_04]
 	@custid int,
 	@roleid tinyint,
-	@action varchar(20) = '',
+	@action varchar(30) = '',
 	@virtualmultiplier smallmoney = 0,
 	@Suspended	BIT =0,
 	@Closed		BIT =0,
@@ -17,11 +17,16 @@
 	@rowcount INT = 0 OUTPUT
 AS 
 /*
-Created: 20131108@Elodie
+Created: 20121126@Thien
 Task : Update customer/custinfo settings
-DB: DBTXN/CustDB
-Original: Acc_ExecRep_04
+DB: DBTXN/bodb02
+
 Revisions:
+	- 20121126@Thien: implement the 'VirtualMultiplier' update
+	- 20130709@Jamie: Apply Exec Rep for Update CLOSED, SUSPENDED and RNG Casino Status
+	- 20130926@Kathy: Apply Exec Rep for Live Casino, Virtual sport status, Number Game, Bingo status
+	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
 	
 Param's Explanation:
 	@Action: 
@@ -41,13 +46,10 @@ Param's Explanation:
    
 */
 SET NOCOUNT ON 
---IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
---	RETURN
-
 IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
 	OR (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
 	RETURN
-			
+	
 if @action = 'VirtualMultiplier'
 BEGIN
 	if @roleid = 4
@@ -308,7 +310,6 @@ begin
 		WHERE recommend = @custID 
 	END
 end
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO

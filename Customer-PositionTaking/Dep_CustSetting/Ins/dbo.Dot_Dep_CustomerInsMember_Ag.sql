@@ -1629,7 +1629,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from CustDB.dbo.sports with (NOLOCK) inner join
+from bodb02.dbo.sports with (NOLOCK) inner join
 (
 				select 1 as sporttype, @MinBet as MinBet, @MinMinBet as MinMinBet
 	union all	select 2 as sporttype, @MinBetv2 as MinBet, @MinMinBetv2 as MinMinBet
@@ -1671,7 +1671,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from CustDB.dbo.sports with (NOLOCK) inner join
+from bodb02.dbo.sports with (NOLOCK) inner join
 (
 				select 1 as sporttype, @MaxBet as MaxBet, @MaxMaxBet as MaxMaxBet
 	union all	select 2 as sporttype, @MaxBetv2 as MaxBet, @MaxMaxBetv2 as MaxMaxBet
@@ -1714,7 +1714,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from CustDB.dbo.sports with (NOLOCK) inner join
+from bodb02.dbo.sports with (NOLOCK) inner join
 (
 				select 1 as sporttype, @MaxPerMatch as MaxPerMatch, @MaxMaxPerMatch as MaxMaxPerMatch
 	union all	select 2 as sporttype, @MaxPerMatchv2 as MaxPerMatch, @MaxMaxPerMatchv2 as MaxMaxPerMatch
@@ -1757,7 +1757,7 @@ SELECT @ErrType = ''
 IF @MaxPerBallv161 > 0 AND @MaxMaxPerBallv161 > 0 AND @MaxPerBallv161 > @MaxMaxPerBallv161
 BEGIN
 	SELECT @ErrType = @ErrType + sportname 
-	from CustDB.dbo.sports WITH(NOLOCK)
+	from bodb02.dbo.sports WITH(NOLOCK)
 	WHERE sporttype = 161
 	
 	SELECT @ErrMsg= 'Sorry, Max Per ball must be equal to or less than Master/Agent Max Per Match ('+@ErrType+').',
@@ -2492,8 +2492,9 @@ BEGIN CATCH
 END CATCH
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
 GO

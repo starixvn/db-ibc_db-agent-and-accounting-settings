@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_MAg]
 	@custid int, -- Agent ID
 	@UserID int = 0,
 
@@ -242,12 +242,10 @@
 	@v152discount_51 decimal(9,8) = 0,
 	@v153discount_51 decimal(9,8) = 0,
 	
-	@v180MaxPerMatch MONEY = 0,
-	@v180MinBet MONEY = 0,
-	@v180MaxBet MONEY = 0,
+
 	
-	@v180aPositionTaking SMALLMONEY = 0,
-	@v180mPositionTaking SMALLMONEY = 0,
+	--Virtual Sports----------------
+	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 	
 	@Language VARCHAR(2) = 'E',
 	@IP VARCHAR(15)='',
@@ -265,16 +263,117 @@ DB: DBTrans.bodb02
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130918@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
-	
+	- 20131014@Francis: Support updating virtual sports with settings via XML param
+	- 20131119@Francis: Update 3rd product commission of Agent will not impact 3rd product commission of its downline members anymore
+    - 20131108@Elodie: Splitting bodb02 into CustDB (call sports, bettype by link database)	
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
   
 • @ErrMsg: Error description.
+• @VirtualSportList: VirtualSport Settings XML param.
 */
 
 SET NOCOUNT ON
+
+--------Parse xml string into table
+DECLARE @iDoc int
+EXEC sp_xml_preparedocument @iDoc OUTPUT, @VirtualSportList
+
+SELECT *
+INTO #input
+FROM OPENXML (@iDoc, '/products/product',1) WITH(SportType tinyint, MaxBet money, MinBet money, MaxPerMatch money, 
+sPositionTaking smallmoney, mPositionTaking smallmoney, aPositionTaking smallmoney)
+
+EXEC sp_xml_removedocument @iDoc
+
+
+----------DECLARE AND SELECT INTO PARAMS
+DECLARE @v180MinBet MONEY,
+	@v180MaxBet MONEY,
+	@v180MaxPerMatch MONEY,
+	@v180sPositionTaking SMALLMONEY,
+	@v180mPositionTaking SMALLMONEY,
+	@v180aPositionTaking SMALLMONEY
+
+SELECT @v180MinBet = isnull(MinBet,0), @v180MaxBet = isnull(MaxBet,0), @v180MaxPerMatch = isnull(MaxPerMatch,0), @v180sPositionTaking = isnull(sPositionTaking,0), @v180mPositionTaking = isnull(mPositionTaking,0), @v180aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 180
+
+DECLARE @v181MinBet MONEY,
+	@v181MaxBet MONEY,
+	@v181MaxPerMatch MONEY,
+	@v181sPositionTaking SMALLMONEY,
+	@v181mPositionTaking SMALLMONEY,
+	@v181aPositionTaking SMALLMONEY
+
+SELECT @v181MinBet = isnull(MinBet,0), @v181MaxBet = isnull(MaxBet,0), @v181MaxPerMatch = isnull(MaxPerMatch,0), @v181sPositionTaking = isnull(sPositionTaking,0), @v181mPositionTaking = isnull(mPositionTaking,0), @v181aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 181
+
+DECLARE @v182MinBet MONEY,
+	@v182MaxBet MONEY,
+	@v182MaxPerMatch MONEY,
+	@v182sPositionTaking SMALLMONEY,
+	@v182mPositionTaking SMALLMONEY,
+	@v182aPositionTaking SMALLMONEY
+
+SELECT @v182MinBet = MinBet, @v182MaxBet = MaxBet, @v182MaxPerMatch = MaxPerMatch, @v182sPositionTaking = sPositionTaking, @v182mPositionTaking = mPositionTaking, @v182aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 182
+
+DECLARE @v183MinBet MONEY,
+	@v183MaxBet MONEY,
+	@v183MaxPerMatch MONEY,
+	@v183sPositionTaking SMALLMONEY,
+	@v183mPositionTaking SMALLMONEY,
+	@v183aPositionTaking SMALLMONEY
+
+SELECT @v183MinBet = MinBet, @v183MaxBet = MaxBet, @v183MaxPerMatch = MaxPerMatch, @v183sPositionTaking = sPositionTaking, @v183mPositionTaking = mPositionTaking, @v183aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 183
+
+DECLARE @v184MinBet MONEY,
+	@v184MaxBet MONEY,
+	@v184MaxPerMatch MONEY,
+	@v184sPositionTaking SMALLMONEY,
+	@v184mPositionTaking SMALLMONEY,
+	@v184aPositionTaking SMALLMONEY
+
+SELECT @v184MinBet = MinBet, @v184MaxBet = MaxBet, @v184MaxPerMatch = MaxPerMatch, @v184sPositionTaking = sPositionTaking, @v184mPositionTaking = mPositionTaking, @v184aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 184
+
+DECLARE @v185MinBet MONEY,
+	@v185MaxBet MONEY,
+	@v185MaxPerMatch MONEY,
+	@v185sPositionTaking SMALLMONEY,
+	@v185mPositionTaking SMALLMONEY,
+	@v185aPositionTaking SMALLMONEY
+
+SELECT @v185MinBet = MinBet, @v185MaxBet = MaxBet, @v185MaxPerMatch = MaxPerMatch, @v185sPositionTaking = sPositionTaking, @v185mPositionTaking = mPositionTaking, @v185aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 185
+
+DECLARE @v186MinBet MONEY,
+	@v186MaxBet MONEY,
+	@v186MaxPerMatch MONEY,
+	@v186sPositionTaking SMALLMONEY,
+	@v186mPositionTaking SMALLMONEY,
+	@v186aPositionTaking SMALLMONEY
+
+SELECT @v186MinBet = isnull(MinBet,0), @v186MaxBet = isnull(MaxBet,0), @v186MaxPerMatch = isnull(MaxPerMatch,0), @v186sPositionTaking = isnull(sPositionTaking,0), @v186mPositionTaking = isnull(mPositionTaking,0), @v186aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 186
+
+
+DROP TABLE #input
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 --Setup default data
 SELECT    @v1mpositiontaking_1 	= 0,
@@ -1591,8 +1690,8 @@ from customer as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 9 as bettype, 1 as sporttype, @v1apositiontaking_9 as apositiontaking, 0 as alivepositiontaking, @v1mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 10 as bettype, 1 as sporttype, @v1apositiontaking_10 as apositiontaking, 0 as alivepositiontaking, @v1mpositiontaking_10 as mpositiontaking, 0 as mlivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and 
 	(b.apositiontaking>scs.apositiontaking or (b.sporttype = 1 and b.bettype in (1,3,7,8) and scs.islive = 1 and b.apositiontaking>scs.apositiontaking))
 
@@ -1650,8 +1749,8 @@ from customer as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 20 as bettype, 2 as sporttype, @v2apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v2mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1674,8 +1773,8 @@ from customer as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 3 as bettype, 3 as sporttype, @v3apositiontaking_3 as apositiontaking, 0 as alivepositiontaking, @v3mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 3 as sporttype, @v3apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v3mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1698,8 +1797,8 @@ from custinfo as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 3 as bettype, 5 as sporttype, @v5apositiontaking_3 as apositiontaking, 0 as alivepositiontaking, @v5mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 5 as sporttype, @v5apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v5mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1721,8 +1820,8 @@ from customer as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 3 as bettype, 8 as sporttype, @v8apositiontaking_3 as apositiontaking, 0 as alivepositiontaking, @v8mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 8 as sporttype, @v8apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v8mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1745,8 +1844,8 @@ from custinfo as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 3 as bettype, 10 as sporttype, @v10apositiontaking_3 as apositiontaking, 0 as alivepositiontaking, @v10mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 10 as sporttype, @v10apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v10mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1767,8 +1866,8 @@ from custinfo as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 				select 1 as bettype, 11 as sporttype, @v11apositiontaking_1 as apositiontaking, 0 as alivepositiontaking, @v11mpositiontaking_1 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 11 as sporttype, @v11apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v11mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1791,8 +1890,8 @@ from custinfo as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 		union all 	select 3 as bettype, 99 as sporttype, @v99apositiontaking_3 as apositiontaking, 0 as alivepositiontaking, @v99mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking
 		union all 	select 20 as bettype, 99 as sporttype, @v99apositiontaking_20 as apositiontaking, 0 as alivepositiontaking, @v99mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1812,8 +1911,8 @@ from custinfo as c with (NOLOCK) inner join dep_custsetting as scs with (NOLOCK)
 	(
 		select 9 as bettype, 99 as sporttype, @v99apositiontaking_9 as apositiontaking, 0 as alivepositiontaking, @v99mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and (b.apositiontaking>scs.apositiontaking)
 if @ErrType <>''
 BEGIN
@@ -1842,8 +1941,8 @@ from customer as c with (NOLOCK) inner join dep_custsetting3rd as cs3 with (NOLO
 		union all	select 90 as bettype, 161 as sporttype, 0 as apositiontaking, @v161alivepositiontaking_90 as alivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking
 			
 		) as b on cs3.sporttype=b.sporttype and cs3.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+	inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where c.custid = @mrecommend and 
 	((b.apositiontaking>cs3.apositiontaking AND cs3.islive = 0) or (b.sporttype = 161 and b.bettype in (85,86,87,89) and cs3.islive = 1 and b.alivepositiontaking>cs3.apositiontaking))
 
@@ -2090,8 +2189,8 @@ from
 	union all select 90 as bettype, 161 as sporttype, 0 as apositiontaking, 0 as mpositiontaking, 0 as max_mapositiontaking, @v161alivepositiontaking_90 as alivepositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking, @max_v161malivepositiontaking_90 as max_malivepositiontaking
 		
 ) as b
-inner join sports with (nolock) on b.sporttype = sports.sporttype
-inner join bettype with (nolock) on b.bettype = bettype.typeid
+inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 where (b.apositiontaking+b.mpositiontaking>b.max_mapositiontaking) or 
 		(b.sporttype in (1,161) and b.bettype in (1,3,7,8,85,86,87,89) and (b.alivepositiontaking+b.mlivepositiontaking>b.max_malivepositiontaking))
 
@@ -2500,13 +2599,14 @@ BEGIN
 END
 
 
---At member level, update playerdiscount = discount  if playerdiscount > discount
+--At member level, leave the playerdiscount the value as it is
+/*
 UPDATE cs 
 	SET cs.playerdiscount =  cs.discount
 FROM Dep_CustSetting3rd AS cs WITH (ROWLOCK, UPDLOCK)
 INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
 WHERE c.recommend = @custid AND c.roleid = 1 AND cs.playerdiscount > cs.discount AND sporttype in (151,152,153)
-
+*/
 IF (@@ERROR <> 0)
 BEGIN
 	
@@ -2518,20 +2618,61 @@ BEGIN
 	RETURN
 END
 
-EXEC Acc_Dep_CustomerUpdMemberVirtualSports_MAg -- agent custid 
-	@CustID  = @CustID, -- Super ID
+
+---------------------------------------=VIRTUAL SPORT=----------------------------------------
+EXEC Acc_Dep_CustomerUpdMemberVirtualSports_MAg
+	@custid = @custid,
 	
-	@v180MaxPerMatch  = @v180MaxPerMatch,
+
+	@v180aPositionTaking  = @v180aPositionTaking,
+	@v180mPositionTaking  = @v180mPositionTaking,
 	@v180MinBet  = @v180MinBet,
 	@v180MaxBet  = @v180MaxBet,
-	
-	@v180aPositionTaking = @v180aPositionTaking,
-	@v180mPositionTaking  = @v180mPositionTaking,
-	
+	@v180MaxPerMatch  = @v180MaxPerMatch,
+
+
+	@v181aPositionTaking  = @v181aPositionTaking,
+	@v181mPositionTaking  = @v181mPositionTaking,
+	@v181MinBet  = @v181MinBet,
+	@v181MaxBet  = @v181MaxBet,
+	@v181MaxPerMatch  = @v181MaxPerMatch,
+
+	@v182aPositionTaking  = @v182aPositionTaking,
+	@v182mPositionTaking  = @v182mPositionTaking,
+	@v182MinBet  = @v182MinBet,
+	@v182MaxBet  = @v182MaxBet,
+	@v182MaxPerMatch  = @v182MaxPerMatch,
+
+	@v183aPositionTaking  = @v183aPositionTaking,
+	@v183mPositionTaking  = @v183mPositionTaking,
+	@v183MinBet  = @v183MinBet,
+	@v183MaxBet  = @v183MaxBet,
+	@v183MaxPerMatch  = @v183MaxPerMatch,
+
+	@v184aPositionTaking  = @v184aPositionTaking,
+	@v184mPositionTaking  = @v184mPositionTaking,
+	@v184MinBet  = @v184MinBet,
+	@v184MaxBet  = @v184MaxBet,
+	@v184MaxPerMatch  = @v184MaxPerMatch,
+
+	@v185aPositionTaking  = @v185aPositionTaking,
+	@v185mPositionTaking  = @v185mPositionTaking,
+	@v185MinBet  = @v185MinBet,
+	@v185MaxBet  = @v185MaxBet,
+	@v185MaxPerMatch  = @v185MaxPerMatch,
+
+	@v186aPositionTaking  = @v186aPositionTaking,
+	@v186mPositionTaking  = @v186mPositionTaking,
+	@v186MinBet  = @v186MinBet,
+	@v186MaxBet  = @v186MaxBet,
+	@v186MaxPerMatch  = @v186MaxPerMatch,
+
 	@UserID  = @UserID,	
-	@Language = @Language,
-	@ErrCode  = @ErrCode OUTPUT,
-	@ErrMsg  = @ErrMsg OUTPUT
+
+	@ErrCode = @ErrCode OUTPUT,
+	@Language  = @Language,
+	@ErrMsg = @ErrMsg OUTPUT
+
 
 IF @ErrCode <> 0
 	RETURN
@@ -2595,6 +2736,30 @@ Select @LogSPData ='<Acc_Dep_CustomerUpdMember_MAg custid="'+ coalesce(cast(@cus
 'v180MinB="'+ coalesce(cast(@v180MinBet as varchar(50)),space(1)) + '" ' +
 'v180MaxB="'+ coalesce(cast(@v180MaxBet as varchar(50)),space(1)) + '" ' +
 'v180MPM="'+ coalesce(cast(@v180MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v181MinB="'+ coalesce(cast(@v181MinBet as varchar(50)),space(1)) + '" ' +
+'v181MaxB="'+ coalesce(cast(@v181MaxBet as varchar(50)),space(1)) + '" ' +
+'v181MPM="'+ coalesce(cast(@v181MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v182MinB="'+ coalesce(cast(@v182MinBet as varchar(50)),space(1)) + '" ' +
+'v182MaxB="'+ coalesce(cast(@v182MaxBet as varchar(50)),space(1)) + '" ' +
+'v182MPM="'+ coalesce(cast(@v182MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v183MinB="'+ coalesce(cast(@v183MinBet as varchar(50)),space(1)) + '" ' +
+'v183MaxB="'+ coalesce(cast(@v183MaxBet as varchar(50)),space(1)) + '" ' +
+'v183MPM="'+ coalesce(cast(@v183MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v184MinB="'+ coalesce(cast(@v184MinBet as varchar(50)),space(1)) + '" ' +
+'v184MaxB="'+ coalesce(cast(@v184MaxBet as varchar(50)),space(1)) + '" ' +
+'v184MPM="'+ coalesce(cast(@v184MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v185MinB="'+ coalesce(cast(@v185MinBet as varchar(50)),space(1)) + '" ' +
+'v185MaxB="'+ coalesce(cast(@v185MaxBet as varchar(50)),space(1)) + '" ' +
+'v185MPM="'+ coalesce(cast(@v185MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v186MinB="'+ coalesce(cast(@v186MinBet as varchar(50)),space(1)) + '" ' +
+'v186MaxB="'+ coalesce(cast(@v186MaxBet as varchar(50)),space(1)) + '" ' +
+'v186MPM="'+ coalesce(cast(@v186MaxPerMatch as varchar(50)),space(1)) + '" ' +
 
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -2676,7 +2841,14 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_MAg><info custid="'+ coalesce(ca
 'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
-'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + 
+
+'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v181mpt="'+ COALESCE(CAST(@v181mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182mpt="'+ COALESCE(CAST(@v182mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183mpt="'+ COALESCE(CAST(@v183mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184mpt="'+ COALESCE(CAST(@v184mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185mpt="'+ COALESCE(CAST(@v185mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186mpt="'+ COALESCE(CAST(@v186mPositionTaking AS VARCHAR(50)),SPACE(1)) + 
 '" />' +
 
 '<ag v1apt_1="'+ COALESCE(CAST(@v1apositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2738,7 +2910,14 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_MAg><info custid="'+ coalesce(ca
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
-'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
+
+'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182apt="'+ COALESCE(CAST(@v182aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183apt="'+ COALESCE(CAST(@v183aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184apt="'+ COALESCE(CAST(@v184aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185apt="'+ COALESCE(CAST(@v185aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186apt="'+ COALESCE(CAST(@v186aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
 
 '<m v151mpt_31="'+ coalesce(cast(@v151mpositiontaking_31 as varchar(50)),space(1)) + '" ' +
 'v151mpt_32="'+ coalesce(cast(@v151mpositiontaking_32 as varchar(50)),space(1)) + '" ' +
@@ -2820,9 +2999,12 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW definition ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMember_MAg] TO [vnteam] AS [dbo]

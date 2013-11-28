@@ -378,9 +378,8 @@ END
 return
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam] TO [bodbAdminNet]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam] TO vnteam
-GO
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam] TO [vnteam] AS [dbo]
