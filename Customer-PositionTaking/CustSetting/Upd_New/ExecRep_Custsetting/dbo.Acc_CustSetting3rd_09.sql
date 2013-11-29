@@ -154,12 +154,17 @@
 BEGIN
 	SET NOCOUNT ON 
 	
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting3rd', 'CustOverride3rd')
-			AND xtype = 'U'
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('custinfo', 'CustSetting3rd', 'CustOverride3rd')
+	--		AND xtype = 'U'
 
-	if @IsExistTables <> 3 RETURN
+	--if @IsExistTables <> 3 RETURN
+	
+	IF ((SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustSetting3rd','CustOverride3rd', 'custinfo') AND type = 'U') < 3
+		AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustSetting3rd','CustOverride3rd', 'custinfo') AND type = 'V') < 3)
+		RETURN
+		
 	Declare @bettype int,
 			@maxpos smallmoney,	
 			@autov161positiontaking smallmoney,

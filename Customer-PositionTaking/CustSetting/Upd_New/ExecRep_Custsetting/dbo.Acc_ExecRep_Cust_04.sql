@@ -47,7 +47,7 @@ Param's Explanation:
 */
 SET NOCOUNT ON 
 IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
-	OR (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
+	AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
 	RETURN
 	
 if @action = 'VirtualMultiplier'
