@@ -116,11 +116,239 @@ BEGIN
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + '<br>' + @ErrType
 					END, @ErrCode = 101
 		RETURN
+	END		
+	
+	--a2+m2<=m3
+	SELECT @ErrAcc = ''
+
+	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
+	FROM CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	WHERE ci.mrecommend = @custid AND ci.roleid = 2
+		AND cs.sporttype = 163 AND cs.bettype = 1401
+		AND cs.mpositiontaking + cs.apositiontaking > @v163mpositiontaking_1401 
+
+	IF @ErrAcc<>''
+	BEGIN		
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+') .'							
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
+					END, @ErrCode = 102
+		RETURN
 	END	
+		
+	--a1+m1<=m3
+	SELECT @ErrAcc = ''
+
+	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
+	FROM CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	WHERE ci.mrecommend = @custid AND ci.roleid = 1
+		AND cs.sporttype = 163 AND cs.bettype = 1401
+		AND cs.mpositiontaking + cs.apositiontaking > @v163mpositiontaking_1401 
+
+	IF @ErrAcc<>''
+	BEGIN	
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Existing members exceeded new master position taking ('+@ErrAcc+').'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+').'
+					END, @ErrCode = 103
+		RETURN
+	END
+		
+	--m3>=u2
+	SELECT @ErrAcc = ''
+
+	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
+	FROM CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	WHERE ci.mrecommend = @custid AND ci.roleid = 2
+		AND cs.sporttype = 163 AND cs.bettype = 1401
+		AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @v163mpositiontaking_1401
+
+	IF @ErrAcc<>''
+	BEGIN		
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+').'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
+					END, @ErrCode = 104
+		RETURN
+	END		
+	
+	--check u3<=s4
+	SELECT @ErrType = ''
+
+	SELECT @ErrType = @ErrType + 'Max: ' + CAST (cs.spositiontaking AS VARCHAR(10)) + '<br>'
+	FROM CustSettingGame cs WITH(NOLOCK)		
+	WHERE custid = @srecommend AND sporttype = 163 AND bettype = 1401
+		AND @auto_v163spositiontaking_1401 > spositiontaking 
+
+	IF @ErrType <>''	
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+							CASE @Language 
+								WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+							END	, @ErrCode = 105
+		RETURN
+	END
+	
+	IF @v163UpdatePositiontaking_1401 = 1
+	BEGIN
+		UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
+		SET spositiontaking = @v163spositiontaking_1401, mpositiontaking = @v163mpositiontaking_1401
+		WHERE custid = @custid AND sporttype = 163 AND bettype = 1401 
+
+		IF (@@error <> 0)
+		BEGIN
+			SELECT @ErrMsg = @UserName + ': '+
+							CASE @Language 
+								WHEN 'E' THEN 'Update process is unsuccessful !'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+							END	, @ErrCode = 106				 
+			RETURN
+		END
+	END
+	
+		
+	IF @v163UpdateAutoPositiontaking_1401 = 1
+	BEGIN
+		--Update Master Agent account (autopositiontaking field)
+		UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
+		SET autopositiontaking = @auto_v163spositiontaking_1401, isautopositiontaking = @isauto_v163spositiontaking_1401
+		WHERE custid = @custid AND sporttype = 163 AND bettype = 1401
+		
+		IF @@Error <> 0
+		BEGIN
+			
+			SELECT @ErrMsg =  
+				CASE @Language 
+					WHEN 'E' THEN 'Error updating auto position taking'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](20010,@Language)
+				END	
+				,  @ErrCode=201
+			RETURN
+		END
+		
+		EXEC dbo.Acc_CustSetting3rd_05
+			@srecommend = @srecommend,
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'OpusCasino',
+			
+			@isauto_v163spositiontaking_1401 = @isauto_v163spositiontaking_1401,
+			@old_isauto_v163spositiontaking_1401 = @db_isauto_v163spositiontaking_1401,
+			
+			@auto_v163spositiontaking_1401 = @auto_v163spositiontaking_1401, 
+			
+			@Updateallmembers = @Updateallmembers,
+			@newspositiontaking = @newspositiontaking
+		
+	END
 	
 	
+	IF @v163UpdateAutoPositiontaking_1401 = 1 OR @v163UpdatePositiontaking_1401 = 1
+	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_07 
+			@srecommend = @srecommend,
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'OpusCasino'
+
+		IF (@@error <> 0)
+		BEGIN		
+			SELECT @ErrMsg = @UserName + ': '+
+							case @Language 
+								WHEN 'E' THEN 'Update process is unsuccessful !'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+							END, @ErrCode = 107			 
+			
+			RETURN
+		END
+	END
+	
+	Declare @LogSPData varchar(MAX),
+			@TrackingValueDB varchar(4000)
+		 
+	SELECT @LogSPData = '<Acc_CustomerUpdMasterOpusCS_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v163spositiontaking_1401="' + COALESCE(CAST(@v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163mpositiontaking_1401="' + COALESCE(CAST(@v163mpositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'isauto_v163spositiontaking_1401="' + COALESCE(CAST(@isauto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'auto_v163spositiontaking_1401="' + COALESCE(CAST(@auto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163UpdatePositiontaking_1401="' + COALESCE(CAST(@V163UpdatePositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163UpdateAutoPositiontaking_1401="' + COALESCE(CAST(@V163UpdateAutoPositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'updateallmembers="' + COALESCE(CAST (@updateallmembers AS VARCHAR(3)), SPACE(1)) + '" ' +
+	'newspositiontaking="' + COALESCE(CAST (@newspositiontaking AS VARCHAR(30)), SPACE(1)) + '" ' +
+
+	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
+	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />'
+
+	SELECT @TrackingValueDB = '<Acc_CustomerUpdMasterOpusCS_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v163spositiontaking_1401="' + COALESCE(CAST(@db_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163mpositiontaking_1401="' + COALESCE(CAST(@db_v163mpositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'isauto_v163spositiontaking_1401="' + COALESCE(CAST(@db_isauto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'auto_v163spositiontaking_1401="' + COALESCE(CAST(@db_auto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163UpdatePositiontaking_1401="' + COALESCE(CAST(@V163UpdatePositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v163UpdateAutoPositiontaking_1401="' + COALESCE(CAST(@V163UpdateAutoPositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'updateallmembers="' + COALESCE(CAST (@updateallmembers AS VARCHAR(3)), SPACE(1)) + '" ' +
+	'newspositiontaking="' + COALESCE(CAST (@newspositiontaking AS VARCHAR(30)), SPACE(1)) + '" ' +
+
+	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
+	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />'
+
+
+	SET @endRun = GETDATE()
+	SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)
+
+	--Log customer info 
+	BEGIN TRY
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 438,
+			@TrackingValue = @LogSPData,
+			@TrackingValue2 = @TrackingValueDB,
+			@duration = @duration
+	END TRY
+	BEGIN CATCH
+		SELECT @LogSPData = '<Acc_CustomerUpdMasterOpusCS_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v163spositiontaking_1401="' + COALESCE(CAST(@v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v163mpositiontaking_1401="' + COALESCE(CAST(@v163mpositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'isauto_v163spositiontaking_1401="' + COALESCE(CAST(@isauto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'auto_v163spositiontaking_1401="' + COALESCE(CAST(@auto_v163spositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v163UpdatePositiontaking_1401="' + COALESCE(CAST(@V163UpdatePositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v163UpdateAutoPositiontaking_1401="' + COALESCE(CAST(@V163UpdateAutoPositiontaking_1401 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'updateallmembers="' + COALESCE(CAST (@updateallmembers AS VARCHAR(3)), SPACE(1)) + '" ' +
+		'newspositiontaking="' + COALESCE(CAST (@newspositiontaking AS VARCHAR(30)), SPACE(1)) + '" ' +
+
+		'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
+		'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'ErrMsg="'+ ERROR_MESSAGE() + '" />'
+		
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 438,
+			@TrackingValue = @LogSPData,
+			@TrackingValue2 = @TrackingValueDB,
+			@duration = @duration
+	END CATCH
+
+
 	
 END
+	
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterOpusCS_Positiontaking] TO [bodbAdminNet]
