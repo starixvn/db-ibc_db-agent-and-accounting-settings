@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag]	
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -2018,7 +2018,7 @@ select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spos
 
 --Insert into custsetting3rd
 
-INSERT INTO [bodb02].[dbo].[Dep_CustSetting3rd]
+INSERT INTO [Dep_CustSetting3rd]
            ([custid]
            ,[bettype]
            ,[sporttype]
@@ -2493,15 +2493,17 @@ END CATCH
 
 
 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [Dot_Member] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
 GO
-GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
