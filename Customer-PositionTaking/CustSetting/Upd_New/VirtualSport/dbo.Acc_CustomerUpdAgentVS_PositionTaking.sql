@@ -39,7 +39,7 @@ Revisions:
 	- 20131104@Johnson: apply execrep when update pt on agent
 		and check total downlines before UPDATEs
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)						
-			
+	- 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_07 for agent			
 Param's Explanation:        
 • @ErrCode:        
     = 0: Update successfully.        
@@ -677,7 +677,7 @@ BEGIN
 /* 
  EXEC dbo.Acc_CustomerUpdAgentVS_MaxPositiontaking @recommend = @custid        
  */
-EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'virtual-sports'
+EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype
  
  IF (@@error <> 0)        
  BEGIN          
@@ -789,8 +789,9 @@ END CATCH
 
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_PositionTaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_PositionTaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_PositionTaking] TO [bodbDownlineNet] AS [dbo]
 GO

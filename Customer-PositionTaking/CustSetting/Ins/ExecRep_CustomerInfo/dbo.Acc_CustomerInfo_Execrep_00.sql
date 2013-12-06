@@ -688,7 +688,7 @@
 		
 		Revisions:
 			- 20131120@Kathy: Add Virtual Greyhounds, Virtual Motor Racing (182, 184) [Redmine:#7234]. Refer to Sps:
-				+ Acc_CustomerInsMember_Com
+				+ Acc_CustomerInsMemb
 				+ Acc_CustomerInsMember_SAg
 				+ Acc_CustomerInsMember_MAg
 				+ Acc_CustomerInsMember_Ag
@@ -758,7 +758,7 @@ SET NOCOUNT ON
 		--Mix Sports Parlay
 		UNION ALL	SELECT @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, @v99spositiontaking_9, 0,0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0, 0, 0, 0, 0
 		--HR Fixed Odds
-		UNION ALL	SELECT @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL	SELECT @custid, 20, 154, ISNULL(@v154apositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), ISNULL(@v154spositiontaking_20,0), 0, 0, 0, 0, 0, 0, ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, ISNULL(@MinBetv154,0), ISNULL(@MaxBetv154,0), 0, 0, 0, 0, 0, 0, 0, 0
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -872,7 +872,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 3, 99, 0, @v99spositiontaking_3, 0, 0.9
 		UNION ALL SELECT @custid, 9, 99, 0, @v99spositiontaking_9, 0, 0.9
 		UNION ALL SELECT @custid, 20, 99, 0, @v99spositiontaking_20, 0, 0.9
-		UNION ALL SELECT @custid, 20, 154, 0, @v154spositiontaking_20, 0, 0.9
+		UNION ALL SELECT @custid, 20, 154, 0, ISNULL(@v154spositiontaking_20,0), 0, 0.9
 
 
 		IF @@ERROR <> 0
@@ -1132,8 +1132,8 @@ SET NOCOUNT ON
 		-- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0, 0, 0, 0, 0
-		--UNION ALL
-		select @custid, 20, 154, @v154spositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @auto_v154spositiontaking_20, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, @minbetv154, @maxbetv154, 0, 0, @isauto_v154spositiontaking_20, 0, 0, 0, 0, 0
+		UNION ALL
+		select @custid, 20, 154, ISNULL(@v154spositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@auto_v154spositiontaking_20,0), ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, ISNULL(@minbetv154,0), ISNULL(@maxbetv154,0), 0, 0, ISNULL(@isauto_v154spositiontaking_20,0), 0, 0, 0, 0, 0
 
 
 		if @@Error <> 0
@@ -1386,6 +1386,7 @@ SET NOCOUNT ON
 			DELETE [CustSetting3rd] with (ROWLOCK) where custid = @custid
 			DELETE CustOverride with (ROWLOCK) where custid =  @custid
 			DELETE CustOverride3rd with (ROWLOCK) where custid =  @custid
+
 			DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
 			DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
 						
@@ -1542,8 +1543,8 @@ SET NOCOUNT ON
 		--- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv99mp, @MaxBetv99mp, @auto_v99mpositiontaking_9, 0, @isauto_v99mpositiontaking_9, 0, 0 ,0 ,0 ,0
-		--UNION ALL
-		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, 0, 0, 0, 0, 0, @discountHRFixedOdds, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, @auto_v154mpositiontaking_20, 0, @isauto_v154mpositiontaking_20, 0, 0 ,0 ,0 ,0
+		UNION ALL
+		select @custid, 20, 154, ISNULL(@v154apositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, 0, ISNULL(@MinBetv154,0), ISNULL(@MaxBetv154,0), ISNULL(@auto_v154mpositiontaking_20,0), 0, ISNULL(@isauto_v154mpositiontaking_20,0), 0, 0 ,0 ,0 ,0
 
 		if @@error <> 0
 		BEGIN
@@ -1943,8 +1944,8 @@ SET NOCOUNT ON
 		select @custid, 9, 99, @v99apositiontaking_9, isnull(@v99mpositiontaking_9,0), isnull(@v99spositiontaking_9,0), 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0, 0, 0, 0, 0
-		--UNION ALL
-		select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, @playerdiscountHRFixedOdds, @discountHRFixedOdds, @adiscountHRFixedOdds, @sdiscountHRFixedOdds, 0, 0, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL
+		select @custid, 20, 154, ISNULL(@v154apositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), ISNULL(@v154spositiontaking_20,0), 0, 0, 0, ISNULL(@playerdiscountHRFixedOdds,0), ISNULL(@discountHRFixedOdds,0), ISNULL(@adiscountHRFixedOdds,0), ISNULL(@sdiscountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, ISNULL(@MinBetv154,0), ISNULL(@MaxBetv154,0), 0, 0, 0, 0, 0, 0, 0, 0
 
 
 		if @@Error <> 0
@@ -2120,3 +2121,5 @@ SET NOCOUNT ON
 		END
 	END
 END
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo]
