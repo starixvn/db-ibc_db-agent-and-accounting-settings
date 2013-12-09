@@ -697,12 +697,16 @@
 	*/
 BEGIN
 SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
 			AND xtype = 'U'
 
-	if @IsExistTables <> 6 RETURN
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
 	IF @roleid = 4
 	BEGIN					
@@ -2121,5 +2125,6 @@ SET NOCOUNT ON
 		END
 	END
 END
+
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo]
