@@ -35,6 +35,7 @@ AS
 		- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20131029@Elodie: Apply execrep when update min/max pt on master or agent
 		- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
+		- 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_04 for super
 	Param's Explanation:
 	• @ErrCode:
 		= 0: Update successfully.
@@ -190,7 +191,7 @@ BEGIN
 END
 ELSE IF @roleid= 4 and @UpdateMinPos = 1 
 BEGIN	
-	EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'virtual-sports'
+	EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype
 END
 ELSE IF @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1 -- process like SB, not correct when changing preset
 BEGIN	

@@ -27,6 +27,7 @@ AS
 					Acc_CustomerUpdAgentHR_MaxPositiontaking					
 		Revision:
 			- 20131104@Johnson: Add virtual sports, live casino, racing
+			- 20131203@Johnson: update virtual-sport for agent by @sporttype not hard code in sp
 		Parameter's Explanation:
 	*/ 
 BEGIN
@@ -843,7 +844,8 @@ BEGIN
 			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
 				inner join CustOverride3rd aco with(nolock) on aco.custid = @recommend and aco.sporttype = cs.sporttype and aco.bettype = cs.bettype 
 			where cs.apositiontaking < aco.minpositiontaking 
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 
 			--Nonlive(max)
@@ -852,7 +854,8 @@ BEGIN
 			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
 				inner join CustOverride3rd aco with(nolock) on aco.custid = @recommend and aco.sporttype = cs.sporttype and aco.bettype = cs.bettype 
 			where cs.apositiontaking > aco.maxpositiontaking 
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 
 			--Check m1+a1: m1+a1>m3 => modify m1 set m1=m3-a1
@@ -862,7 +865,8 @@ BEGIN
 			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
 				inner join CustSetting3rd macs with(nolock) on macs.custid = mb.mrecommend and macs.sporttype = cs.sporttype and macs.bettype = cs.bettype 
 			where cs.apositiontaking + cs.mpositiontaking > macs.mpositiontaking 
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 
 			--Recal um2
@@ -882,7 +886,8 @@ BEGIN
 				mb.recommend = @recommend
 				and mb.roleid = 1
 				and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 			--Check min max n3<=m1+a1<=l3 => modify m1
 			--Nonlive(min)
@@ -891,7 +896,8 @@ BEGIN
 			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
 				inner join CustOverride3rd mco with(nolock) on mco.custid = mb.mrecommend and cs.sporttype = mco.sporttype and cs.bettype = mco.bettype 
 			where cs.mpositiontaking + cs.apositiontaking < mco.minpositiontaking
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 			--Nonlive(max)
 			update cs
@@ -899,7 +905,8 @@ BEGIN
 			from CustSetting3rd cs with(rowlock,updlock) inner join custinfo mb with(nolock) on cs.custid = mb.custid and mb.recommend = @recommend and mb.roleid = 1
 				inner join CustOverride3rd mco with(nolock) on mco.custid = mb.mrecommend and cs.sporttype = mco.sporttype and cs.bettype = mco.bettype 
 			where cs.mpositiontaking + cs.apositiontaking > mco.maxpositiontaking
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 			--Recal u3,u1
 			-- s1=min(s4-m1-a1,u)
@@ -916,7 +923,8 @@ BEGIN
 				mb.recommend = @recommend
 				and mb.roleid = 1
 				and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 			--check super min/max when a1+m1+s1<n4
 			-- s1=n4-m1-a1
@@ -928,7 +936,8 @@ BEGIN
 				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1
 				inner join CustOverride3rd as sco with (NOLOCK) on sco.custid = mb.srecommend  and sco.sporttype=cs.sporttype and sco.bettype=cs.bettype
 			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking<sco.minpositiontaking
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 			--Nonlive(max)
 			Update cs
@@ -938,7 +947,8 @@ BEGIN
 				inner join custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1
 				inner join CustOverride3rd as sco with (NOLOCK) on sco.custid = mb.srecommend  and sco.sporttype=cs.sporttype and sco.bettype=cs.bettype
 			where cs.apositiontaking+cs.mpositiontaking+cs.spositiontaking>sco.maxpositiontaking
-				and cs.sporttype in(180, 181, 186)
+				and cs.sporttype = @sporttype
+				and cs.bettype = @bettype
 
 
 		END

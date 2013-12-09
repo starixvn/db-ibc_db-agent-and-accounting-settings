@@ -38,6 +38,7 @@ Revisions:
  - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
  - 20131104@Johnson: apply execrep when update pt on agent
 		and check total downlines before UPDATEs 
+- 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_07 for agent		
 Param's Explanation:        
 • @ErrCode:        
     = 0: Update successfully.        
@@ -675,7 +676,7 @@ BEGIN
 /* 
  EXEC dbo.Acc_CustomerUpdAgentVS_MaxPositiontaking @recommend = @custid        
  */
-EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'virtual-sports'
+EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype
  
  IF (@@error <> 0)        
  BEGIN          
