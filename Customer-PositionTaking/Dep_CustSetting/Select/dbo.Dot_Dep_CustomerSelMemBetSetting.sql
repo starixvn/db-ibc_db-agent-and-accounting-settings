@@ -1,10 +1,10 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMemBetSetting]
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust]
 	@CustId int
 AS
  /*
 Created: 20090721@Phuc (Tommy)
 Task : Update member MIN MAX bet.
-DB: DB02.bodb02 + DB06.bodb02
+DB: DBTRANS.bodb02 + DB06.bodb02
 
 Revisions:
 	- 20091303@Peter : #353 IRP - DBA - Separate HorseRacing AND Financial's setting FROM custsetting AND custoverride
@@ -15,7 +15,8 @@ Revisions:
 	- 20120321@Kiwi: - Change to use Dep_CustSetting/Dep_CustSetting3rd
 					 - Remove Ficancials setting (201)
 	- 20130716@Elodie: retrieve bet setting for Virtual Soccer
-						
+	- 20131211@Elodie: retrieve bet setting for Virtual Racing(181), Greyhounds(182), Motor Racing(184), Tennis(186)
+									
 Param's Explanation:
 */
 SET NOCOUNT ON
@@ -106,8 +107,31 @@ DECLARE
 	@MinBetv180_Max MONEY, 
 	@MaxBetv180_Min MONEY, 
 	@MaxPerMatchv180_Min MONEY, 
-	@MaxPerMatchv180_Max MONEY	
-       
+	@MaxPerMatchv180_Max MONEY,	
+
+	--Virtual horse racing
+	@MinBetv181_Max MONEY, 
+	@MaxBetv181_Min MONEY, 
+	@MaxPerMatchv181_Min MONEY, 
+	@MaxPerMatchv181_Max MONEY,
+	
+	--Virtual greyhounds
+	@MinBetv182_Max MONEY, 
+	@MaxBetv182_Min MONEY, 
+	@MaxPerMatchv182_Min MONEY, 
+	@MaxPerMatchv182_Max MONEY,
+	
+	--Virtual motor racing
+	@MinBetv184_Max MONEY, 
+	@MaxBetv184_Min MONEY, 
+	@MaxPerMatchv184_Min MONEY, 
+	@MaxPerMatchv184_Max MONEY,
+	
+	--Virtual tennis
+	@MinBetv186_Max MONEY, 
+	@MaxBetv186_Min MONEY, 
+	@MaxPerMatchv186_Min MONEY, 
+	@MaxPerMatchv186_Max MONEY
   
 ------------------------------------------------------------------------------------------------------------------------------------------
              
@@ -269,6 +293,46 @@ FROM
 	AND cs.sporttype = 180 AND cs.bettype = 1201
 WHERE ci.custid = @custid
     
+--Virtual Horse Racing
+SELECT 
+	@MinBetv181_Max = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv181_Min = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
+	AND cs.sporttype = 181 AND cs.bettype = 1231
+WHERE ci.custid = @custid
+
+--Virtual Greyhounds
+SELECT 
+	@MinBetv182_Max = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv182_Min = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
+	AND cs.sporttype = 182 AND cs.bettype = 1231
+WHERE ci.custid = @custid
+
+--Virtual Motor Racing
+SELECT 
+	@MinBetv184_Max = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv184_Min = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
+	AND cs.sporttype = 184 AND cs.bettype = 1231
+WHERE ci.custid = @custid
+
+--Virtual Tennis
+SELECT 
+	@MinBetv186_Max = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END),
+	@MaxBetv186_Min = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
+	AND cs.sporttype = 186 AND cs.bettype = 1220
+WHERE ci.custid = @custid
+    
 SELECT     
 	@MaxPerMatch_Min = 0,     
 	@MaxperMatch_Max = MIN(CASE WHEN cs.MaxPerMatch = 0 THEN NULL ELSE cs.MaxPerMatch END),     
@@ -314,7 +378,19 @@ SELECT
 	@MaxPerBallv161_Max = MIN(CASE WHEN cs.MaxPerBall161 = 0  THEN NULL ELSE cs.MaxPerBall161 END),
 	
 	@MaxPerMatchv180_Min = 0,
-	@MaxPerMatchv180_Max = MIN(CASE WHEN cs.maxpermatch180 = 0 THEN NULL ELSE cs.maxpermatch180 END)
+	@MaxPerMatchv180_Max = MIN(CASE WHEN cs.maxpermatch180 = 0 THEN NULL ELSE cs.maxpermatch180 END),
+	
+	@MaxPerMatchv181_Min = 0,
+	@MaxPerMatchv181_Max = MIN(CASE WHEN cs.maxpermatch181 = 0 THEN NULL ELSE cs.maxpermatch181 END),
+	
+	@MaxPerMatchv182_Min = 0,
+	@MaxPerMatchv182_Max = MIN(CASE WHEN cs.maxpermatch182 = 0 THEN NULL ELSE cs.maxpermatch182 END),
+	
+	@MaxPerMatchv184_Min = 0,
+	@MaxPerMatchv184_Max = MIN(CASE WHEN cs.maxpermatch184 = 0 THEN NULL ELSE cs.maxpermatch184 END),
+	
+	@MaxPerMatchv186_Min = 0,
+	@MaxPerMatchv186_Max = MIN(CASE WHEN cs.maxpermatch186 = 0 THEN NULL ELSE cs.maxpermatch186 END)
 
 FROM     
  custinfo AS cs WITH (NOLOCK)     
@@ -347,6 +423,10 @@ SELECT
 	ISNULL(ci.maxperball161,0)	AS maxperballv161, 
     
     isnull(ci.maxpermatch180,0) AS maxpermatchv180,
+    isnull(ci.maxpermatch181,0) AS maxpermatchv181,
+    isnull(ci.maxpermatch182,0) AS maxpermatchv182,
+    isnull(ci.maxpermatch184,0) AS maxpermatchv184,
+    isnull(ci.maxpermatch186,0) AS maxpermatchv186,
     
 	ISNULL(MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 AND cs.isLive=0 THEN cs.minbet ELSE 0 END), 0) AS minbet,    
 	ISNULL(MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 AND cs.isLive=0 THEN cs.maxbet ELSE 0 END), 0) AS maxbet,    
@@ -404,6 +484,18 @@ SELECT
 	
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 180 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv180,
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 180 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv180,
+	
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 181 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv181,
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 181 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv181,
+	
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 182 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv182,
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 182 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv182,
+	
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 184 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv184,
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 184 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv184,
+	
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 186 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv186,
+	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 186 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv186,
 	
 	ISNULL(@MinBet_Min, 0) AS MinBet_Min,    
 	ISNULL(@MaxBet_Max, 0) AS MaxBet_Max,    
@@ -491,7 +583,27 @@ SELECT
 	ISNULL(@MinBetv180_Max, 0) AS MinBetv180_Min,     
 	ISNULL(@MaxBetv180_Min, 0) AS MaxBetv180_Max,     
 	ISNULL(@MaxPerMatchv180_Min, 0) AS MaxPerMatchv180_Min,     
-	ISNULL(@MaxPerMatchv180_Max, 0) AS MaxPerMatchv180_Max	   
+	ISNULL(@MaxPerMatchv180_Max, 0) AS MaxPerMatchv180_Max,
+	
+	ISNULL(@MinBetv181_Max, 0) AS MinBetv181_Min,     
+	ISNULL(@MaxBetv181_Min, 0) AS MaxBetv181_Max,     
+	ISNULL(@MaxPerMatchv181_Min, 0) AS MaxPerMatchv181_Min,     
+	ISNULL(@MaxPerMatchv181_Max, 0) AS MaxPerMatchv181_Max,
+	
+	ISNULL(@MinBetv182_Max, 0) AS MinBetv182_Min,     
+	ISNULL(@MaxBetv182_Min, 0) AS MaxBetv182_Max,     
+	ISNULL(@MaxPerMatchv182_Min, 0) AS MaxPerMatchv182_Min,     
+	ISNULL(@MaxPerMatchv182_Max, 0) AS MaxPerMatchv182_Max,
+	
+	ISNULL(@MinBetv184_Max, 0) AS MinBetv184_Min,     
+	ISNULL(@MaxBetv184_Min, 0) AS MaxBetv184_Max,     
+	ISNULL(@MaxPerMatchv184_Min, 0) AS MaxPerMatchv184_Min,     
+	ISNULL(@MaxPerMatchv184_Max, 0) AS MaxPerMatchv184_Max,
+	
+	ISNULL(@MinBetv186_Max, 0) AS MinBetv186_Min,     
+	ISNULL(@MaxBetv186_Min, 0) AS MaxBetv186_Max,     
+	ISNULL(@MaxPerMatchv186_Min, 0) AS MaxPerMatchv186_Min,     
+	ISNULL(@MaxPerMatchv186_Max, 0) AS MaxPerMatchv186_Max
 FROM     
 	CustInfo ci WITH (NOLOCK)  
 	INNER JOIN Dep_CustSetting cs WITH (NOLOCK) ON ci.custid = cs.custid    
@@ -518,9 +630,17 @@ GROUP BY
 	ci.maxpermatch152_UK,
 	ci.maxpermatch152_AU,
 	ci.maxpermatch153_AU,
-	ci.maxpermatch180
+	ci.maxpermatch180,
+	ci.maxpermatch181,
+	ci.maxpermatch182,
+	ci.maxpermatch184,
+	ci.maxpermatch186
 
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [Dot_Admin]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Admin] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Member] AS [dbo]
+GO
+GRANT ALTER ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [vnteam] AS [dbo]
