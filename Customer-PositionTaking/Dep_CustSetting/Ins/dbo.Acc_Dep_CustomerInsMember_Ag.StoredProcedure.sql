@@ -1279,7 +1279,8 @@ BEGIN
 END
 
 --Exclude created member from Balance checking
-INSERT INTO bodb02.dbo.Task_Cust_CheckBalance_Exception(custid, remark) values(@custid, @username)
+--INSERT INTO dbo.Task_Cust_CheckBalance_Exception(custid, remark) values(@custid, @username)
+EXEC bodb02.dbo.Task_Cust_CheckBalance_Exception_Ins @custid = @custid, @username = @username
 if @@error <> 0
 BEGIN
 	--Error occur
@@ -1677,8 +1678,9 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
 GO
