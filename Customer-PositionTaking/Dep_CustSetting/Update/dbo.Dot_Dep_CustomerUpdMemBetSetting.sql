@@ -21,6 +21,10 @@
 	@UpdateMinMaxBetv153_51 BIT = 0,
 	@UpdateMinMaxBetv161 BIT = 0,
 	@UpdateMinMaxBetv180 BIT = 0,
+	@UpdateMinMaxBetv181 BIT = 0,
+	@UpdateMinMaxBetv182 BIT = 0,
+	@UpdateMinMaxBetv184 BIT = 0,
+	@UpdateMinMaxBetv186 BIT = 0,
  
 	@MinBet MONEY,
 	@MaxBet MONEY,
@@ -91,9 +95,25 @@
 	@MaxPerMatchv161 MONEY =0,
 	@MaxPerBallv161 MONEY = 0,
 	
-	@MinBetv180 MONEY,
-	@MaxBetv180 MONEY,
-	@MaxPerMatchv180 MONEY,
+	@MinBetv180 MONEY = 0,
+	@MaxBetv180 MONEY = 0,
+	@MaxPerMatchv180 MONEY = 0,
+	
+	@MinBetv181 MONEY = 0,
+	@MaxBetv181 MONEY = 0,
+	@MaxPerMatchv181 MONEY = 0,
+	
+	@MinBetv182 MONEY = 0,
+	@MaxBetv182 MONEY = 0,
+	@MaxPerMatchv182 MONEY = 0,
+	
+	@MinBetv184 MONEY = 0,
+	@MaxBetv184 MONEY = 0,
+	@MaxPerMatchv184 MONEY = 0,
+	
+	@MinBetv186 MONEY = 0,
+	@MaxBetv186 MONEY = 0,
+	@MaxPerMatchv186 MONEY = 0,
 	
 	@userid INT, --updater Id	
 	@language VARCHAR(2) = 'E',
@@ -123,6 +143,7 @@ Revisions:
 	- 20110719@Jamie: temporarily do not update Min/MaxBet if Member's MinBet is less than Agent's MinBet for Mansion88  
 	- 20120321@Kiwi: Change to use Dep_CustSetting/Dep_CustSetting3rd
 	- 20130716@Elodie: Update bet setting for Virtual Soccer
+	- 20131211@Elodie: Update bet setting for Virtual Racing(181), Greyhounds(182), Motor Racing(184), Tennis(186)
 Param's Explanation:
 */
 
@@ -153,7 +174,11 @@ DECLARE @MinMinBet MONEY, @MaxMaxBet MONEY,	@MaxMaxPerMatch MONEY,
 	@MinMinBetv152_51 MONEY, @MaxMaxBetv152_51 MONEY, @MaxMaxPerMatchv152_51 MONEY,
 	@MinMinBetv153_51 MONEY, @MaxMaxBetv153_51 MONEY, @MaxMaxPerMatchv153_51 MONEY,
 	@MinMinBetv161 MONEY, @MaxMaxBetv161 MONEY, @MaxMaxPerMatchv161 MONEY, @MaxMaxPerBallv161 MONEY,
-	@MinMinBetv180 MONEY, @MaxMaxBetv180 MONEY, @MaxMaxPerMatchv180 MONEY
+	@MinMinBetv180 MONEY, @MaxMaxBetv180 MONEY, @MaxMaxPerMatchv180 MONEY,
+	@MinMinBetv181 MONEY, @MaxMaxBetv181 MONEY, @MaxMaxPerMatchv181 MONEY,
+	@MinMinBetv182 MONEY, @MaxMaxBetv182 MONEY, @MaxMaxPerMatchv182 MONEY,
+	@MinMinBetv184 MONEY, @MaxMaxBetv184 MONEY, @MaxMaxPerMatchv184 MONEY,
+	@MinMinBetv186 MONEY, @MaxMaxBetv186 MONEY, @MaxMaxPerMatchv186 MONEY
 	
 Declare 
 	@Old_MinBet money, @Old_MaxBet money,	@Old_MaxPerMatch money,
@@ -173,7 +198,11 @@ Declare
 	@Old_MinBetv152_41 MONEY, @Old_MaxBetv152_41 MONEY, @Old_MaxPerMatchv152_41 MONEY, 
 	@Old_MinBetv152_51 MONEY, @Old_MaxBetv152_51 MONEY, @Old_MaxPerMatchv152_51 MONEY, 
 	@Old_MinBetv153_51 MONEY, @Old_MaxBetv153_51 MONEY, @Old_MaxPerMatchv153_51 MONEY,
-	@Old_MinBetv180 money, @Old_MaxBetv180 money, @Old_MaxPerMatchv180 money
+	@Old_MinBetv180 money, @Old_MaxBetv180 money, @Old_MaxPerMatchv180 money,
+	@Old_MinBetv181 money, @Old_MaxBetv181 money, @Old_MaxPerMatchv181 money,
+	@Old_MinBetv182 money, @Old_MaxBetv182 money, @Old_MaxPerMatchv182 money,
+	@Old_MinBetv184 money, @Old_MaxBetv184 money, @Old_MaxPerMatchv184 money,
+	@Old_MinBetv186 money, @Old_MaxBetv186 money, @Old_MaxPerMatchv186 money
 	
 DECLARE @ErrAcc VARCHAR(4000), @ErrType VARCHAR(4000),
 		@UserName VARCHAR(30), @recommend INT, @roleid TINYINT
@@ -243,7 +272,7 @@ from
 	Dep_CustSetting3rd WITH (NOLOCK)    
 where custid = @CustID and bettype = 51 and sporttype=153 
 
---v153_51
+--v180
 Select     
 	@Old_MinBetv180 = isnull(MinBet ,0),
 	@Old_MaxBetv180 = isnull(MaxBet ,0) 
@@ -251,13 +280,49 @@ from
 	Dep_CustSetting3rd WITH (NOLOCK)    
 where custid = @CustID and bettype = 1201 and sporttype=180
 
+--v181
+Select     
+	@Old_MinBetv181 = isnull(MinBet ,0),
+	@Old_MaxBetv181 = isnull(MaxBet ,0) 
+from     
+	Dep_CustSetting3rd WITH (NOLOCK)    
+where custid = @CustID and bettype = 1231 and sporttype=181
+
+--v182
+Select     
+	@Old_MinBetv182 = isnull(MinBet ,0),
+	@Old_MaxBetv182 = isnull(MaxBet ,0) 
+from     
+	Dep_CustSetting3rd WITH (NOLOCK)    
+where custid = @CustID and bettype = 1231 and sporttype=182
+
+--v184
+Select     
+	@Old_MinBetv184 = isnull(MinBet ,0),
+	@Old_MaxBetv184 = isnull(MaxBet ,0) 
+from     
+	Dep_CustSetting3rd WITH (NOLOCK)    
+where custid = @CustID and bettype = 1231 and sporttype=184
+
+--v186
+Select     
+	@Old_MinBetv186 = isnull(MinBet ,0),
+	@Old_MaxBetv186 = isnull(MaxBet ,0) 
+from     
+	Dep_CustSetting3rd WITH (NOLOCK)    
+where custid = @CustID and bettype = 1220 and sporttype=186
+
 select @Old_MaxPerMatchv151 =isnull(MaxPerMatch151,0),
 	@Old_MaxPerMatchv151OT = isnull(MaxPerMatch151_OT,0),
 	@Old_MaxPerMatchv151_51 = isnull(MaxPerMatch151_AU,0), 
 	@Old_MaxPerMatchv152_41 = isnull(MaxPerMatch152_UK,0), 
 	@Old_MaxPerMatchv152_51 = isnull(MaxPerMatch152_AU,0), 
 	@Old_MaxPerMatchv153_51 = isnull(MaxPerMatch153_AU,0),
-	@Old_MaxPerMatchv180 = isnull(MaxPerMatch180,0) 
+	@Old_MaxPerMatchv180 = isnull(MaxPerMatch180,0), 
+	@Old_MaxPerMatchv181 = isnull(MaxPerMatch181,0), 
+	@Old_MaxPerMatchv182 = isnull(MaxPerMatch182,0), 
+	@Old_MaxPerMatchv184 = isnull(MaxPerMatch184,0), 
+	@Old_MaxPerMatchv186 = isnull(MaxPerMatch186,0) 
 from custinfo with (nolock)
 where custid=@Custid
 ----------------------------------
@@ -278,7 +343,11 @@ IF 	@Old_MinBet = @MinBet AND @Old_MaxBet = @MaxBet AND	@Old_MaxPerMatch = @MaxP
 	@Old_MinBetv152_41 = @MinBetv152_41 AND @Old_MaxBetv152_41 = @MaxBetv152_41 AND @Old_MaxPerMatchv152_41 = @MaxPerMatchv152_41 AND 
 	@Old_MinBetv152_51 = @MinBetv152_51 AND @Old_MaxBetv152_51 = @MaxBetv152_51 AND @Old_MaxPerMatchv152_51 = @MaxPerMatchv152_51 AND 
 	@Old_MinBetv153_51 = @MinBetv153_51 AND @Old_MaxBetv153_51 = @MaxBetv153_51 AND @Old_MaxPerMatchv153_51 = @MaxPerMatchv153_51 AND
-	@Old_MinBetv180 = @MinBetv180 AND @Old_MaxBetv180 = @MaxBetv180 AND @Old_MaxPerMatchv180 = @MaxPerMatchv180
+	@Old_MinBetv180 = @MinBetv180 AND @Old_MaxBetv180 = @MaxBetv180 AND @Old_MaxPerMatchv180 = @MaxPerMatchv180 AND 
+	@Old_MinBetv181 = @MinBetv181 AND @Old_MaxBetv181 = @MaxBetv181 AND @Old_MaxPerMatchv181 = @MaxPerMatchv181 AND 
+	@Old_MinBetv182 = @MinBetv182 AND @Old_MaxBetv182 = @MaxBetv182 AND @Old_MaxPerMatchv182 = @MaxPerMatchv182 AND 
+	@Old_MinBetv184 = @MinBetv184 AND @Old_MaxBetv184 = @MaxBetv184 AND @Old_MaxPerMatchv184 = @MaxPerMatchv184 AND 
+	@Old_MinBetv186 = @MinBetv186 AND @Old_MaxBetv186 = @MaxBetv186 AND @Old_MaxPerMatchv186 = @MaxPerMatchv186
 RETURN
 
 
@@ -673,6 +742,27 @@ BEGIN
 	BEGIN
 		SELECT @ErrCode = 3
 		SELECT @ErrMsg = 	CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Soccer).'
+							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
+							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
+							WHEN 'TH' THEN N'การกำหนดจำนวนเงินสำหรับการวางเดิมพันต่ำสุด/ สูงสุด/สูงสดต่อรายการไม่ถูกต้อง.'
+							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Soccer).'
+							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Soccer).'
+							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Soccer).'
+					END
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv181 = 1 
+BEGIN
+	IF 
+		@MinBetv181<0
+		OR @MaxBetv181 < 0
+		OR @MaxPerMatchv181 <0		
+	BEGIN
+		SELECT @ErrCode = 3
+		SELECT @ErrMsg = 	CASE @Language 
 							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
 							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
 							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
@@ -680,6 +770,69 @@ BEGIN
 							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
 							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Horse Racing).'
 							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Horse Racing).'
+					END
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv182 = 1 
+BEGIN
+	IF 
+		@MinBetv182<0
+		OR @MaxBetv182 < 0
+		OR @MaxPerMatchv182 <0		
+	BEGIN
+		SELECT @ErrCode = 3
+		SELECT @ErrMsg = 	CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Greyhounds).'
+							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
+							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
+							WHEN 'TH' THEN N'การกำหนดจำนวนเงินสำหรับการวางเดิมพันต่ำสุด/ สูงสุด/สูงสดต่อรายการไม่ถูกต้อง.'
+							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Greyhounds).'
+							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Greyhounds).'
+							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Greyhounds).'
+					END
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv184 = 1 
+BEGIN
+	IF 
+		@MinBetv184<0
+		OR @MaxBetv184 < 0
+		OR @MaxPerMatchv184 <0		
+	BEGIN
+		SELECT @ErrCode = 3
+		SELECT @ErrMsg = 	CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Motor Racing).'
+							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
+							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
+							WHEN 'TH' THEN N'การกำหนดจำนวนเงินสำหรับการวางเดิมพันต่ำสุด/ สูงสุด/สูงสดต่อรายการไม่ถูกต้อง.'
+							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Motor Racing).'
+							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Motor Racing).'
+							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Motor Racing).'
+					END
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv186 = 1 
+BEGIN
+	IF 
+		@MinBetv186<0
+		OR @MaxBetv186 < 0
+		OR @MaxPerMatchv186 <0		
+	BEGIN
+		SELECT @ErrCode = 3
+		SELECT @ErrMsg = 	CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match (for Virtual Tennis).'
+							WHEN 'CS' THEN N'最低投注/最高投注/单场最高投注不正确.'
+							WHEN 'CT' THEN N'最低投注/最高投注/單場最高投注不正確.'
+							WHEN 'TH' THEN N'การกำหนดจำนวนเงินสำหรับการวางเดิมพันต่ำสุด/ สูงสุด/สูงสดต่อรายการไม่ถูกต้อง.'
+							WHEN 'J' THEN N'Wrong Min bet/ Max bet/ Max per match (for Virtual Tennis).'
+							WHEN 'KO' THEN N'잘못된 최소 배팅/최대 배팅/경기당 최대 (for Virtual Tennis).'
+							ELSE N'Wrong Min bet/ Max bet/ Max per match (for Virtual Tennis).'
 					END
 		RETURN
 	END
@@ -838,6 +991,42 @@ FROM
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
 	AND cs.bettype = 1201 AND cs.sporttype=180
 WHERE ci.custid = @recommend
+
+SELECT 
+	@MinMinBetv181 = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
+	@MaxMaxBetv181 = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM 
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
+	AND cs.bettype = 1231 AND cs.sporttype=181
+WHERE ci.custid = @recommend
+	
+SELECT 
+	@MinMinBetv182 = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
+	@MaxMaxBetv182 = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM 
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
+	AND cs.bettype = 1231 AND cs.sporttype=182
+WHERE ci.custid = @recommend
+	
+SELECT 
+	@MinMinBetv184 = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
+	@MaxMaxBetv184 = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM 
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
+	AND cs.bettype = 1231 AND cs.sporttype=184
+WHERE ci.custid = @recommend
+
+SELECT 
+	@MinMinBetv186 = MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 
+	@MaxMaxBetv186 = MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END)
+FROM 
+	Dep_CustSetting3rd AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
+	AND cs.bettype = 1220 AND cs.sporttype=186
+WHERE ci.custid = @recommend
 	
 SELECT 
 	@MaxMaxperMatch = MIN(CASE WHEN cs.MaxPerMatch = 0 THEN NULL ELSE cs.MaxPerMatch END), 
@@ -858,7 +1047,11 @@ SELECT
 	@MaxMaxPerMatchv153_51 = MIN(CASE WHEN cs.MaxPerMatch153_AU = 0 THEN NULL ELSE cs.MaxPerMatch153_AU END),
 	@MaxMaxPerMatchv161 = MIN(CASE WHEN cs.MaxPerMatch161 = 0 THEN NULL ELSE cs.MaxPerMatch161 END),
 	@MaxMaxPerBallv161 = MIN(CASE WHEN cs.MaxPerBall161 =0 THEN NULL ELSE cs.MaxPerBall161 END),
-	@MaxMaxperMatchv180 = MIN(CASE WHEN cs.MaxPerMatch180 = 0 THEN NULL ELSE cs.MaxPerMatch180 END)
+	@MaxMaxperMatchv180 = MIN(CASE WHEN cs.MaxPerMatch180 = 0 THEN NULL ELSE cs.MaxPerMatch180 END),
+	@MaxMaxperMatchv181 = MIN(CASE WHEN cs.MaxPerMatch181 = 0 THEN NULL ELSE cs.MaxPerMatch181 END),
+	@MaxMaxperMatchv182 = MIN(CASE WHEN cs.MaxPerMatch182 = 0 THEN NULL ELSE cs.MaxPerMatch182 END),
+	@MaxMaxperMatchv184 = MIN(CASE WHEN cs.MaxPerMatch184 = 0 THEN NULL ELSE cs.MaxPerMatch184 END),
+	@MaxMaxperMatchv186 = MIN(CASE WHEN cs.MaxPerMatch186 = 0 THEN NULL ELSE cs.MaxPerMatch186 END)
 FROM 
 	custinfo AS cs WITH (NOLOCK) 
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.Recommend OR cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend)
@@ -2051,6 +2244,76 @@ BEGIN
 	BEGIN
 		SELECT @ErrMsg =	@UserName + ': '+
 						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Soccer)'
+							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
+							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดที่วางเดิมพันได้ต้องน้อยกว่าจำนวนเงินสูงสุดในการวางเดิมพันและจำนวนเงินสูงสุดในการวางเดิมพันต้องน้อยกว่าจำนวนเงินสูงสุดของเงินเดิมพันต่อเกม (for Virtual Soccer)'
+							WHEN 'J' THEN N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Soccer)'
+							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
+							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Soccer)'
+						END						
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv180) + '-' + CONVERT(VARCHAR(20), @MaxBetv180) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv180), @ErrCode = 111
+				
+		RETURN
+	END
+	
+	IF (@MinMinBetv180>0 AND @MinBetv180>0 AND @MinBetv180<@MinMinBetv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet (for Virtual Soccer)'
+							WHEN 'CS' THEN N'最低投注需相等于或少于代理最低投注'
+							WHEN 'CT' THEN N'最低投注需相等於或少於代理最低投注'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดในการเล่นต้องเท่ากับหรือมากกว่าจำนวนเงินขั้นต่ำในการเล่นที่กำหนดไว้ของตัวแทน (for Virtual Soccer)'
+							WHEN 'J' THEN N'Min bet must be equal to or greater than Agent min bet (for Virtual Soccer)'
+							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
+							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Soccer)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv180) + ').', @ErrCode = 112
+				
+		RETURN
+	END	
+	IF (@MaxMaxBetv180>0 AND @MaxBetv180>0 AND @MaxBetv180>@MaxMaxBetv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet (for Virtual Soccer)'
+							WHEN 'CS' THEN N'最高投注需相等于或少于代理最高投注'
+							WHEN 'CT' THEN N'最高投注需相等於或少於代理最高投注'
+							WHEN 'TH' THEN N'จำนวนการวางเดิมพันสูงสุดต้องเท่ากับ หรือ น้อยกว่าราคาเดิมพันสูงสุดของตัวแทน (for Virtual Soccer)'
+							WHEN 'J' THEN N'Max bet must be equal to or less than Agent max bet (for Virtual Soccer)'
+							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
+							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Soccer)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv180) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+	
+	IF (@MaxMaxPerMatchv180>0 AND @MaxPerMatchv180>0 AND @MaxPerMatchv180>@MaxMaxPerMatchv180)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Soccer)'
+							WHEN 'CS' THEN N'单场最高投注需相等于或少于代理单场最高投注'
+							WHEN 'CT' THEN N'單場最高投注需相等於或少於代理單場最高投注'
+							WHEN 'TH' THEN N'จำนวนเงินสูงสุดในการเล่นต่อรายการต้องเท่ากับหรือน้อยกว่าจำนวนเงินสูงสุดต่อรายการที่กำหนดไว้ของตัวแทน (for Virtual Soccer) '
+							WHEN 'J' THEN N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Soccer)'
+							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
+							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Soccer)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv180) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv181 = 1
+BEGIN
+	IF ((@MinBetv181<>0 OR @MaxBetv181<>0 OR @MaxPerMatchv181<>0) AND (@MinBetv181>@MaxBetv181 OR @MaxBetv181>@MaxPerMatchv181))
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
 							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Horse Racing)'
 							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
 							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
@@ -2059,12 +2322,12 @@ BEGIN
 							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
 							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Horse Racing)'
 						END						
-						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv180) + '-' + CONVERT(VARCHAR(20), @MaxBetv180) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv180), @ErrCode = 111
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv181) + '-' + CONVERT(VARCHAR(20), @MaxBetv181) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv181), @ErrCode = 111
 				
 		RETURN
 	END
 	
-	IF (@MinMinBetv180>0 AND @MinBetv180>0 AND @MinBetv180<@MinMinBetv180)
+	IF (@MinMinBetv181>0 AND @MinBetv181>0 AND @MinBetv181<@MinMinBetv181)
 	BEGIN
 		SELECT @ErrMsg =	@UserName + ': '+
 						CASE @Language 
@@ -2076,11 +2339,11 @@ BEGIN
 							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
 							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Horse Racing)'
 						END						
-						+' (' + CONVERT(VARCHAR(20), @MinMinBetv180) + ').', @ErrCode = 112
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv181) + ').', @ErrCode = 112
 				
 		RETURN
 	END	
-	IF (@MaxMaxBetv180>0 AND @MaxBetv180>0 AND @MaxBetv180>@MaxMaxBetv180)
+	IF (@MaxMaxBetv181>0 AND @MaxBetv181>0 AND @MaxBetv181>@MaxMaxBetv181)
 	BEGIN
 		SELECT @ErrMsg =	@UserName + ': '+
 						CASE @Language 
@@ -2092,12 +2355,12 @@ BEGIN
 							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
 							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Horse Racing)'
 						END						
-						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv180) + ').', @ErrCode = 113
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv181) + ').', @ErrCode = 113
 				
 		RETURN
 	END
 	
-	IF (@MaxMaxPerMatchv180>0 AND @MaxPerMatchv180>0 AND @MaxPerMatchv180>@MaxMaxPerMatchv180)
+	IF (@MaxMaxPerMatchv181>0 AND @MaxPerMatchv181>0 AND @MaxPerMatchv181>@MaxMaxPerMatchv181)
 	BEGIN
 		SELECT @ErrMsg =	@UserName + ': '+
 						CASE @Language 
@@ -2109,11 +2372,222 @@ BEGIN
 							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
 							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Horse Racing)'
 						END						
-						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv180) + ').', @ErrCode = 113
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv181) + ').', @ErrCode = 113
 				
 		RETURN
 	END
 END
+
+IF @UpdateMinMaxBetv182 = 1
+BEGIN
+	IF ((@MinBetv182<>0 OR @MaxBetv182<>0 OR @MaxPerMatchv182<>0) AND (@MinBetv182>@MaxBetv182 OR @MaxBetv182>@MaxPerMatchv182))
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Greyhounds)'
+							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
+							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดที่วางเดิมพันได้ต้องน้อยกว่าจำนวนเงินสูงสุดในการวางเดิมพันและจำนวนเงินสูงสุดในการวางเดิมพันต้องน้อยกว่าจำนวนเงินสูงสุดของเงินเดิมพันต่อเกม (for Virtual Greyhounds)'
+							WHEN 'J' THEN N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Greyhounds)'
+							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
+							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Greyhounds)'
+						END						
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv182) + '-' + CONVERT(VARCHAR(20), @MaxBetv182) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv182), @ErrCode = 111
+				
+		RETURN
+	END
+	
+	IF (@MinMinBetv182>0 AND @MinBetv182>0 AND @MinBetv182<@MinMinBetv182)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet (for Virtual Greyhounds)'
+							WHEN 'CS' THEN N'最低投注需相等于或少于代理最低投注'
+							WHEN 'CT' THEN N'最低投注需相等於或少於代理最低投注'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดในการเล่นต้องเท่ากับหรือมากกว่าจำนวนเงินขั้นต่ำในการเล่นที่กำหนดไว้ของตัวแทน (for Virtual Greyhounds)'
+							WHEN 'J' THEN N'Min bet must be equal to or greater than Agent min bet (for Virtual Greyhounds)'
+							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
+							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Greyhounds)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv182) + ').', @ErrCode = 112
+				
+		RETURN
+	END	
+	IF (@MaxMaxBetv182>0 AND @MaxBetv182>0 AND @MaxBetv182>@MaxMaxBetv182)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet (for Virtual Greyhounds)'
+							WHEN 'CS' THEN N'最高投注需相等于或少于代理最高投注'
+							WHEN 'CT' THEN N'最高投注需相等於或少於代理最高投注'
+							WHEN 'TH' THEN N'จำนวนการวางเดิมพันสูงสุดต้องเท่ากับ หรือ น้อยกว่าราคาเดิมพันสูงสุดของตัวแทน (for Virtual Greyhounds)'
+							WHEN 'J' THEN N'Max bet must be equal to or less than Agent max bet (for Virtual Greyhounds)'
+							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
+							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Greyhounds)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv182) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+	
+	IF (@MaxMaxPerMatchv182>0 AND @MaxPerMatchv182>0 AND @MaxPerMatchv182>@MaxMaxPerMatchv182)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Greyhounds)'
+							WHEN 'CS' THEN N'单场最高投注需相等于或少于代理单场最高投注'
+							WHEN 'CT' THEN N'單場最高投注需相等於或少於代理單場最高投注'
+							WHEN 'TH' THEN N'จำนวนเงินสูงสุดในการเล่นต่อรายการต้องเท่ากับหรือน้อยกว่าจำนวนเงินสูงสุดต่อรายการที่กำหนดไว้ของตัวแทน (for Virtual Greyhounds) '
+							WHEN 'J' THEN N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Greyhounds)'
+							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
+							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Greyhounds)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv182) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv184 = 1
+BEGIN
+	IF ((@MinBetv184<>0 OR @MaxBetv184<>0 OR @MaxPerMatchv184<>0) AND (@MinBetv184>@MaxBetv184 OR @MaxBetv184>@MaxPerMatchv184))
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Motor Racing)'
+							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
+							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดที่วางเดิมพันได้ต้องน้อยกว่าจำนวนเงินสูงสุดในการวางเดิมพันและจำนวนเงินสูงสุดในการวางเดิมพันต้องน้อยกว่าจำนวนเงินสูงสุดของเงินเดิมพันต่อเกม (for Virtual Motor Racing)'
+							WHEN 'J' THEN N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Motor Racing)'
+							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
+							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Motor Racing)'
+						END						
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv184) + '-' + CONVERT(VARCHAR(20), @MaxBetv184) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv184), @ErrCode = 111
+				
+		RETURN
+	END
+	
+	IF (@MinMinBetv184>0 AND @MinBetv184>0 AND @MinBetv184<@MinMinBetv184)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet (for Virtual Motor Racing)'
+							WHEN 'CS' THEN N'最低投注需相等于或少于代理最低投注'
+							WHEN 'CT' THEN N'最低投注需相等於或少於代理最低投注'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดในการเล่นต้องเท่ากับหรือมากกว่าจำนวนเงินขั้นต่ำในการเล่นที่กำหนดไว้ของตัวแทน (for Virtual Motor Racing)'
+							WHEN 'J' THEN N'Min bet must be equal to or greater than Agent min bet (for Virtual Motor Racing)'
+							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
+							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Motor Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv184) + ').', @ErrCode = 112
+				
+		RETURN
+	END	
+	IF (@MaxMaxBetv184>0 AND @MaxBetv184>0 AND @MaxBetv184>@MaxMaxBetv184)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet (for Virtual Motor Racing)'
+							WHEN 'CS' THEN N'最高投注需相等于或少于代理最高投注'
+							WHEN 'CT' THEN N'最高投注需相等於或少於代理最高投注'
+							WHEN 'TH' THEN N'จำนวนการวางเดิมพันสูงสุดต้องเท่ากับ หรือ น้อยกว่าราคาเดิมพันสูงสุดของตัวแทน (for Virtual Motor Racing)'
+							WHEN 'J' THEN N'Max bet must be equal to or less than Agent max bet (for Virtual Motor Racing)'
+							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
+							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Motor Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv184) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+	
+	IF (@MaxMaxPerMatchv184>0 AND @MaxPerMatchv184>0 AND @MaxPerMatchv184>@MaxMaxPerMatchv184)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Motor Racing)'
+							WHEN 'CS' THEN N'单场最高投注需相等于或少于代理单场最高投注'
+							WHEN 'CT' THEN N'單場最高投注需相等於或少於代理單場最高投注'
+							WHEN 'TH' THEN N'จำนวนเงินสูงสุดในการเล่นต่อรายการต้องเท่ากับหรือน้อยกว่าจำนวนเงินสูงสุดต่อรายการที่กำหนดไว้ของตัวแทน (for Virtual Motor Racing) '
+							WHEN 'J' THEN N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Motor Racing)'
+							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
+							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Motor Racing)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv184) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+END
+
+IF @UpdateMinMaxBetv186 = 1
+BEGIN
+	IF ((@MinBetv186<>0 OR @MaxBetv186<>0 OR @MaxPerMatchv186<>0) AND (@MinBetv186>@MaxBetv186 OR @MaxBetv186>@MaxPerMatchv186))
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Tennis)'
+							WHEN 'CS' THEN N'最低投注不能高于最高投注，最高投注不能高于单场最高投注设定'
+							WHEN 'CT' THEN N'最低投注不能高於最高投注,最高投注不能高於單場最高投注設定'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดที่วางเดิมพันได้ต้องน้อยกว่าจำนวนเงินสูงสุดในการวางเดิมพันและจำนวนเงินสูงสุดในการวางเดิมพันต้องน้อยกว่าจำนวนเงินสูงสุดของเงินเดิมพันต่อเกม (for Virtual Tennis)'
+							WHEN 'J' THEN N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Tennis)'
+							WHEN 'KO' THEN N'최소 배팅은 최대 배팅 이하이여야 하고 최대 배팅은 경기당 최대 배팅보다 작아야 합니다.'
+							ELSE N'Min bet must be less than max bet and max bet must be less than max bet per match (for Virtual Tennis)'
+						END						
+						+ CHAR(13) + CHAR(10) + CONVERT(VARCHAR(20), @MinBetv186) + '-' + CONVERT(VARCHAR(20), @MaxBetv186) + '-' + CONVERT(VARCHAR(20), @MaxPerMatchv186), @ErrCode = 111
+				
+		RETURN
+	END
+	
+	IF (@MinMinBetv186>0 AND @MinBetv186>0 AND @MinBetv186<@MinMinBetv186)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet (for Virtual Tennis)'
+							WHEN 'CS' THEN N'最低投注需相等于或少于代理最低投注'
+							WHEN 'CT' THEN N'最低投注需相等於或少於代理最低投注'
+							WHEN 'TH' THEN N'จำนวนเงินต่ำสุดในการเล่นต้องเท่ากับหรือมากกว่าจำนวนเงินขั้นต่ำในการเล่นที่กำหนดไว้ของตัวแทน (for Virtual Tennis)'
+							WHEN 'J' THEN N'Min bet must be equal to or greater than Agent min bet (for Virtual Tennis)'
+							WHEN 'KO' THEN N'최소 배팅은 에이전트의 최소 배팅 이상이여야 합니다.'
+							ELSE N'Min bet must be equal to or greater than Agent min bet (for Virtual Tennis)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MinMinBetv186) + ').', @ErrCode = 112
+				
+		RETURN
+	END	
+	IF (@MaxMaxBetv186>0 AND @MaxBetv186>0 AND @MaxBetv186>@MaxMaxBetv186)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet (for Virtual Tennis)'
+							WHEN 'CS' THEN N'最高投注需相等于或少于代理最高投注'
+							WHEN 'CT' THEN N'最高投注需相等於或少於代理最高投注'
+							WHEN 'TH' THEN N'จำนวนการวางเดิมพันสูงสุดต้องเท่ากับ หรือ น้อยกว่าราคาเดิมพันสูงสุดของตัวแทน (for Virtual Tennis)'
+							WHEN 'J' THEN N'Max bet must be equal to or less than Agent max bet (for Virtual Tennis)'
+							WHEN 'KO' THEN N'최대 배팅은 에이전트의 최대 배팅 이하이여야 합니다.'
+							ELSE N'Max bet must be equal to or less than Agent max bet (for Virtual Tennis)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxBetv186) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+	
+	IF (@MaxMaxPerMatchv186>0 AND @MaxPerMatchv186>0 AND @MaxPerMatchv186>@MaxMaxPerMatchv186)
+	BEGIN
+		SELECT @ErrMsg =	@UserName + ': '+
+						CASE @Language 
+							WHEN 'E' THEN 'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Tennis)'
+							WHEN 'CS' THEN N'单场最高投注需相等于或少于代理单场最高投注'
+							WHEN 'CT' THEN N'單場最高投注需相等於或少於代理單場最高投注'
+							WHEN 'TH' THEN N'จำนวนเงินสูงสุดในการเล่นต่อรายการต้องเท่ากับหรือน้อยกว่าจำนวนเงินสูงสุดต่อรายการที่กำหนดไว้ของตัวแทน (for Virtual Tennis) '
+							WHEN 'J' THEN N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Tennis)'
+							WHEN 'KO' THEN N'최대 경기는 에이전트의 최대 경기보다 작아야 합니다.'
+							ELSE N'Max Per Match must be equal to or less than Agent Max Per Match (for Virtual Tennis)'
+						END						
+						+' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatchv186) + ').', @ErrCode = 113
+				
+		RETURN
+	END
+END
+
 ----------
 UPDATE Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET
@@ -2150,6 +2624,10 @@ SET
 				
 				WHEN (@UpdateMinMaxBetv161 = 1 AND sporttype = 161) THEN @MinBetv161
 				WHEN (@UpdateMinMaxBetv180 = 1 AND sporttype = 180) THEN @MinBetv180
+				WHEN (@UpdateMinMaxBetv181 = 1 AND sporttype = 181) THEN @MinBetv181
+				WHEN (@UpdateMinMaxBetv182 = 1 AND sporttype = 182) THEN @MinBetv182
+				WHEN (@UpdateMinMaxBetv184 = 1 AND sporttype = 184) THEN @MinBetv184
+				WHEN (@UpdateMinMaxBetv186 = 1 AND sporttype = 186) THEN @MinBetv186
 			ELSE minbet END,
 	MaxBet = CASE WHEN (@UpdateMinMaxBetv151 = 1 AND sporttype=151 AND bettype IN(31,32)) THEN @MaxBetv151
 				WHEN (@UpdateMinMaxBetv151OT = 1 AND sporttype=151 AND bettype IN(41,42)) THEN @MaxBetv151OT
@@ -2160,6 +2638,10 @@ SET
 				
 				WHEN (@UpdateMinMaxBetv161 = 1 AND sporttype = 161) THEN @MaxBetv161
 				WHEN (@UpdateMinMaxBetv180 = 1 AND sporttype = 180) THEN @MaxBetv180
+				WHEN (@UpdateMinMaxBetv181 = 1 AND sporttype = 181) THEN @MaxBetv181
+				WHEN (@UpdateMinMaxBetv182 = 1 AND sporttype = 182) THEN @MaxBetv182
+				WHEN (@UpdateMinMaxBetv184 = 1 AND sporttype = 184) THEN @MaxBetv184
+				WHEN (@UpdateMinMaxBetv186 = 1 AND sporttype = 186) THEN @MaxBetv186
 			ELSE MaxBet END
 WHERE custid=@custid
 
@@ -2200,7 +2682,11 @@ SET
 	
 	MaxPerMatch161 = CASE WHEN @UpdateMinMaxBetv161 = 1 THEN @MaxPerMatchv161 ELSE MaxPerMatch161 END,
 	MaxPerBall161 = CASE WHEN @UpdateMinMaxBetv161 = 1 THEN @MaxPerBallv161 ELSE MaxPerBall161 END,
-	MaxPerMatch180 = CASE WHEN @UpdateMinMaxBetv180 = 1 THEN @MaxPerMatchv180 ELSE MaxPerMatch180 END
+	MaxPerMatch180 = CASE WHEN @UpdateMinMaxBetv180 = 1 THEN @MaxPerMatchv180 ELSE MaxPerMatch180 END,
+	MaxPerMatch181 = CASE WHEN @UpdateMinMaxBetv181 = 1 THEN @MaxPerMatchv181 ELSE MaxPerMatch181 END,
+	MaxPerMatch182 = CASE WHEN @UpdateMinMaxBetv182 = 1 THEN @MaxPerMatchv182 ELSE MaxPerMatch182 END,
+	MaxPerMatch184 = CASE WHEN @UpdateMinMaxBetv184 = 1 THEN @MaxPerMatchv184 ELSE MaxPerMatch184 END,
+	MaxPerMatch186 = CASE WHEN @UpdateMinMaxBetv186 = 1 THEN @MaxPerMatchv186 ELSE MaxPerMatch186 END
 WHERE custid = @custid 
 
 IF (@@ERROR <> 0)
@@ -2281,6 +2767,22 @@ SELECT @LogSPData ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(CAST(@
 'MaxBv180="'+ COALESCE(CAST(@maxbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPMv180="'+ COALESCE(CAST(@maxpermatchv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'MinBv181="'+ COALESCE(CAST(@minbetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv181="'+ COALESCE(CAST(@maxbetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv181="'+ COALESCE(CAST(@maxpermatchv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv182="'+ COALESCE(CAST(@minbetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv182="'+ COALESCE(CAST(@maxbetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv182="'+ COALESCE(CAST(@maxpermatchv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv184="'+ COALESCE(CAST(@minbetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv184="'+ COALESCE(CAST(@maxbetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv184="'+ COALESCE(CAST(@maxpermatchv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv186="'+ COALESCE(CAST(@minbetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv186="'+ COALESCE(CAST(@maxbetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv186="'+ COALESCE(CAST(@maxpermatchv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'UMMB="'+ COALESCE(CAST(@UpdateMinMaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv2="'+ COALESCE(CAST(@UpdateMinMaxBetv2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv3="'+ COALESCE(CAST(@UpdateMinMaxBetv3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2298,6 +2800,10 @@ SELECT @LogSPData ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(CAST(@
 'UMMBv153_51="'+ COALESCE(CAST(@UpdateMinMaxBetv153_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv161="'+ COALESCE(CAST(@UpdateMinMaxBetv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv180="'+ COALESCE(CAST(@UpdateMinMaxBetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv181="'+ COALESCE(CAST(@UpdateMinMaxBetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv182="'+ COALESCE(CAST(@UpdateMinMaxBetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv184="'+ COALESCE(CAST(@UpdateMinMaxBetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv186="'+ COALESCE(CAST(@UpdateMinMaxBetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -2363,6 +2869,22 @@ SELECT @TrackingValue2 ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(C
 'MaxBv180="'+ COALESCE(CAST(@Old_maxbetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPMv180="'+ COALESCE(CAST(@Old_maxpermatchv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'MinBv181="'+ COALESCE(CAST(@Old_minbetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv181="'+ COALESCE(CAST(@Old_maxbetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv181="'+ COALESCE(CAST(@Old_maxpermatchv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv182="'+ COALESCE(CAST(@Old_minbetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv182="'+ COALESCE(CAST(@Old_maxbetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv182="'+ COALESCE(CAST(@Old_maxpermatchv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv184="'+ COALESCE(CAST(@Old_minbetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv184="'+ COALESCE(CAST(@Old_maxbetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv184="'+ COALESCE(CAST(@Old_maxpermatchv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv186="'+ COALESCE(CAST(@Old_minbetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv186="'+ COALESCE(CAST(@Old_maxbetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv186="'+ COALESCE(CAST(@Old_maxpermatchv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'UMMB="'+ COALESCE(CAST(@UpdateMinMaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv2="'+ COALESCE(CAST(@UpdateMinMaxBetv2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv3="'+ COALESCE(CAST(@UpdateMinMaxBetv3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2380,6 +2902,10 @@ SELECT @TrackingValue2 ='<Dot_Dep_CustomerUpdMemBetSetting custid="'+ COALESCE(C
 'UMMBv153_51="'+ COALESCE(CAST(@UpdateMinMaxBetv153_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv161="'+ COALESCE(CAST(@UpdateMinMaxBetv161 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UMMBv180="'+ COALESCE(CAST(@UpdateMinMaxBetv180 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv181="'+ COALESCE(CAST(@UpdateMinMaxBetv181 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv182="'+ COALESCE(CAST(@UpdateMinMaxBetv182 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv184="'+ COALESCE(CAST(@UpdateMinMaxBetv184 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'UMMBv186="'+ COALESCE(CAST(@UpdateMinMaxBetv186 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -2397,3 +2923,11 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue2 = @TrackingValue2,
 	@duration = @duration
 
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [Dot_Admin] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [Dot_Member] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [vnteam] AS [dbo]
