@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag]
+﻿ALTER  PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag]
 	@custid int,
 	@userid int,
 
@@ -65,7 +65,8 @@ DB: DBTrans.bodb02
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20131014@Francis: Support updating new virtual sports with settings
-    
+    - 20131211@Francis: Fix bug for updating position taking for Virtual Sports at Member level (only apostiontaking column will be affected)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -195,8 +196,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v180aPositionTaking,
-	mpositiontaking = @v180mPositionTaking,
-	spositiontaking = @v180sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 180
 if (@@error <> 0)
@@ -292,8 +293,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v181aPositionTaking,
-	mpositiontaking = @v181mPositionTaking,
-	spositiontaking = @v181sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 181
 if (@@error <> 0)
@@ -387,8 +388,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v182aPositionTaking,
-	mpositiontaking = @v182mPositionTaking,
-	spositiontaking = @v182sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 182
 if (@@error <> 0)
@@ -482,8 +483,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v183aPositionTaking,
-	mpositiontaking = @v183mPositionTaking,
-	spositiontaking = @v183sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 183
 if (@@error <> 0)
@@ -577,8 +578,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v184aPositionTaking,
-	mpositiontaking = @v184mPositionTaking,
-	spositiontaking = @v184sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 184
 if (@@error <> 0)
@@ -673,8 +674,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v185aPositionTaking,
-	mpositiontaking = @v185mPositionTaking,
-	spositiontaking = @v185sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 185
 if (@@error <> 0)
@@ -768,8 +769,8 @@ END
 UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
 SET
 	apositiontaking = @v186aPositionTaking,
-	mpositiontaking = @v186mPositionTaking,
-	spositiontaking = @v186sPositionTaking
+	mpositiontaking = 0,
+	spositiontaking = 0
 WHERE custid = @custid
 AND sporttype = 186
 if (@@error <> 0)
