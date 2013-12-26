@@ -18,12 +18,24 @@ Revisions:
 Param's Explanation:
 
 */
-DECLARE @IsExistTables tinyint
+--DECLARE @IsExistTables tinyint
+--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+--WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+--		AND xtype = 'U'
+
+--if @IsExistTables <> 3 RETURN
+
+DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
 		AND xtype = 'U'
 
-if @IsExistTables <> 3 RETURN
+SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+		AND xtype = 'V'
+		
+if @IsExistTables <> 3 AND @IsExistViews <> 3
+	RETURN
 
 declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 
@@ -66,7 +78,7 @@ where custsetting.custid = @custid and custsetting.sporttype=1 and custsetting.b
 
 --Recal AUTO MPT 
 --Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
--------------------------------------------------------------------------------------
+
 if @updautomaster = 1
 begin
 	Update custsetting with (ROWLOCK, UPDLOCK) 
@@ -114,7 +126,7 @@ begin
 		and (acs.isautolivempositiontaking = 1 or custsetting.isautolivempositiontaking = 1)
 		
 end
------------
+
 
 
 
@@ -135,7 +147,7 @@ from
 	inner join custoverride as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting.sporttype and mco.bettype=custsetting.bettype
 where custsetting.custid = @custid and custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking<mco.minlivepositiontaking
 
-------------
+
 
 
 --update m1,a1 when a1+m1>l3
@@ -167,7 +179,7 @@ from
 	inner join custoverride as aco with (NOLOCK) on aco.custid = @recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 where custsetting.custid = @custid and custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.alivepositiontaking+custsetting.mlivepositiontaking>mco.maxlivepositiontaking
 
-----------------
+
 
 --recal autopos
 if @updautosuper = 1 
@@ -263,6 +275,7 @@ from
 	inner join custoverride as aco with (NOLOCK) on aco.custid = @recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 where custsetting.custid = @custid and custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.slivepositiontaking+custsetting.alivepositiontaking+custsetting.mlivepositiontaking>scs.slivepositiontaking
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_00] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_00] TO [bodbadminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting_00] TO [vnteam] AS [dbo]

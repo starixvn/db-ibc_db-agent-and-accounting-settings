@@ -1,13 +1,54 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com]
 	@CustID INT, -- Super ID
 	
 	@v180MaxPerMatch MONEY,
 	@v180MinBet MONEY,
 	@v180MaxBet MONEY,
-	
 	@v180sPositionTaking SMALLMONEY,
 	@v180mPositionTaking SMALLMONEY,
 	@v180aPositionTaking SMALLMONEY,
+
+	@v181MaxPerMatch MONEY,
+	@v181MinBet MONEY,
+	@v181MaxBet MONEY,
+	@v181sPositionTaking SMALLMONEY,
+	@v181mPositionTaking SMALLMONEY,
+	@v181aPositionTaking SMALLMONEY,
+
+	@v182MaxPerMatch MONEY,
+	@v182MinBet MONEY,
+	@v182MaxBet MONEY,
+	@v182sPositionTaking SMALLMONEY,
+	@v182mPositionTaking SMALLMONEY,
+	@v182aPositionTaking SMALLMONEY,
+
+	@v183MaxPerMatch MONEY,
+	@v183MinBet MONEY,
+	@v183MaxBet MONEY,
+	@v183sPositionTaking SMALLMONEY,
+	@v183mPositionTaking SMALLMONEY,
+	@v183aPositionTaking SMALLMONEY,
+
+	@v184MaxPerMatch MONEY,
+	@v184MinBet MONEY,
+	@v184MaxBet MONEY,
+	@v184sPositionTaking SMALLMONEY,
+	@v184mPositionTaking SMALLMONEY,
+	@v184aPositionTaking SMALLMONEY,
+
+	@v185MaxPerMatch MONEY,
+	@v185MinBet MONEY,
+	@v185MaxBet MONEY,
+	@v185sPositionTaking SMALLMONEY,
+	@v185mPositionTaking SMALLMONEY,
+	@v185aPositionTaking SMALLMONEY,
+
+	@v186MaxPerMatch MONEY,
+	@v186MinBet MONEY,
+	@v186MaxBet MONEY,
+	@v186sPositionTaking SMALLMONEY,
+	@v186mPositionTaking SMALLMONEY,
+	@v186aPositionTaking SMALLMONEY,
 	
 	@UserID INT = 0,	
 	@Language VARCHAR(2) = 'E',
@@ -23,7 +64,9 @@ DB: DBTrans.bodb02
 
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
-	
+	- 20131014@Francis: Support updating new virtual sports with settings
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettype by link database)	
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -44,6 +87,9 @@ DECLARE @username varchar(40)
 SELECT @ErrCode = 0
 
 
+
+
+--Virtual Soccer
 select @ErrAcc = ''
 select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
 from 
@@ -52,7 +98,7 @@ from
 	inner join (
 					select 180 as sporttype, 1201 as bettype, @v180spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 180
 	AND c.roleid = 3 
@@ -72,7 +118,7 @@ BEGIN
 	return
 END
 ------------------------------------------------------------------------------------------------------
---check all u1<=s4 if i1=1
+--check all s1+m1+a1<=s4
 select @ErrAcc = ''
 select top 100 @ErrAcc = @ErrAcc + username +', '
 from 
@@ -186,51 +232,887 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
+
+
+
+--Virtual Horse Racing
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 181 as sporttype, 1231 as bettype, @v181spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 181
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
+
+if @ErrAcc<>''
+
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Horse Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](181,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 181 as sporttype, 1231 as bettype, @v181spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 181 
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Horse Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](181,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 181 as sporttype, 1231 as bettype, @v181mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 181 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Horse Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](181,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 181 as sporttype, 1231 as bettype, @v181apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 181
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Horse Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](181,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
 /**************************
-* Write Logs
+* Update CustInfo
 **************************/
-/*
-SET @endRun = GETDATE()
-SET @duration  = DATEDIFF (millisecond,@startRun,@endRun)
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch181 = @v181MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v181MinBet,
+	MaxBet = @v181MaxBet,
+	spositiontaking = @v181sPositionTaking,
+	mpositiontaking = @v181mPositionTaking,
+	apositiontaking = @v181aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 181
 
-DECLARE @LogSPData VARCHAR(4000)
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
 
---Write Bet setting log
-SELECT @LogSPData = '<Acc_Dep_CustomerUpdMemberVirtualSports_Com custid="'+ COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +
-'MinBv'+CAST(@SportType AS VARCHAR(50))+'="'+ COALESCE(CAST(@MinBet AS VARCHAR(50)),SPACE(1)) + '" ' +
-'MaxBv'+CAST(@SportType AS VARCHAR(50))+'="'+ COALESCE(CAST(@MaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
-'MPMv'+CAST(@SportType AS VARCHAR(50))+'="'+ COALESCE(CAST(@MaxPerMatch AS VARCHAR(50)),SPACE(1)) + '" ' +
-'" />' 
 
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
-	@UserID = @UserID,
-	@CustID = @CustID,
-	@ActionID = 2018,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
+--Virtual Greyhounds
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 182 as sporttype, 1231 as bettype, @v182spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 182
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
 
---Write PT Log
-SELECT @LogSPData = '<Acc_Dep_CustomerUpdMemberVirtualSports_Com><s v'+CAST(@SportType AS NVARCHAR(50))+'spt_1201="'+ COALESCE(CAST(@sPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
-'" />' +
-'<m v'+CAST(@SportType AS NVARCHAR(50))+'mpt_1201="'+ COALESCE(CAST(@mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
-'" />' +
-'<a v'+CAST(@SportType AS NVARCHAR(50))+'apt_1201="'+ COALESCE(CAST(@aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
-'" />' +
-'</Acc_Dep_CustomerInsMemberVirtualSports_Com>'
+if @ErrAcc<>''
 
-EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
-	@UserID = @UserID,
-	@CustID = @CustID,
-	@ActionID = 2713,
-	@TrackingValue = @LogSPData,
-	@duration = @duration
-*/	
-/******************************
-* Assign Permission	
-******************************/
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Greyhounds).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](182,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 	182 as sporttype, 1231 as bettype, @v182spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 182
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Greyhounds).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](182,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 182 as sporttype, 1231 as bettype, @v182mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 182 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Greyhounds).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](182,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 	182 as sporttype, 1231 as bettype, @v182apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 182
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Greyhounds).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](182,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
+/**************************
+* Update CustInfo
+**************************/
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch182 = @v182MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v182MinBet,
+	MaxBet = @v182MaxBet,
+	spositiontaking = @v182sPositionTaking,
+	mpositiontaking = @v182mPositionTaking,
+	apositiontaking = @v182aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 182
+
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
+
+
+--Virtual Speedway
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 183 as sporttype, 1231 as bettype, @v183spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 183
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
+
+if @ErrAcc<>''
+
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Speedway).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](183,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 	183 as sporttype, 1231 as bettype, @v183spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 183 
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Speedway).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](183,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 183 as sporttype, 1231 as bettype, @v183mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 183 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Speedway).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](183,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 	183 as sporttype, 1231 as bettype, @v183apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 183
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Speedway).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](183,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
+/**************************
+* Update CustInfo
+**************************/
+
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch183 = @v183MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v183MinBet,
+	MaxBet = @v183MaxBet,
+	spositiontaking = @v183sPositionTaking,
+	mpositiontaking = @v183mPositionTaking,
+	apositiontaking = @v183aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 183
+
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
+
+
+--Virtual Motor Racing
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 184 as sporttype, 1231 as bettype, @v184spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 184
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
+
+if @ErrAcc<>''
+
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Motor Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](184,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 	184 as sporttype, 1231 as bettype, @v184spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 184 
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Motor Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](184,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 184 as sporttype, 1231 as bettype, @v184mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 184 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Motor Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](184,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 	184 as sporttype, 1231 as bettype, @v184apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 184
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Motor Racing).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](184,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
+/**************************
+* Update CustInfo
+**************************/
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch184 = @v184MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v184MinBet,
+	MaxBet = @v184MaxBet,
+	spositiontaking = @v184sPositionTaking,
+	mpositiontaking = @v184mPositionTaking,
+	apositiontaking = @v184aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 184
+
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
+
+
+--Virtual Cycling
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 185 as sporttype, 1231 as bettype, @v185spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 185
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
+
+if @ErrAcc<>''
+
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Cycling).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](185,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 	185 as sporttype, 1231 as bettype, @v185spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 185 
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Cycling).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](185,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 185 as sporttype, 1231 as bettype, @v185mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 185 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Cycling).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](185,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 	185 as sporttype, 1231 as bettype, @v185apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 185
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Cycling).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](185,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
+/**************************
+* Update CustInfo
+**************************/
+
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch185 = @v185MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v185MinBet,
+	MaxBet = @v185MaxBet,
+	spositiontaking = @v185sPositionTaking,
+	mpositiontaking = @v185mPositionTaking,
+	apositiontaking = @v185aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 185
+
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
+
+
+--Virtual Tennis
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', ', @ErrType = @ErrType + t.typenamee+', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+					select 186 as sporttype, 1220 as bettype, @v186spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 186
+	AND c.roleid = 3 
+	AND (
+			((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or ((cs.mpositiontaking>b.maxpositiontaking))
+		)
+group by username, t.typenamee
+
+if @ErrAcc<>''
+
+BEGIN
+	Select @ErrMsg = 
+				case @Language 
+						when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+') (for Virtual Tennis).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](186,@Language) + ')'
+				end, @ErrCode = 103
+	return
+END
+------------------------------------------------------------------------------------------------------
+--check all s1+m1+a1<=s4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				      select 186 as sporttype, 1220 as bettype, @v186spositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid
+	AND cs.sporttype = 186
+	and c.roleid = 1 
+	and (
+			(cs.spositiontaking+cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new super position taking ('+@ErrAcc+') (for Virtual Tennis).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](186,@Language) + ')'
+				end, @ErrCode = 104
+	return
+END
+---------------------------------------------------------------------------------------------------------------
+--Check all m1+a1<=m4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				     select 186 as sporttype, 1220 as bettype, @v186mpositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 186 
+	and c.roleid = 1 
+	and (
+			(cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') (for Virtual Tennis).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](186,@Language) + ')'
+				end, @ErrCode = 108
+	return
+END
+------------------------------------------------------------------------------------------------------
+--Check all a1<=a4
+select @ErrAcc = ''
+select top 100 @ErrAcc = @ErrAcc + username +', '
+from 
+	custinfo as c with (NOLOCK) 
+	inner join Dep_CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
+	inner join (
+				   select 186 as sporttype, 1220 as bettype, @v186apositiontaking as maxpositiontaking
+		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
+where c.srecommend = @custid 
+	AND cs.sporttype = 186
+	and c.roleid = 1
+	and (
+			(cs.apositiontaking>b.maxpositiontaking)  
+		)
+group by username
+if @ErrAcc<>''
+BEGIN
+	Select @ErrMsg = @username + ': ' +
+				case @Language 
+						when 'E' then 'Existing members exceeded new agent position taking ('+@ErrAcc+') (for Virtual Tennis).'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](20017,@Language) + ' ('+@ErrAcc+')' + ' (' + [dbo].[f_Get_SportNameBySporttype](186,@Language) + ')'
+				end, @ErrCode = 109
+	return
+END
+/**************************
+* Update CustInfo
+**************************/
+UPDATE custinfo with (ROWLOCK, UPDLOCK)
+set 	
+	MaxPerMatch186 = @v186MaxPerMatch	
+where custid = @custid 
+if (@@error <> 0)
+begin
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end, @ErrCode = 115
+	return
+END
+/*****************************
+* Update Dep_Cussetting3rd
+*****************************/
+UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+SET	
+	MinBet = @v186MinBet,
+	MaxBet = @v186MaxBet,
+	spositiontaking = @v186sPositionTaking,
+	mpositiontaking = @v186mPositionTaking,
+	apositiontaking = @v186aPositionTaking
+WHERE custid=@CustID
+	AND sporttype = 186
+
+if (@@error <> 0)
+begin
+	
+	Select @ErrMsg = case @Language 
+						when 'E' then 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end	, @ErrCode = 103 
+	return
+END
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [vnteam] AS [dbo]

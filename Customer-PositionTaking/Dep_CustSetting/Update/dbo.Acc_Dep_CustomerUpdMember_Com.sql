@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_Com]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_Com]
 	
 	@CustID INT, -- Super ID
 
@@ -319,13 +319,9 @@
 	@v152discount_51 decimal(9,8) = 0,
 	@v153discount_51 decimal(9,8) = 0,
 
-	@v180MaxPerMatch MONEY = 0,
-	@v180MinBet MONEY = 0,
-	@v180MaxBet MONEY = 0,
 	
-	@v180sPositionTaking SMALLMONEY = 0,
-	@v180mPositionTaking SMALLMONEY = 0,
-	@v180aPositionTaking SMALLMONEY = 0,
+	--Virtual Sports----------------
+	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 
 	@UserID INT = 0,	
 	@Language VARCHAR(2) = 'E',
@@ -343,14 +339,114 @@ DB: DBTrans.bodb02
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130918@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
-	
+	- 20131014@Francis: Support updating virtual sports with settings via XML param
+	- 20131119@Francis: Update 3rd product commission of super will not impact 3rd product commission of its downline members anymore
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sports, bettype by link database)	
+	    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
   
 • @ErrMsg: Error description.
+• @VirtualSportList: VirtualSport Settings XML param.
 */
+
+
+--------Parse xml string into table
+DECLARE @iDoc int
+EXEC sp_xml_preparedocument @iDoc OUTPUT, @VirtualSportList
+
+SELECT *
+INTO #input
+FROM OPENXML (@iDoc, '/products/product',1) WITH(SportType tinyint, MaxBet money, MinBet money, MaxPerMatch money, 
+sPositionTaking smallmoney, mPositionTaking smallmoney, aPositionTaking smallmoney)
+
+EXEC sp_xml_removedocument @iDoc
+
+
+----------DECLARE AND SELECT INTO PARAMS
+DECLARE @v180MinBet MONEY,
+	@v180MaxBet MONEY,
+	@v180MaxPerMatch MONEY,
+	@v180sPositionTaking SMALLMONEY,
+	@v180mPositionTaking SMALLMONEY,
+	@v180aPositionTaking SMALLMONEY
+
+SELECT @v180MinBet = isnull(MinBet,0), @v180MaxBet = isnull(MaxBet,0), @v180MaxPerMatch = isnull(MaxPerMatch,0), @v180sPositionTaking = isnull(sPositionTaking,0), @v180mPositionTaking = isnull(mPositionTaking,0), @v180aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 180
+
+DECLARE @v181MinBet MONEY,
+	@v181MaxBet MONEY,
+	@v181MaxPerMatch MONEY,
+	@v181sPositionTaking SMALLMONEY,
+	@v181mPositionTaking SMALLMONEY,
+	@v181aPositionTaking SMALLMONEY
+
+SELECT @v181MinBet = isnull(MinBet,0), @v181MaxBet = isnull(MaxBet,0), @v181MaxPerMatch = isnull(MaxPerMatch,0), @v181sPositionTaking = isnull(sPositionTaking,0), @v181mPositionTaking = isnull(mPositionTaking,0), @v181aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 181
+
+DECLARE @v182MinBet MONEY,
+	@v182MaxBet MONEY,
+	@v182MaxPerMatch MONEY,
+	@v182sPositionTaking SMALLMONEY,
+	@v182mPositionTaking SMALLMONEY,
+	@v182aPositionTaking SMALLMONEY
+
+SELECT @v182MinBet = MinBet, @v182MaxBet = MaxBet, @v182MaxPerMatch = MaxPerMatch, @v182sPositionTaking = sPositionTaking, @v182mPositionTaking = mPositionTaking, @v182aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 182
+
+DECLARE @v183MinBet MONEY,
+	@v183MaxBet MONEY,
+	@v183MaxPerMatch MONEY,
+	@v183sPositionTaking SMALLMONEY,
+	@v183mPositionTaking SMALLMONEY,
+	@v183aPositionTaking SMALLMONEY
+
+SELECT @v183MinBet = MinBet, @v183MaxBet = MaxBet, @v183MaxPerMatch = MaxPerMatch, @v183sPositionTaking = sPositionTaking, @v183mPositionTaking = mPositionTaking, @v183aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 183
+
+DECLARE @v184MinBet MONEY,
+	@v184MaxBet MONEY,
+	@v184MaxPerMatch MONEY,
+	@v184sPositionTaking SMALLMONEY,
+	@v184mPositionTaking SMALLMONEY,
+	@v184aPositionTaking SMALLMONEY
+
+SELECT @v184MinBet = MinBet, @v184MaxBet = MaxBet, @v184MaxPerMatch = MaxPerMatch, @v184sPositionTaking = sPositionTaking, @v184mPositionTaking = mPositionTaking, @v184aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 184
+
+DECLARE @v185MinBet MONEY,
+	@v185MaxBet MONEY,
+	@v185MaxPerMatch MONEY,
+	@v185sPositionTaking SMALLMONEY,
+	@v185mPositionTaking SMALLMONEY,
+	@v185aPositionTaking SMALLMONEY
+
+SELECT @v185MinBet = MinBet, @v185MaxBet = MaxBet, @v185MaxPerMatch = MaxPerMatch, @v185sPositionTaking = sPositionTaking, @v185mPositionTaking = mPositionTaking, @v185aPositionTaking = aPositionTaking
+FROM #input
+WHERE SportType = 185
+
+DECLARE @v186MinBet MONEY,
+	@v186MaxBet MONEY,
+	@v186MaxPerMatch MONEY,
+	@v186sPositionTaking SMALLMONEY,
+	@v186mPositionTaking SMALLMONEY,
+	@v186aPositionTaking SMALLMONEY
+
+SELECT @v186MinBet = isnull(MinBet,0), @v186MaxBet = isnull(MaxBet,0), @v186MaxPerMatch = isnull(MaxPerMatch,0), @v186sPositionTaking = isnull(sPositionTaking,0), @v186mPositionTaking = isnull(mPositionTaking,0), @v186aPositionTaking = isnull(aPositionTaking,0)
+FROM #input
+WHERE SportType = 186
+
+
+DROP TABLE #input
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 DECLARE @startRun DATETIME
 DECLARE @endRun DATETIME
@@ -367,7 +463,7 @@ SELECT @ErrCode = 0
 SELECT @currency = currency FROM CustInfo WHERE custid = @CustID
 --Validate PT
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam 
+EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@custid						= @CustID OUTPUT,
 			@currency					= @currency,
 			
@@ -995,7 +1091,7 @@ END
 -----------------------------------------------Validate Min & Max Bet-------------------------------------------------------------------
 SELECT @ErrType = ''
 SELECT @ErrType = @ErrType +  (CASE WHEN MP=0 THEN sportname ELSE 'Mixed Sports' END )       + ', '
-FROM sports WITH (NOLOCK) inner join
+from bodb02.dbo.sports WITH (NOLOCK) inner join
 (
 				SELECT 1 AS sporttype,0 AS MP, @MinBetv1 AS MinBet, @MaxBetv1 AS MaxBet, @MaxPerMatchv1 AS MaxPerMatch
 	UNION all	SELECT 2 AS sporttype,0 AS MP, @MinBetv2 AS MinBet, @MaxBetv2 AS MaxBet, @MaxPerMatchv2 AS MaxPerMatch
@@ -1042,7 +1138,7 @@ from
 			union all select 	153 as sporttype, 51 as bettype, @v153spositiontaking_51 as maxpositiontaking
 			union all select 	153 as sporttype, 52 as bettype, @v153spositiontaking_52 as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
 where c.srecommend = @custid and c.roleid = 3 and (
 						((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or 
 						((cs.mpositiontaking>b.maxpositiontaking))
@@ -1842,12 +1938,14 @@ BEGIN
 END
 
 ---------------------------------------------------
---At member level, update playerdiscount = discount  if playerdiscount > discount
+--At member level, leave the playerdiscount the value as it is
+/*
 UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK) 
 SET    playerdiscount = CASE WHEN cs.playerdiscount>cs.discount THEN discount ELSE playerdiscount END 
 FROM Dep_CustSetting3rd AS cs INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
 WHERE c.srecommend = @custid AND c.roleid = 1  AND sporttype IN (151,152,153)
 -- and cs.playerdiscount>cs.discount
+*/
 IF (@@ERROR <> 0)
 BEGIN
 	ROLLBACK TRANSACTION
@@ -1878,17 +1976,60 @@ begin
 	return
 end
 
+
+
 EXEC Acc_Dep_CustomerUpdMemberVirtualSports_Com
 	@CustID = @CustID, -- Super ID
 	
 	@v180MaxPerMatch = @v180MaxPerMatch,
 	@v180MinBet = @v180MinBet,
 	@v180MaxBet = @v180MaxBet,
-	
 	@v180sPositionTaking = @v180sPositionTaking,
 	@v180mPositionTaking = @v180mPositionTaking,
 	@v180aPositionTaking = @v180aPositionTaking,
-	
+
+	@v181MaxPerMatch = @v181MaxPerMatch,
+	@v181MinBet = @v181MinBet,
+	@v181MaxBet = @v181MaxBet,
+	@v181sPositionTaking = @v181sPositionTaking,
+	@v181mPositionTaking = @v181mPositionTaking,
+	@v181aPositionTaking = @v181aPositionTaking,
+
+	@v182MaxPerMatch = @v182MaxPerMatch,
+	@v182MinBet = @v182MinBet,
+	@v182MaxBet = @v182MaxBet,
+	@v182sPositionTaking = @v182sPositionTaking,
+	@v182mPositionTaking = @v182mPositionTaking,
+	@v182aPositionTaking = @v182aPositionTaking,
+
+	@v183MaxPerMatch = @v183MaxPerMatch,
+	@v183MinBet = @v183MinBet,
+	@v183MaxBet = @v183MaxBet,
+	@v183sPositionTaking = @v183sPositionTaking,
+	@v183mPositionTaking = @v183mPositionTaking,
+	@v183aPositionTaking = @v183aPositionTaking,
+
+	@v184MaxPerMatch = @v184MaxPerMatch,
+	@v184MinBet = @v184MinBet,
+	@v184MaxBet = @v184MaxBet,
+	@v184sPositionTaking = @v184sPositionTaking,
+	@v184mPositionTaking = @v184mPositionTaking,
+	@v184aPositionTaking = @v184aPositionTaking,
+
+	@v185MaxPerMatch = @v185MaxPerMatch,
+	@v185MinBet = @v185MinBet,
+	@v185MaxBet = @v185MaxBet,
+	@v185sPositionTaking = @v185sPositionTaking,
+	@v185mPositionTaking = @v185mPositionTaking,
+	@v185aPositionTaking = @v185aPositionTaking,
+
+	@v186MaxPerMatch = @v186MaxPerMatch,
+	@v186MinBet = @v186MinBet,
+	@v186MaxBet = @v186MaxBet,
+	@v186sPositionTaking = @v186sPositionTaking,
+	@v186mPositionTaking = @v186mPositionTaking,
+	@v186aPositionTaking = @v186aPositionTaking,
+
 	@UserID = @UserID,	
 	@Language = @Language,
 	@ErrCode = @ErrCode OUTPUT,
@@ -1956,6 +2097,30 @@ Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@cus
 'v180MinB="'+ coalesce(cast(@v180MinBet as varchar(50)),space(1)) + '" ' +
 'v180MaxB="'+ coalesce(cast(@v180MaxBet as varchar(50)),space(1)) + '" ' +
 'v180MPM="'+ coalesce(cast(@v180MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v181MinB="'+ coalesce(cast(@v181MinBet as varchar(50)),space(1)) + '" ' +
+'v181MaxB="'+ coalesce(cast(@v181MaxBet as varchar(50)),space(1)) + '" ' +
+'v181MPM="'+ coalesce(cast(@v181MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v182MinB="'+ coalesce(cast(@v182MinBet as varchar(50)),space(1)) + '" ' +
+'v182MaxB="'+ coalesce(cast(@v182MaxBet as varchar(50)),space(1)) + '" ' +
+'v182MPM="'+ coalesce(cast(@v182MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v183MinB="'+ coalesce(cast(@v183MinBet as varchar(50)),space(1)) + '" ' +
+'v183MaxB="'+ coalesce(cast(@v183MaxBet as varchar(50)),space(1)) + '" ' +
+'v183MPM="'+ coalesce(cast(@v183MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v184MinB="'+ coalesce(cast(@v184MinBet as varchar(50)),space(1)) + '" ' +
+'v184MaxB="'+ coalesce(cast(@v184MaxBet as varchar(50)),space(1)) + '" ' +
+'v184MPM="'+ coalesce(cast(@v184MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v185MinB="'+ coalesce(cast(@v185MinBet as varchar(50)),space(1)) + '" ' +
+'v185MaxB="'+ coalesce(cast(@v185MaxBet as varchar(50)),space(1)) + '" ' +
+'v185MPM="'+ coalesce(cast(@v185MaxPerMatch as varchar(50)),space(1)) + '" ' +
+
+'v186MinB="'+ coalesce(cast(@v186MinBet as varchar(50)),space(1)) + '" ' +
+'v186MaxB="'+ coalesce(cast(@v186MaxBet as varchar(50)),space(1)) + '" ' +
+'v186MPM="'+ coalesce(cast(@v186MaxPerMatch as varchar(50)),space(1)) + '" ' +
 
 'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
 'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -2038,7 +2203,13 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161slivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161slivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_90,2),SPACE(1)) +'" ' +
 
-'v180spt="'+ COALESCE(CAST(@v180sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" />' +
+'v180spt="'+ COALESCE(CAST(@v180sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v181spt="'+ COALESCE(CAST(@v181sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v182spt="'+ COALESCE(CAST(@v182sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v183spt="'+ COALESCE(CAST(@v183sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v184spt="'+ COALESCE(CAST(@v184sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v185spt="'+ COALESCE(CAST(@v185sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v186spt="'+ COALESCE(CAST(@v186sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" />' +
 
 
 '<m mpt_1="'+ COALESCE(CAST(@v1mpositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2101,7 +2272,13 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
 
-'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) +
+'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' + 
+'v181mpt="'+ COALESCE(CAST(@v181mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182mpt="'+ COALESCE(CAST(@v182mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183mpt="'+ COALESCE(CAST(@v183mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184mpt="'+ COALESCE(CAST(@v184mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185mpt="'+ COALESCE(CAST(@v185mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186mpt="'+ COALESCE(CAST(@v186mPositionTaking AS VARCHAR(50)),SPACE(1)) +
 '" />' +
 
 '<ag apt_1="'+ COALESCE(CAST(@v1apositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2163,7 +2340,14 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
-'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
+
+'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182apt="'+ COALESCE(CAST(@v182aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183apt="'+ COALESCE(CAST(@v183aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184apt="'+ COALESCE(CAST(@v184aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185apt="'+ COALESCE(CAST(@v185aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186apt="'+ COALESCE(CAST(@v186aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
 
 '<s v151spt_31="'+ coalesce(cast(@v151spositiontaking_31 as varchar(50)),space(1)) + '" ' +
 'v151spt_32="'+ coalesce(cast(@v151spositiontaking_32 as varchar(50)),space(1)) + '" ' +
@@ -2239,9 +2423,12 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW definition ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [vnteam] AS [dbo]

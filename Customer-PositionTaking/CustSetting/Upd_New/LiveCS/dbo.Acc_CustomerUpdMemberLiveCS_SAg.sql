@@ -263,11 +263,11 @@ BEGIN CATCH
 END CATCH	
 
 SELECT @ErrCode = '-103' + char(7)
-
-
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg]  TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [vnteam] AS [dbo]

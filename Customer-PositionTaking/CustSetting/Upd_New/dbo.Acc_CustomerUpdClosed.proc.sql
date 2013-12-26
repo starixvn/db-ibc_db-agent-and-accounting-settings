@@ -12,7 +12,7 @@ AS
 /*
 Created: 20080911@whoknow
 Task : Update status 'closed' for customer
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original:
 
 Revisions:
@@ -35,6 +35,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130410@Elodie: Only update 'closed' status if values are different
 	- 20130709@Jamie: Apply ExecRep 
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
 	
 Param's Explanation:
 • @custid: custid that need to be viewed.   
@@ -152,7 +153,7 @@ end
 --20130709@Jamie: Apply Exec Rep SP 
 IF @Closed = 1 AND @RoleID BETWEEN 2 AND 4
 BEGIN
-	EXEC [Acc_ExecRep_04]
+	EXEC Acc_ExecRep_Cust_04
 		 @CustID		= @CustID
 		,@RoleID		= @RoleID
 		,@Action		= 'Closed'
@@ -205,11 +206,13 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdClosed] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdClosed] TO [vnteam] AS [dbo]

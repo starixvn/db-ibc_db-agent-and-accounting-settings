@@ -366,7 +366,7 @@ END CATCH
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO

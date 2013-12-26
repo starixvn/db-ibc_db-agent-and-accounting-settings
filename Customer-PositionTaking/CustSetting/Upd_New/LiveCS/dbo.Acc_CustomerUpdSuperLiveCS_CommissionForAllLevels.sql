@@ -58,13 +58,15 @@ END
 
 -- Check Allowed downlines during peak hour at weekend 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
-											@roleid=@roleid,
-											@isExecRep=1,
-											@Language='E',
-											@ErrMsg=@ErrMsg output,
-											@ErrCode=@ErrCode output
-if @ErrCode <>0 return 
---End 
+						@roleid=@roleid,
+						@isExecRep=1,
+						@isUpdatePT = 1,
+						@Sporttype = 1,
+						@Language='E',
+						@ErrMsg=@ErrMsg output,
+						@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
 
 DECLARE @db_v162discount_1101 DECIMAL(9,8)
 
@@ -137,11 +139,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH				
-					
-
+END CATCH
 GO
-GRANT VIEW DEFINITION ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels  TO [bodbAdminNet]
-
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [vnteam] AS [dbo]

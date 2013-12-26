@@ -36,6 +36,7 @@
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131101@Johnson: apply execrep when update min pt, auto pt 
 							and check total downlines before UPDATEs 
+			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)										
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -197,8 +198,8 @@ SET NOCOUNT ON
 			(
 				select @bettype as bettype, @sporttype as sporttype, @s3 as spositiontaking, @m3 as mpositiontaking, @is3 as isauto_spositiontaking, @n3 as minpositiontaking
 			) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-			inner join bettype with (nolock) on b.bettype = bettype.typeid
-			inner join sports s with(nolock) on b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+			INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
 		where co.custid = @custid and (	
 							(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<b.minpositiontaking)		
 						)

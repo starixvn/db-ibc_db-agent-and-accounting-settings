@@ -367,7 +367,7 @@
 	@v99mpositiontaking_9 smallmoney = 0.7,
 	
 	-- HR fixodds
-	@v154mpositiontaking_20 smallmoney = 0.7,
+	@v154mpositiontaking_20 smallmoney = 0,
 	
 	-- number game
 	@v161mpositiontaking_81 smallmoney = 0.7,

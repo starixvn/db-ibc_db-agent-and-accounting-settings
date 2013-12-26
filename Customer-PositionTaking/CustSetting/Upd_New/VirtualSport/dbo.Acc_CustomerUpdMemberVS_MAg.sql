@@ -30,6 +30,7 @@ AS
 	 - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language  
 	 - 20121224@Scott : Fix bug 5441( get @m3 before checking)
 	 - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	 - 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
 	 - 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Param's Explanation:  
 	• @ErrCode:  
@@ -175,8 +176,8 @@ BEGIN
   (  
    SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking        
   ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
- INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
- INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)  
   
  IF @ErrType <>''  
@@ -198,8 +199,8 @@ BEGIN
   (  
    SELECT @sporttype AS sporttype, @bettype AS bettype, @m3 AS maxmpositiontaking, @um1 AS autopositiontaking, @im1 AS isautopositiontaking    
   ) AS b   
- INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
- INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>b.maxmpositiontaking)  
   
  IF @ErrType <>''  
@@ -225,8 +226,8 @@ BEGIN
   (  
    SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking, @a1 as  apositiontaking  
   ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
- INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
- INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE co.custid = @mrecommend AND   
   (b.isautopositiontaking>0 AND b.autopositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
   
@@ -285,8 +286,8 @@ BEGIN
      @s1 AS spositiontaking, @m1 AS mpositiontaking, @a1 AS apositiontaking,   
      @m3 AS maxmpositiontaking, @s4 AS maxspositiontaking  
  )b    
-  INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
-  INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE @im1 = 0 and b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking           
   
  IF @ErrType <>''  
@@ -311,8 +312,8 @@ BEGIN
   (  
    SELECT @sporttype AS sporttype ,  @sporttype AS bettype ,  @m1 AS mpositiontaking       
   ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-  INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
-  INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE co.custid = @mrecommend AND (b.mpositiontaking>co.maxpositiontaking)   
  IF @ErrType <>''  
  BEGIN  
@@ -335,8 +336,8 @@ BEGIN
   (  
    SELECT @sporttype AS sporttype, @bettype AS bettype, @m1 AS mpositiontaking, @im1 AS isautopositiontaking, @a1 as  apositiontaking  
   ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
- INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype  
- INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid  
+ INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
+ INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
  WHERE co.custid = @mrecommend AND   
   (b.isautopositiontaking=0 AND b.mpositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
   
@@ -579,11 +580,12 @@ Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 
 
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbAdminNet]
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [vnteam]
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbDownlineNet]
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbadminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberVS_MAg] TO [vnteam] AS [dbo]

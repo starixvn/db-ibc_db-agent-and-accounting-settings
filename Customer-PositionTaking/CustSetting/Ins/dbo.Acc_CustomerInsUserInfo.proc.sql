@@ -147,6 +147,7 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131107@Kathy: Add @autosuspend, @autosuspend2 [Redmine:#5520]
 	- 20131120@Johnson: Add virtual greyhounds, virtual motor racing
+
 Param's Explanation:
 • @ErrCode:
     = 0: Insert successfully.
@@ -292,7 +293,7 @@ VALUES(
 	,@roleid, @srecommend, @mrecommend, @recommend, 0,@autosuspend, @autosuspend2, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
 	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181,@MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds, @maxpermatchv182, @maxpermatchv184 )
+	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds, @maxpermatchv182, @maxpermatchv184)
 
 IF @@ERROR <> 0
 BEGIN 

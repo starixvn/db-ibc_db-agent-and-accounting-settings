@@ -1,4 +1,4 @@
-﻿  ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -17,19 +17,30 @@ AS
 		Original versions: Acc_CustomerUpdMember_MinMaxPositiontaking
 						Acc_CustomerUpdMemberHR_MinMaxPositiontaking
 						Acc_CustomerUpdMemberVS_MinMaxPositiontaking
-						Acc_CustomerUpdMemberLiveCS_MinPositiontaking
+						
 		Revisions:
 		
 		Parameter's Explanation:
 	*/	
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 6 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
 			AND xtype = 'U'
-
-	if @IsExistTables <> 6 RETURN
+	
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
 	declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 	
@@ -206,7 +217,6 @@ BEGIN
 		--end
 		
 
-
 		--check master min/max
 		--update m1=n3-a1 if a1+m1<n3
 		Update custsetting with (ROWLOCK, UPDLOCK) set 
@@ -241,7 +251,6 @@ BEGIN
 		where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking<mco.minlivepositiontaking
 
 		
-
 		--update m1,a1 when a1+m1>l3
 		--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
 		--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
@@ -511,6 +520,7 @@ BEGIN
 
 		--Recal AUTO MPT 
 		--Update m1=min(m3-a1,(im1?um1,um2))
+		
 		Update cs
 			set mpositiontaking = 
 				case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
@@ -530,6 +540,7 @@ BEGIN
 		
 
 
+
 		--check master min/max
 		--update m1=n3-a1 if a1+m1<n3
 		Update cs
@@ -543,7 +554,6 @@ BEGIN
 			and cs.sporttype between 151 and 153
 
 		
-
 		--update m1,a1 when a1+m1>l3
 		--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
 		--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
@@ -652,6 +662,7 @@ BEGIN
 		
 		--Recal AUTO MPT 
 		--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
+		
 		Update cs
 			set mpositiontaking = 
 				case when scs.mpositiontaking > mcs.mpositiontaking then 
@@ -863,3 +874,4 @@ BEGIN
 	END--end mode = 'LiveCasino'
 END
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_01] TO [vnteam] AS [dbo]

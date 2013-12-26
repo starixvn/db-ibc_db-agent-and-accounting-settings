@@ -32,8 +32,27 @@ Param's Explanation:
 */
 SET NOCOUNT ON
 
-DECLARE @IsExistTables tinyint
+--DECLARE @IsExistTables tinyint
+--SET @IsExistTables = 0
+
+--IF @mode = 'LiveCasino'
+--BEGIN	
+--	SELECT @IsExistTables = COUNT(*) 
+--	FROM dbo.sysobjects
+--	WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
+--			AND xtype = 'U'			
+--END
+--ELSE
+--BEGIN
+--	SELECT @IsExistTables = COUNT(*) 
+--	FROM dbo.sysobjects
+--	WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
+--			AND xtype = 'U'						
+--END
+
+DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 SET @IsExistTables = 0
+SET @IsExistViews = 0
 
 IF @mode = 'LiveCasino'
 BEGIN	
@@ -41,6 +60,11 @@ BEGIN
 	FROM dbo.sysobjects
 	WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
 			AND xtype = 'U'
+	
+	SELECT @IsExistViews = COUNT(*) 
+	FROM dbo.sysobjects
+	WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
+			AND xtype = 'V'			
 END
 ELSE
 BEGIN
@@ -48,9 +72,14 @@ BEGIN
 	FROM dbo.sysobjects
 	WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
 			AND xtype = 'U'
+			
+	SELECT @IsExistViews = COUNT(*) 
+	FROM dbo.sysobjects
+	WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
+			AND xtype = 'V'			
 END
 
-IF @IsExistTables <> 3 
+IF @IsExistTables <> 3 AND @IsExistViews <> 3
 	RETURN
 
 declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney
@@ -88,7 +117,7 @@ BEGIN
 
 	--Recal AUTO MPT 
 	--Update m1=min(m3-a1,(im1?um1,um2))
-	-----------------
+	
 	Update cs
 		set mpositiontaking = 
 			case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
@@ -105,10 +134,7 @@ BEGIN
 		and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
 		and cs.sporttype between 151 and 153
 		
-	-------------------
-
-
-
+	
 	--check master min/max
 	--update m1=n3-a1 if a1+m1<n3
 	Update cs
@@ -121,8 +147,7 @@ BEGIN
 		and cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
 		and cs.sporttype between 151 and 153
 
-	-----------------
-
+	
 
 	--update m1,a1 when a1+m1>l3
 	--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
@@ -142,8 +167,6 @@ BEGIN
 	where cs.custid = @custid 
 		and cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
 		and cs.sporttype between 151 and 153
-
-	-----------------
 
 	--recal autopos
 	Update cs
@@ -207,7 +230,7 @@ BEGIN
 	RETURN
 
 END--end @mode = 'horse'
-------------
+
 
 if @mode = 'number'
 BEGIN
@@ -252,7 +275,7 @@ BEGIN
 
 	--Recal AUTO MPT 
 	--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
-	-------------------
+	
 	if @updautomaster = 1
 	begin		
 		Update custsetting3rd with (ROWLOCK, UPDLOCK) 
@@ -302,9 +325,7 @@ BEGIN
 			and custsetting3rd.bettype in (85, 86, 87,89,90)
 			and (acs.isautolivempositiontaking = 1 or custsetting3rd.isautolivempositiontaking = 1)	
 	end
-	----------
-
-
+	
 
 	--check master min/max
 	--update m1=n3-a1 if a1+m1<n3
@@ -323,9 +344,7 @@ BEGIN
 		inner join custoverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting3rd.sporttype and mco.bettype=custsetting3rd.bettype
 	where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking<mco.minlivepositiontaking
 
-	-------------------
-
-
+	
 	--update m1,a1 when a1+m1>l3
 	--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
 	--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
@@ -354,8 +373,7 @@ BEGIN
 		inner join custoverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting3rd.sporttype and mco.bettype=custsetting3rd.bettype
 		inner join custoverride3rd as aco with (NOLOCK) on aco.custid = @recommend  and aco.sporttype=custsetting3rd.sporttype and aco.bettype=custsetting3rd.bettype
 	where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking>mco.maxlivepositiontaking
-	-----------------------------------------------------------------------------------------------------------------------------------
-
+	
 	--recal autopos
 	if @updautosuper = 1 
 	begin
@@ -482,7 +500,7 @@ BEGIN
 	
 	--Recal AUTO MPT 
 	--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
-	---------------
+	
 	Update cs
 		set mpositiontaking = 
 			case when scs.mpositiontaking > mcs.mpositiontaking then 
@@ -695,5 +713,7 @@ BEGIN
 	
     RETURN	
 END--end mode = 'LiveCasino'
-
-
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_00] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_00] TO [vnteam] AS [dbo]

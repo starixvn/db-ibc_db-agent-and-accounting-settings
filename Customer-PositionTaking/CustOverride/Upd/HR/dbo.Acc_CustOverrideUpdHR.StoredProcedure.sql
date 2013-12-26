@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
 	@custid int,
 
 	@v151positiontaking_31_min smallmoney = 0,-- @minv151positiontaking_31 -> @v151positiontaking_31_min
@@ -694,7 +693,6 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet] AS [dbo]
 GO

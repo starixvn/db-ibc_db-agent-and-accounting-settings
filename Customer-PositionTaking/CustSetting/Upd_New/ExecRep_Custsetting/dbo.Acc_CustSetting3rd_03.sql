@@ -14,7 +14,7 @@ AS
 Created: Johnson  
 Date: 2012-09-19  
 Task: exec replicate to update status and bet setting virtual sports for downlines  
-DB: DBTXN/BODB02  
+DB: DBTXN/CustDB  
 
 Revisions:  
 	- 20121203@Scott : update status and bet setting for virtual tennis by setting's virtual soccer  
@@ -233,6 +233,8 @@ BEGIN
 END  
 
 GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet]
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_03] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet] AS [dbo]
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_03] TO [vnteam] AS [dbo]

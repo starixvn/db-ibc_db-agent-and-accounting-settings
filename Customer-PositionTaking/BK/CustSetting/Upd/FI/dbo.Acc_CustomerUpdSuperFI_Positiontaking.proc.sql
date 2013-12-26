@@ -24,6 +24,7 @@ Revisions:
 	- 20091201@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
 	- 20100112@Kiwi: Amend to write log in xml format.
 	- 20101019@Henry: Record execution time
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -78,7 +79,7 @@ END
 
 --check n4<=s4
 	select @ErrType = ''
-	select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10)) + '<br>'
+	select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10)) + '<br>'
 	from CustOverride3rd as co with (NOLOCK) 
 	inner join
 	(
@@ -86,8 +87,8 @@ END
 		union all 	select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as spositiontaking
 
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @custid and (b.spositiontaking<co.minpositiontaking) 
 
 if @ErrType <>''
@@ -326,7 +327,10 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperFI_Positiontaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperFI_Positiontaking] TO [bodbadminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperFI_Positiontaking] TO vnteam
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperFI_Positiontaking] TO [vnteam] AS [dbo]

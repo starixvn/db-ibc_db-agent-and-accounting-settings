@@ -22,11 +22,10 @@ AS
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/bodb02  
+ DB: DBTXN/CustDB 
   
  History:  
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
-	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -250,8 +249,6 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
-			,maxpermatch182
-			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -318,8 +315,6 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
-			,maxpermatch182
-			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -790,6 +785,6 @@ END
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbadminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]

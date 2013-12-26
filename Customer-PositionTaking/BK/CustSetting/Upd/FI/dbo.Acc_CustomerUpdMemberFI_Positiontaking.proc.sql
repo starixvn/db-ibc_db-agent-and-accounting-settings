@@ -28,6 +28,7 @@ Revisions:
 	- 20091201@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
 	- 20100112@Kiwi: Amend to write log in xml format.
 	- 20101019@Henry: Record execution time
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 
 Param's Explanation:
 • @ErrCode:
@@ -133,14 +134,14 @@ END
 
 --check n2<=a1<=l2 - Vinh
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Min: '+ cast((co.minpositiontaking) as varchar(10))+ '-Max: '+ cast((co.maxpositiontaking) as varchar(10)) + '<br>'
 from CustOverride3rd as co with (NOLOCK) inner join
 	(
 					select 2 as bettype, 201 as sporttype, @v201apositiontaking_2 as apositiontaking
 		union all	select 3 as bettype, 201 as sporttype, @v201apositiontaking_3 as apositiontaking
 	) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where co.custid = @recommend and (( (b.apositiontaking>co.maxpositiontaking or b.apositiontaking<co.minpositiontaking))
 )
 if @ErrType <>''
@@ -161,14 +162,14 @@ END
 
 --check a1<=a4 - Vinh
 select @ErrType = ''
-select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((scs.apositiontaking) as varchar(10))+ '<br>'
+select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((scs.apositiontaking) as varchar(10))+ '<br>'
 from custinfo as c with (NOLOCK) inner join CustSetting3rd as scs with (NOLOCK) on c.srecommend = scs.custid inner join 
 	(
 				 	select 2 as bettype, 201 as sporttype, @v201apositiontaking_2 as apositiontaking
 		union all 	select 3 as bettype, 201 as sporttype, @v201apositiontaking_3 as apositiontaking
 	) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 where c.custid = @recommend and (b.apositiontaking>scs.apositiontaking )
 if @ErrType <>''
 BEGIN
@@ -337,9 +338,12 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 	
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberFI_PositionTaking] TO [vnteam] AS [dbo]

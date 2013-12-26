@@ -13,7 +13,7 @@ AS
 /*
 Created: 
 Task : Update given credit of customer
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original:
 
 Revisions:
@@ -30,6 +30,8 @@ Revisions:
 	- 20110513@Amy: Add check MaxExposure for Number Game (Remove Finance)
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_CustomerSelMaxExposure_Ag by link database)
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -77,7 +79,7 @@ select	@username = username,
 		@recommend = recommend,
 		@MatchLimit = isnull(ci.matchlimit, 1),
 		@OldCredit = Credit
-from	custinfo ci with (nolock)
+from	custinfo ci WITH(NOLOCK)
 where	custid = @custid
 
 SELECT	@OldMaxCredit = maxcredit 
@@ -103,16 +105,16 @@ if @roleid = 1
 BEGIN
 
 	SELECT @Credit_AllOtherMember = ISNULL(SUM(Credit), 0)	 
-	FROM custinfo WITH (NOLOCK) 
+	FROM custinfo WITH(NOLOCK) 
 	WHERE Recommend = @Recommend AND RoleID = 1 AND CustID <> @CustID
 
 	--Vinh@20081201: Add check max credit of agent when update credit on member-------------------------------------------------
 
 	declare @AgentMaxCredit money, @Agent_Credit_Bal MONEY, @Credit_Mem_Max MONEY
 
-	SELECT	@AgentCredit = ISNULL(Credit, 0) FROM custinfo WITH (NOLOCK) WHERE CustID = @Recommend
+	SELECT	@AgentCredit = ISNULL(Credit, 0) FROM custinfo WITH(NOLOCK) WHERE CustID = @Recommend
 	
-	SELECT	@AgentMaxCredit =ISNULL(maxcredit,0) FROM CustAgent WITH (NOLOCK) WHERE CustID = @Recommend
+	SELECT	@AgentMaxCredit =ISNULL(maxcredit,0) FROM CustAgent WITH(NOLOCK) WHERE CustID = @Recommend
 
 	Set @Agent_Credit_Bal = @AgentCredit - @Credit_AllOtherMember
 	SELECT @Credit_Mem_Max = CASE WHEN  @AgentMaxCredit = 0 THEN @Agent_Credit_Bal
@@ -122,18 +124,18 @@ BEGIN
 	-----------------------------------------------------------------------------------------------------------------	
 
 
-	SELECT  @TotalUse = ISNULL(SUM(winlost-actual_stake+playercomm), 0) FROM bettrans WITH (NOLOCK) WHERE custid=@custid
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=1, @MaxExposure = @MaxExposure OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=2, @MaxExposure = @MaxExposurev2 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=3, @MaxExposure = @MaxExposurev3 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=5, @MaxExposure = @MaxExposurev5 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=8, @MaxExposure = @MaxExposurev8 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=10, @MaxExposure = @MaxExposurev10 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=11, @MaxExposure = @MaxExposurev11 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=12, @MaxExposure = @MaxExposurev12 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=151, @MaxExposure = @MaxExposurev151 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=161, @MaxExposure = @MaxExposurev161 OUTPUT
-	EXEC Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=99, @MaxExposure = @MaxExposurev99 OUTPUT
+	SELECT  @TotalUse = ISNULL(SUM(winlost-actual_stake+playercomm), 0) FROM bodb02.dbo.bettrans WITH(NOLOCK) WHERE custid=@custid
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=1, @MaxExposure = @MaxExposure OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=2, @MaxExposure = @MaxExposurev2 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=3, @MaxExposure = @MaxExposurev3 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=5, @MaxExposure = @MaxExposurev5 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=8, @MaxExposure = @MaxExposurev8 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=10, @MaxExposure = @MaxExposurev10 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=11, @MaxExposure = @MaxExposurev11 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=12, @MaxExposure = @MaxExposurev12 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=151, @MaxExposure = @MaxExposurev151 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=161, @MaxExposure = @MaxExposurev161 OUTPUT
+	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=99, @MaxExposure = @MaxExposurev99 OUTPUT
 	
 	IF @TotalUse+@NewCredit<0 OR @NewCredit + @Credit_AllOtherMember>@AgentCredit 
 	BEGIN
@@ -156,7 +158,7 @@ BEGIN
 	END
 
 
-	if NOT exists (select 1 from customer (nolock) where custid = @Recommend and site = '12Bet')
+	if NOT exists (select 1 from customer with(nolock) where custid = @Recommend and site = '12Bet')
 	BEGIN
 		IF @MaxExposure
 		+@MaxExposurev2
@@ -187,7 +189,7 @@ else if @roleid = 2
 BEGIN	
 
 	Select @Credit_AllMember = isnull(sum(credit), 0)
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where recommend = @CustID and RoleID=1
 
 	--Vinh@20081201: Add check and update max credit on agent-------------------------------------------------
@@ -196,7 +198,7 @@ BEGIN
 		declare @MaxCredit_Mem_Min money
 
 		select @MaxCredit_Mem_Min = max(isnull(credit,0)) 
-		from custinfo with (nolock)
+		from custinfo WITH(NOLOCK)
 		where recommend = @CustId and roleid =1 
 
 		if @MaxCredit_Mem_Min > @maxcredit and (isnull(@maxcredit,0) > 0)
@@ -224,11 +226,11 @@ BEGIN
 	------------------------------------------------------------------------------------------------------------
 
 	Select @Credit_AllOtherAgent = isnull(sum(credit), 0)
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where mrecommend = @mrecommend and RoleID=2 and CustID <> @CustID
 	
 	Select @Credit_MAg = isnull(credit, 0)
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where custid = @mrecommend
 
 	if @Credit_AllOtherAgent + @NewCredit >@Credit_MAg
@@ -254,19 +256,19 @@ END
 else if @roleid = 3
 BEGIN
 	Select @Credit_AllOtherMaster = isnull(sum(credit), 0)		
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where srecommend = @srecommend and RoleID=3 and CustID <> @CustID
 	
 	Select @Credit_AllMember = isnull(sum(credit), 0)
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where mrecommend = @CustID and RoleID=1
 	
 	Select @Credit_AllAgent = isnull(sum(credit), 0)		
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where mrecommend = @CustID and RoleID=2
 	
 	Select @Credit_SAg = isnull(credit, 0)
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where custid = @srecommend
 
 	if @Credit_AllOtherMaster + @NewCredit >@Credit_SAg and @srecommend>100
@@ -302,15 +304,15 @@ END
 else if @roleid = 4
 BEGIN
 	Select @Credit_AllMaster = isnull(sum(credit), 0)	
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where srecommend = @custid and RoleID=3
 	
 	Select @Credit_AllMember = isnull(sum(credit), 0)	
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where srecommend = @CustID and RoleID=1
 
 	Select @Credit_AllAgent = isnull(sum(credit), 0)	
-	from custinfo with (NOLOCK)
+	from custinfo WITH(NOLOCK)
 	where srecommend = @CustID and RoleID=2
 
 	if @Credit_AllMaster>@NewCredit 
@@ -398,11 +400,13 @@ BEGIN CATCH
 		@ActionID = 1200		
 END CATCH
 		
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdCredit] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdCredit] TO [vnteam] AS [dbo]

@@ -1,10 +1,10 @@
-﻿ALTER PROCEDURE dbo.Acc_CheckHRAllowedCurrency
+﻿CREATE PROCEDURE dbo.Acc_CheckHRAllowedCurrency
 	@CurrencyID int = NULL,
 	@CurrencyName varchar(10) = NULL,
 	@Allowed bit output 
 AS
 /*
-DB: DBAGE/BODB02, DBTXN/BODB02
+DB: DBAGE/BODB02, DBTXN/CustDB
 Original: 
 
 Revisions:

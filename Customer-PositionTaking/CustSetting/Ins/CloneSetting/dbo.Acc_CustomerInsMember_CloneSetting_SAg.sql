@@ -24,7 +24,7 @@ AS
  Task: Add new master from existing master
 	(#436.2 IRP - AgeSite - Search&Copy feature to feature to facilitate downline creation) 
  
- DB: DBTXN/bodb02  
+ DB: DBTXN/CustDB  
   
  History:  
 	- 20120323 @Dan: check roleid and the super of existing master before copying 
@@ -39,6 +39,7 @@ AS
 	- 20130328@Jamie: Add CustLoginInfo 
 	- 20130423@Jamie: Set isForcedChangeSecurityCode = 1 WHEN Upline's SecurityCode NOT NULL 
 	- 20130731@Elodie: Apply progressive bonus
+	- 20131017@Kathy: Add HR Fixed Odds [Redmine:#6505]
 	- 20131107@Kathy: Separate auto-suspend into Soccer and Other Sport [Redmine:#5520] 
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
@@ -251,20 +252,15 @@ BEGIN
 	END  
 
 	DECLARE @enableUpline bit, @doubleCommLosingUpline bit
-	
-	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing
-	from custinfo with (nolock)
-	where custid = @srecommend
-	
 	-- get autosuspend's upline
 	Declare @autosuspend BIT,
 		@autosuspend2 BIT
 
-	SELECT @autosuspend = ISNULL(autosuspend, 0),
-		@autosuspend2 = ISNULL(autosuspend2, 0)
-	FROM custInfo with(NOLOCK)
+	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing,
+		 @autosuspend = ISNULL(autosuspend, 0),
+		 @autosuspend2 = ISNULL(autosuspend2, 0)
+	from custinfo with (nolock)
 	where custid = @srecommend
-
 
 	-- insert CustInfo info
 	INSERT INTO dbo.custInfo
@@ -333,6 +329,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,DoubleCommLosing
 			,DisableCasinoBonus
+			,DisableHRFixedOdds
+			,maxpermatch154
 			)
      SELECT
 			@custid
@@ -400,6 +398,8 @@ BEGIN
 			,MaxWinLiveCasino
 			,@doubleCommLosingUpline as doubleCommLosing
 			,1
+			,DisableHRFixedOdds
+			,maxpermatch154
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         
@@ -417,7 +417,7 @@ BEGIN
 
 		RETURN
 	END
-		
+	
 	EXEC dbo.Acc_CustomerInfo_Execrep_02
 			@custid = @custid,
 			@ExistingCustid = @ExistingCustid,
@@ -759,6 +759,7 @@ BEGIN
 	END
 	*/
 	
+	
 	DECLARE	 @UplineSecurityCode			VARCHAR(50)
 			,@isForcedChangeSecurityCode	BIT
 			
@@ -874,6 +875,10 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
+
+
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_SAg] TO [bodbDownlineNet] AS [dbo]
 GO

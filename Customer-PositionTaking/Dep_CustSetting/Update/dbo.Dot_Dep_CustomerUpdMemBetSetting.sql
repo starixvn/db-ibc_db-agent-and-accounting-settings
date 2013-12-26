@@ -1,4 +1,11 @@
-﻿ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting]
+﻿USE [custDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust]    Script Date: 12/11/2013 15:47:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust]
 	@CustId INT, --MemberID
 	
 	@UpdateMinMaxBet BIT = 1,	
@@ -215,7 +222,7 @@ SELECT @UserName = username, @recommend = recommend, @roleid = roleid
 FROM customer WITH (NOLOCK)
 WHERE CustID = @CustID
 --select min max bet of Sportbook and Number game
- EXEC dbo.Dot_Dep_CustomerSelMinMax @custid,  
+ EXEC dbo.Dot_Dep_CustomerSelMinMax_Cust @custid,  
    @old_MinBet output, @old_MaxBet output, @old_MaxPerMatch output,  
    @old_MinBetv2 output, @old_MaxBetv2 output, @old_MaxPerMatchv2 output,  
    @old_MinBetv3 output, @old_MaxBetv3 output, @old_MaxPerMatchv3 output,  
@@ -2923,11 +2930,12 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue2 = @TrackingValue2,
 	@duration = @duration
 
+
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [Dot_Admin] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust] TO [Dot_Admin] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [Dot_Member] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust] TO [Dot_Member] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [vnteam] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust] TO [vnteam] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerUpdMemBetSetting_Cust] TO [vnteam] AS [dbo]

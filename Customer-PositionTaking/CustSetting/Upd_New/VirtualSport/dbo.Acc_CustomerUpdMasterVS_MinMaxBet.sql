@@ -214,7 +214,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 182)
 		BEGIN 
 		
-			EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
+												EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
 						@custid = @custid,
 						@MaxPerMatch = @MaxPerMatch,
 						@Language = @Language,
@@ -224,7 +224,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 184)
 		BEGIN 
 		
-			EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
+												EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
 						@custid = @custid,
 						@MaxPerMatch = @MaxPerMatch,
 						@Language = @Language,
@@ -313,11 +313,10 @@ SET NOCOUNT ON
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
-	END CATCH	
-	
+	END CATCH
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
 GO

@@ -14,11 +14,12 @@ AS
 		Created: Dan
 		Date: 2012-09-26
 		Task: update win limit on customer
-		DB: DBTrans.BODB02
+		DB: DBCUST/CustDB
 		
 		Revisions:
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server BD053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20130808@Elodie: Splitting bodb02 into CustDB (Insert/Delete BalanceCreditGame, BalanceDebitGame by link database)
 		Parameters Explanation:		
 	*/
 SET NOCOUNT ON
@@ -199,12 +200,13 @@ BEGIN
 	IF @RoleID = 1 AND @isAutoResetLiveCasino = 0
 	BEGIN				
 		IF NOT EXISTS(SELECT 1 
-					FROM dbo.BalanceDebitGame bal
+					FROM bodb02.dbo.BalanceDebitGame bal
 					WHERE bal.custid=@custid AND bal.winlostdate=@today)
 		BEGIN								
 			-- insert BalanceDebitGame
-			INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-			SELECT @custid, @today, 0 
+			--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
+			--SELECT @custid, @today, 0 
+			EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @custid, @winlostdate = @today
 							
 			IF (@@ERROR <> 0)
 			BEGIN	
@@ -218,13 +220,14 @@ BEGIN
 		
 		-- insert BalanceCreditGame
 		IF NOT EXISTS(SELECT 1 
-					FROM dbo.BalanceCreditGame bal
+					FROM bodb02.dbo.BalanceCreditGame bal
 					WHERE bal.custid=@custid AND bal.winlostdate=@today)		
 		
 		BEGIN
-			INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-			SELECT @custid, @today, 0 
-			
+			--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
+			--SELECT @custid, @today, 0 
+			EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @custid, @winlostdate = @today
+
 			IF (@@ERROR <> 0)
 			BEGIN	
 				SELECT @ErrMsg = CASE @Language 
@@ -238,14 +241,17 @@ BEGIN
 	ELSE IF @RoleID = 2
 	BEGIN									
 		-- insert BalanceDebitGame
-		INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
+		DECLARE @recommend INT
+		SELECT @recommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE Recommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceDebitGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
+
+		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @recommend, @winlostdate = @today
 						
 		IF (@@ERROR <> 0)
 		BEGIN	
@@ -257,15 +263,17 @@ BEGIN
 		END			
 		
 		-- insert BalanceCreditGame
-		INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
+		SELECT @recommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE Recommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceCreditGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-		
+
+		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @recommend, @winlostdate = @today
+
 		IF (@@ERROR <> 0)
 		BEGIN	
 			SELECT @ErrMsg = CASE @Language 
@@ -278,14 +286,17 @@ BEGIN
 	ELSE IF @RoleID = 3
 	BEGIN
 		-- insert BalanceDebitGame
-		INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
+		DECLARE @mrecommend INT
+		SELECT @mrecommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE MRecommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceDebitGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
+
+		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @mrecommend, @winlostdate = @today
 						
 		IF (@@ERROR <> 0)
 		BEGIN	
@@ -297,14 +308,16 @@ BEGIN
 		END			
 		
 		-- insert BalanceCreditGame
-		INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
+		SELECT @mrecommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE MRecommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceCreditGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
+
+		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @mrecommend, @winlostdate = @today
 		
 		IF (@@ERROR <> 0)
 		BEGIN	
@@ -318,14 +331,17 @@ BEGIN
 	ELSE IF @RoleID = 4
 	BEGIN		
 		-- insert BalanceDebitGame
-		INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
+		DECLARE @srecommend INT
+		SELECT @srecommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE SRecommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceDebitGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
+
+		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @srecommend, @winlostdate = @today
 						
 		IF (@@ERROR <> 0)
 		BEGIN	
@@ -337,14 +353,16 @@ BEGIN
 		END			
 		
 		-- insert BalanceCreditGame
-		INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT custid, @today, 0 
+		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
+		SELECT @srecommend = custid
 		FROM CustInfo cust WITH (NOLOCK)
 		WHERE SRecommend = @CustID AND roleid=1
 			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
 			AND NOT EXISTS(SELECT 1 
-						FROM dbo.BalanceCreditGame bal WITH (NOLOCK)
+						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
 						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
+
+		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @srecommend, @winlostdate = @today
 		
 		IF (@@ERROR <> 0)
 		BEGIN	
@@ -432,9 +450,13 @@ BEGIN CATCH
 END CATCH		
 
 
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit]  TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit]  TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit]  TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit] TO [vnteam] AS [dbo]

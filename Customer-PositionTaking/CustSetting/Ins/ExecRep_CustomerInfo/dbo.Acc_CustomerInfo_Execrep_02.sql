@@ -1,14 +1,15 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
+﻿ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
 	@custid INT =0,
 	@ExistingCustid INT = 0,
-	
-	@ErrCode INT = 0 OUTPUT
+	@Language VARCHAR(3) = 'E',
+	@ErrCode INT = 0 OUTPUT,
+	@ErrMsg NVARCHAR(500) = '' OUTPUT
 AS
 /*
 	Created: Johnson
 	Date: 20131106
 	Task: Apply execrep when insert into custsetting/custsetting3rd
-	DB: DBTXN/bodb02
+	DB: DBTXN/CustDB
 	
 	Revisions:
 	
@@ -17,12 +18,23 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 6 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
 			AND xtype = 'U'
-
-	if @IsExistTables <> 6 RETURN
+	
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
@@ -61,7 +73,11 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrCode = 107
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 107
 		RETURN				
 	END
 	
@@ -96,7 +112,11 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrCode = 108
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 108
 					
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -125,7 +145,11 @@ BEGIN
 	if @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrCode = 109
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 109
 			
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -156,7 +180,11 @@ BEGIN
 	IF @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrCode = 110
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 110
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -177,7 +205,11 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrCode = 111
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 111
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -199,7 +231,11 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrCode = 112
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 112
 			
 		-- ROLLBACK MANUALLY			
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -249,7 +285,11 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrCode = 113
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 113
 			
 		-- ROLLBACK MANUALLY				
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -272,7 +312,11 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrCode = 114
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end,
+			@ErrCode = 114
 			
 		-- ROLLBACK MANUALLY		
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -286,4 +330,3 @@ BEGIN
 		RETURN
 	END	
 END
-GO

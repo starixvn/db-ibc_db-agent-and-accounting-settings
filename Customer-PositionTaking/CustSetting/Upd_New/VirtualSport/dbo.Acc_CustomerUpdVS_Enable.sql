@@ -1,12 +1,12 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_Enable]  
- @custid   INT,  
- @DisableVS  BIT = 0,  
- @DisableDownlinesVS  BIT = 0,  
- @UserID   INT,  
- @Language  VARCHAR(2) = 'E',  
- @ErrCode  INT = 0 OUTPUT,  
- @ErrMsg   NVARCHAR(200) = '' OUTPUT,  
- @IP    VARCHAR(15)=''  
+	@custid   INT,  
+	@DisableVS  BIT = 0,  
+	@DisableDownlinesVS  BIT = 0,  
+	@UserID   INT,  
+	@Language  VARCHAR(2) = 'E',  
+	@ErrCode  INT = 0 OUTPUT,  
+	@ErrMsg   NVARCHAR(200) = '' OUTPUT,  
+	@IP    VARCHAR(15)=''  
 AS  
  /*  
  
@@ -18,6 +18,7 @@ AS
   Revisions:       
 	- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure  
 	- 20130926@Kathy: Apply exec rep
+	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)		
   Parameters Explanation:  
   
  */   
@@ -92,7 +93,7 @@ DECLARE @startRun DATETIME,
 	IF @DisableVS = 0 and @DisableDownlinesVS = 0  
 	BEGIN TRY
 		--20130926@Kathy: Apply ExecRep 
-		EXEC [Acc_ExecRep_04]
+		EXEC [Acc_ExecRep_Cust_04]
 			@CustID		= @CustID,
 			@RoleID		= @RoleID,
 			@Action		= 'EnableVS',
@@ -108,7 +109,7 @@ DECLARE @startRun DATETIME,
  DECLARE @LogSPData VARCHAR(MAX),  
    @LogSPData_Old VARCHAR(2000)  
   
- Select @LogSPData = '<Acc_CustomerUpdEnableVS CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+ Select @LogSPData = '<Acc_CustomerUpdVS_Enable CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
       'DisableVS="'+ coalesce(cast(@DisableVS as varchar(50)),space(1)) + '" '+  
       'ApplyDownlinesVS="'+ coalesce(cast(CASE WHEN @DisableDownlinesVS = 1 THEN 0 ELSE 1 END as varchar(50)),space(1)) + '" '+  
       'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
@@ -129,7 +130,7 @@ BEGIN TRY
 	@duration = @duration  
 END TRY 
 BEGIN CATCH
-	Select @LogSPData = '<Acc_CustomerUpdEnableVS CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+	Select @LogSPData = '<Acc_CustomerUpdVS_Enable CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
       'DisableVS="'+ coalesce(cast(@DisableVS as varchar(50)),space(1)) + '" '+  
       'ApplyDownlinesVS="'+ coalesce(cast(CASE WHEN @DisableDownlinesVS = 1 THEN 0 ELSE 1 END as varchar(50)),space(1)) + '" '+  
       'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
@@ -145,14 +146,14 @@ BEGIN CATCH
 	@TrackingValue = @LogSPData  ,  
 	@duration = @duration
 END CATCH		   
-   
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbadminNet] AS [dbo]
 GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdVS_Enable]  TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdVS_Enable] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbExtAccNet] 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdVS_Enable] TO [vnteam] AS [dbo]

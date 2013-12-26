@@ -1,6 +1,4 @@
-﻿
-
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
 	@custid									INT,		
 
 	@v162mpositiontaking_1101				SMALLMONEY,	
@@ -29,6 +27,7 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 		- 20130516@Lukas: allow PT = 100%
+		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	Parameters Explanation:
 */
@@ -155,8 +154,8 @@ BEGIN
 			(
 				SELECT 162 AS sporttype, 1101 AS bettype, @auto_v162mpositiontaking_mem_1101 AS autopositiontaking, @isauto_v162mpositiontaking_mem_1101 AS isautopositiontaking
 			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
-		INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
-		INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
 		WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
 
 		IF @ErrType <>''
@@ -210,8 +209,8 @@ BEGIN
 		FROM (
 				SELECT 162 AS sporttype	,	 1101 AS bettype	,	 @v162mpositiontaking_1101 AS mpositiontaking	,	 @max_v162mapositiontaking_1101 AS maxmpositiontaking						
 			)b 	
-			INNER JOIN sports WITH (NOLOCK) ON b.sporttype = sports.sporttype
-			INNER JOIN bettype WITH (NOLOCK) ON b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
 		WHERE (b.mpositiontaking>b.maxmpositiontaking) 
 
 		IF @ErrType <>''
@@ -449,10 +448,10 @@ BEGIN
 END
 
 GO
-GRANT VIEW DEFINITION ON [Acc_CustomerUpdMemberLiveCS_MAg] TO vnteam
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXEC ON [Acc_CustomerUpdMemberLiveCS_MAg] TO bodbAdminNet
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXEC ON [Acc_CustomerUpdMemberLiveCS_MAg] TO bodbDownlineNet
-
-
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [vnteam] AS [dbo]

@@ -6,7 +6,7 @@ AS
 /*
 Created: 
 Task : Max Exposure by Sporttype [Used for checking Update Credit]
-DB: DB02.bodb02
+DB: DBTXN/bodb02
 Original:
 
 Revisions:
@@ -29,5 +29,10 @@ order by sum(actual_stake) desc
 
 select @MaxExposure = isnull(@MaxExposure, 0)
 
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMaxExposure_Ag] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMaxExposure_Ag] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMaxExposure_Ag] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMaxExposure_Ag] TO [vnteam] AS [dbo]

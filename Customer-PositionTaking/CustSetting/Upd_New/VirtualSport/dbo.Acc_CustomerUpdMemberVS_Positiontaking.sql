@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE  [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]
+﻿USE [custDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 11/28/2013 14:47:11 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE  [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]
 	@custid		INT,	
 	
 	@sporttype	INT,
@@ -22,6 +29,7 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20121204@Scott: Add more field Sporttype,bettype to Log
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		Parameter's Explanation:	
 	*/
@@ -109,8 +117,8 @@ SET NOCOUNT ON
 		(
 			select @bettype as bettype, @sporttype as sporttype, @a1 as apositiontaking 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
-		inner join sports s with(nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
 	WHERE co.custid = @recommend and (( (b.apositiontaking>co.maxpositiontaking or b.apositiontaking<co.minpositiontaking))
 	)		
 	
@@ -347,8 +355,9 @@ SET NOCOUNT ON
 				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
 	
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO

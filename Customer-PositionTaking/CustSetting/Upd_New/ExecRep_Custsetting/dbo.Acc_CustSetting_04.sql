@@ -18,12 +18,24 @@
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
+	
+	--DECLARE @IsExistTables tinyint
+	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	--WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+	--		AND xtype = 'U'
+
+	--if @IsExistTables <> 3 RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
 			AND xtype = 'U'
-
-	if @IsExistTables <> 3 RETURN
+	
+	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
+			AND xtype = 'V'
+			
+	if @IsExistTables <> 3 AND @IsExistViews <> 3 RETURN
 	
 	declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 	
@@ -251,7 +263,6 @@ BEGIN
 			inner join custoverride as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=custsetting.sporttype and aco.bettype=custsetting.bettype
 		where custsetting.sporttype=1 and custsetting.bettype in (1,3,7,8) and custsetting.slivepositiontaking+custsetting.alivepositiontaking+custsetting.mlivepositiontaking>scs.slivepositiontaking
 
-		-----------------
 	END
 	--Update min/max pt on master
 	ELSE IF @roleid = 3

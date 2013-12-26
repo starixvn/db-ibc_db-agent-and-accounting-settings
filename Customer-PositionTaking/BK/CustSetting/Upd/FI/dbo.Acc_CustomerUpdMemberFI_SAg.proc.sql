@@ -46,6 +46,7 @@ Revisions:
 	- 20100728@Kiwi: grant execute permission to [bodbExtAccNet]
 	- 20101019@Henry: Record execution time
 	- 20110709@Johnson: Change to use new server BD053 instead DB052
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -166,15 +167,15 @@ END
 
 
 	select @ErrType = ''
-	select @ErrType = @ErrType + sportname + '-'+ typenamee + ', '
+	select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + ', '
 	from CustOverride3rd as co with (NOLOCK) inner join
 (
 	--v201
 					select 201 as sporttype, 2 as bettype, @auto_v201spositiontaking_2 as autopositiontaking, @isauto_v201spositiontaking_2 as isautopositiontaking
 	union all		select 201 as sporttype, 3 as bettype, @auto_v201spositiontaking_3 as autopositiontaking, @isauto_v201spositiontaking_3 as isautopositiontaking
 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 
 where co.custid = @srecommend and (b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking)
 
@@ -200,14 +201,14 @@ END
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	select @ErrType = ''
-	select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
+	select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
 	from CustSetting3rd as cs with (NOLOCK) inner join
 		(
 						select 2 as bettype, 201 as sporttype, @auto_v201spositiontaking_2 as autopositiontaking
 			union all 	select 3 as bettype, 201 as sporttype, @auto_v201spositiontaking_3 as autopositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-	inner join sports with (nolock) on b.sporttype = sports.sporttype
-	inner join bettype with (nolock) on b.bettype = bettype.typeid
+	inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+	inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and (cs.spositiontaking<b.autopositiontaking)
 		
@@ -229,15 +230,15 @@ END
 	END
 	
 	select @ErrType = ''
-	select @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
+	select @ErrType = @ErrType + s.sportname + '-'+ bt.typenamee + '-Max: '+ cast((cs.spositiontaking) as varchar(10)) + '<br>'
 	from CustSetting3rd as cs with (NOLOCK) inner join
 		(
 			--v201
 						select 2 as bettype, 201 as sporttype, @v201spositiontaking_2 as positiontaking
 			union all 	select 3 as bettype, 201 as sporttype, @v201spositiontaking_3 as positiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		inner join bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		inner join bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and (cs.spositiontaking<b.positiontaking)
 		
@@ -350,11 +351,14 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@TrackingValue = @LogSPData,
 	@duration = @duration
 	
+
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [bodbExtAccNet]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberFI_SAg] TO [vnteam] AS [dbo]

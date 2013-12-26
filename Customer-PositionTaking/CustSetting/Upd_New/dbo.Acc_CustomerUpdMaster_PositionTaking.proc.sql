@@ -324,6 +324,7 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131026@Thien: Checking total downlines before UPDATEs 
 	- 20131030@Johnson: Apply execrep for recalculating pt on members
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -478,8 +479,8 @@ BEGIN
 			union all 	select 9 as bettype, 1 as sporttype, @spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @isauto_spositiontaking_9 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_spositiontaking_9 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 10 as bettype, 1 as sporttype, @spositiontaking_10 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_10 as mpositiontaking, 0 as mlivepositiontaking, @isauto_spositiontaking_10 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_spositiontaking_10 as auto_spositiontaking,  0 as auto_slivepositiontaking	
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking)) or 
@@ -515,8 +516,8 @@ BEGIN
 			union all 	select 9 as bettype, 1 as sporttype, @spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @isauto_spositiontaking_9 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 10 as bettype, 1 as sporttype, @spositiontaking_10 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_10 as mpositiontaking, 0 as mlivepositiontaking, @isauto_spositiontaking_10 as isauto_spositiontaking,  0 as isauto_slivepositiontaking	
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) or 
 						(b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -552,8 +553,8 @@ BEGIN
 				union all select 	1 as sporttype, 9 as bettype, @mpositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
 				union all select 	1 as sporttype, 10 as bettype, @mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
 			) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-		--inner join sports with (nolock) on b.sporttype = sports.sporttype
-		--inner join bettype with (nolock) on b.bettype = bettype.typeid
+		--INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		--INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where c.mrecommend = @custid and c.roleid = 2 and (cs.apositiontaking+cs.mpositiontaking>b.maxpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and cs.alivepositiontaking+cs.mlivepositiontaking>b.maxlivepositiontaking))
 	group by username--, sportname, typenamee
 	if @ErrAcc<>''
@@ -614,8 +615,8 @@ BEGIN
 			union all 	select 9 as bettype, 1 as sporttype, @spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @auto_spositiontaking_9 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 10 as bettype, 1 as sporttype, @spositiontaking_10 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_10 as mpositiontaking, 0 as mlivepositiontaking, @auto_spositiontaking_10 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -727,8 +728,8 @@ BEGIN
 			union all 	select 20 as bettype, 2 as sporttype, @v2spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v2mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v2spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v2spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))	
@@ -757,8 +758,8 @@ BEGIN
 --			union all 	select 9 as bettype, 2 as sporttype, @v2spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @v2mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v2spositiontaking_9 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 2 as sporttype, @v2spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v2mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v2spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -843,8 +844,8 @@ BEGIN
 --			union all 	select 9 as bettype, 2 as sporttype, @v2spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @v2mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @auto_v2spositiontaking_9 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 2 as sporttype, @v2spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v2mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v2spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -935,8 +936,8 @@ BEGIN
 			union all 	select 20 as bettype, 3 as sporttype, @v3spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v3mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v3spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v3spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))	
@@ -962,8 +963,8 @@ BEGIN
 			union all 	select 3 as bettype, 3 as sporttype, @v3spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v3mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v3spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 3 as sporttype, @v3spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v3mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v3spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1039,8 +1040,8 @@ BEGIN
 			union all 	select 3 as bettype, 3 as sporttype, @v3spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v3mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v3spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 3 as sporttype, @v3spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v3mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v3spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -1129,8 +1130,8 @@ BEGIN
 			union all 	select 20 as bettype, 5 as sporttype, @v5spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v5mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v5spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v5spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -1156,8 +1157,8 @@ BEGIN
 			union all 	select 3 as bettype, 5 as sporttype, @v5spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v5mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v5spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 5 as sporttype, @v5spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v5mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v5spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1234,8 +1235,8 @@ BEGIN
 			union all 	select 3 as bettype, 5 as sporttype, @v5spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v5mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v5spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 5 as sporttype, @v5spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v5mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v5spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -1319,8 +1320,8 @@ BEGIN
 			union all 	select 20 as bettype, 8 as sporttype, @v8spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v8mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v8spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v8spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -1345,8 +1346,8 @@ BEGIN
 			union all 	select 3 as bettype, 8 as sporttype, @v8spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v8mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v8spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 8 as sporttype, @v8spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v8mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v8spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1418,8 +1419,8 @@ BEGIN
 			union all 	select 3 as bettype, 8 as sporttype, @v8spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v8mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v8spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 8 as sporttype, @v8spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v8mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v8spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -1507,8 +1508,8 @@ BEGIN
 			union all 	select 20 as bettype, 10 as sporttype, @v10spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v10mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v10spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v10spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -1533,8 +1534,8 @@ BEGIN
 			union all 	select 3 as bettype, 10 as sporttype, @v10spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v10mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v10spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 10 as sporttype, @v10spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v10mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v10spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1609,8 +1610,8 @@ BEGIN
 			union all 	select 3 as bettype, 10 as sporttype, @v10spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v10mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v10spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 10 as sporttype, @v10spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v10mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v10spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -1690,8 +1691,8 @@ BEGIN
 			union all 	select 20 as bettype, 11 as sporttype, @v11spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v11mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v11spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v11spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -1714,8 +1715,8 @@ BEGIN
 				 	select 1 as bettype, 11 as sporttype, @v11spositiontaking_1 as spositiontaking, 0 as slivepositiontaking, @v11mpositiontaking_1 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v11spositiontaking_1 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 11 as sporttype, @v11spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v11mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v11spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1784,8 +1785,8 @@ BEGIN
 				 	select 1 as bettype, 11 as sporttype, @v11spositiontaking_1 as spositiontaking, 0 as slivepositiontaking, @v11mpositiontaking_1 as mpositiontaking, 0 as mlivepositiontaking, @auto_v11spositiontaking_1 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 11 as sporttype, @v11spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v11mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v11spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -1871,8 +1872,8 @@ BEGIN
 			union all 	select 20 as bettype, 99 as sporttype, @v99spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v99spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v99spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -1898,8 +1899,8 @@ BEGIN
 			union all 	select 3 as bettype, 99 as sporttype, @v99spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v99spositiontaking_3 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			union all 	select 20 as bettype, 99 as sporttype, @v99spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v99spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -1976,8 +1977,8 @@ BEGIN
 			union all 	select 3 as bettype, 99 as sporttype, @v99spositiontaking_3 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_3 as mpositiontaking, 0 as mlivepositiontaking, @auto_v99spositiontaking_3 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			union all 	select 20 as bettype, 99 as sporttype, @v99spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v99spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -2054,8 +2055,8 @@ BEGIN
 		(
 			select 9 as bettype, 99 as sporttype, @v99spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v99spositiontaking_9 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v99spositiontaking_9 as auto_spositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -2079,8 +2080,8 @@ BEGIN
 			select 9 as bettype, 99 as sporttype, @v99spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v99spositiontaking_9 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 --						or (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -2165,8 +2166,8 @@ BEGIN
 			select 9 as bettype, 99 as sporttype, @v99spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @v99mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking, @auto_v99spositiontaking_9 as auto_spositiontaking,  0 as auto_slivepositiontaking
 			
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=1 and b.bettype in (1,3,7,8) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -2241,8 +2242,8 @@ BEGIN
 				 	select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v154mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v154spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking, @auto_v154spositiontaking_20 as auto_spositiontaking
 
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking))
@@ -2263,8 +2264,8 @@ BEGIN
 		(
 				 	select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v154mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @isauto_v154spositiontaking_20 as isauto_spositiontaking,  0 as isauto_slivepositiontaking
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) 
 					)
@@ -2327,8 +2328,8 @@ BEGIN
 		(
 				 	select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as slivepositiontaking, @v154mpositiontaking_20 as mpositiontaking, 0 as mlivepositiontaking, @auto_v154spositiontaking_20 as auto_spositiontaking,  0 as auto_slivepositiontaking
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and scs.mpositiontaking<b.mpositiontaking 
 						
 	if @ErrType <>''
@@ -2461,8 +2462,8 @@ BEGIN
 			union all 	select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking, 0 as isauto_spositiontaking,  @isauto_v161slivepositiontaking_90 as isauto_slivepositiontaking, 0 as auto_spositiontaking,  @auto_v161slivepositiontaking_90 as auto_slivepositiontaking
 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @srecommend and (	
 						((b.isauto_spositiontaking=0) and (b.spositiontaking+b.mpositiontaking>co.maxpositiontaking or b.spositiontaking+b.mpositiontaking<co.minpositiontaking)) or 
 						(b.isauto_spositiontaking>0 and (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking + b.auto_spositiontaking<co.minpositiontaking)) or 
@@ -2497,8 +2498,8 @@ BEGIN
 			union all 	select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking, 0 as isauto_spositiontaking,  @isauto_v161slivepositiontaking_90 as isauto_slivepositiontaking, 0 as auto_spositiontaking,  @auto_v161slivepositiontaking_90 as auto_slivepositiontaking
 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where co.custid = @custid and (	
 						(b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<co.minpositiontaking) or 
 						(b.sporttype = 161 and b.bettype in (85,86,87,89,90) and (b.mlivepositiontaking>co.maxlivepositiontaking or b.mlivepositiontaking<co.minlivepositiontaking))
@@ -2531,8 +2532,8 @@ BEGIN
 				union all select 161 as sporttype, 89 as bettype, 0 as maxpositiontaking, @v161mlivepositiontaking_89 as maxlivepositiontaking
 				union all select 161 as sporttype, 90 as bettype, 0 as maxpositiontaking, @v161mlivepositiontaking_90 as maxlivepositiontaking
 			) as b on cs3.sporttype=b.sporttype and cs3.bettype = b.bettype
-		--inner join sports with (nolock) on b.sporttype = sports.sporttype
-		--inner join bettype with (nolock) on b.bettype = bettype.typeid
+		--INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		--INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where c.mrecommend = @custid and c.roleid = 2 and (cs3.apositiontaking+cs3.mpositiontaking>b.maxpositiontaking or (b.sporttype=161 and b.bettype in (85,86,87,89,90) and cs3.alivepositiontaking+cs3.mlivepositiontaking>b.maxlivepositiontaking))
 				
 	group by username--, sportname, typenamee
@@ -2592,8 +2593,8 @@ BEGIN
 			union all 	select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking, 0 as isauto_spositiontaking,  @isauto_v161slivepositiontaking_90 as isauto_slivepositiontaking, 0 as auto_spositiontaking,  @auto_v161slivepositiontaking_90 as auto_slivepositiontaking
 			
 		) as b on scs.sporttype=b.sporttype and scs.bettype = b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where scs.custid = @srecommend and (
 						scs.mpositiontaking<b.mpositiontaking or (b.sporttype=161 and b.bettype in (85,86,87,89,90) and scs.mlivepositiontaking<b.mlivepositiontaking)
 						)
@@ -3006,8 +3007,8 @@ BEGIN
 			union all 	select 9 as bettype, 1 as sporttype, @auto_spositiontaking_9 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 10 as bettype, 1 as sporttype, @auto_spositiontaking_10 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking+@maxdownlinepos<b.autolivepositiontaking))
@@ -3040,8 +3041,8 @@ BEGIN
 			union all 	select 9 as bettype, 1 as sporttype, @spositiontaking_9 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_9 as mpositiontaking, 0 as mlivepositiontaking
 			union all 	select 10 as bettype, 1 as sporttype, @spositiontaking_10 as spositiontaking, 0 as slivepositiontaking, @mpositiontaking_10 as mpositiontaking, 0 as mlivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.slivepositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking+@maxdownlinepos<b.slivepositiontaking+b.mlivepositiontaking))
@@ -3073,8 +3074,8 @@ BEGIN
 --			union all 	select 9 as bettype, 2 as sporttype, @auto_v2spositiontaking_9 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 2 as sporttype, @auto_v2spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3102,8 +3103,8 @@ BEGIN
 --			union all 	select 9 as bettype, 2 as sporttype, @v2spositiontaking_9 as spositiontaking, 0 as livepositiontaking, @v2mpositiontaking_9 as mpositiontaking
 			union all 	select 20 as bettype, 2 as sporttype, @v2spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v2mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3134,8 +3135,8 @@ BEGIN
 			union all 	select 3 as bettype, 3 as sporttype, @auto_v3spositiontaking_3 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 3 as sporttype, @auto_v3spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3160,8 +3161,8 @@ BEGIN
 			union all 	select 3 as bettype, 3 as sporttype, @v3spositiontaking_3 as spositiontaking, 0 as livepositiontaking, @v3mpositiontaking_3 as mpositiontaking
 			union all 	select 20 as bettype, 3 as sporttype, @v3spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v3mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3191,8 +3192,8 @@ BEGIN
 			union all 	select 3 as bettype, 5 as sporttype, @auto_v5spositiontaking_3 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 5 as sporttype, @auto_v5spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3216,8 +3217,8 @@ BEGIN
 			union all 	select 3 as bettype, 5 as sporttype, @v5spositiontaking_3 as spositiontaking, 0 as livepositiontaking, @v5mpositiontaking_3 as mpositiontaking
 			union all 	select 20 as bettype, 5 as sporttype, @v5spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v5mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3246,8 +3247,8 @@ BEGIN
 			union all 	select 3 as bettype, 8 as sporttype, @auto_v8spositiontaking_3 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 8 as sporttype, @auto_v8spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3271,8 +3272,8 @@ BEGIN
 			union all 	select 3 as bettype, 8 as sporttype, @v8spositiontaking_3 as spositiontaking, 0 as livepositiontaking, @v8mpositiontaking_3 as mpositiontaking
 			union all 	select 20 as bettype, 8 as sporttype, @v8spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v8mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3302,8 +3303,8 @@ BEGIN
 			union all 	select 3 as bettype, 10 as sporttype, @auto_v10spositiontaking_3 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 10 as sporttype, @auto_v10spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3327,8 +3328,8 @@ BEGIN
 			union all 	select 3 as bettype, 10 as sporttype, @v10spositiontaking_3 as spositiontaking, 0 as livepositiontaking, @v10mpositiontaking_3 as mpositiontaking
 			union all 	select 20 as bettype, 10 as sporttype, @v10spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v10mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3356,8 +3357,8 @@ BEGIN
 					select 1 as bettype, 11 as sporttype, @auto_v11spositiontaking_1 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 11 as sporttype, @auto_v11spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3379,8 +3380,8 @@ BEGIN
 					select 1 as bettype, 11 as sporttype, @v11spositiontaking_1 as spositiontaking, 0 as livepositiontaking, @v11mpositiontaking_1 as mpositiontaking
 			union all 	select 20 as bettype, 11 as sporttype, @v11spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v11mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3410,8 +3411,8 @@ BEGIN
 			union all 	select 3 as bettype, 99 as sporttype, @auto_v99spositiontaking_3 as autopositiontaking, 0 as autolivepositiontaking
 			union all 	select 20 as bettype, 99 as sporttype, @auto_v99spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3435,8 +3436,8 @@ BEGIN
 			union all 	select 3 as bettype, 99 as sporttype, @v99spositiontaking_3 as spositiontaking, 0 as livepositiontaking, @v99mpositiontaking_3 as mpositiontaking
 			union all 	select 20 as bettype, 99 as sporttype, @v99spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v99mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3465,8 +3466,8 @@ BEGIN
 		(
 			select 9 as bettype, 99 as sporttype, @auto_v99spositiontaking_9 as autopositiontaking, 0 as autolivepositiontaking			
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3487,8 +3488,8 @@ BEGIN
 		(
 			select 9 as bettype, 99 as sporttype, @v99spositiontaking_9 as spositiontaking, 0 as livepositiontaking, @v99mpositiontaking_9 as mpositiontaking	
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -3515,8 +3516,8 @@ BEGIN
 		(
 					select 20 as bettype, 154 as sporttype, @auto_v154spositiontaking_20 as autopositiontaking, 0 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3536,8 +3537,8 @@ BEGIN
 		(
 					select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as livepositiontaking, @v154mpositiontaking_20 as mpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking))
@@ -3571,8 +3572,8 @@ BEGIN
 			union all 	select 89 as bettype, 161 as sporttype, 0 as autopositiontaking, @auto_v161slivepositiontaking_89 as autolivepositiontaking
 			union all 	select 90 as bettype, 161 as sporttype, 0 as autopositiontaking, @auto_v161slivepositiontaking_90 as autolivepositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and
 		((cs.spositiontaking+@maxdownlinepos<b.autopositiontaking))
@@ -3600,8 +3601,8 @@ BEGIN
 			union all	select 89 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_89 as slivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_89 as mlivepositiontaking	
 			union all	select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking, 0 as mpositiontaking, @v161mlivepositiontaking_90 as mlivepositiontaking	
 		) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-		inner join sports with (nolock) on b.sporttype = sports.sporttype
-		inner join bettype with (nolock) on b.bettype = bettype.typeid
+		INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 	where cs.custid = @srecommend
 		and 
 		((cs.spositiontaking<b.spositiontaking) or (cs.spositiontaking+@maxdownlinepos<b.spositiontaking+b.mpositiontaking)
@@ -5086,8 +5087,6 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
 END CATCH
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_PositionTaking] TO [bodbAdminNet] AS [dbo]

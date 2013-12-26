@@ -33,8 +33,30 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @IsExistTables tinyint
+	--DECLARE @IsExistTables tinyint
+	--SET @IsExistTables = 0
+
+	--IF @mode = 'LiveCasino'
+	--BEGIN	
+	--	SELECT @IsExistTables = COUNT(*) 
+	--	FROM dbo.sysobjects
+	--	WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
+	--			AND xtype = 'U'
+	--END
+	--ELSE
+	--BEGIN
+	--	SELECT @IsExistTables = COUNT(*) 
+	--	FROM dbo.sysobjects
+	--	WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
+	--			AND xtype = 'U'
+	--END
+
+	--IF @IsExistTables <> 3 
+	--	RETURN
+	
+	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
 	SET @IsExistTables = 0
+	SET @IsExistViews = 0
 
 	IF @mode = 'LiveCasino'
 	BEGIN	
@@ -42,6 +64,11 @@ BEGIN
 		FROM dbo.sysobjects
 		WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
 				AND xtype = 'U'
+		
+		SELECT @IsExistViews = COUNT(*) 
+		FROM dbo.sysobjects
+		WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
+				AND xtype = 'V'				
 	END
 	ELSE
 	BEGIN
@@ -49,11 +76,16 @@ BEGIN
 		FROM dbo.sysobjects
 		WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
 				AND xtype = 'U'
+		
+		SELECT @IsExistViews = COUNT(*) 
+		FROM dbo.sysobjects
+		WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
+				AND xtype = 'V'				
 	END
 
-	IF @IsExistTables <> 3 
+	IF @IsExistTables <> 3 AND @IsExistViews <> 3
 		RETURN
-	
+		
 	IF @roleid = 4
 	BEGIN			
 		IF @mode = 'number'

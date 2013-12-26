@@ -8,11 +8,12 @@ AS
 /*
 Created:
 Task: check downline belonging
-DB: DBAGE/bodb02, DBTXN/bodb02
+DB: DBAGE/bodb02, DBTXN/CustDB
 Original: 
 	
 Revisions:
-	-20130121@Dan: change linked server DB06 to DBARC
+	- 20130121@Dan: change linked server DB06 to DBARC
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettrans, bettrans14 by link database in DBTXN)
    
 */
 SET NOCOUNT ON
@@ -28,10 +29,10 @@ END
 
 --check customer by transid/refno -----------------------------------------------
 if @custid is NULL
-	select @custid = custid from bettrans with (nolock) where transid = @transid
+	select @custid = custid from bodb02.dbo.bettrans with (nolock) where transid = @transid
 
 if @custid is NULL
-	select @custid = custid from bettrans14 with (nolock) where transid = @transid
+	select @custid = custid from bodb02.dbo.bettrans14 with (nolock) where transid = @transid
 
 if @custid is NULL
 	select @custid = custid from DBARC.bodb_archive.dbo.Bettrans_bk with (nolock) where transid = @transid
@@ -54,13 +55,14 @@ where c.custid = @custid
 select @roleid = isnull(@roleid, 0)
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNetView] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNetView]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Age_CustomerSelCheckBelonging] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Age_CustomerSelCheckBelonging] TO [vnteam] AS [dbo]

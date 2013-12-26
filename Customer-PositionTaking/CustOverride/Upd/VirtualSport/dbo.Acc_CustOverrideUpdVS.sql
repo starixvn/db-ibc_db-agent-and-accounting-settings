@@ -1,11 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdVS]    Script Date: 11/19/2013 10:38:23 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
 	@custid int,
 	@sporttype tinyint,
 	@bettype int,
@@ -276,6 +269,7 @@ BEGIN
 	END CATCH
 
 END
+
 
 
 GO

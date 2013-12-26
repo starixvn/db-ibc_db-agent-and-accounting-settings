@@ -13,13 +13,14 @@ AS
 /*
 Created: 20110421@Amy
 Task : Update Agent's P2P Max Transfer limit
-DB: DBTXN/bodb02
+DB: DBCUST/CustDB
 Original:
 
 Revisions: 
 	- 20120329@Sophia: Change LogAction to 703
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130318@Elodie: Write more log on DBTXN server in case of DBLOG server failure
+	- 20130808@Elodie: Splitting DBTXN into DBCUST 
 	
 Param's Explanation:
 @ErrCode:
@@ -167,11 +168,10 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH	
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO [bodbDownlineNet]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO vnteam
 
-
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO [bodbadminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdP2PAgent_MaxTransfer] TO [vnteam] AS [dbo]

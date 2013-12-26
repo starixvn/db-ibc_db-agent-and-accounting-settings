@@ -13,7 +13,7 @@ AS
 /*  
 	Created: 20111111@Sophia
 	Task: enable/disable number game for whole line
-	DB: DBTRANS.bodb02
+	DB: DBTXN/CustDB
 
 	Revisions:	
  
@@ -162,8 +162,9 @@ BEGIN
 END
 
 	 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_02] TO [bodbAdminNet]
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_02] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_02] TO [bodbadminNet] AS [dbo]
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_02] TO [vnteam] AS [dbo]

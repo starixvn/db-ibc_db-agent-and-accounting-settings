@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMemBetSetting]
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust]
 	@CustId int
 AS
  /*
@@ -637,10 +637,10 @@ GROUP BY
 	ci.maxpermatch186
 
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [Dot_Admin] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Admin] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [Dot_Member] AS [dbo]
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Member] AS [dbo]
 GO
-GRANT ALTER ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [vnteam] AS [dbo]
+GRANT ALTER ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [vnteam] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMemBetSetting] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [vnteam] AS [dbo]

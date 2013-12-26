@@ -249,7 +249,7 @@ BEGIN
 	IF (@sporttype = 182)
 	BEGIN
 	
-		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS182_1231 
+								EXEC dbo.Acc_CustomerUpdMaxPerMatchVS182_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -260,7 +260,7 @@ BEGIN
 	IF (@sporttype = 184)
 	BEGIN
 	
-		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS184_1231 
+								EXEC dbo.Acc_CustomerUpdMaxPerMatchVS184_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -361,9 +361,8 @@ BEGIN CATCH
 END CATCH
 ---------------------------------------------------------
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
 GO
