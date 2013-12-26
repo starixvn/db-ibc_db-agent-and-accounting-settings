@@ -2676,7 +2676,7 @@ begin
 end
 
 ---- 20131030@Johnson: apply execrep for recalculating pt on members
-EXEC dbo.Acc_CustSetting_07 @recommend = @custid, @roleid = 2
+EXEC dbo.Acc_CustSetting_07_xtest @recommend = @custid, @roleid = 2
 
 EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'number'
 
@@ -3913,8 +3913,9 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH		
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_PositionTaking] TO [bodbDownlineNet] AS [dbo]
 GO

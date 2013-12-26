@@ -1,11 +1,4 @@
-﻿USE [custDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_01]    Script Date: 11/20/2013 13:38:02 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -20,7 +13,7 @@ AS
 		Created: Johnson
 		Date: 2013-11-12
 		Task: Apply execrep when correct pt on member when create new member
-		DB: DBTXN/CustDB
+		DB: DBTXN/bodb02
 		Original versions: Acc_CustomerUpdMember_MinMaxPositiontaking
 						Acc_CustomerUpdMemberHR_MinMaxPositiontaking
 						Acc_CustomerUpdMemberVS_MinMaxPositiontaking
@@ -128,7 +121,6 @@ BEGIN
 
 		--Recal AUTO MPT 
 		--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
-		-------------------------------------------------------------------------------------
 		--if @updautomaster = 1
 		--begin
 		Update custsetting with (ROWLOCK, UPDLOCK) 
@@ -223,9 +215,7 @@ BEGIN
 			and custsetting3rd.bettype in (85, 86, 87,89,90)
 			and (acs.isautolivempositiontaking = 1 or custsetting3rd.isautolivempositiontaking = 1)	
 		--end
-		-------------------------------------------------------------------------------------
-
-
+		
 
 		--check master min/max
 		--update m1=n3-a1 if a1+m1<n3
@@ -260,9 +250,7 @@ BEGIN
 			inner join custoverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting3rd.sporttype and mco.bettype=custsetting3rd.bettype
 		where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking<mco.minlivepositiontaking
 
-		-----------------------------------------------------------------------------------------------------------------------------------
-
-
+		
 		--update m1,a1 when a1+m1>l3
 		--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
 		--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
@@ -318,7 +306,7 @@ BEGIN
 			inner join custoverride3rd as mco with (NOLOCK) on mco.custid = @mrecommend  and mco.sporttype=custsetting3rd.sporttype and mco.bettype=custsetting3rd.bettype
 			inner join custoverride3rd as aco with (NOLOCK) on aco.custid = @recommend  and aco.sporttype=custsetting3rd.sporttype and aco.bettype=custsetting3rd.bettype
 		where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking>mco.maxlivepositiontaking
-		-----------------------------------------------------------------------------------------------------------------------------------
+		
 
 		--recal autopos
 		--if @updautosuper = 1 
@@ -498,7 +486,7 @@ BEGIN
 		where custsetting3rd.custid = @custid and custsetting3rd.sporttype=161 and custsetting3rd.bettype in (85,86,87,89,90) and custsetting3rd.slivepositiontaking+custsetting3rd.alivepositiontaking+custsetting3rd.mlivepositiontaking>scs.slivepositiontaking
 
 	END--end sportbook
-	---------------------------
+	
 	ELSE IF @mode = 'horse'
 	BEGIN		
 		--check agent min/max
@@ -532,7 +520,7 @@ BEGIN
 
 		--Recal AUTO MPT 
 		--Update m1=min(m3-a1,(im1?um1,um2))
-		-------------------------------------------------------------------------------------
+		
 		Update cs
 			set mpositiontaking = 
 				case when mcs.mpositiontaking-cs.apositiontaking > case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end
@@ -549,7 +537,7 @@ BEGIN
 			and (acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
 			and cs.sporttype between 151 and 153
 			
-		-------------------------------------------------------------------------------------
+		
 
 
 
@@ -565,9 +553,7 @@ BEGIN
 			and cs.apositiontaking+cs.mpositiontaking<mco.minpositiontaking
 			and cs.sporttype between 151 and 153
 
-		-----------------------------------------------------------------------------------------------------------------------------------
-
-
+		
 		--update m1,a1 when a1+m1>l3
 		--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
 		--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
@@ -587,8 +573,7 @@ BEGIN
 			and cs.apositiontaking+cs.mpositiontaking>mco.maxpositiontaking
 			and cs.sporttype between 151 and 153
 
-		-----------------------------------------------------------------------------------------------------------------------------------
-
+		
 		--recal autopos
 		Update cs
 			set spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
@@ -677,7 +662,7 @@ BEGIN
 		
 		--Recal AUTO MPT 
 		--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
-		-------------------------------------------------------------------------------------
+		
 		Update cs
 			set mpositiontaking = 
 				case when scs.mpositiontaking > mcs.mpositiontaking then 
@@ -888,3 +873,5 @@ BEGIN
 		
 	END--end mode = 'LiveCasino'
 END
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_01] TO [vnteam] AS [dbo]

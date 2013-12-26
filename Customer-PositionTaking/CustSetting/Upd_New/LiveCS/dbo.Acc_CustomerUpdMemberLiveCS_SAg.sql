@@ -80,7 +80,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 IF @v162UpdatePositiontaking_1101 = 1
 BEGIN
-	IF @v162spositiontaking_1101 < 0 OR ( @v162spositiontaking_1101 > 1)
+	IF @v162spositiontaking_1101 < 0 OR ( @v162spositiontaking_1101 > 1 AND @srecommend <> 8156203)
 	BEGIN			
 			Select @ErrMsg_Cur = 	@UserName + ': '+
 				case @Language 
@@ -189,14 +189,13 @@ BEGIN
 	END
 END
 
-
 EXEC dbo.Acc_CustSetting3rd_00
 		@custid = @custid, 
 		@recommend = @recommend, 
 		@mrecommend = @mrecommend, 
 		@srecommend = @srecommend,
 		@mode = 'LiveCasino'	
---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
 
 DECLARE @LogSPData VARCHAR(MAX),
 		@TrackingValueDB VARCHAR(5000)
@@ -264,9 +263,8 @@ BEGIN CATCH
 END CATCH	
 
 SELECT @ErrCode = '-103' + char(7)
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbDownlineNet] AS [dbo]
 GO

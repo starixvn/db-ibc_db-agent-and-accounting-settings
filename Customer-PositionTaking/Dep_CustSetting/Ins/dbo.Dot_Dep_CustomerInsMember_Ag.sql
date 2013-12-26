@@ -114,6 +114,8 @@ Revisions:
 							virtual motor racing (sporttype: 184, bettype: 1231)
 	- 20131126@Elodie: Splitting bodb02 into CustDB (call sport by link database)
 					   Insert/Delete BalanceCredit, BalanceDebit, BalanceCreditGame, BalanceDebitGame by link database							
+	- 20131216@Jerry: Update new maxbet and maxpermatch for Fun88'sbasketball
+	- 20131224@Johnson: Set maxpermatch for virtual sports from upline
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -747,9 +749,13 @@ select
 	@maxpermatchv152_41 = maxpermatch152_UK,
 	@maxpermatchv152_51 = maxpermatch152_AU,
 	@maxpermatchv153_51 = maxpermatch153_AU,
-	-- virtual soccer
-	@maxpermatchv180 = maxpermatch180,
-			
+	-- virtual sports
+	@maxpermatchv180 = maxpermatch180,	
+	@maxpermatchv181 = maxpermatch181,	
+	@maxpermatchv182 = maxpermatch182,
+	@maxpermatchv184 = maxpermatch184,
+	@maxpermatchv186 = maxpermatch186,
+				
 	----- add more
 	@site				= c.site,
 	@AgentCredit		= IsNull(Credit, 0),
@@ -1022,11 +1028,13 @@ END
 
 ----- BEGIN: 20131114@Viet: Hardcode maxbet and maxpermatch for fun88's basketball.-----
 -------------20131115@Jerry: Hardcode maxbet and maxpermatch for Fun88's Number Game----
+-------------20131216@Jerry: Update new maxbet and maxpermatch for Fun88'sbasketball----
 IF @site = 'asiabet88' AND @Currency = 13 -- CNY
 BEGIN
-	SELECT @maxpermatchv2 = 20000,@maxbetv2 = 10000,		
+	SELECT @maxpermatchv2 = 40000,@maxbetv2 = 20000,		
 	       @maxbetv161 = 2000, @maxperballv161 = 4000
 END
+-----------20131216@Jerry: Update new maxbet and maxpermatch for Fun88'sbasketball----
 -----------20131115@Jerry: Hardcode maxbet and maxpermatch for Fun88's Number Game----
 ----- END: 20131114@Viet: Hardcode maxbet and maxpermatch for fun88's basketball.-----
 
@@ -2173,7 +2181,7 @@ END
 ---- Create balance for new customer
 --INSERT INTO BalanceCredit (CustID, Balance )
 --VALUES (@CustID, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCredit @CustID = @CustID
+EXEC bodb02.dbo.Dot_BalanceInsCredit @CustID = @CustID
 
 IF @@error <> 0
 BEGIN 
@@ -2188,14 +2196,14 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
 
 --INSERT INTO BalanceDebit (CustID, Balance )
 --VALUES (@CustID, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebit @CustID = @CustID
+EXEC bodb02.dbo.Dot_BalanceInsDebit @CustID = @CustID
 
 IF @@error <> 0
 BEGIN 
@@ -2210,8 +2218,8 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
@@ -2222,7 +2230,7 @@ SET @today = convert(nvarchar(10), current_timestamp,120)
 
 --INSERT INTO BalanceCreditGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
+EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
 
 IF @@error <> 0
 BEGIN 
@@ -2237,9 +2245,9 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2247,7 +2255,7 @@ END
 
 --INSERT INTO BalanceDebitGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
+EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
 
 
 IF @@error <> 0
@@ -2263,10 +2271,10 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
+	EXEC bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2355,7 +2363,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
 */
 
 --Set default player comm
-EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
+EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm_xpre
 	@LicenseeName=@site,
 	@CustID = @CustID,
 	@ErrCode = @ErrCode OUTPUT,
@@ -2491,18 +2499,8 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
-
-
-
-
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
-GO
-GRANT ALTER ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
 GO
