@@ -22,10 +22,11 @@ AS
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/CustDB 
+ DB: DBTXN/bodb02  
   
  History:  
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -40,7 +41,6 @@ BEGIN
 	DECLARE @startRun datetime
 		,@endRun datetime
 		,@duration int
-		,@pwdexpiry datetime
 		,@srecommend int
 				
 	IF EXISTS (SELECT 1 FROM dbo.customer WITH(NOLOCK) WHERE username=@username OR username2=@username
@@ -75,8 +75,7 @@ BEGIN
 
 	END		 		
 	
-	SELECT @pwdexpiry = dateadd(dd, 30, getdate())
-		,@startRun = getdate()
+	SELECT @startRun = getdate()
 	
 	--INSERT GENERAL INFORMATION OF CUSTOMER
 	INSERT INTO dbo.customer
@@ -136,7 +135,7 @@ BEGIN
 		,0 AS recommend 
 		,ugroup		
 		,@site				
-		,@pwdexpiry
+		,NULL
 		,0 as important
 	FROM dbo.customer WITH(NOLOCK)
 	WHERE custid=@ExistingCustid		
@@ -171,9 +170,9 @@ BEGIN
 		RETURN
 	END	
 			
-	-- insert CustMaster info
-	INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption)  
-	SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption
+	-- insert CustSuper info
+	INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting)  
+	SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting
 	FROM CustSuper WITH(NOLOCK)
 	WHERE custid=@ExistingCustid		
 
@@ -249,6 +248,8 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
+			,maxpermatch182
+			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -315,6 +316,8 @@ BEGIN
 			,HideVirtualSports
 			,maxpermatch180
 			,maxpermatch181
+			,maxpermatch182
+			,maxpermatch184
 			,maxpermatch186
 			,isAutoResetLiveCasino
 			,MaxWinLiveCasino
@@ -736,7 +739,7 @@ BEGIN
 	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +	
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +	
 	'CopiedFrom="'+cast(@ExistingCustid as varchar(10))+'" '+
-	'CopiedFomUsername="'+c.username+'" '+
+	'CopiedFromUsername="'+c.username+'" '+
 	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
 	'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1)) + '" />'
 	FROM dbo.customer AS c WITH(NOLOCK) 
@@ -766,7 +769,7 @@ BEGIN
 		'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +	
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +	
 		'CopiedFrom="'+cast(@ExistingCustid as varchar(10))+'" '+
-		'CopiedFomUsername="'+c.username+'" '+
+		'CopiedFromUsername="'+c.username+'" '+
 		'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1)) + '" ' +
 		'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1)) + '" />'
 		FROM dbo.customer AS c WITH(NOLOCK) 
@@ -782,7 +785,6 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbadminNet] AS [dbo]
