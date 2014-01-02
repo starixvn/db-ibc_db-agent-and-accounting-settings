@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 12/24/2013 12:25:33 PM ******/
+
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -2319,7 +2319,7 @@ BEGIN
 	END
 END
 --For Asiabet88, turn USD&EUR players   to BA : 20131230@Jim
-if @site = 'DELA'
+if @site = 'Asiabet88'
 BEGIN
 	SET @ErrMsg=''
 	SET @ErrCode=0
