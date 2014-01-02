@@ -1,4 +1,12 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 1/2/2014 12:51:24 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 12/24/2013 12:25:33 PM ******/
+ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -116,6 +124,7 @@ Revisions:
 					   Insert/Delete BalanceCredit, BalanceDebit, BalanceCreditGame, BalanceDebitGame by link database							
 	- 20131216@Jerry: Update new maxbet and maxpermatch for Fun88'sbasketball
 	- 20131224@Johnson: Set maxpermatch for virtual sports from upline
+	- 20131230@Jim: hard-code to offer new Asiabet88 USD&EUR players to BA (group b )
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -801,7 +810,9 @@ SELECT @ugroup = 'a'
 --20110916@Thien:	Hard-code the ugroup for Alog.
 --					Adjust all USD, EUR and GBP currency members to 6 pts line (group B), apply this to all existing and future members
 SELECT @ugroup = case when @site = 'alog' and @currency in (3,6,12) then 'd' else 'a' end
-
+--20131230@Jim: Hard-code the ugroup for Asiabet88 
+--				 Adjust all USD, EUR  currency members to 6 pts line (group B), apply this to all existing and future members
+SELECT @ugroup = case when @site = 'Asiabet88' and @currency in (3,6) then 'b' else 'a' end
 --Will check the usergroup here
 --MinBet, MaxBet, Commission get from CA Agent
 
@@ -2307,6 +2318,25 @@ BEGIN
 			@ErrMsg = @ErrMsg OUTPUT
 	END
 END
+--For Asiabet88, turn USD&EUR players   to BA : 20131230@Jim
+if @site = 'DELA'
+BEGIN
+	SET @ErrMsg=''
+	SET @ErrCode=0
+	
+	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 2) = 1
+	BEGIN
+			EXEC [Lrf_CustomerUpdMemberBAStatus]
+			@LicenseeID=2,--Asiabet88
+			@CustID = @CustID,
+			@ModifyBy = 3, --pgmviet
+			@IsBA = 1,
+			@IP = '',
+			@ErrCode = @ErrCode OUTPUT,
+			@ErrMsg = @ErrMsg OUTPUT
+	END
+END
+
 --******************
 --20120831@Henry: Terminate the transfer of all players to BA for ZZun88
 /*
@@ -2363,7 +2393,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
 */
 
 --Set default player comm
-EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm_xpre
+EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 	@LicenseeName=@site,
 	@CustID = @CustID,
 	@ErrCode = @ErrCode OUTPUT,
