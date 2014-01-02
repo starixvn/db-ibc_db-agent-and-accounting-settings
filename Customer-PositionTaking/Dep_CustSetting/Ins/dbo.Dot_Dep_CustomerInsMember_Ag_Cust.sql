@@ -2319,7 +2319,11 @@ BEGIN
 	END
 END
 --For Asiabet88, turn USD&EUR players   to BA : 20131230@Jim
-if @site = 'Asiabet88'
+DECLARE @newCustCurrencyID INT
+SELECT @newCustCurrencyID=currency
+FROM dbo.customer WITH (NOLOCK)
+WHERE CustID=@custID
+IF (@site = 'Asiabet88' AND @newCustCurrencyID IN (3,6))
 BEGIN
 	SET @ErrMsg=''
 	SET @ErrCode=0
