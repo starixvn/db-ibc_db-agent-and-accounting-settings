@@ -2319,25 +2319,25 @@ BEGIN
 	END
 END
 --For Asiabet88, turn USD&EUR players   to BA : 20131230@Jim
-DECLARE @newCustCurrencyID INT
-SELECT @newCustCurrencyID=currency
-FROM dbo.customer WITH (NOLOCK)
-WHERE CustID=@custID
-IF (@site = 'Asiabet88' AND @newCustCurrencyID IN (3,6))
+
+IF (@site = 'Asiabet88')
 BEGIN
-	SET @ErrMsg=''
-	SET @ErrCode=0
-	
-	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 2) = 1
-	BEGIN
-			EXEC [Lrf_CustomerUpdMemberBAStatus]
-			@LicenseeID=2,--Asiabet88
-			@CustID = @CustID,
-			@ModifyBy = 3, --pgmviet
-			@IsBA = 1,
-			@IP = '',
-			@ErrCode = @ErrCode OUTPUT,
-			@ErrMsg = @ErrMsg OUTPUT
+	IF EXISTS (SELECT 1 FROM dbo.Customer WITH (NOLOCK) WHERE CustID=@CustID AND Currency IN (3,6))
+	BEGIN 
+		SET @ErrMsg=''
+		SET @ErrCode=0
+		
+		IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 2) = 1
+		BEGIN
+				EXEC [Lrf_CustomerUpdMemberBAStatus]
+				@LicenseeID=2,--Asiabet88
+				@CustID = @CustID,
+				@ModifyBy = 3, --pgmviet
+				@IsBA = 1,
+				@IP = '',
+				@ErrCode = @ErrCode OUTPUT,
+				@ErrMsg = @ErrMsg OUTPUT
+		END
 	END
 END
 
