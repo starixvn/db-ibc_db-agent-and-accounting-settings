@@ -77,88 +77,88 @@ BEGIN
 	
 	SELECT @startRun = getdate()
 	
-	--INSERT GENERAL INFORMATION OF CUSTOMER
-	INSERT INTO dbo.customer
-		(firstname
-		,lastname
-		,address
-		,postal
-		,city
-		,state
-		,country
-		,phone
-		,mobilephone
-		,fax
-		,email
-		,birthday
-		,refcode1
-		,refcode2
-		,remark
-		,creatdate
-		,creator
-		,username
-		,currency
-		,userpwd				
-		,roleid
-		,srecommend 
-		,mrecommend
-		,recommend
-		,ugroup		
-		,site		
-		,pwdexpiry
-		,important
-		)
-	SELECT
-		@firstname
-		,@lastname
-		,'-' AS address
-		,'-' AS postal
-		,'-' AS city
-		,'-' AS state
-		,'-' AS country
-		,@phone
-		,@mobilephone
-		,@fax
-		,'-' AS email
-		,NULL AS birthday
-		,NULL AS refcode1
-		,NULL AS refcode2
-		,NULL AS remark
-		,GETDATE() AS creatdate
-		,@creator
-		,@username
-		,currency
-		,@userpwd				
-		,4 AS roleid
-		,0 as srecommend		
-		,0 AS mrecommend
-		,0 AS recommend 
-		,ugroup		
-		,@site				
-		,NULL
-		,0 as important
-	FROM dbo.customer WITH(NOLOCK)
-	WHERE custid=@ExistingCustid		
+	BEGIN TRY
+		--INSERT GENERAL INFORMATION OF CUSTOMER
+		INSERT INTO dbo.customer
+			(firstname
+			,lastname
+			,address
+			,postal
+			,city
+			,state
+			,country
+			,phone
+			,mobilephone
+			,fax
+			,email
+			,birthday
+			,refcode1
+			,refcode2
+			,remark
+			,creatdate
+			,creator
+			,username
+			,currency
+			,userpwd				
+			,roleid
+			,srecommend 
+			,mrecommend
+			,recommend
+			,ugroup		
+			,site		
+			,pwdexpiry
+			,important
+			)
+		SELECT
+			@firstname
+			,@lastname
+			,'-' AS address
+			,'-' AS postal
+			,'-' AS city
+			,'-' AS state
+			,'-' AS country
+			,@phone
+			,@mobilephone
+			,@fax
+			,'-' AS email
+			,NULL AS birthday
+			,NULL AS refcode1
+			,NULL AS refcode2
+			,NULL AS remark
+			,GETDATE() AS creatdate
+			,@creator
+			,@username
+			,currency
+			,@userpwd				
+			,4 AS roleid
+			,0 as srecommend		
+			,0 AS mrecommend
+			,0 AS recommend 
+			,ugroup		
+			,@site				
+			,NULL
+			,0 as important
+		FROM dbo.customer WITH(NOLOCK)
+		WHERE custid=@ExistingCustid		
 
-	SET @Custid = SCOPE_IDENTITY()
-	
-	IF @@error <> 0
-	BEGIN
+		SET @Custid = SCOPE_IDENTITY()
+	END TRY
+	BEGIN CATCH
 		SELECT @ErrMsg = case @Language 
 							when 'E' then 'Create customer failed. Please try again.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language) 
 						end
 			,@ErrCode = 103			
 		RETURN
-	END	
+	END	CATCH
 	
-	SET @srecommend = @CustID
-	UPDATE Customer WITH (ROWLOCK, UPDLOCK) 
-	SET srecommend = @CustID 
-	WHERE custId = @CustID  
-	
-	IF @@error <> 0
-	BEGIN
+	BEGIN TRY
+		SET @srecommend = @CustID
+		UPDATE Customer WITH (ROWLOCK, UPDLOCK) 
+		SET srecommend = @CustID 
+		WHERE custId = @CustID  
+	END TRY
+	BEGIN CATCH
 		SELECT @ErrMsg = case @Language 
 							when 'E' then 'Create customer failed. Please try again.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
@@ -168,16 +168,16 @@ BEGIN
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.customer With (ROWLOCK) WHERE CustID = @CustID			
 		RETURN
-	END	
+	END	CATCH
 			
-	-- insert CustSuper info
-	INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting)  
-	SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting
-	FROM CustSuper WITH(NOLOCK)
-	WHERE custid=@ExistingCustid		
-
-	IF @@ERROR <> 0  
-	BEGIN  
+	BEGIN TRY
+		-- insert CustSuper info
+		INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting)  
+		SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting
+		FROM CustSuper WITH(NOLOCK)
+		WHERE custid=@ExistingCustid		
+	END TRY
+	BEGIN CATCH
 		SELECT @ErrMsg = CASE @Language   
 		   WHEN 'E' THEN 'Create customer failed. Please try again.'  
 		   ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
@@ -187,149 +187,149 @@ BEGIN
 		-- ROLLBACK MANUALLY  
 		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID  		 
 		RETURN  
-	END  	
+	END CATCH
 	
-	-- insert CustInfo info
-	INSERT INTO dbo.custInfo
-			(custid
-			,username
-			,currency
-			,roleid
-			,srecommend
-			,mrecommend
-			,recommend
-			,dangercust
-			,autosuspend
-			,reject
-			,credit
-			,closed
-			,MatchLimit
-			,VirtualMultiplier
-			,maxpermatch
-			,maxpermatch2
-			,maxpermatch3
-			,maxpermatch5
-			,maxpermatch8
-			,maxpermatch10
-			,maxpermatch11
-			,maxpermatch12
-			,maxpermatch99
-			,Enabled           
-			,maxpermatch151
-			,maxpermatch201
-			,DisableHorseRacing
-			,DisableFinancial
-			,DisableCasino
-			,SyncCasino           
-			,DisableOutright
-			,DisableOpenTote
-			,maxpermatch151_OT
-			,MaxPerMatch99MP
-			,DisableBingo
-			,DisableNumber
-			,maxpermatch161
-			,SyncBingo
-			,MaxPerBall161
-			,MaxPerMatch151_AU
-			,MaxPerMatch152_UK
-			,MaxPerMatch152_AU
-			,MaxPerMatch153_AU
-			,Disable151_AU
-			,Disable152_UK
-			,Disable152_AU
-			,Disable153_AU
-			,MaxTransferP2P
-			,IsAutoResetP2P
-			,DisableP2P
-			,DisableFunP2P
-			,DisableLiveCasino
-			,SyncLiveCasino
-			,DisableVirtualSports
-			,HideVirtualSports
-			,maxpermatch180
-			,maxpermatch181
-			,maxpermatch182
-			,maxpermatch184
-			,maxpermatch186
-			,isAutoResetLiveCasino
-			,MaxWinLiveCasino
-			,DoubleCommLosing
-			,DisableCasinoBonus
-			,DisableHRFixedOdds
-			,maxpermatch154
-			)
-     SELECT
-			@custid
-			,@username
-			,currency
-			,4 AS roleid
-			,@srecommend
-			,0 as mrecommend
-			,0 as recommend
-			,dangercust
-			,0 AS autosuspend
-			,reject
-			,@Credit AS Credit
-			,closed
-			,MatchLimit
-			,VirtualMultiplier
-			,maxpermatch
-			,maxpermatch2
-			,maxpermatch3
-			,maxpermatch5
-			,maxpermatch8
-			,maxpermatch10
-			,maxpermatch11
-			,maxpermatch12
-			,maxpermatch99
-			,Enabled           
-			,maxpermatch151
-			,maxpermatch201
-			,DisableHorseRacing
-			,DisableFinancial
-			,DisableCasino
-			,0 as SyncCasino           
-			,DisableOutright
-			,DisableOpenTote
-			,maxpermatch151_OT
-			,MaxPerMatch99MP
-			,DisableBingo
-			,DisableNumber
-			,maxpermatch161
-			,0 as SyncBingo
-			,MaxPerBall161
-			,MaxPerMatch151_AU
-			,MaxPerMatch152_UK
-			,MaxPerMatch152_AU
-			,MaxPerMatch153_AU
-			,Disable151_AU
-			,Disable152_UK
-			,Disable152_AU
-			,Disable153_AU
-			,MaxTransferP2P
-			,IsAutoResetP2P
-			,DisableP2P
-			,DisableFunP2P
-			,DisableLiveCasino
-			,0 as SyncLiveCasino
-			,DisableVirtualSports
-			,HideVirtualSports
-			,maxpermatch180
-			,maxpermatch181
-			,maxpermatch182
-			,maxpermatch184
-			,maxpermatch186
-			,isAutoResetLiveCasino
-			,MaxWinLiveCasino
-			,doubleCommLosing
-			,DisableCasinoBonus
-			,DisableHRFixedOdds
-			,maxpermatch154
-	FROM dbo.custinfo WITH(NOLOCK)
-	WHERE custid=@ExistingCustid  
-        
-	IF @@error <> 0
-	BEGIN 	
+	BEGIN TRY
+		-- insert CustInfo info
+		INSERT INTO dbo.custInfo
+				(custid
+				,username
+				,currency
+				,roleid
+				,srecommend
+				,mrecommend
+				,recommend
+				,dangercust
+				,autosuspend
+				,reject
+				,credit
+				,closed
+				,MatchLimit
+				,VirtualMultiplier
+				,maxpermatch
+				,maxpermatch2
+				,maxpermatch3
+				,maxpermatch5
+				,maxpermatch8
+				,maxpermatch10
+				,maxpermatch11
+				,maxpermatch12
+				,maxpermatch99
+				,Enabled           
+				,maxpermatch151
+				,maxpermatch201
+				,DisableHorseRacing
+				,DisableFinancial
+				,DisableCasino
+				,SyncCasino           
+				,DisableOutright
+				,DisableOpenTote
+				,maxpermatch151_OT
+				,MaxPerMatch99MP
+				,DisableBingo
+				,DisableNumber
+				,maxpermatch161
+				,SyncBingo
+				,MaxPerBall161
+				,MaxPerMatch151_AU
+				,MaxPerMatch152_UK
+				,MaxPerMatch152_AU
+				,MaxPerMatch153_AU
+				,Disable151_AU
+				,Disable152_UK
+				,Disable152_AU
+				,Disable153_AU
+				,MaxTransferP2P
+				,IsAutoResetP2P
+				,DisableP2P
+				,DisableFunP2P
+				,DisableLiveCasino
+				,SyncLiveCasino
+				,DisableVirtualSports
+				,HideVirtualSports
+				,maxpermatch180
+				,maxpermatch181
+				,maxpermatch182
+				,maxpermatch184
+				,maxpermatch186
+				,isAutoResetLiveCasino
+				,MaxWinLiveCasino
+				,DoubleCommLosing
+				,DisableCasinoBonus
+				,DisableHRFixedOdds
+				,maxpermatch154
+				)
+		 SELECT
+				@CustID
+				,@username
+				,currency
+				,4 AS roleid
+				,@srecommend
+				,0 as mrecommend
+				,0 as recommend
+				,dangercust
+				,0 AS autosuspend
+				,reject
+				,@Credit AS Credit
+				,closed
+				,MatchLimit
+				,VirtualMultiplier
+				,maxpermatch
+				,maxpermatch2
+				,maxpermatch3
+				,maxpermatch5
+				,maxpermatch8
+				,maxpermatch10
+				,maxpermatch11
+				,maxpermatch12
+				,maxpermatch99
+				,Enabled           
+				,maxpermatch151
+				,maxpermatch201
+				,DisableHorseRacing
+				,DisableFinancial
+				,DisableCasino
+				,0 as SyncCasino           
+				,DisableOutright
+				,DisableOpenTote
+				,maxpermatch151_OT
+				,MaxPerMatch99MP
+				,DisableBingo
+				,DisableNumber
+				,maxpermatch161
+				,0 as SyncBingo
+				,MaxPerBall161
+				,MaxPerMatch151_AU
+				,MaxPerMatch152_UK
+				,MaxPerMatch152_AU
+				,MaxPerMatch153_AU
+				,Disable151_AU
+				,Disable152_UK
+				,Disable152_AU
+				,Disable153_AU
+				,MaxTransferP2P
+				,IsAutoResetP2P
+				,DisableP2P
+				,DisableFunP2P
+				,DisableLiveCasino
+				,0 as SyncLiveCasino
+				,DisableVirtualSports
+				,HideVirtualSports
+				,maxpermatch180
+				,maxpermatch181
+				,maxpermatch182
+				,maxpermatch184
+				,maxpermatch186
+				,isAutoResetLiveCasino
+				,MaxWinLiveCasino
+				,doubleCommLosing
+				,DisableCasinoBonus
+				,DisableHRFixedOdds
+				,maxpermatch154
+		FROM dbo.custinfo WITH(NOLOCK)
+		WHERE custid=@ExistingCustid  
+	END TRY	
+	BEGIN CATCH	
 		SELECT @ErrMsg = case @Language 
 								when 'E' then 'Create customer failed. Please try again.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
@@ -341,24 +341,29 @@ BEGIN
 		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID  
 
 		RETURN
-	END
+	END CATCH
 	
+	BEGIN TRY
 	EXEC dbo.Acc_CustomerInfo_Execrep_02
 		@custid = @custid,
 		@ExistingCustid = @ExistingCustid,
 		@Language = @Language,
 		@ErrCode = @ErrCode output,
 		@ErrMsg = @ErrMsg output
-	
-	IF @ErrCode > 0 
-	BEGIN
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = case @Language 
+								when 'E' then 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  
 		
 		RETURN
-	END
+	END CATCH
 	/*
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
@@ -682,28 +687,19 @@ BEGIN
 	END
 	*/
 	
-	
-	INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
-		,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
-	)
-	VALUES(@custid,NULL,GETDATE(),1
-		,0,NULL,0,NULL)
-	
-	
-	IF @@ERROR<>0
-	BEGIN
-		--Error occur
+	BEGIN TRY
+		INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
+			,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
+		)
+		VALUES(@custid,NULL,GETDATE(),1
+			,0,NULL,0,NULL)
+	END TRY
+	BEGIN CATCH
 		SELECT @ErrMsg = case @Language 
 								when 'E' then 'Create customer failed. Please try again.'
-								when 'CS' then N'新增会员不成功，请重新尝试.'
-								when 'CT' then N'新增會員不成功,請重新再試.'
-								when 'TH' then N'การเพิ่มจำนวนลูกค้าใหม่ ไม่สำเร็จ กรุณาทำรายการอีกครั้ง.'
-								when 'J' then N'Create customer failed. Please try again.'
-								when 'ES' then N'Create customer failed. Please try again.'
-								when 'KO' then N'고객 생성에 실패했습니다. 다시 시도해 주시기 바랍니다.'
-								else N'Create customer failed. Please try again.'
-							end,
-			@ErrCode = 115
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
@@ -718,7 +714,7 @@ BEGIN
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
 		RETURN	
-	END
+	END CATCH
 	
 	SET @endRun=GETDATE()
 	SET @duration=datediff(millisecond,@startRun,@endRun)
