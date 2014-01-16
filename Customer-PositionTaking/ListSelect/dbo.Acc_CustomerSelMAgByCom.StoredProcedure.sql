@@ -31,6 +31,7 @@ Revisions:
 	- 20120927@Johnson: - get double comm losing status and upline double comm losing status
 						- output total records affect 
 	- 20131018@Kathy: Add HR Fixed Odds (154)[Redmine:#6505]
+	- 20140116@Elodie: Hot fix to get information of disabled customer
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -101,8 +102,8 @@ Select * From
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-		INNER JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
-		INNER JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
+		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
+		LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
 		INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
 		INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 	WHERE m.SRecommend < 100 and m.roleid=3
@@ -140,12 +141,9 @@ Select * From
 ) a
 WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMAgByCom] TO [vnteam]
-
-
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMAgByCom] TO [vnteam] AS [dbo]

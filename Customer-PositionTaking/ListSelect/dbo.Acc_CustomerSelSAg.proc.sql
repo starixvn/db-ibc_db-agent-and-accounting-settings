@@ -36,6 +36,7 @@ Revisions:
 	- 20130121@Dan: call to bodb_AGE for Acc_CustGroup
 	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 	- 20131029@Elodie: Put link server DBAGE [Redmine:#7261]
+	- 20140116@Elodie: Hot fix to get information of disabled customer
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -108,8 +109,8 @@ BEGIN
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-		INNER JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
-		INNER JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
+		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
+		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 		and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -202,8 +203,8 @@ BEGIN
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-		INNER JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
-		INNER JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
+		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
+		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE	
 			m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
@@ -237,12 +238,9 @@ BEGIN
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
 
-
-
-	
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSAg] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSAg] TO [vnteam] AS [dbo]
