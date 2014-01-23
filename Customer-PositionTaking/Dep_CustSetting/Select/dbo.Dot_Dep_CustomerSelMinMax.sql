@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMinMax]
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerSelMinMax_Cust]
 	@custid INT,
 	@MinBet MONEY OUTPUT,
 	@MaxBet MONEY OUTPUT,
@@ -27,6 +27,9 @@
 	@MinBetv99MP MONEY OUTPUT,
 	@MaxBetv99MP MONEY OUTPUT,
 	@MaxPerMatchv99MP MONEY OUTPUT,
+	@MinBetv154 MONEY OUTPUT,
+	@MaxBetv154 MONEY OUTPUT,
+	@MaxPerMatchv154 MONEY OUTPUT,
 	@MinBetv161 MONEY OUTPUT,
 	@MaxBetv161 MONEY OUTPUT,
 	@MaxPerMatchv161 MONEY OUTPUT,
@@ -36,11 +39,11 @@ AS
 /*
 Created: 20120321@Kiwi
 Task : Select customer minbet, maxbet, maxpermatch. 
-DB: DBTRANS.bodb02
+DB: DBTRANS/CustDB
 Original:Acc_CustomerSelMinMax
 
 Revisions:
-    
+    - 20140123@Elodie: retrieve bet setting for HR Fixed Odds(154) [Redmine:#10922]
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 */
@@ -83,6 +86,10 @@ SELECT @MinBetv99MP = isnull(MinBet, 0), @MaxBetv99MP = isnull(MaxBet, 0)
 FROM Dep_CustSetting WITH (NOLOCK)
 WHERE custid = @CustID AND bettype = 9 AND sporttype = 99
 
+SELECT @MinBetv154 = isnull(MinBet, 0), @MaxBetv154 = isnull(MaxBet, 0)
+FROM Dep_CustSetting WITH (NOLOCK)
+WHERE custid = @CustID AND bettype = 20 AND sporttype = 154
+
 SELECT @MinBetv161 = isnull(MinBet, 0), @MaxBetv161 = isnull(MaxBet, 0)
 FROM Dep_CustSetting3rd WITH (NOLOCK)
 WHERE custid = @CustID AND bettype = 81 AND sporttype = 161
@@ -97,10 +104,13 @@ SELECT @MaxperMatch = MaxPerMatch,
 		@MaxPerMatchv11 = MaxPerMatch11,
 		@MaxPerMatchv99 = MaxPerMatch99,
 		@MaxPerMatchv99MP = MaxPerMatch99MP,
+		@MaxPerMatchv154 = MaxPerMatch154,
 		@MaxPerMatchv161 = MaxPerMatch161,
 		@MaxPerBallv161 = MaxPerBall161
 FROM custinfo WITH (NOLOCK)
 WHERE custid = @CustID
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMinMax] TO [vnteam]
+GRANT ALTER ON [dbo].[Dot_Dep_CustomerSelMinMax_Cust] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerSelMinMax_Cust] TO [vnteam] AS [dbo]

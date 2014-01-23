@@ -1,12 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 1/2/2014 12:51:24 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 12/24/2013 12:25:33 PM ******/
-ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
+﻿ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
 	@Email nvarchar(50),
@@ -28,7 +20,7 @@ AS
 /*
 Created: 
 Task : Create a 12 bet player account for this Affiliate on IBC system
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original:
 
 Revisions:
@@ -125,6 +117,9 @@ Revisions:
 	- 20131216@Jerry: Update new maxbet and maxpermatch for Fun88'sbasketball
 	- 20131224@Johnson: Set maxpermatch for virtual sports from upline
 	- 20131230@Jim: hard-code to offer new Asiabet88 USD&EUR players to BA (group b )
+	- 20140109@Rafael: Update MaxBet/MaxperMatch for SB of Agent 12betUS$KR (10393717) and Agent 12betUS$KR05 (10842822) (maxbet: 3000 and maxpermatch: 10000)
+	- 20140123@Elodie: Add HR Fixed Odds sport [Redmine:#10922]
+
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -162,9 +157,11 @@ declare @currency int,
 	@discount decimal(9,8),	
 	@discountcs decimal(9,8),
 	@discount1x2 decimal(9,8),--1x2 agent comm	
+	@discountHRFixedOdds DECIMAL(9,8),
 	@playerdiscount decimal(9,8),
 	@playerdiscountcs decimal(9,8),
 	@playerdiscount1x2 decimal(9,8),--1x2 comm	
+	@playerdiscountHRFixedOdds DECIMAL(9,8),
 	--v151
 	@v151playerdiscount_31 decimal(9,8),--Tote comm
 	@v151playerdiscount_41 decimal(9,8),--Open Tote comm
@@ -261,7 +258,11 @@ declare @currency int,
 	@minbetv99MP money,
 	@maxbetv99MP money,
 	@maxpermatchv99MP money,
-		
+	
+	@minbetv154 money,	
+	@maxbetv154 money,	
+	@maxpermatchv154 money,		
+				
 	--Number game
 	@minbetv161 money,
 	@maxbetv161 money,
@@ -366,6 +367,8 @@ Declare @apositiontaking_1 smallmoney,
 	@v99apositiontaking_9 smallmoney,-- parlay mixed sports
 	@v99apositiontaking_20 smallmoney,
 	
+	@v154apositiontaking_20 smallmoney,	
+
 	--positionataking for number game
 	@v161apositiontaking_81 smallmoney,
 	@v161apositiontaking_83 smallmoney,
@@ -424,7 +427,7 @@ declare @transcode bigint,
 	
 	--Mix parlay mix sport
 	@MinMinBetv99MP money, @MaxMaxBetv99MP money, @MaxMaxPerMatchv99MP money,
-	
+	@MinMinBetv154 money, @MaxMaxBetv154 money, @MaxMaxPerMatchv154 money,
 	--Number game
 	@MinMinBetv161 money, @MaxMaxBetv161 money, @MaxMaxPerMatchv161 money, @MaxMaxPerBallv161 money,
 	--virtual soccer
@@ -516,6 +519,8 @@ declare @transcode bigint,
 	@v99mpositiontaking_9 smallmoney,-- mix parlay mixed sports
 	@v99mpositiontaking_20 smallmoney,
 	
+	@v154mpositiontaking_20 smallmoney,
+
 	--for number game
 	@v161mpositiontaking_81 smallmoney,
 	@v161mpositiontaking_83 smallmoney,
@@ -614,6 +619,8 @@ declare @transcode bigint,
 	@v99spositiontaking_9 smallmoney,-- mix parlay mixed sports
 	@v99spositiontaking_20 smallmoney,
 	
+	@v154spositiontaking_20 smallmoney,
+
 	@v161spositiontaking_81 smallmoney,
 	@v161spositiontaking_83 smallmoney,
 	@v161spositiontaking_86 smallmoney,
@@ -646,9 +653,13 @@ declare @transcode bigint,
 	@adiscount decimal(9,8),
 	@adiscountcs decimal(9,8),
 	@adiscount1x2 decimal(9,8),--1x2 master comm	
+	@adiscountHRFixedOdds DECIMAL(9,8),
+
 	@sdiscount decimal(9,8),
 	@sdiscountcs decimal(9,8),
 	@sdiscount1x2 decimal(9,8),--1x2 super comm
+	@sdiscountHRFixedOdds DECIMAL(9,8),
+
 	@maxdiscount decimal(9,8),
 	@maxdiscountcs decimal(9,8),
 
@@ -705,6 +716,8 @@ declare @transcode bigint,
 	@DisableP2P BIT,-- P2P status
 	@DisableFUNP2P BIT,
 	
+	@DisableHRFixedOdds BIT,
+
 	@suspendedFlag varchar(6),
 	@suspended bit,
 
@@ -752,6 +765,7 @@ select
 	@maxperballv161 = maxperball161,
 	@maxpermatchv99MP = maxpermatch99mp, -- mix parlay mix sports
 	@maxpermatchv99 = maxpermatch99,
+	@maxpermatchv154 = maxpermatch154,
 	--Open Tote
 	@maxpermatchv151_41 = maxpermatch151_OT,
 	@maxpermatchv151_51 = maxpermatch151_AU,
@@ -781,6 +795,7 @@ select
 	@DisableFinancial	= DisableFinancial,
 	@DisableP2P			= isnull(DisableP2P,0),
 	@DisableFUNP2P		= ISNULL(DisableFUNP2P,0),
+	@DisableHRFixedOdds = ISNULL(DisableHRFixedOdds,0),
 	--@DisableBingo		= DisableBingo,
 	@DisableNumber		= ISNULL(DisableNumber,0),
 	@Disable180_1201	= ISNULL(DisableVirtualSports,0),
@@ -836,12 +851,15 @@ SELECT	 @minbet		= MAX(CASE WHEN sporttype = 1 AND bettype = 1 THEN minbet ELSE 
 		,@maxbetv99		= MAX(CASE WHEN sporttype = 99 AND bettype =1 THEN maxbet ELSE 0 END)
 		,@minbetv99MP	= MAX(CASE WHEN sporttype = 99 AND bettype =9 THEN minbet ELSE 0 END)
 		,@maxbetv99MP	= MAX(CASE WHEN sporttype = 99 AND bettype =9 THEN maxbet ELSE 0 END)
+		,@minbetv154	= MAX(CASE WHEN sporttype = 154 AND bettype=20 THEN minbet ELSE 0 END)
+		,@maxbetv154	= MAX(CASE WHEN sporttype = 154 AND bettype=20 THEN maxbet ELSE 0 END)
 		,@discount		= MAX(CASE WHEN sporttype = 1 AND bettype = 1 THEN discount ELSE 0 END)
 		,@discountcs	= MAX(CASE WHEN sporttype = 1 AND bettype = 4 THEN discount ELSE 0 END)
 		,@discount1x2	= MAX(CASE WHEN sporttype = 1 AND bettype = 5 THEN discount ELSE 0 END)
+		,@discountHRFixedOdds	= MAX(CASE WHEN sporttype = 154 AND bettype = 20 THEN discount ELSE 0 END)
 FROM Dep_Custsetting WITH(NOLOCK)
 WHERE custid = @recommend AND islive=0
-	AND bettype IN (1,4,5,9) AND sporttype IN (1,2,3,5,8,10,11,99)
+	AND bettype IN (1,4,5,9,20) AND sporttype IN (1,2,3,5,8,10,11,99,154)
 
 
 SELECT	 @minbetv151		= MAX(CASE WHEN sporttype = 151 AND bettype = 31 THEN minbet ELSE 0 END)
@@ -918,7 +936,7 @@ BEGIN
 	END
 	IF (@Currency = 3) -- USD
 	BEGIN
-		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 1000, @vMaxpermatch = 3000 -- 12BETUS$KR, 12betUS$KR05
+		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 3000, @vMaxpermatch = 10000 -- 12BETUS$KR, 12betUS$KR05
 		ELSE SELECT @vMaxbet = 200, @vMaxpermatch = 500
 	END		
 	IF @Currency = 9 -- AUD   
@@ -1021,6 +1039,7 @@ BEGIN
 		--@maxpermatchv151 = @vMaxpermatch
 		@maxpermatchv99 = @vMaxpermatch,
 		@maxpermatchv99MP = @vMaxpermatch, --mix parlay mix sports
+		@maxpermatchv154 = @vMaxpermatch,
 		--@maxpermatchv161 = @vMaxpermatch, -- number game
 		@maxbet = @vMaxbet,
 		@maxbetv2 = @vMaxbet,
@@ -1031,7 +1050,8 @@ BEGIN
 		@maxbetv11 = @vMaxbet,
 		--@maxbetv151 = @vMaxbet
 		@maxbetv99 = @vMaxbet,
-		@maxbetv99MP = @vMaxbet --max bet for mix parlay mix sports
+		@maxbetv99MP = @vMaxbet, --max bet for mix parlay mix sports
+		@maxbetv154 = @vMaxbet
 		--,@maxbetv161 = @vMaxbet -- max bet for number game
 
 		
@@ -1053,6 +1073,7 @@ select
 	@playerdiscount = 0,
 	@playerdiscountcs = 0,
 	@playerdiscount1x2 = 0,
+	@playerdiscountHRFixedOdds = 0,
 	@v161playerdiscount= 0, -- for number game
 
 	--v151
@@ -1182,8 +1203,12 @@ SELECT	 @apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 1 AND isL
 		,@v99mpositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 99 AND isLive = 0 THEN mpositiontaking ELSE 0 END)  
 		,@v99mpositiontaking_9 = MAX(CASE WHEN bettype = 9 AND sporttype = 99 AND isLive = 0 THEN mpositiontaking ELSE 0 END)  
 		,@v99mpositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 99 AND isLive = 0 THEN mpositiontaking ELSE 0 END)  
+
+		,@v154apositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 154 AND isLive = 0 THEN apositiontaking ELSE 0 END)  		
+		,@v154mpositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 154 AND isLive = 0 THEN mpositiontaking ELSE 0 END)  
+
 FROM Dep_Custsetting WITH(NOLOCK)
-WHERE custid = @recommend and bettype IN (1,2,3,4,5,6,7,8,9,10,20) and sporttype IN (1,2,3,5,8,10,11,99)
+WHERE custid = @recommend and bettype IN (1,2,3,4,5,6,7,8,9,10,20) and sporttype IN (1,2,3,5,8,10,11,99,154)
 
 
 SELECT	 @v151apositiontaking_31 = MAX(CASE WHEN bettype = 31 AND sporttype = 151 THEN apositiontaking ELSE 0 END)  
@@ -1341,6 +1366,8 @@ select @v99spositiontaking_3 = 0
 select @v99spositiontaking_9 = 0
 select @v99spositiontaking_20 = 0
 
+select @v154spositiontaking_20 = 0
+
 select @v161spositiontaking_81 = 0
 select @v161spositiontaking_83 = 0
 select @v161spositiontaking_88 = 0
@@ -1361,8 +1388,9 @@ select @v186spositiontaking_1220 = 0
 SELECT	 @adiscount		= MAX(CASE WHEN bettype = 1 THEN adiscount ELSE 0 END)
 		,@adiscountcs	= MAX(CASE WHEN bettype = 4 THEN adiscount ELSE 0 END)
 		,@adiscount1x2	= MAX(CASE WHEN bettype = 5 THEN adiscount ELSE 0 END)
+		,@adiscountHRFixedOdds = MAX(CASE WHEN bettype = 20 AND sporttype = 154 THEN adiscount ELSE 0 END)
 FROM Dep_CustSetting WITH(NOLOCK)
-WHERE custid = @mrecommend AND sporttype = 1 AND bettype IN (1,4,5) AND isLive = 0
+WHERE custid = @mrecommend AND sporttype in (1,154) AND bettype IN (1,4,5,20) AND isLive = 0
 
 
 
@@ -1392,8 +1420,9 @@ select @v162adiscount_1101 = adiscount from custsettinggame with (nolock) where 
 SELECT	 @sdiscount		= MAX(CASE WHEN bettype = 1 THEN sdiscount ELSE 0 END)
 		,@sdiscountcs	= MAX(CASE WHEN bettype = 4 THEN sdiscount ELSE 0 END)
 		,@sdiscount1x2	= MAX(CASE WHEN bettype = 5 THEN sdiscount ELSE 0 END)
+		,@sdiscountHRFixedOdds = MAX(CASE WHEN bettype = 20 AND sporttype = 154 THEN sdiscount ELSE 0 END)
 FROM Dep_CustSetting WITH(NOLOCK)
-WHERE custid = @srecommend AND sporttype = 1 AND bettype IN (1,4,5) AND isLive = 0
+WHERE custid = @srecommend AND sporttype IN (1,154) AND bettype IN (1,4,5,20) AND isLive = 0
 
 SELECT 
 		 @v151sdiscount_31 = MAX(CASE WHEN sporttype = 151 AND bettype = 31 THEN sdiscount ELSE 0 END)
@@ -1422,6 +1451,7 @@ select
 	@playerdiscountcs = case when @playerdiscountcs > @adiscountcs then @adiscountcs else @playerdiscountcs end,
 	--1x2
 	@playerdiscount1x2 = case when @playerdiscount1x2 > @adiscount1x2 then @adiscount1x2 else @playerdiscount1x2 end,
+	@playerdiscountHRFixedOdds = case when @playerdiscountHRFixedOdds > @adiscountHRFixedOdds then @adiscountHRFixedOdds else @playerdiscountHRFixedOdds end,
 	--v151
 	@v151playerdiscount_31 = case when @v151playerdiscount_31 > @v151adiscount_31 then @v151adiscount_31 else @v151playerdiscount_31 end,
 	@v151playerdiscount_41 = case when @v151playerdiscount_41 > @v151adiscount_41 then @v151adiscount_41 else @v151playerdiscount_41 end,
@@ -1465,9 +1495,11 @@ SELECT	 @MinMinBet		= ISNULL(MAX(CASE WHEN sporttype = 1 AND bettype = 1 AND min
 		,@MaxMaxBetv99	= ISNULL(MIN(CASE WHEN sporttype = 99 AND bettype = 1 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)
 		,@MinMinBetv99MP= ISNULL(MAX(CASE WHEN sporttype = 99 AND bettype = 9 AND minbet <> 0 THEN minbet ELSE NULL END),0)
 		,@MaxMaxBetv99MP= ISNULL(MIN(CASE WHEN sporttype = 99 AND bettype = 9 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)
+		,@MinMinBetv154	= ISNULL(MAX(CASE WHEN sporttype = 154 AND bettype = 20 AND minbet <> 0 THEN minbet ELSE NULL END),0)
+		,@MaxMaxBetv154	= ISNULL(MIN(CASE WHEN sporttype = 154 AND bettype = 20 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)
 FROM Dep_Custsetting cs WITH(NOLOCK)
 	INNER JOIN custinfo ci WITH(NOLOCK) ON (cs.custid = ci.custid or cs.custid = ci.mrecommend or cs.custid = ci.srecommend)
-WHERE ci.custid = @recommend AND cs.bettype IN (1,9) AND cs.sporttype IN (1,2,3,5,8,10,11,99) and cs.islive = 0
+WHERE ci.custid = @recommend AND cs.bettype IN (1,9,20) AND cs.sporttype IN (1,2,3,5,8,10,11,99,154) and cs.islive = 0
 
 
 
@@ -1544,6 +1576,7 @@ Select
 	@MaxMaxPerMatchv8 = IsNull(Min(case when cs.MaxPerMatch8 = 0 then NULL else cs.MaxPerMatch8 end),0),
 	@MaxMaxPerMatchv10 = IsNull(Min(case when cs.MaxPerMatch10 = 0 then NULL else cs.MaxPerMatch10 end),0),
 	@MaxMaxPerMatchv11 = IsNull(Min(case when cs.MaxPerMatch11 = 0 then NULL else cs.MaxPerMatch11 end),0),
+	@MaxMaxPerMatchv154 = IsNull(Min(case when cs.MaxPerMatch154 = 0 then NULL else cs.MaxPerMatch154 end),0),
 	--v151
 	@MaxMaxPerMatchv151 = IsNull(Min(case when cs.MaxPerMatch151 = 0 then NULL else cs.MaxPerMatch151 end),0),
 	--Open Tote
@@ -1657,6 +1690,7 @@ from bodb02.dbo.sports with (NOLOCK) inner join
 	union all	select 8 as sporttype, @MinBetv8 as MinBet, @MinMinBetv8 as MinMinBet
 	union all	select 10 as sporttype, @MinBetv10 as MinBet, @MinMinBetv10 as MinMinBet
 	union all	select 11 as sporttype, @MinBetv11 as MinBet, @MinMinBetv11 as MinMinBet	
+	union all	select 154 as sporttype, @MinBetv154 as MinBet, @MinMinBetv154 as MinMinBet	
 	--v151
 	union all	select 151 as sporttype, @MinBetv151 as MinBet, @MinMinBetv151 as MinMinBet
 	--Open Tote
@@ -1699,6 +1733,7 @@ from bodb02.dbo.sports with (NOLOCK) inner join
 	union all	select 8 as sporttype, @MaxBetv8 as MaxBet, @MaxMaxBetv8 as MaxMaxBet
 	union all	select 10 as sporttype, @MaxBetv10 as MaxBet, @MaxMaxBetv10 as MaxMaxBet
 	union all	select 11 as sporttype, @MaxBetv11 as MaxBet, @MaxMaxBetv11 as MaxMaxBet	
+	union all	select 154 as sporttype, @MaxBetv154 as MaxBet, @MaxMaxBetv154 as MaxMaxBet	
 	--v151
 	union all	select 151 as sporttype, @MaxBetv151 as MaxBet, @MaxMaxBetv151 as MaxMaxBet	
 	--Open Tote
@@ -1712,8 +1747,6 @@ from bodb02.dbo.sports with (NOLOCK) inner join
 	--v153_51
 	union all	select 153 as sporttype, @MaxBetv153_51 as MaxBet, @MaxMaxBetv153_51 as MaxMaxBet	
 	
-	
-
 	union all	select 99 as sporttype, @MaxBetv99 as MaxBet, @MaxMaxBetv99 as MaxMaxBet	 
 	
 	--parlay mixed sports
@@ -1742,6 +1775,7 @@ from bodb02.dbo.sports with (NOLOCK) inner join
 	union all	select 8 as sporttype, @MaxPerMatchv8 as MaxPerMatch, @MaxMaxPerMatchv8 as MaxMaxPerMatch
 	union all	select 10 as sporttype, @MaxPerMatchv10 as MaxPerMatch, @MaxMaxPerMatchv10 as MaxMaxPerMatch
 	union all	select 11 as sporttype, @MaxPerMatchv11 as MaxPerMatch, @MaxMaxPerMatchv11 as MaxMaxPerMatch
+	union all	select 154 as sporttype, @MaxPerMatchv154 as MaxPerMatch, @MaxMaxPerMatchv154 as MaxMaxPerMatch
 	--v151
 	union all	select 151 as sporttype, @MaxPerMatchv151_31 as MaxPerMatch, @MaxMaxPerMatchv151 as MaxMaxPerMatch	
 	--Open Tote
@@ -1899,7 +1933,8 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
 	@MaxWinLiveCasino = @MaxWinLiveCasino,
 	@DoubleCommLosing = 0, ----@DoubleCommLosing, 20130111@Lukas: hardcode
-	@DisableCasinoBonus = @DisableCasinoBonus,			
+	@DisableCasinoBonus = @DisableCasinoBonus,		
+	@DisableHRFixedOdds = @DisableHRFixedOdds,
 	@MaxPerMatch = @MaxPerMatch,
 	@MaxPerMatchv2 = @MaxPerMatchv2,
 	@MaxPerMatchv3 = @MaxPerMatchv3,
@@ -1919,6 +1954,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	
 	@MaxPerMatchv99 = @MaxPerMatchv99,
 	@MaxPerMatchv99MP = @MaxPerMatchv99MP,
+	@MaxPerMatchv154 = @MaxPerMatchv154,
 	@MaxPerMatchv161 = @MaxPerMatchv161,
 	@MaxPerBallv161 = @MaxPerBallv161,
 	--VS
@@ -2034,6 +2070,8 @@ UNION ALL
 select @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, @v99spositiontaking_9, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, @MinBetv99MP, @MaxBetv99MP, 0
 UNION ALL
 select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs,  @MinBetv99, @MaxBetv99, 0
+UNION ALL
+select @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, @playerdiscountHRFixedOdds, @discountHRFixedOdds, @adiscountHRFixedOdds, @sdiscountHRFixedOdds, @MinBetv154, @MaxBetv154, 0
 
 --Insert into custsetting3rd
 
@@ -2308,7 +2346,7 @@ BEGIN
 	
 	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
 	BEGIN
-				EXEC [Lrf_CustomerUpdMemberBAStatus]
+								EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=7,--Dela
 			@CustID = @CustID,
 			@ModifyBy = 1, --dbaThien
@@ -2319,21 +2357,25 @@ BEGIN
 	END
 END
 --For Asiabet88, turn USD&EUR players   to BA : 20131230@Jim
-if @site = 'DELA'
+
+IF (@site = 'Asiabet88')
 BEGIN
-	SET @ErrMsg=''
-	SET @ErrCode=0
-	
-	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 2) = 1
-	BEGIN
-			EXEC [Lrf_CustomerUpdMemberBAStatus]
-			@LicenseeID=2,--Asiabet88
-			@CustID = @CustID,
-			@ModifyBy = 3, --pgmviet
-			@IsBA = 1,
-			@IP = '',
-			@ErrCode = @ErrCode OUTPUT,
-			@ErrMsg = @ErrMsg OUTPUT
+	IF EXISTS (SELECT 1 FROM dbo.Customer WITH (NOLOCK) WHERE CustID=@CustID AND Currency IN (3,6))
+	BEGIN 
+		SET @ErrMsg=''
+		SET @ErrCode=0
+		
+		IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 2) = 1
+		BEGIN
+								EXEC [Lrf_CustomerUpdMemberBAStatus]
+				@LicenseeID=2,--Asiabet88
+				@CustID = @CustID,
+				@ModifyBy = 3, --pgmviet
+				@IsBA = 1,
+				@IP = '',
+				@ErrCode = @ErrCode OUTPUT,
+				@ErrMsg = @ErrMsg OUTPUT
+		END
 	END
 END
 
@@ -2347,7 +2389,7 @@ BEGIN
 	
 	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 10) = 1
 	BEGIN
-				EXEC [Lrf_CustomerUpdMemberBAStatus]
+								EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=10,--Zzun88
 			@CustID = @CustID,
 			@ModifyBy = 1, --dbaThien
@@ -2404,7 +2446,7 @@ set @duration  = datediff (millisecond,@startRun,@endRun)
 
 Declare @LogSPData nvarchar(4000)
 
-Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag_Cust custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1))) + '" ' +
 'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1))) + '" ' +
 'creator="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" ' +
@@ -2439,7 +2481,7 @@ BEGIN CATCH
 END CATCH
 
 --Write commission log
-Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag_Cust custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'discount="'+ coalesce(cast(@discount as varchar(50)),space(1)) + '" />'
 BEGIN TRY
 	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
@@ -2459,7 +2501,7 @@ BEGIN CATCH
 END CATCH
 	
 --Write betsetting log
-Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag_Cust custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'MinBet="'+ coalesce(cast(@MinBet as varchar(50)),space(1)) + '" ' +
 'MaxBet="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
 'MaxPerMatch="'+ coalesce(cast(@MaxPerMatch as varchar(50)),space(1)) + '" />'
@@ -2481,7 +2523,7 @@ BEGIN CATCH
 END CATCH
 	
 --Write PT log
-Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag_Cust custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'AgentPT="'+ coalesce(cast(@apositiontaking_1 as varchar(50)),space(1)) + '" />'
 BEGIN TRY
 	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
@@ -2501,9 +2543,10 @@ BEGIN CATCH
 END CATCH
 
 --Write Statuses log	
-Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+Select @LogSPData = '<Dot_Dep_CustomerInsMember_Ag_Cust custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'suspended="'+ coalesce(cast(@suspended as varchar(50)),space(1)) + '" ' +
 'DisableHorseRacing="'+ coalesce(cast(@Disable151_31 as varchar(1)),space(1)) + '" ' +
+'DisableHRFixedOdds="'+ coalesce(cast(@DisableHRFixedOdds as varchar(1)),space(1)) + '" ' +
 'DisableOpenTote="'+ coalesce(cast(@Disable151_41 as varchar(1)),space(1)) + '" ' +
 'Disable151_51="'+ coalesce(cast(@Disable151_51 as varchar(1)),space(1)) + '" ' +
 'Disable152_41="'+ coalesce(cast(@Disable152_41 as varchar(1)),space(1)) + '" ' +
@@ -2529,6 +2572,10 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
 GO
