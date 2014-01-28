@@ -354,7 +354,7 @@ Select @maxpos = 0.9, @maxdownlinepos = 0
 ---- Thien@20131026: Checking total downlines before UPDATEs 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 	@roleid=3,
-	@isExecRep=0,
+	@isExecRep=1,
 	@isUpdatePT = 1,
 	@Sporttype = 1,
 	@Language='E',
