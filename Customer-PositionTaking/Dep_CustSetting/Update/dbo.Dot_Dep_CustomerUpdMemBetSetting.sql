@@ -11,7 +11,7 @@
 	@UpdateMinMaxBetv99 BIT = 1,
 
 	@UpdateMinMaxBetv99MP BIT = 0,
-	@UpdateMinMaxBetv154 BIT = 1,
+	@UpdateMinMaxBetv154 BIT = 0,
 			
 	@UpdateMinMaxBetv201 BIT = 0,
 	@UpdateMinMaxBetv151 BIT = 0,
