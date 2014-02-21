@@ -1,4 +1,4 @@
-﻿ALTER  PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag]
 	@custid int,
 	@userid int,
 
@@ -66,6 +66,7 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20131014@Francis: Support updating new virtual sports with settings
     - 20131211@Francis: Fix bug for updating position taking for Virtual Sports at Member level (only apostiontaking column will be affected)
+	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old member
 
 Param's Explanation:
 • @ErrCode:
@@ -174,12 +175,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v180MinBet,
-	maxbet = @v180MaxBet
-WHERE custid = @custid
-AND sporttype = 180
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 180 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v180MinBet,
+		maxbet = @v180MaxBet,
+		apositiontaking = @v180aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND	sporttype = 180
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1201, 
+			180, 
+			@v180aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v180MinBet, 
+			@v180MaxBet,
+			0)
+END
+
 if (@@error <> 0)
 begin
 	
@@ -189,28 +211,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v180aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 180
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
-
-
 
 
 ------Virtual Horse Racing
@@ -271,12 +271,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v181MinBet,
-	maxbet = @v181MaxBet
-WHERE custid = @custid
-AND sporttype = 181
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 181 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v181MinBet,
+		maxbet = @v181MaxBet,
+		apositiontaking = @v181aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 181
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			181, 
+			@v181aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v181MinBet, 
+			@v181MaxBet,
+			0)
+END
+
 if (@@error <> 0)
 begin
 	
@@ -286,27 +307,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v181aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 181
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
-
 
 ------Virtual Greyhounds
 SELECT @v182apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WHERE cs3.custid = @recommend
@@ -366,32 +366,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v182MinBet,
-	maxbet = @v182MaxBet
-WHERE custid = @custid
-AND sporttype = 182
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 182 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v182MinBet,
+		maxbet = @v182MaxBet,
+		apositiontaking = @v182aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 182
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			182, 
+			@v182aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v182MinBet, 
+			@v182MaxBet,
+			0)
 END
 
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v182aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 182
 if (@@error <> 0)
 begin
 	
@@ -461,12 +462,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v183MinBet,
-	maxbet = @v183MaxBet
-WHERE custid = @custid
-AND sporttype = 183
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 183 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v183MinBet,
+		maxbet = @v183MaxBet,
+		apositiontaking = @v183aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 183
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			183, 
+			@v183aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v183MinBet, 
+			@v183MaxBet,
+			0)
+END
+
 if (@@error <> 0)
 begin
 	
@@ -476,27 +498,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v183aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 183
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
-
 
 ------Virtual Motor Racing
 SELECT @v184apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WHERE cs3.custid = @recommend
@@ -556,32 +557,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v184MinBet,
-	maxbet = @v184MaxBet
-WHERE custid = @custid
-AND sporttype = 184
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 184 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v184MinBet,
+		maxbet = @v184MaxBet,
+		apositiontaking = @v184aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 184
 
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v184aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 184
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			184, 
+			@v184aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v184MinBet, 
+			@v184MaxBet,
+			0)
+END
 if (@@error <> 0)
 begin
 	
@@ -652,12 +654,34 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v185MinBet,
-	maxbet = @v185MaxBet
-WHERE custid = @custid
-AND sporttype = 185
+
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 185 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v185MinBet,
+		maxbet = @v185MaxBet,
+		apositiontaking = @v185aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 185
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			185, 
+			@v185aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v185MinBet, 
+			@v185MaxBet,
+			0)
+END
+
 if (@@error <> 0)
 begin
 	
@@ -667,27 +691,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v185aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 185
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
-
 
 ------Virtual Tennis
 SELECT @v186apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WHERE cs3.custid = @recommend
@@ -747,12 +750,33 @@ END
 /*******************************
 * Update Bet Setting
 *******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	minbet = @v186MinBet,
-	maxbet = @v186MaxBet
-WHERE custid = @custid
-AND sporttype = 186
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 186 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
+	SET
+		minbet = @v186MinBet,
+		maxbet = @v186MaxBet,
+		apositiontaking = @v186aPositionTaking,
+		mpositiontaking = 0,
+		spositiontaking = 0
+	WHERE custid = @custid
+	AND sporttype = 186
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1220, 
+			186, 
+			@v186aPositionTaking, 
+			0, 
+			0, 
+			0, 0, 0, 0, 
+			@v186MinBet, 
+			@v186MaxBet,
+			0)
+END
+
 if (@@error <> 0)
 begin
 	
@@ -763,29 +787,19 @@ begin
 	return
 END
 
-/*******************************
-* Update Position Taking
-*******************************/
-UPDATE Dep_CustSetting3rd WITH(ROWLOCK,UPDLOCK)
-SET
-	apositiontaking = @v186aPositionTaking,
-	mpositiontaking = 0,
-	spositiontaking = 0
-WHERE custid = @custid
-AND sporttype = 186
-if (@@error <> 0)
-begin
-	
-	Select @ErrMsg = case @Language 
-						when 'E' then 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end	, @ErrCode = 103 
-	return
-END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [bodbAdminNet] AS [dbo]
+
+SET QUOTED_IDENTIFIER OFF 
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [bodbExtAccNet] AS [dbo]
+SET ANSI_NULLS ON 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [vnteam] AS [dbo]
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [bodbExtAccNet]
+GO 

@@ -65,7 +65,8 @@ DB: DBTrans.bodb02
 Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20131014@Francis: Support updating new virtual sports with settings
-	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettype by link database)	
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettype by link database)
+	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old super
     
 Param's Explanation:
 • @ErrCode:
@@ -213,15 +214,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v180MinBet,
-	MaxBet = @v180MaxBet,
-	spositiontaking = @v180sPositionTaking,
-	mpositiontaking = @v180mPositionTaking,
-	apositiontaking = @v180aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 180
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 180 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v180MinBet,
+		MaxBet = @v180MaxBet,
+		spositiontaking = @v180sPositionTaking,
+		mpositiontaking = @v180mPositionTaking,
+		apositiontaking = @v180aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 180
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1201, 
+			180, 
+			@v180aPositionTaking, 
+			@v180mPositionTaking, 
+			@v180sPositionTaking, 
+			0, 0, 0, 0, 
+			@v180MinBet, 
+			@v180MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -359,15 +377,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v181MinBet,
-	MaxBet = @v181MaxBet,
-	spositiontaking = @v181sPositionTaking,
-	mpositiontaking = @v181mPositionTaking,
-	apositiontaking = @v181aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 181
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 181 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v181MinBet,
+		MaxBet = @v181MaxBet,
+		spositiontaking = @v181sPositionTaking,
+		mpositiontaking = @v181mPositionTaking,
+		apositiontaking = @v181aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 181
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			181, 
+			@v181aPositionTaking, 
+			@v181mPositionTaking, 
+			@v181sPositionTaking, 
+			0, 0, 0, 0, 
+			@v181MinBet, 
+			@v181MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -504,15 +539,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v182MinBet,
-	MaxBet = @v182MaxBet,
-	spositiontaking = @v182sPositionTaking,
-	mpositiontaking = @v182mPositionTaking,
-	apositiontaking = @v182aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 182
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 182 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v182MinBet,
+		MaxBet = @v182MaxBet,
+		spositiontaking = @v182sPositionTaking,
+		mpositiontaking = @v182mPositionTaking,
+		apositiontaking = @v182aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 182
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			182, 
+			@v182aPositionTaking, 
+			@v182mPositionTaking, 
+			@v182sPositionTaking, 
+			0, 0, 0, 0, 
+			@v182MinBet, 
+			@v182MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -651,15 +703,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v183MinBet,
-	MaxBet = @v183MaxBet,
-	spositiontaking = @v183sPositionTaking,
-	mpositiontaking = @v183mPositionTaking,
-	apositiontaking = @v183aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 183
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 183 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v183MinBet,
+		MaxBet = @v183MaxBet,
+		spositiontaking = @v183sPositionTaking,
+		mpositiontaking = @v183mPositionTaking,
+		apositiontaking = @v183aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 183
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			183, 
+			@v183aPositionTaking, 
+			@v183mPositionTaking, 
+			@v183sPositionTaking, 
+			0, 0, 0, 0, 
+			@v183MinBet, 
+			@v183MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -796,15 +865,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v184MinBet,
-	MaxBet = @v184MaxBet,
-	spositiontaking = @v184sPositionTaking,
-	mpositiontaking = @v184mPositionTaking,
-	apositiontaking = @v184aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 184
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 184 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v184MinBet,
+		MaxBet = @v184MaxBet,
+		spositiontaking = @v184sPositionTaking,
+		mpositiontaking = @v184mPositionTaking,
+		apositiontaking = @v184aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 184
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			184, 
+			@v184aPositionTaking, 
+			@v184mPositionTaking, 
+			@v184sPositionTaking, 
+			0, 0, 0, 0, 
+			@v184MinBet, 
+			@v184MaxBet, 
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -943,15 +1029,32 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v185MinBet,
-	MaxBet = @v185MaxBet,
-	spositiontaking = @v185sPositionTaking,
-	mpositiontaking = @v185mPositionTaking,
-	apositiontaking = @v185aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 185
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 185 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v185MinBet,
+		MaxBet = @v185MaxBet,
+		spositiontaking = @v185sPositionTaking,
+		mpositiontaking = @v185mPositionTaking,
+		apositiontaking = @v185aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 185
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1231, 
+			185, 
+			@v185aPositionTaking, 
+			@v185mPositionTaking, 
+			@v185sPositionTaking, 
+			0, 0, 0, 0, 
+			@v185MinBet, 
+			@v185MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -1088,15 +1191,33 @@ END
 /*****************************
 * Update Dep_Cussetting3rd
 *****************************/
-UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
-SET	
-	MinBet = @v186MinBet,
-	MaxBet = @v186MaxBet,
-	spositiontaking = @v186sPositionTaking,
-	mpositiontaking = @v186mPositionTaking,
-	apositiontaking = @v186aPositionTaking
-WHERE custid=@CustID
-	AND sporttype = 186
+IF EXISTS (SELECT 1 FROM Dep_CustSetting3rd WITH (NOLOCK) WHERE sporttype = 186 AND custid = @CustID)
+BEGIN
+	UPDATE Dep_CustSetting3rd WITH (ROWLOCK, UPDLOCK)
+	SET	
+		MinBet = @v186MinBet,
+		MaxBet = @v186MaxBet,
+		spositiontaking = @v186sPositionTaking,
+		mpositiontaking = @v186mPositionTaking,
+		apositiontaking = @v186aPositionTaking
+	WHERE custid=@CustID
+		AND sporttype = 186
+
+END
+ELSE
+BEGIN
+	INSERT INTO Dep_CustSetting3rd (custId, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, Minbet, Maxbet, islive)
+	VALUES (@CustID, 
+			1220, 
+			186, 
+			@v186aPositionTaking, 
+			@v186mPositionTaking, 
+			@v186sPositionTaking, 
+			0, 0, 0, 0, 
+			@v186MinBet, 
+			@v186MaxBet,
+			0)
+END
 
 if (@@error <> 0)
 begin
@@ -1108,11 +1229,18 @@ begin
 	return
 END
 
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [vnteam] AS [dbo]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbExtAccNet]
+GO 
