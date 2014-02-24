@@ -31,7 +31,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_CustomerSelMaxExposure_Ag by link database)
-	
+	- 20140224@Lukas: remove maxExposure
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -125,6 +125,7 @@ BEGIN
 
 
 	SELECT  @TotalUse = ISNULL(SUM(winlost-actual_stake+playercomm), 0) FROM bodb02.dbo.bettrans WITH(NOLOCK) WHERE custid=@custid
+	/*
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=1, @MaxExposure = @MaxExposure OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=2, @MaxExposure = @MaxExposurev2 OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=3, @MaxExposure = @MaxExposurev3 OUTPUT
@@ -136,15 +137,25 @@ BEGIN
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=151, @MaxExposure = @MaxExposurev151 OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=161, @MaxExposure = @MaxExposurev161 OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=99, @MaxExposure = @MaxExposurev99 OUTPUT
-	
-	IF @TotalUse+@NewCredit<0 OR @NewCredit + @Credit_AllOtherMember>@AgentCredit 
+	*/
+	IF @TotalUse+@NewCredit<0
 	BEGIN
 		SELECT @ErrMsg =  @UserName + ': ' +
 						CASE @Language 
-							WHEN 'E' THEN 'Credit update not successful, You have exceeded your agent credit.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](70021,@Language)
+							WHEN 'E' THEN 'Cannot reduce credit. Member outstanding exceeded.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](70006,@Language)
 						END	, @ErrCode = 101		
-	return
+		RETURN 
+	END
+
+	IF @NewCredit + @Credit_AllOtherMember>@AgentCredit 
+	BEGIN
+		SELECT @ErrMsg =  @UserName + ': ' +
+						CASE @Language 
+							WHEN 'E' THEN 'Sorry, increase credit unsuccessfully. You have exceeded your agent credit.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](70003,@Language)
+						END	, @ErrCode = 101		
+		RETURN
 	END
 
 	IF @NewCredit > @Credit_Mem_Max--Vinh@20081201: Add check max credit of agent when update credit on member
@@ -157,7 +168,7 @@ BEGIN
 		return
 	END
 
-
+	/*
 	if NOT exists (select 1 from customer with(nolock) where custid = @Recommend and site = '12Bet')
 	BEGIN
 		IF @MaxExposure
@@ -180,7 +191,7 @@ BEGIN
 		return
 		END
 	END
-	
+	*/
 	
 	
 	
@@ -399,6 +410,7 @@ BEGIN CATCH
 		@IP = @IP,
 		@ActionID = 1200		
 END CATCH
+
 		
 
 
