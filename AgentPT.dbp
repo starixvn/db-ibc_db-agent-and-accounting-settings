@@ -158,6 +158,8 @@ Begin DataProject = "AgentPT"
             Begin Folder = "HR"
                Script = "dbo.Acc_CustOverrideUpdHR.StoredProcedure.sql"
             End
+            Begin Folder = "Keno"
+            End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerUpdSuperLiveCS_CustOverride.sql"
             End
@@ -464,6 +466,8 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerUpdSuperHR_MinPositiontaking_ExecRep.proc.sql"
                Script = "dbo.Acc_CustomerUpdSuperHR_Positiontaking.proc.sql"
                Script = "dbo.Acc_RacingBetSettingUpd.sql"
+            End
+            Begin Folder = "Keno"
             End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerUpdAgentLiveCS_All.sql"
