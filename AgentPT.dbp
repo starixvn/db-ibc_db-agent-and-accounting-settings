@@ -468,6 +468,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_RacingBetSettingUpd.sql"
             End
             Begin Folder = "Keno"
+               Script = "Acc_CustomerUpdDisableKeno.sql"
             End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerUpdAgentLiveCS_All.sql"
