@@ -159,6 +159,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustOverrideUpdHR.StoredProcedure.sql"
             End
             Begin Folder = "Keno"
+               Script = "Acc_CustOverrideUpdKeno.sql"
             End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerUpdSuperLiveCS_CustOverride.sql"
@@ -286,6 +287,9 @@ Begin DataProject = "AgentPT"
                   Script = "dbo.DBA_ChangeCurrency_xtest.sql"
                   Script = "dbo.f_GetHRAllowedCurr_xtest.function.sql"
                End
+            End
+            Begin Folder = "Keno"
+               Script = "Acc_CustomerSelEditSuperKeno.sql"
             End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerSelEditAgentLiveCS.sql"
@@ -469,6 +473,8 @@ Begin DataProject = "AgentPT"
             End
             Begin Folder = "Keno"
                Script = "Acc_CustomerUpdDisableKeno.sql"
+               Script = "Acc_CustomerUpdSuperKeno_Commission.sql"
+               Script = "Acc_CustomerUpdSuperKeno_MinMaxBet.sql"
             End
             Begin Folder = "LiveCS"
                Script = "dbo.Acc_CustomerUpdAgentLiveCS_All.sql"
