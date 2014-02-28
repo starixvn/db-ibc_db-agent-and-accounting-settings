@@ -14,6 +14,7 @@
 	@BingoStatus BIT = 0,
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
+	@KenoStatus BIT = 0,
 	@rowcount INT = 0 OUTPUT
 AS 
 /*
@@ -27,6 +28,7 @@ Revisions:
 	- 20130926@Kathy: Apply Exec Rep for Live Casino, Virtual sport status, Number Game, Bingo status
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
+	- 20140228@Bobby: Update Keno status [Redmine:#12474]
 	
 Param's Explanation:
 	@Action: 
@@ -43,6 +45,7 @@ Param's Explanation:
 		+ 'AutoSuspend': Auto suspend all: Soccer and Other Sports [@AutoSuspendSoccer, @AutoSuspendOtherSports]
 		+ 'AutoSuspendSoccer': Auto suspend for Soccer[@AutoSuspendSoccer]
 		+ 'AutoSuspendOther': Auto suspend for Other Sports [@AutoSuspendOtherSports]
+		+ '@KenoStatus' : Disable Keno gaming
    
 */
 SET NOCOUNT ON 
@@ -309,6 +312,19 @@ begin
 		SET	autosuspend2 = @AutoSuspendOtherSports	
 		WHERE recommend = @custID 
 	END
+end
+/**20140228@Bobby: Update Keno status [Redmine:#12474]**/
+else if @Action = 'UpdKenoStatus'
+begin
+	UPDATE cust
+	SET HideKeno = @KenoStatus
+	FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+	WHERE CustID <> @CustID
+		AND CASE @RoleID
+			WHEN 4 THEN  SRecommend
+			WHEN 3 THEN  MRecommend
+			WHEN 2 THEN  Recommend
+			END = @CustID
 end
 GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
