@@ -352,7 +352,7 @@ begin
 		UPDATE g
 		SET IsDisabled = @DisableKeno
 		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
 			ON g.custid = c.custid
 		WHERE c.CustID <> @CustID
 			AND c.SRecommend = @CustID
@@ -364,7 +364,7 @@ begin
 		UPDATE g
 		SET IsDisabled = @DisableKeno
 		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
 			ON g.custid = c.custid
 		WHERE c.CustID <> @CustID
 			AND c.MRecommend = @CustID
@@ -376,7 +376,7 @@ begin
 		UPDATE g
 		SET IsDisabled = @DisableKeno
 		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
 			ON g.custid = c.custid
 		WHERE c.CustID <> @CustID
 			AND c.Recommend = @CustID
