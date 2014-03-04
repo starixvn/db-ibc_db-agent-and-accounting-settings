@@ -14,7 +14,8 @@
 	@BingoStatus BIT = 0,
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
-	@KenoStatus BIT = 0,
+	@DisableKeno BIT = 0,
+	@GameTypeID INT = 0,
 	@rowcount INT = 0 OUTPUT
 AS 
 /*
@@ -45,7 +46,8 @@ Param's Explanation:
 		+ 'AutoSuspend': Auto suspend all: Soccer and Other Sports [@AutoSuspendSoccer, @AutoSuspendOtherSports]
 		+ 'AutoSuspendSoccer': Auto suspend for Soccer[@AutoSuspendSoccer]
 		+ 'AutoSuspendOther': Auto suspend for Other Sports [@AutoSuspendOtherSports]
-		+ '@KenoStatus' : Disable Keno gaming
+		+ 'DisableKeno' : Disable Keno gaming
+		+ 'KenoGameTypeID' : Keno game ID
    
 */
 SET NOCOUNT ON 
@@ -314,19 +316,75 @@ begin
 	END
 end
 /**20140228@Bobby: Update Keno status [Redmine:#12474]**/
-else if @Action = 'UpdKenoStatus'
+else if @Action = 'UpdKeno-Hide'
 begin
-	UPDATE cust
-	SET HideKeno = @KenoStatus
-	FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
-	WHERE CustID <> @CustID
-		AND CASE @RoleID
-			WHEN 4 THEN  SRecommend
-			WHEN 3 THEN  MRecommend
-			WHEN 2 THEN  Recommend
-			END = @CustID
+	IF (@roleID = 4)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND SRecommend = @CustID
+	END
+
+	IF (@roleID = 3)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND MRecommend = @CustID
+	END
+
+	IF (@roleID = 2)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND Recommend = @CustID
+	END
+end
+else if @Action = 'UpdKeno-Disable'
+begin
+	IF (@roleID = 4)
+	BEGIN
+		UPDATE g
+		SET IsDisabled = @DisableKeno
+		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+			ON g.custid = c.custid
+		WHERE c.CustID <> @CustID
+			AND c.SRecommend = @CustID
+			AND g.GameTypeID = @GameTypeID
+	END
+
+	IF (@roleID = 3)
+	BEGIN
+		UPDATE g
+		SET IsDisabled = @DisableKeno
+		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+			ON g.custid = c.custid
+		WHERE c.CustID <> @CustID
+			AND c.MRecommend = @CustID
+			AND g.GameTypeID = @GameTypeID
+	END
+
+	IF (@roleID = 2)
+	BEGIN
+		UPDATE g
+		SET IsDisabled = @DisableKeno
+		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
+		INNER JOIN dbo.CustInfo c WITH (ROWLOCK, UPDLOCK) 
+			ON g.custid = c.custid
+		WHERE c.CustID <> @CustID
+			AND c.Recommend = @CustID
+			AND g.GameTypeID = @GameTypeID
+	END
 end
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_ExecRep_Cust_04] TO [vnteam] AS [dbo]

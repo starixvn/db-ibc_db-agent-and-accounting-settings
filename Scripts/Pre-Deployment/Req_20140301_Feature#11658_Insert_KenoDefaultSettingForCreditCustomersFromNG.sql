@@ -56,9 +56,53 @@ BEGIN
 
 	--re-check @IsDisable value
 	SET @IsDisable = ISNULL(@IsDisable, 0)
+	;WITH kenoBetType AS 
+	(
+		SELECT 202 AS sporttype
+			,1501 AS bettype
+			,1 AS gametypeid -- Australia Acttab
+		
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1502 AS bettype
+			,2 AS gametypeid -- Bejing Keno 8
+		
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1503 AS bettype
+			,3 AS gametypeid -- Slovakia Eklub
 
-	--insert into CustGameType
-	;WITH kenoCust AS
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1504 AS bettype
+			,4 AS gametypeid -- Canada Keno
+
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1505 AS bettype
+			,5 AS gametypeid -- West Canada Keno
+
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1506 AS bettype
+			,6 AS gametypeid -- Taiwan Bingo Bingo
+
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1507 AS bettype
+			,7 AS gametypeid -- Massac
+
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1508 AS bettype
+			,8 AS gametypeid -- Ohio
+
+		UNION ALL
+		SELECT 202 AS sporttype
+			,1509 AS bettype
+			,9 AS gametypeid -- Malta
+	)
+	,kenoSetting AS
 	(
 		SELECT t.[gametypeid]
 			, res.custid
@@ -68,29 +112,15 @@ BEGIN
 			, 0.00 [MaxBet]
 			, @IsDisable [IsDisabled] 
 		FROM dbo.CustOverride3rd cs3 WITH (NOLOCK)
-		CROSS JOIN (
-			SELECT 202 AS sporttype
-				,1502 AS bettype
-				,2 AS gametypeid -- Bejing Keno 8
-		
-			UNION ALL
-			SELECT 202 AS sporttype
-				,1504 AS bettype
-				,4 AS gametypeid -- Canada Keno
-		
-			UNION ALL
-			SELECT 202 AS sporttype
-				,1505 AS bettype
-				,5 AS gametypeid -- West Canada Keno
-		) t
+		CROSS JOIN kenoBetType t
 		INNER JOIN @res AS res 
 			ON cs3.custid = res.custid
 		WHERE cs3.sporttype = 161 -- Number Game 
 			AND cs3.bettype = 90 -- Number Wheel
 	)
-	SELECT * FROM kenoCust;
+	SELECT * FROM kenoSetting;
 	--MERGE INTO [dbo].[CustGameType] AS cust
-	--USING kenoCust AS tmp
+	--USING kenoSetting AS tmp
 	--	ON cust.custid = tmp.custid 
 	--		AND cust.gametypeid = tmp.gametypeid
 	--WHEN NOT MATCHED BY TARGET THEN
