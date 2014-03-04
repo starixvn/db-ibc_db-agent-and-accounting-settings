@@ -113,7 +113,7 @@ BEGIN
 		RETURN
 	END
 
-	--Check Allowed downlines during peak hour at weekend
+	--Check condition for update all downline
 	IF (
 			@HideKeno = 1
 			OR (
@@ -130,39 +130,32 @@ BEGIN
 			,@ErrCode = @ErrCode OUTPUT
 
 		IF @ErrCode <> 0 RETURN
+
+		--Disable all downline or enable all downline
+		BEGIN TRY
+			EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
+				,@RoleID = @RoleID
+				,@Action = 'UpdKenoStatus'
+				,@KenoStatus = @HideKeno
+		END TRY
+		BEGIN CATCH
+			SELECT @ErrMsg = CASE @Language
+					WHEN 'E' THEN 'Update process is unsuccessful.'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
+					END
+
+			IF @RoleID = 4
+				SELECT @ErrCode = 102
+			ELSE IF @RoleID = 3
+				SELECT @ErrCode = 103
+			ELSE IF @RoleID = 2
+				SELECT @ErrCode = 104
+
+			RETURN
+		END CATCH
 	END
-
-	--Check condition for update all downline
-	IF (
-			@Disable = 1
-			OR (
-				@Disable = 0
-				AND @DisableDownlines = 0
-				)
-			) --Disable all downline or enable all downline
-	BEGIN TRY
-		EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
-			,@RoleID = @RoleID
-			,@Action = 'UpdKenoStatus'
-			,@KenoStatus = @HideKeno
-	END TRY
-
-	BEGIN CATCH
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E' THEN 'Update process is unsuccessful.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-				END
-
-		IF @RoleID = 4
-			SELECT @ErrCode = 102
-		ELSE IF @RoleID = 3
-			SELECT @ErrCode = 103
-		ELSE IF @RoleID = 2
-			SELECT @ErrCode = 104
-
-		RETURN
-	END CATCH
-
+	
+	-- write runSP log
 	DECLARE @LogSPData VARCHAR(2000)
 
 	SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' + 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' + 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' + 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(50)), space(1)) + '" ' + 'ErrMsg="' + coalesce(cast(@ErrMsg AS VARCHAR(400)), space(1)) + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" />'
