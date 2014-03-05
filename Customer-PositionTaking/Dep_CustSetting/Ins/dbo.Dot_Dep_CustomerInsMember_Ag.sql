@@ -119,6 +119,8 @@ Revisions:
 	- 20131230@Jim: hard-code to offer new Asiabet88 USD&EUR players to BA (group b )
 	- 20140109@Rafael: Update MaxBet/MaxperMatch for SB of Agent 12betUS$KR (10393717) and Agent 12betUS$KR05 (10842822) (maxbet: 3000 and maxpermatch: 10000)
 	- 20140123@Elodie: Add HR Fixed Odds sport [Redmine:#10922]
+	- 20140207@Rafael: Update MaxBet/MaxperMatch for SB of Agent 12betUS$KR (10393717) and Agent 12betUS$KR05 (10842822) (maxbet: 750, maxpermatch: 8000 and maxperball 1500)
+	- 20140303@Elodie: Add Keno sport [Redmine:#12756]
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -180,6 +182,7 @@ declare @currency int,
 	@v253playerdiscount_2 decimal(9,8), --- comm for private game
 	--- Live Casino
 	@v162playerdiscount_1101 decimal(9,8),
+	@v202playerdiscount_1501 decimal(9,8),
 	
 	--v151
 	@v151discount_31 decimal(9,8),
@@ -196,7 +199,7 @@ declare @currency int,
 	@v253discount_2 decimal(9,8), --- comm for private game
 	--- Live Casino
 	@v162discount_1101 decimal(9,8),
-	
+	@v202discount_1501 DECIMAL(9,8),
 
 	@minbet money,	
 	@maxbet money,	
@@ -383,6 +386,7 @@ Declare @apositiontaking_1 smallmoney,
 
 	--- Live casino
 	@v162apositiontaking_1101 smallmoney,
+	@v202apositiontaking_1501 smallmoney,
 
 	-- virtual soccer
 	@v180apositiontaking_1201 smallmoney,
@@ -534,6 +538,7 @@ declare @transcode bigint,
 	
 	-- live casino
 	@v162mpositiontaking_1101 smallmoney,
+	@v202mpositiontaking_1501 smallmoney,
 	
 	-- virtual soccer
 	@v180mpositiontaking_1201 smallmoney,	
@@ -634,6 +639,7 @@ declare @transcode bigint,
 	
 	-- live casino
 	@v162spositiontaking_1101 smallmoney,
+	@v202spositiontaking_1501 smallmoney,
 		
 	-- virtual soccer
 	@v180spositiontaking_1201 smallmoney,
@@ -697,6 +703,8 @@ declare @transcode bigint,
 	-- live casino
 	@v162adiscount_1101 decimal(9,8),
 	@v162sdiscount_1101 decimal(9,8),
+	@v202adiscount_1501 decimal(9,8),
+	@v202sdiscount_1501 decimal(9,8),
 
 	@Disable151_31 bit,
 	@Disable151_41 bit,
@@ -717,6 +725,7 @@ declare @transcode bigint,
 	@DisableFUNP2P BIT,
 	
 	@DisableHRFixedOdds BIT,
+	@HideKeno BIT,
 
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -803,7 +812,8 @@ select
 	@MaxWinLiveCasino = MaxWinLiveCasino,
 	@isAutoResetLiveCasino = isAutoResetLiveCasino,
 	@DoubleCommLosing = DoubleCommLosing,
-	@DisableCasinoBonus = 1 --20130805@Elodie hardcode
+	@DisableCasinoBonus = 1, --20130805@Elodie hardcode
+	@HideKeno = HideKeno
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -905,9 +915,10 @@ WHERE custid = @recommend AND groupid IN (1,2)
 
 
 --- Live casino
-SELECT @v162discount_1101 = discount
+SELECT	@v162discount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN discount ELSE 0 END)
+		,@v202discount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN discount ELSE 0 END)
 FROM custsettinggame WITH(NOLOCK)
-WHERE custid = @recommend and bettype = 1101 and sporttype = 162
+WHERE custid = @recommend and bettype IN (1101, 1501) and sporttype IN (162,202)
 
 DECLARE @vMaxbet money, 
 		@vMaxpermatch money
@@ -935,8 +946,9 @@ BEGIN
 		SELECT @vMaxbet = 200, @vMaxpermatch = 500 
 	END
 	IF (@Currency = 3) -- USD
-	BEGIN
-		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 3000, @vMaxpermatch = 10000 -- 12BETUS$KR, 12betUS$KR05
+	BEGIN		
+		IF @AgentID in (10393717,10842822) SELECT @vMaxbet = 3000, @vMaxpermatch = 10000 ,
+						@maxbetv161 = 750, @maxpermatchv161 = 8000, @maxperballv161 = 1500 -- 12BETUS$KR, 12betUS$KR05 (bet setting hard code for Sportsbook, NG)
 		ELSE SELECT @vMaxbet = 200, @vMaxpermatch = 500
 	END		
 	IF @Currency = 9 -- AUD   
@@ -1089,7 +1101,8 @@ select
 	@v253playerdiscount_1 = 0,
 	@v253playerdiscount_2 = 0,
     --v162
-	@v162playerdiscount_1101 = 0
+	@v162playerdiscount_1101 = 0,
+	@v202playerdiscount_1501 = 0
 
 --Position Taking get from Affilate Account
 if isnull(@AffiliateID,0) > 0
@@ -1279,10 +1292,12 @@ FROM Dep_Custsetting3rd WITH(NOLOCK)
 WHERE custid = @recommend and bettype IN (31,32,41,42,51,52,81,83,85,86,87,88,89,90,1201,1220,1231) and sporttype IN (151,152,153,161,180,181,182,184,186)
 
 -- live casino
-SELECT	 @v162apositiontaking_1101 = apositiontaking
-		,@v162mpositiontaking_1101 = mpositiontaking 
+SELECT	 @v162apositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype = 162 THEN apositiontaking ELSE 0 END) 
+		,@v162mpositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype = 162 THEN mpositiontaking ELSE 0 END) 		
+		,@v202apositiontaking_1501 = MAX(CASE WHEN bettype = 1501 AND sporttype = 202 THEN apositiontaking ELSE 0 END) 
+		,@v202mpositiontaking_1501 = MAX(CASE WHEN bettype = 1501 AND sporttype = 202 THEN mpositiontaking ELSE 0 END) 
 FROM custsettinggame with(nolock) 
-WHERE custid = @recommend and bettype = 1101 and sporttype = 162
+WHERE custid = @recommend and bettype IN (1101,1501) and sporttype IN (162,202)
 
 		
 ----INSERT MEMBER ---------------------------------------------------------------
@@ -1378,6 +1393,7 @@ select @v161slivepositiontaking_89 = 0
 select @v161slivepositiontaking_90 = 0 
 
 select @v162spositiontaking_1101 = 0
+select @v202spositiontaking_1501 = 0
 select @v180spositiontaking_1201 = 0
 select @v181spositiontaking_1231 = 0
 select @v182spositiontaking_1231 = 0
@@ -1415,7 +1431,10 @@ FROM P2PGroupComm WITH(NOLOCK)
 WHERE custid = @mrecommend AND groupid IN (1,2)
 
 -- live casino	   
-select @v162adiscount_1101 = adiscount from custsettinggame with (nolock) where custid = @mrecommend and bettype = 1101 and sporttype = 162
+select	 @v162adiscount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN adiscount ELSE 0 END) 
+		,@v202adiscount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN adiscount ELSE 0 END) 
+from custsettinggame with (nolock) 
+where custid = @mrecommend and bettype IN (1101,1501) and sporttype IN (162,202)
 
 SELECT	 @sdiscount		= MAX(CASE WHEN bettype = 1 THEN sdiscount ELSE 0 END)
 		,@sdiscountcs	= MAX(CASE WHEN bettype = 4 THEN sdiscount ELSE 0 END)
@@ -1443,7 +1462,10 @@ FROM P2PGroupComm WITH(NOLOCK)
 WHERE custid = @srecommend AND groupid IN (1,2)
 
 -- live casino
-select @v162sdiscount_1101 = sdiscount from custsettinggame with (nolock) where custid = @srecommend and bettype = 1101 and sporttype = 162
+select	 @v162sdiscount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN sdiscount ELSE 0 END)  
+		,@v202sdiscount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN sdiscount ELSE 0 END)  
+from custsettinggame with (nolock) 
+where custid = @srecommend and bettype IN (1101,1501) and sporttype IN (162,202)
 
 
 select
@@ -1469,7 +1491,8 @@ select
 	@v253playerdiscount_1 = case when @v253playerdiscount_1 > @v253discount_1 then @v253discount_1 else @v253playerdiscount_1 end,
 	@v253playerdiscount_2 = case when @v253playerdiscount_2 > @v253discount_2 then @v253discount_2 else @v253playerdiscount_2 end,
 
-	@v162playerdiscount_1101 = case when @v162playerdiscount_1101 > @v162discount_1101 then @v162discount_1101 else @v162playerdiscount_1101 end
+	@v162playerdiscount_1101 = case when @v162playerdiscount_1101 > @v162discount_1101 then @v162discount_1101 else @v162playerdiscount_1101 end,
+	@v202playerdiscount_1501 = case when @v202playerdiscount_1501 > @v202discount_1501 then @v202discount_1501 else @v202playerdiscount_1501 end
 
 	
 -- NOTE : agent can set discount to member more than what he get.   but should not more than Master discount
@@ -1967,7 +1990,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@MaxPerMatchv184 = @MaxPerMatchv184,
 	--Virtual Tennis
 	@MaxPerMatchv186 = @MaxPerMatchv186,
-
+	@HideKeno = @HideKeno,
 	@credit = 0,
 	@IP = '',
 	@TransferOption_dec = null,
@@ -2206,9 +2229,11 @@ BEGIN
 	return
 END
 
--- Live Casino
+-- Live Casino, Keno
 INSERT INTO CustSettingGame(custid, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount)
 SELECT @custid, 1101, 162, @v162apositiontaking_1101, @v162mpositiontaking_1101, @v162spositiontaking_1101, @v162playerdiscount_1101, @v162discount_1101, @v162adiscount_1101, @v162sdiscount_1101
+UNION ALL
+SELECT @custid, 1501, 202, @v202apositiontaking_1501, @v202mpositiontaking_1501, @v202spositiontaking_1501, @v202playerdiscount_1501, @v202discount_1501, @v202adiscount_1501, @v202sdiscount_1501
 IF @@ERROR <> 0
 BEGIN
 	--Error occurs
@@ -2222,6 +2247,30 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	return
+END
+
+-- Keno
+INSERT INTO CustGameType (GameTypeID, CustID, MaxPerGameType, MinBet, MaxBet, IsDisabled)
+SELECT cg.GameTypeID, @CustID, cg.MaxPerGameType, cg.MinBet, cg.MaxBet, cg.IsDisabled
+FROM CustGameType cg WITH (NOLOCK)
+	INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+WHERE cg.CustID = @recommend AND gt.IBCBetTypeID BETWEEN 1501 AND 1509
+IF @@ERROR <> 0
+BEGIN
+	--Error occurs
+	SELECT 
+		@ErrMsg = 'Add member fail. Please try again',
+		@ErrCode=218
+
+	-- MANUALLY ROLLBACK
+	DELETE Dep_CustSetting WHERE CustID = @CustID
+	DELETE Dep_CustSetting3rd WHERE CustID = @CustID
+	DELETE P2PGameSetting WHERE CustID = @CustID
+	DELETE P2PGroupComm WHERE CustID = @CustID
+	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE CustGameType WHERE CustID = @CustID
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
@@ -2571,14 +2620,3 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]

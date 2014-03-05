@@ -612,9 +612,9 @@ BEGIN
 				) t
 				ON k.GameTypeID = t.GameTypeID
 		END
-	END;;;;
+	END
 
-	WITH kenoUpline
+	;WITH kenoUpline
 	AS (
 		--upline
 		SELECT g.GameTypeID
