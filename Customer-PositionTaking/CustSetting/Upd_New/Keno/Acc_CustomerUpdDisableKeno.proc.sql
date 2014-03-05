@@ -111,7 +111,7 @@ BEGIN
 					WHEN 'E' THEN 'Account disabled. Unable to edit downlines.'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](60015, @Language)
 					END
-				,@ErrCode = 105
+				,@ErrCode = 101
 
 			RETURN
 		END
@@ -150,14 +150,7 @@ BEGIN
 						WHEN 'E' THEN 'Update process is unsuccessful.'
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 						END
-
-				IF @RoleID = 4
-					SELECT @ErrCode = 102
-				ELSE IF @RoleID = 3
-					SELECT @ErrCode = 103
-				ELSE IF @RoleID = 2
-					SELECT @ErrCode = 104
-
+				SET @ErrCode = 102
 				RETURN
 			END CATCH
 		END
@@ -174,8 +167,7 @@ BEGIN
 		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK)
 		WHERE CustID = @CustID
 		
-		IF(@RoleID > 1
-			AND @DisableDownlines = 1)
+		IF(@RoleID > 1)
 		BEGIN
 			BEGIN TRY			
 				--update HideKeno for all downline
@@ -189,12 +181,7 @@ BEGIN
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 						END
 
-				IF @RoleID = 4
-					SELECT @ErrCode = 102
-				ELSE IF @RoleID = 3
-					SELECT @ErrCode = 103
-				ELSE IF @RoleID = 2
-					SELECT @ErrCode = 104
+				SET @ErrCode = 103
 
 				RETURN
 			END CATCH
@@ -207,7 +194,7 @@ BEGIN
 				WHEN 'E' THEN 'Update process is unsuccessful.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 				END
-			,@ErrCode = 101
+			,@ErrCode = 104
 
 		RETURN
 	END
@@ -215,7 +202,16 @@ BEGIN
 	-- write runSP log
 	DECLARE @LogSPData VARCHAR(2000)
 
-	SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' + 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' + 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' + 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(50)), space(1)) + '" ' + 'ErrMsg="' + coalesce(cast(@ErrMsg AS VARCHAR(400)), space(1)) + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" />'
+	SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
+		+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' 
+		+ 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'ErrMsg="' + coalesce(cast(@ErrMsg AS VARCHAR(400)), space(1)) + '" ' 
+		+ 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" />'
 
 	SET @endRun = GETDATE()
 	SET @duration = DATEDIFF(millisecond, @startRun, @endRun)
@@ -230,7 +226,16 @@ BEGIN
 	END TRY
 
 	BEGIN CATCH
-		SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' + 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' + 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' + 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(50)), space(1)) + '" ' + 'ErrMsg="' + ERROR_MESSAGE() + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" />'
+		SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
+			+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' 
+			+ 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'ErrMsg="' + ERROR_MESSAGE() + '" ' 
+			+ 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" />'
 
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			,@CustID = @CustID
@@ -241,7 +246,6 @@ BEGIN
 
 	RETURN
 END
-GO
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbadminNet] AS [dbo]
 GO

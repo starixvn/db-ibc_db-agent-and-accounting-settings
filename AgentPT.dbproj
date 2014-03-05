@@ -67,6 +67,7 @@
     <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting" />
     <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\Keno" />
     <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Select\Keno" />
   </ItemGroup>
   <ItemGroup>
     <PropertiesFile Include="Properties\Database.sqlsettings">
@@ -560,7 +561,10 @@
     <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdVS_MinMaxBet.sql">
       <SubType>NotInBuild</SubType>
     </NotInBuild>
-    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Req_20140301_Feature#11658_Insert_KenoDefaultSettingForCreditCustomersFromNG.sql">
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelEditSuperKeno.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelKenoStatus.proc.sql">
       <SubType>NotInBuild</SubType>
     </NotInBuild>
   </ItemGroup>
