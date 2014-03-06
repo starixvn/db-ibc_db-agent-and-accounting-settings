@@ -1,5 +1,7 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelKenoStatus] 
 	@custid INT
+	, @roleid INT = NULL
+	, @uplineId INT = NULL
 AS
 /*
 	Created: Bobby
@@ -12,34 +14,44 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @custid INT = 1
-		,@roleid INT = 4
+	DECLARE @custRoleid INT
 		,@srecommend INT
 		,@mrecommend INT
 		,@recommend INT;
+
 	DECLARE @kenoGameType TABLE (
 		gametypeid INT
 		,isdisabled BIT DEFAULT 0
 		)
 
-	INSERT INTO @kenoGameType (gametypeid)
-	SELECT gametypeid from dbo.GameType
-	WHERE gametypeid <= 9
-	ORDER BY gametypeid
-	
-	SELECT TOP(1) @roleid = roleid
+
+	SELECT TOP (1) @custRoleid = roleid
 		,@srecommend = srecommend
 		,@mrecommend = mrecommend
 		,@recommend = recommend
 	FROM custinfo WITH (NOLOCK)
 	WHERE custid = @custid
 
+	--check belong to
+	IF((@roleid > 0 AND @roleid <> @custRoleid)
+		OR (@uplineId > 0 AND @uplineId <> CASE @custRoleid
+				WHEN 3 THEN @srecommend
+				WHEN 2 THEN @srecommend
+				WHEN 1 THEN @recommend END)
+		OR (@custRoleid NOT IN (1,2,3,4))) RETURN;
+
+	INSERT INTO @kenoGameType (gametypeid)
+	SELECT gametypeid
+	FROM dbo.GameType
+	WHERE gametypeid <= 9
+	ORDER BY gametypeid
+
 	--downline
 	SELECT *
 	INTO #kenoDownlines
 	FROM @kenoGameType
 
-	IF @roleid = 4
+	IF (@custRoleid = 4)
 	BEGIN
 		IF (
 				EXISTS (
@@ -56,185 +68,24 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			-- update GameTypeID=1
 			UPDATE k
 			SET isdisabled = ISNULL(t.isdisabled, 1)
 			FROM #kenoDownlines k
 				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 1
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
+				SELECT DISTINCT g.gametypeid
+					,g.IsDisabled
+				FROM dbo.CustGameType g WITH (NOLOCK)
+					INNER JOIN custInfo c WITH (NOLOCK)
+					ON g.CustID = c.custid
+				WHERE c.srecommend = @custid
+					AND c.roleid = 3
+					AND g.IsDisabled = 1
 				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=2
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 2
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=3
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 3
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=4
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 4
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=5
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 5
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=6
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 6
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=7
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 7
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=8
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 8
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=9
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 9
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE srecommend = @custid
-							AND roleid = 3
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			UPDATE k
-			SET isdisabled = 0
-			FROM #kenoDownlines k
-			WHERE gametypeid = 9
+				ON k.gametypeid = t.GameTypeID
 		END
 	END
 
-	IF @roleid = 3
+	IF (@custRoleid = 3)
 	BEGIN
 		IF (
 				EXISTS (
@@ -251,180 +102,24 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			-- update GameTypeID=1
 			UPDATE k
 			SET isdisabled = ISNULL(t.isdisabled, 1)
 			FROM #kenoDownlines k
 				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 1
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
+				SELECT DISTINCT g.gametypeid
+					,g.IsDisabled
+				FROM dbo.CustGameType g WITH (NOLOCK)
+					INNER JOIN custInfo c WITH (NOLOCK)
+					ON g.CustID = c.custid
+				WHERE c.mrecommend = @custid
+					AND c.roleid = 2
+					AND g.IsDisabled = 1
 				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=2
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 2
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=3
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 3
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=4
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 4
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=5
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 5
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=6
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 6
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=7
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 7
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=8
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 8
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=9
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 9
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE mrecommend = @custid
-							AND roleid = 2
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
+				ON k.gametypeid = t.GameTypeID
 		END
 	END
 
-	IF @roleid = 2
+	IF (@custRoleid = 2)
 	BEGIN
 		IF (
 				EXISTS (
@@ -441,180 +136,24 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			-- update GameTypeID=1
 			UPDATE k
 			SET isdisabled = ISNULL(t.isdisabled, 1)
 			FROM #kenoDownlines k
 				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 1
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
+				SELECT DISTINCT g.gametypeid
+					,g.IsDisabled
+				FROM dbo.CustGameType g WITH (NOLOCK)
+					INNER JOIN custInfo c WITH (NOLOCK)
+					ON g.CustID = c.custid
+				WHERE c.recommend = @custid
+					AND c.roleid = 1
+					AND g.IsDisabled = 1
 				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=2
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 2
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=3
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 3
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=4
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 4
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=5
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 5
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=6
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 6
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=7
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 7
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=8
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 8
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
-
-			-- update GameTypeID=9
-			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
-			FROM #kenoDownlines k
-				LEFT JOIN (
-				SELECT TOP 1 GameTypeID
-					,isdisabled
-				FROM dbo.CustGameType
-				WHERE gametypeid = 9
-					AND isdisabled = 1
-					AND custid = (
-						SELECT custid
-						FROM custInfo c WITH (NOLOCK)
-						WHERE recommend = @custid
-							AND roleid = 1
-						)
-				) t
-				ON k.GameTypeID = t.GameTypeID
+				ON k.gametypeid = t.GameTypeID
 		END
-	END
+	END;
 
-	;WITH kenoUpline
+	WITH kenoUpline
 	AS (
 		--upline
 		SELECT g.GameTypeID
@@ -636,7 +175,7 @@ BEGIN
 				) g1
 				ON t.gametypeid = g1.GameTypeID
 			) g
-		WHERE c.custid = CASE @roleid
+		WHERE c.custid = CASE @custRoleid
 				WHEN 3 THEN @srecommend
 				WHEN 2 THEN @srecommend
 				WHEN 1 THEN @recommend
@@ -646,7 +185,8 @@ BEGIN
 		-- customer
 		,kenoCustomer
 	AS (
-		SELECT 202 AS SportType
+		SELECT UserName
+			,202 AS SportType
 			,g.GameTypeID
 			,gt.IBCBetTypeID
 			,IsDisabled = CASE 
@@ -671,12 +211,13 @@ BEGIN
 			ON g.GameTypeID = gt.GameTypeID
 		WHERE c.custid = @custid
 		)
-	SELECT c.SportType
+	SELECT c.UserName
+		,c.SportType
 		,c.GameTypeID
 		,c.IBCBetTypeID
 		,c.IsDisabled
-		,isnull(u.IsDisabled, 0) AS DisableUplines
-		,isnull(d.IsDisabled, 0) AS DisableDownlines
+		,isnull(u.IsDisabled, 1) AS DisableUplines
+		,isnull(d.IsDisabled, 1) AS DisableDownlines
 	FROM kenoCustomer c
 		LEFT JOIN kenoUpline u
 		ON c.GameTypeID = u.GameTypeID

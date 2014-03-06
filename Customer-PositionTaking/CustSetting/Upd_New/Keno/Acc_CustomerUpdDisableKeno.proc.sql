@@ -1,4 +1,5 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] @CustID INT
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
+	@CustID INT
 	,@Bettype INT
 	,@Disable BIT			
 	,@DisableDownLines BIT = 1
@@ -66,10 +67,15 @@ BEGIN
 	END
 
 	-- update CustGameType proccess
-	SELECT TOP(1) @GameTypeID = GameTypeID
-		, @Old_DisableBetType = ISNULL(IsDisabled, 0)
-	FROM dbo.GameType WITH(NOLOCK)
-	WHERE IBCBetTypeID = @Bettype
+	SELECT @GameTypeID = g.GameTypeID
+		, @Old_DisableBetType = ISNULL(c.IsDisabled, 1)
+	FROM DBPRO.bodb02.dbo.GameType g WITH(NOLOCK)
+	left join dbo.CustGameType c WITH(NOLOCK)
+		on c.GameTypeID = g.GameTypeID
+	WHERE g.IBCBetTypeID = @Bettype
+		AND g.IsDisabled = 0 -- active bettype
+
+	SET @Old_DisableBetType = ISNULL(@Old_DisableBetType, 1)
 
 	-- check to update IsDisabled
 	IF(@GameTypeID IS NOT NULL
