@@ -33,7 +33,10 @@
 	@MinBetv161 MONEY OUTPUT,
 	@MaxBetv161 MONEY OUTPUT,
 	@MaxPerMatchv161 MONEY OUTPUT,
-	@MaxPerBallv161 MONEY OUTPUT
+	@MaxPerBallv161 MONEY OUTPUT,
+	@MinBetv202_1501 MONEY OUTPUT,
+	@MaxBetv202_1501 MONEY OUTPUT,
+	@MaxPerMatchv202_1501 MONEY OUTPUT
 
 AS
 /*
@@ -44,6 +47,7 @@ Original:Acc_CustomerSelMinMax
 
 Revisions:
     - 20140123@Elodie: retrieve bet setting for HR Fixed Odds(154) [Redmine:#10922]
+	- 20140305@Elodie: retrieve bet setting for Keno(202) [Redmine:#11658]
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 */
@@ -93,6 +97,11 @@ WHERE custid = @CustID AND bettype = 20 AND sporttype = 154
 SELECT @MinBetv161 = isnull(MinBet, 0), @MaxBetv161 = isnull(MaxBet, 0)
 FROM Dep_CustSetting3rd WITH (NOLOCK)
 WHERE custid = @CustID AND bettype = 81 AND sporttype = 161
+
+SELECT @MinBetv202_1501 = isnull(MinBet, 0), @MaxBetv202_1501 = isnull(MaxBet, 0), @MaxPerMatchv202_1501 = isnull(MaxPerGameType, 0)
+FROM CustGameType cg WITH (NOLOCK)
+	INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+WHERE custid = @CustID AND gt.IBCBetTypeID = 1501
 
 --MAX PER MATCH
 SELECT @MaxperMatch = MaxPerMatch,
