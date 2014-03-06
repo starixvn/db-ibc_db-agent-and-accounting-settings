@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdCredit]
+﻿ALTER PROCEDURE [Acc_CustomerUpdCredit]
 	@custid int,
 	@NewCredit money,
 	@maxcredit money = null, -- max credit agent give member 	
@@ -32,6 +32,7 @@ Revisions:
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_CustomerSelMaxExposure_Ag by link database)
 	- 20140224@Lukas: remove maxExposure
+	- 20140306@Dom: add outstanding from translog
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -125,6 +126,7 @@ BEGIN
 
 
 	SELECT  @TotalUse = ISNULL(SUM(winlost-actual_stake+playercomm), 0) FROM bodb02.dbo.bettrans WITH(NOLOCK) WHERE custid=@custid
+	SELECT  @TotalUse = @TotalUse + ISNULL(SUM(actual_stake), 0) FROM bodb02.dbo.translog WITH(NOLOCK) WHERE custid=@custid AND statusID=0
 	/*
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=1, @MaxExposure = @MaxExposure OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=2, @MaxExposure = @MaxExposurev2 OUTPUT
