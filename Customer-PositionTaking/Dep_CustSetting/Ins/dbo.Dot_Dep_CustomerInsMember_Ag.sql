@@ -182,6 +182,7 @@ declare @currency int,
 	@v253playerdiscount_2 decimal(9,8), --- comm for private game
 	--- Live Casino
 	@v162playerdiscount_1101 decimal(9,8),
+	--Keno
 	@v202playerdiscount_1501 decimal(9,8),
 	
 	--v151
@@ -199,6 +200,7 @@ declare @currency int,
 	@v253discount_2 decimal(9,8), --- comm for private game
 	--- Live Casino
 	@v162discount_1101 decimal(9,8),
+	--Keno
 	@v202discount_1501 DECIMAL(9,8),
 
 	@minbet money,	
@@ -386,6 +388,7 @@ Declare @apositiontaking_1 smallmoney,
 
 	--- Live casino
 	@v162apositiontaking_1101 smallmoney,
+	--Keno
 	@v202apositiontaking_1501 smallmoney,
 
 	-- virtual soccer
@@ -538,6 +541,7 @@ declare @transcode bigint,
 	
 	-- live casino
 	@v162mpositiontaking_1101 smallmoney,
+	--Keno
 	@v202mpositiontaking_1501 smallmoney,
 	
 	-- virtual soccer
@@ -639,6 +643,7 @@ declare @transcode bigint,
 	
 	-- live casino
 	@v162spositiontaking_1101 smallmoney,
+	--Keno
 	@v202spositiontaking_1501 smallmoney,
 		
 	-- virtual soccer
@@ -703,6 +708,7 @@ declare @transcode bigint,
 	-- live casino
 	@v162adiscount_1101 decimal(9,8),
 	@v162sdiscount_1101 decimal(9,8),
+	--Keno
 	@v202adiscount_1501 decimal(9,8),
 	@v202sdiscount_1501 decimal(9,8),
 
@@ -914,7 +920,7 @@ FROM P2PGroupComm WITH(NOLOCK)
 WHERE custid = @recommend AND groupid IN (1,2)
 
 
---- Live casino
+--- Live casino, Keno
 SELECT	@v162discount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN discount ELSE 0 END)
 		,@v202discount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN discount ELSE 0 END)
 FROM custsettinggame WITH(NOLOCK)
@@ -1102,6 +1108,7 @@ select
 	@v253playerdiscount_2 = 0,
     --v162
 	@v162playerdiscount_1101 = 0,
+	--Keno
 	@v202playerdiscount_1501 = 0
 
 --Position Taking get from Affilate Account
@@ -1291,7 +1298,7 @@ SELECT	 @v151apositiontaking_31 = MAX(CASE WHEN bettype = 31 AND sporttype = 151
 FROM Dep_Custsetting3rd WITH(NOLOCK)
 WHERE custid = @recommend and bettype IN (31,32,41,42,51,52,81,83,85,86,87,88,89,90,1201,1220,1231) and sporttype IN (151,152,153,161,180,181,182,184,186)
 
--- live casino
+--- Live casino, Keno
 SELECT	 @v162apositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype = 162 THEN apositiontaking ELSE 0 END) 
 		,@v162mpositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype = 162 THEN mpositiontaking ELSE 0 END) 		
 		,@v202apositiontaking_1501 = MAX(CASE WHEN bettype = 1501 AND sporttype = 202 THEN apositiontaking ELSE 0 END) 
@@ -1430,7 +1437,7 @@ SELECT	 @v253adiscount_1 = MAX(CASE WHEN groupid = 1 THEN adiscount ELSE 0 END)
 FROM P2PGroupComm WITH(NOLOCK)
 WHERE custid = @mrecommend AND groupid IN (1,2)
 
--- live casino	   
+--- Live casino, Keno
 select	 @v162adiscount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN adiscount ELSE 0 END) 
 		,@v202adiscount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN adiscount ELSE 0 END) 
 from custsettinggame with (nolock) 
@@ -1461,7 +1468,7 @@ SELECT	 @v253sdiscount_1 = MAX(CASE WHEN groupid = 1 THEN sdiscount ELSE 0 END)
 FROM P2PGroupComm WITH(NOLOCK)
 WHERE custid = @srecommend AND groupid IN (1,2)
 
--- live casino
+--- Live casino, Keno
 select	 @v162sdiscount_1101 = MAX(CASE WHEN sporttype = 162 AND bettype = 1101 THEN sdiscount ELSE 0 END)  
 		,@v202sdiscount_1501 = MAX(CASE WHEN sporttype = 202 AND bettype = 1501 THEN sdiscount ELSE 0 END)  
 from custsettinggame with (nolock) 
@@ -1490,7 +1497,7 @@ select
 	-- P2P
 	@v253playerdiscount_1 = case when @v253playerdiscount_1 > @v253discount_1 then @v253discount_1 else @v253playerdiscount_1 end,
 	@v253playerdiscount_2 = case when @v253playerdiscount_2 > @v253discount_2 then @v253discount_2 else @v253playerdiscount_2 end,
-
+	--- Live casino, Keno
 	@v162playerdiscount_1101 = case when @v162playerdiscount_1101 > @v162discount_1101 then @v162discount_1101 else @v162playerdiscount_1101 end,
 	@v202playerdiscount_1501 = case when @v202playerdiscount_1501 > @v202discount_1501 then @v202discount_1501 else @v202playerdiscount_1501 end
 
@@ -2294,6 +2301,7 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE CustGameType WHERE CustID = @CustID
 	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2316,6 +2324,7 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE CustGameType WHERE CustID = @CustID
 	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
@@ -2343,6 +2352,7 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE CustGameType WHERE CustID = @CustID
 	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
@@ -2369,6 +2379,7 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE CustGameType WHERE CustID = @CustID
 	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
