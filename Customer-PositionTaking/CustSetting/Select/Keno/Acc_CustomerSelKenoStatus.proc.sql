@@ -29,16 +29,16 @@ BEGIN
 		,@srecommend = srecommend
 		,@mrecommend = mrecommend
 		,@recommend = recommend
-	FROM custinfo WITH (NOLOCK)
+	FROM dbo.custinfo WITH (NOLOCK)
 	WHERE custid = @custid
 
 	--check belong to
-	IF((@roleid > 0 AND @roleid <> @custRoleid)
-		OR (@uplineId > 0 AND @uplineId <> CASE @custRoleid
-				WHEN 3 THEN @srecommend
-				WHEN 2 THEN @srecommend
-				WHEN 1 THEN @recommend END)
-		OR (@custRoleid NOT IN (1,2,3,4))) RETURN;
+	--IF((@roleid > 0 AND @roleid <> @custRoleid)
+	--	OR (@uplineId > 0 AND @uplineId <> CASE @custRoleid
+	--			WHEN 3 THEN @srecommend
+	--			WHEN 2 THEN @srecommend
+	--			WHEN 1 THEN @recommend END)
+	--	OR (@custRoleid NOT IN (1,2,3,4))) RETURN;
 
 	INSERT INTO @kenoGameType (gametypeid)
 	SELECT gametypeid
@@ -46,17 +46,18 @@ BEGIN
 	WHERE gametypeid <= 9
 	ORDER BY gametypeid
 
-	--downline
+	--check keno-downline
 	SELECT *
 	INTO #kenoDownlines
 	FROM @kenoGameType
+
 
 	IF (@custRoleid = 4)
 	BEGIN
 		IF (
 				EXISTS (
 					SELECT TOP 1 1
-					FROM custInfo c WITH (NOLOCK)
+					FROM dbo.custInfo c WITH (NOLOCK)
 					WHERE srecommend = @custid
 						AND roleid = 3
 						AND hidekeno = 1
@@ -69,16 +70,17 @@ BEGIN
 		ELSE
 		BEGIN
 			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
+			SET isdisabled = ISNULL(t.isdisabled, 0)
 			FROM #kenoDownlines k
 				LEFT JOIN (
 				SELECT DISTINCT g.gametypeid
 					,g.IsDisabled
 				FROM dbo.CustGameType g WITH (NOLOCK)
-					INNER JOIN custInfo c WITH (NOLOCK)
+					INNER JOIN dbo.custInfo c WITH (NOLOCK)
 					ON g.CustID = c.custid
-				WHERE c.srecommend = @custid
-					AND c.roleid = 3
+				WHERE (c.custid = @custid
+						OR ( c.srecommend = @custid AND c.roleid = 3)
+					)
 					AND g.IsDisabled = 1
 				) t
 				ON k.gametypeid = t.GameTypeID
@@ -90,7 +92,7 @@ BEGIN
 		IF (
 				EXISTS (
 					SELECT TOP 1 1
-					FROM custInfo c WITH (NOLOCK)
+					FROM dbo.custInfo c WITH (NOLOCK)
 					WHERE mrecommend = @custid
 						AND roleid = 2
 						AND hidekeno = 1
@@ -103,16 +105,17 @@ BEGIN
 		ELSE
 		BEGIN
 			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
+			SET isdisabled = ISNULL(t.isdisabled, 0)
 			FROM #kenoDownlines k
 				LEFT JOIN (
 				SELECT DISTINCT g.gametypeid
 					,g.IsDisabled
 				FROM dbo.CustGameType g WITH (NOLOCK)
-					INNER JOIN custInfo c WITH (NOLOCK)
+					INNER JOIN dbo.custInfo c WITH (NOLOCK)
 					ON g.CustID = c.custid
-				WHERE c.mrecommend = @custid
-					AND c.roleid = 2
+				WHERE (c.custid = @custid
+						OR ( c.mrecommend = @custid AND c.roleid = 2)
+					)
 					AND g.IsDisabled = 1
 				) t
 				ON k.gametypeid = t.GameTypeID
@@ -124,7 +127,7 @@ BEGIN
 		IF (
 				EXISTS (
 					SELECT TOP 1 1
-					FROM custInfo c WITH (NOLOCK)
+					FROM dbo.custInfo c WITH (NOLOCK)
 					WHERE recommend = @custid
 						AND roleid = 1
 						AND hidekeno = 1
@@ -137,22 +140,24 @@ BEGIN
 		ELSE
 		BEGIN
 			UPDATE k
-			SET isdisabled = ISNULL(t.isdisabled, 1)
+			SET isdisabled = ISNULL(t.isdisabled, 0)
 			FROM #kenoDownlines k
 				LEFT JOIN (
 				SELECT DISTINCT g.gametypeid
 					,g.IsDisabled
 				FROM dbo.CustGameType g WITH (NOLOCK)
-					INNER JOIN custInfo c WITH (NOLOCK)
+					INNER JOIN dbo.custInfo c WITH (NOLOCK)
 					ON g.CustID = c.custid
-				WHERE c.recommend = @custid
-					AND c.roleid = 1
+				WHERE (c.custid = @custid
+						OR ( c.recommend = @custid AND c.roleid = 1)
+					)
 					AND g.IsDisabled = 1
 				) t
 				ON k.gametypeid = t.GameTypeID
 		END
 	END;
 
+	--check keno-upline
 	WITH kenoUpline
 	AS (
 		--upline
@@ -165,7 +170,7 @@ BEGIN
 		FROM [dbo].[custInfo] c
 			CROSS APPLY (
 			SELECT t.GameTypeID
-				,isnull(g1.isdisabled, 1) isdisabled
+				,isnull(g1.isdisabled, 0) isdisabled
 			FROM @kenoGameType t
 				LEFT JOIN (
 				SELECT GameTypeID
@@ -215,9 +220,9 @@ BEGIN
 		,c.SportType
 		,c.GameTypeID
 		,c.IBCBetTypeID
-		,c.IsDisabled
-		,isnull(u.IsDisabled, 1) AS DisableUplines
-		,isnull(d.IsDisabled, 1) AS DisableDownlines
+		,CAST(c.IsDisabled AS BIT) IsDisabled
+		,CAST(isnull(u.IsDisabled, 0) AS BIT ) AS DisableUplines
+		,CAST(isnull(d.IsDisabled, 1) AS BIT) AS DisableDownlines
 	FROM kenoCustomer c
 		LEFT JOIN kenoUpline u
 		ON c.GameTypeID = u.GameTypeID

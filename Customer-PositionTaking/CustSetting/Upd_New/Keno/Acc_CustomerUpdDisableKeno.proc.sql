@@ -46,7 +46,7 @@ BEGIN
 		,@UplineDisable BIT = 0
 		,@Old_HideKeno BIT
 		,@Old_DisableBetType BIT
-		,@GameTypeID BIT
+		,@GameTypeID INT
 		,@HasUpdatedDisable BIT;
 
 
@@ -79,7 +79,9 @@ BEGIN
 
 	-- check to update IsDisabled
 	IF(@GameTypeID IS NOT NULL
-		AND @Old_DisableBetType <> @Disable)
+		AND ( @Old_DisableBetType <> @Disable
+			OR @DisableDownLines = 1 )
+	)
 	BEGIN
 		-- check uplineDisable
 		IF (@RoleID = 3) 
@@ -131,7 +133,7 @@ BEGIN
 		--Check condition for update all downline
 		IF ( @RoleID > 1 
 				AND (@Disable = 1
-						OR (@Disable = 0 AND @DisableDownlines = 0)
+						OR (@Disable = 0 AND @DisableDownlines = 1)
 				)
 			)
 		BEGIN
@@ -150,6 +152,7 @@ BEGIN
 					,@RoleID = @RoleID
 					,@Action = 'UpdKeno-Disable'
 					,@DisableKeno = @Disable
+					,@GameTypeID = @GameTypeID
 			END TRY
 			BEGIN CATCH
 				SELECT @ErrMsg = CASE @Language
