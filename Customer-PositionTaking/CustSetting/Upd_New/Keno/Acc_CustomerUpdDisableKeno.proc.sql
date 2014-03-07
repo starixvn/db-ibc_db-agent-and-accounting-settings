@@ -68,17 +68,22 @@ BEGIN
 
 	-- update CustGameType proccess
 	SELECT @GameTypeID = g.GameTypeID
-		, @Old_DisableBetType = ISNULL(c.IsDisabled, 1)
 	FROM DBPRO.bodb02.dbo.GameType g WITH(NOLOCK)
-	left join dbo.CustGameType c WITH(NOLOCK)
-		on c.GameTypeID = g.GameTypeID
 	WHERE g.IBCBetTypeID = @Bettype
 		AND g.IsDisabled = 0 -- active bettype
+	
+	SET @GameTypeID = ISNULL(@GameTypeID, 0)
 
+	-- get old status on keno bettype	
+	SELECT TOP(1) @Old_DisableBetType = ISNULL(c.IsDisabled, 1)
+	FROM dbo.CustGameType c WITH(NOLOCK)
+	WHERE c.custid = @CustID
+		AND c.GameTypeID = @GameTypeID
+		
 	SET @Old_DisableBetType = ISNULL(@Old_DisableBetType, 1)
 
 	-- check to update IsDisabled
-	IF(@GameTypeID IS NOT NULL
+	IF(@GameTypeID > 0
 		AND ( @Old_DisableBetType <> @Disable
 			OR @DisableDownLines = 1 )
 	)
