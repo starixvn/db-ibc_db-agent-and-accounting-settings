@@ -126,7 +126,7 @@ BEGIN
 
 
 	SELECT  @TotalUse = ISNULL(SUM(winlost-actual_stake+playercomm), 0) FROM bodb02.dbo.bettrans WITH(NOLOCK) WHERE custid=@custid
-	SELECT  @TotalUse = @TotalUse + ISNULL(SUM(actual_stake), 0) FROM bodb02.dbo.translog WITH(NOLOCK) WHERE custid=@custid AND statusID=0
+	SELECT  @TotalUse = @TotalUse + ISNULL(SUM(-actual_stake), 0) FROM bodb02.dbo.translog WITH(NOLOCK) WHERE custid=@custid AND statusID=0
 	/*
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=1, @MaxExposure = @MaxExposure OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=2, @MaxExposure = @MaxExposurev2 OUTPUT
