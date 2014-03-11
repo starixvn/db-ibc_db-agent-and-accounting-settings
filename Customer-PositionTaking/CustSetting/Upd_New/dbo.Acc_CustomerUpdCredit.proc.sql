@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [Acc_CustomerUpdCredit]
+﻿CREATE PROCEDURE [dbo].[Acc_CustomerUpdCredit]
 	@custid int,
 	@NewCredit money,
 	@maxcredit money = null, -- max credit agent give member 	
