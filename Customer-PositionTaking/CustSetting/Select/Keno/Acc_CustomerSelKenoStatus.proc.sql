@@ -42,8 +42,9 @@ BEGIN
 
 	INSERT INTO @kenoGameType (gametypeid)
 	SELECT gametypeid
-	FROM dbo.GameType
-	WHERE gametypeid <= 9
+	FROM dbo.GameType WITH(NOLOCK)
+	WHERE [IBCBetTypeID] >=  1501 AND [IBCBetTypeID] <= 1509
+		AND IsDisabled = 0
 	ORDER BY gametypeid
 
 	--check keno-downline
@@ -182,7 +183,7 @@ BEGIN
 			) g
 		WHERE c.custid = CASE @custRoleid
 				WHEN 3 THEN @srecommend
-				WHEN 2 THEN @srecommend
+				WHEN 2 THEN @mrecommend
 				WHEN 1 THEN @recommend
 				ELSE 0
 				END
@@ -220,9 +221,9 @@ BEGIN
 		,c.SportType
 		,c.GameTypeID
 		,c.IBCBetTypeID
-		,CAST(c.IsDisabled AS BIT) IsDisabled
-		,CAST(isnull(u.IsDisabled, 0) AS BIT ) AS DisableUplines
-		,CAST(isnull(d.IsDisabled, 1) AS BIT) AS DisableDownlines
+		, CASE WHEN c.IsDisabled = 0 AND ISNULL(u.IsDisabled, 0) = 0 THEN 0 ELSE 1 END IsDisabled
+		, ISNULL(u.IsDisabled, 0) DisableUplines
+		, CASE WHEN c.IsDisabled = 0 AND ISNULL(d.IsDisabled, 0) = 0 THEN 0 ELSE 1 END DisableDownlines
 	FROM kenoCustomer c
 		LEFT JOIN kenoUpline u
 		ON c.GameTypeID = u.GameTypeID
