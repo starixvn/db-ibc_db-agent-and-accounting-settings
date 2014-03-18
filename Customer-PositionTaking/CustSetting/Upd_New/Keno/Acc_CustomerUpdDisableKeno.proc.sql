@@ -159,7 +159,7 @@ BEGIN
 
 			--Disable all downline or enable all downline
 			BEGIN TRY
-				EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
+				EXEC [Acc_Custsetting3rd_10] @CustID = @CustID
 					,@RoleID = @RoleID
 					,@Action = 'UpdKeno-Disable'
 					,@DisableKeno = @Disable

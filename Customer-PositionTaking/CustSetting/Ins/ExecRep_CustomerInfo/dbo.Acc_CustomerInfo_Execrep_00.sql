@@ -2412,7 +2412,7 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
-	END
+	END --end roleid = 1
 END
 
 GO

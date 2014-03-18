@@ -345,44 +345,6 @@ begin
 			AND Recommend = @CustID
 	END
 end
-else if @Action = 'UpdKeno-Disable'
-begin
-	IF (@roleID = 4)
-	BEGIN
-		UPDATE g
-		SET IsDisabled = @DisableKeno
-		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
-			ON g.custid = c.custid
-		WHERE c.CustID <> @CustID
-			AND c.SRecommend = @CustID
-			AND g.GameTypeID = @GameTypeID
-	END
-
-	IF (@roleID = 3)
-	BEGIN
-		UPDATE g
-		SET IsDisabled = @DisableKeno
-		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
-			ON g.custid = c.custid
-		WHERE c.CustID <> @CustID
-			AND c.MRecommend = @CustID
-			AND g.GameTypeID = @GameTypeID
-	END
-
-	IF (@roleID = 2)
-	BEGIN
-		UPDATE g
-		SET IsDisabled = @DisableKeno
-		FROM dbo.CustGameType g WITH (ROWLOCK, UPDLOCK) 
-		INNER JOIN dbo.CustInfo c WITH (NOLOCK) 
-			ON g.custid = c.custid
-		WHERE c.CustID <> @CustID
-			AND c.Recommend = @CustID
-			AND g.GameTypeID = @GameTypeID
-	END
-end
 GO
 
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
