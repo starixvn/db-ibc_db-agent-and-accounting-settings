@@ -872,6 +872,107 @@ BEGIN
 		
 		
 	END--end mode = 'LiveCasino'
+	ELSE IF @mode = 'Keno'
+	BEGIN
+		print 'to do'
+		--deposit customer
+		IF(EXISTS(SELECT TOP 1 1 FROM dbo.Dep_CustSuper WITH (NOLOCK) WHERE custid = @srecommend ))
+		BEGIN
+			WITH KenoGameType AS
+			(
+				SELECT @custid CustID 
+					, GameTypeID
+				FROM DBPRO.bodb02.dbo.GameType g WITH (NOLOCK)
+				WHERE g.IBCBetTypeID BETWEEN 1501 AND 1509
+			)
+			INSERT INTO dbo.CustSettingGame (
+				[CustID]
+				,[GameTypeID]
+				,[StakeLevelList]
+				,[MaxPerGameType]
+				,[MinBet]
+				,[MaxBet]
+				,[IsDisabled]
+				)
+			SELECT g.CustID
+				,g.GameTypeID
+				,'' AS [StakeLevelList]
+				,ISNULL(c.maxpermatch161, 0) AS [MaxPerGameType]
+				,ISNULL(cs.[MinBet], 0) [MinBet]
+				,ISNULL(cs.[MaxBet], 0) [MaxBet]
+				,1 AS IsDisabled
+			FROM KenoGameType g
+				LEFT JOIN (
+				SELECT TOP 1 custid
+					,maxpermatch161
+				FROM dbo.custinfo WITH (NOLOCK)
+				WHERE custid = @custid
+				) c
+				ON g.custid = c.custid
+				LEFT JOIN (
+				SELECT TOP 1 custid
+					,MinBet
+					,MaxBet
+				FROM dbo.Dep_CustSetting3rd cs WITH (NOLOCK)
+				WHERE custid = @custid
+					AND [sporttype] = 161
+					AND [bettype] = 81
+				) cs
+				ON g.custid = cs.custid
+
+			--insert into [CustSettingGame]
+			INSERT INTO [dbo].[CustSettingGame]
+				([CustID]
+				,[Bettype]
+				,[Sporttype]
+				,[apositiontaking]
+				,[mpositiontaking]
+				,[spositiontaking]
+				,[playerdiscount]
+				,[discount]
+				,[adiscount]
+				,[sdiscount]
+				,[autopositiontaking]
+				,[isautopositiontaking]
+				,[autompositiontaking]
+				,[isautompositiontaking]
+			)
+			SELECT @custid AS [CustID]
+				,1501 AS IBCBettypeID
+				,202 AS SportType
+				,0.85 AS [apositiontaking]
+				,0 AS [mpositiontaking]
+				,0 AS [spositiontaking]
+				,0 AS [playerdiscount]
+				,0 AS [discount]
+				,0 AS [adiscount]
+				,0 AS [sdiscount]
+				,0.00 AS [autopositiontaking]
+				,0 AS [isautopositiontaking]
+				,0.00 AS [autompositiontaking]
+				,0 AS [isautompositiontaking]
+		END
+		ELSE --credit customer
+		BEGIN
+			INSERT INTO dbo.CustSettingGame
+				([CustID]
+				   ,[GameTypeID]
+				   ,[StakeLevelList]
+				   ,[MaxPerGameType]
+				   ,[MinBet]
+				   ,[MaxBet]
+				   ,[IsDisabled])
+			SELECT @custid AS CustID
+				,GameTypeID
+				,'' AS [StakeLevelList]
+				,0.00 AS [MaxPerGameType]
+				,0.00 AS [MinBet]
+				,0.00 AS [MaxBet]
+				,1 AS IsDisabled
+			FROM DBPRO.bodb02.dbo.GameType g WITH(NOLOCK)
+			WHERE g.IBCBetTypeID BETWEEN 1501 AND 1509
+		END
+	END --end mode = 'Keno'
 END
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_01] TO [vnteam] AS [dbo]
