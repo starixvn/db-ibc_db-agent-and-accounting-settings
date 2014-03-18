@@ -2336,6 +2336,5 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
-		--End Keno
-	END
+	END --end roleid = 1
 END

@@ -90,27 +90,33 @@ BEGIN
 	BEGIN
 		-- check uplineDisable
 		IF (@RoleID = 3) 
-			SELECT TOP(1) @UplineDisable = ISNULL(IsDisabled, 0)
-			FROM dbo.CustGameType g WITH (NOLOCK)
-			INNER JOIN dbo.CustInfo c WITH (NOLOCK)
+			SELECT TOP(1) @UplineDisable = CASE 
+				WHEN c.HideKeno = 0 AND ISNULL(IsDisabled, 0) = 0 THEN 0 
+				ELSE 1 END
+			FROM dbo.CustInfo c WITH (NOLOCK)
+			LEFT JOIN dbo.CustGameType g WITH (NOLOCK)
 				ON g.custid = c.custid
 			WHERE g.custid = (SELECT SRecommend FROM dbo.Custinfo WITH (NOLOCK)
 							WHERE custid = @CustID)
 				and g.GameTypeID = @GameTypeID
 
 		IF (@RoleID = 2) 
-			SELECT TOP(1) @UplineDisable = ISNULL(IsDisabled, 0)
-			FROM dbo.CustGameType g WITH (NOLOCK)
-			INNER JOIN dbo.CustInfo c WITH (NOLOCK)
+			SELECT TOP(1) @UplineDisable = CASE 
+				WHEN c.HideKeno = 0 AND ISNULL(IsDisabled, 0) = 0 THEN 0 
+				ELSE 1 END
+			FROM dbo.CustInfo c WITH (NOLOCK)
+			LEFT JOIN dbo.CustGameType g WITH (NOLOCK)
 				ON g.custid = c.custid
 			WHERE g.custid = (SELECT MRecommend FROM dbo.Custinfo WITH (NOLOCK)
 							WHERE custid = @CustID)
 				and g.GameTypeID = @GameTypeID
 
 		IF (@RoleID = 1) 
-			SELECT TOP(1) @UplineDisable = ISNULL(IsDisabled, 0)
-			FROM dbo.CustGameType g WITH (NOLOCK)
-			INNER JOIN dbo.CustInfo c WITH (NOLOCK)
+			SELECT TOP(1) @UplineDisable = CASE 
+				WHEN c.HideKeno = 0 AND ISNULL(IsDisabled, 0) = 0 THEN 0 
+				ELSE 1 END
+			FROM dbo.CustInfo c WITH (NOLOCK)
+			LEFT JOIN dbo.CustGameType g WITH (NOLOCK)
 				ON g.custid = c.custid
 			WHERE g.custid = (SELECT Recommend FROM dbo.Custinfo WITH (NOLOCK)
 							WHERE custid = @CustID)
@@ -121,8 +127,8 @@ BEGIN
 		IF (@UplineDisable = 1)
 		BEGIN
 			SELECT @ErrMsg = CASE @Language
-					WHEN 'E' THEN 'Account disabled. Unable to edit downlines.'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](60015, @Language)
+					WHEN 'E' THEN 'Account was disabled Keno. Unable to edit downlines.'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](60030, @Language)
 					END
 				,@ErrCode = 101
 
@@ -153,7 +159,7 @@ BEGIN
 
 			--Disable all downline or enable all downline
 			BEGIN TRY
-				EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
+				EXEC [Acc_Custsetting3rd_10] @CustID = @CustID
 					,@RoleID = @RoleID
 					,@Action = 'UpdKeno-Disable'
 					,@DisableKeno = @Disable
@@ -170,6 +176,14 @@ BEGIN
 		END
 
 		SET @HasUpdatedDisable = 1
+	END
+
+	IF(@GameTypeID = 0)
+	BEGIN
+		SELECT @ErrMsg = 'Bettype is disabled. Update process is unsuccessful.'
+			,@ErrCode = 105
+
+		RETURN
 	END
 
 	-- check to update HideKeno
