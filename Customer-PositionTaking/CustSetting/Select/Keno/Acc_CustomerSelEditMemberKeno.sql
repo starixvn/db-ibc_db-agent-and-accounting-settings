@@ -1,5 +1,8 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMemberKeno] 
 	@CustID INT
+
+	,@ErrCode VARCHAR(300) = '' OUTPUT
+	,@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
 	Created: Bobby
@@ -19,6 +22,14 @@ BEGIN
 		,@srecommend INT
 		,@mrecommend INT
 		,@recommend INT
+
+	---------------------------
+	--Check disable user
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
+		,@ErrCode = @ErrCode OUTPUT
+		,@ErrMsg = @ErrMsg OUTPUT
+
+	IF( @ErrCode > 0 ) RETURN
 
 	SELECT TOP 1 @roleId = roleId
 		,@mrecommend = srecommend
@@ -87,18 +98,22 @@ BEGIN
 		AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
 
-	--select custsettinggame setting
+	--select PT/Comm setting
 	SELECT cs.custid
 		,cs.bettype
-		,cs.apositiontaking
-		,cs.adiscount
-		,cs.discount
+		,cs.apositiontaking AS positiontaking
+		,ag.apositiontaking
+		,ag.adiscount
 		,cs.playerdiscount
 	FROM CustSettingGame cs WITH (NOLOCK)
-		INNER JOIN CustOverrideGame co WITH (NOLOCK)
-		ON cs.CustID = co.CustID
-			AND cs.Bettype = co.Bettype
-			AND cs.Sporttype = co.Sporttype
+		INNER JOIN (
+			SELECT bettype
+				,apositiontaking
+				,adiscount
+			FROM CustSettingGame WITH (NOLOCK)
+			WHERE CustID = @recommend
+		) ag
+		ON cs.bettype = ag.bettype
 		INNER JOIN (
 			SELECT t.IBCBettypeID Bettype
 			FROM dbo.CustGameType g WITH (NOLOCK)
