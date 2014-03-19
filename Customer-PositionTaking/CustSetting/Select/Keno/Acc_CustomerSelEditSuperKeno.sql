@@ -23,11 +23,11 @@ BEGIN
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)
 	INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
-	SELECT cg.GameTypeID, CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+	SELECT cg.GameTypeID, CASE WHEN SUM(CASE WHEN cg.IsDisabled = 1 THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN dbo.custInfo ci WITH (NOLOCK) ON cg.CustID = ci.srecommend
-	WHERE cg.CustID = @CustID AND ci.roleid = 3 AND cg.IsDisabled = 1
+	WHERE cg.CustID = @CustID AND ci.roleid = 3
 	GROUP BY cg.GameTypeID
 
 	--Customer Info

@@ -60,23 +60,25 @@ BEGIN
 	DECLARE @LogSPData           VARCHAR(MAX),
 	        @TrackingValueDB     VARCHAR(4000)
 	
-	SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' +
-	       COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
-	       'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
+	SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' + COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
+			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
 	
-	SELECT @TrackingValueDB = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' +
-	       COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'discount="' + COALESCE(CAST(@Old_discount AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
-	       'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
+	SELECT @TrackingValueDB = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' + COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'discount="' + COALESCE(CAST(@Old_discount AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
+			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
 	
 	SET @endRun = GETDATE()
 	SET @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
@@ -92,14 +94,15 @@ BEGIN
 		     @duration = @duration
 	END TRY
 	BEGIN CATCH
-		SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' +
-	       COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
-	       'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
-	       'ErrMsg="' + ERROR_MESSAGE() + '" />'
+		SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Commission Custid ="' + COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+			'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
+			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'ErrMsg="' + ERROR_MESSAGE() + '" />'
 
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 		     @UserID = @UserID,
@@ -113,7 +116,5 @@ END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbDownlineNet]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [vnteam]
