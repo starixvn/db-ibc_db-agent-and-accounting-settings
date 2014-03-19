@@ -24,7 +24,7 @@ BEGIN
 		,@mrecommend = srecommend
 		,@srecommend = mrecommend
 		,@recommend = recommend
-	FROM custinfo WITH (NOLOCK)
+	FROM dbo.custinfo WITH (NOLOCK)
 	WHERE custid = @CustID
 
 	IF (@roleId <> 1) RETURN;
@@ -37,7 +37,7 @@ BEGIN
 		,c.phone
 		,c.mobilephone
 		,c.fax
-	FROM Customer c WITH (NOLOCK)
+	FROM dbo.Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID
 
 	--calculate min, max for minbet, maxbet, maxpermatch for Web
@@ -56,15 +56,18 @@ BEGIN
 		ISNULL(MIN(MinBet), 0) as MinBet_Min,   
 		ISNULL(MIN(MaxBet),0) as Maxbet_Max,
 		ISNULL(MIN(MaxPerGameType), 0) AS MaxperMatch_Max		
-	FROM CustGameType as cs WITH (NOLOCK) 
-	inner join GameType gt WITH (NOLOCK) 
+	FROM dbo.CustGameType as cs WITH (NOLOCK) 
+	INNER JOIN dbo.GameType gt WITH (NOLOCK) 
 		on cs.gametypeid = gt.gametypeid
-	JOIN custinfo as ci WITH (NOLOCK) 
+	JOIN dbo.custinfo as ci WITH (NOLOCK) 
 			ON cs.custid=ci.custid		
 	WHERE ci.custid IN (@srecommend, @mrecommend, @recommend)
+		AND ci.HideKeno = 0
+		AND gt.IsDisabled = 0
 	group by gt.GameTypeID,
 		gt.IBCBettypeID
 
+	--select custgametype setting
 	SELECT cg.CustID
 		,mm.sporttype
 		,gt.IBCBetTypeID  as BetType
@@ -74,8 +77,8 @@ BEGIN
 		,mm.Maxbet_Max
 		,mm.MaxperMatch_Max
 		,cg.IsDisabled
-	FROM CustGameType cg WITH (NOLOCK)
-		INNER JOIN GameType gt WITH (NOLOCK)
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN dbo.GameType gt WITH (NOLOCK)
 		ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN @MinMaxBetUpline mm
 		ON cg.GameTypeID = mm.gametypeid
@@ -84,6 +87,7 @@ BEGIN
 		AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
 
+	--select custsettinggame setting
 	SELECT cs.custid
 		,cs.bettype
 		,cs.apositiontaking
@@ -95,12 +99,19 @@ BEGIN
 		ON cs.CustID = co.CustID
 			AND cs.Bettype = co.Bettype
 			AND cs.Sporttype = co.Sporttype
-	WHERE cs.Sporttype = 202
-		AND cs.Bettype BETWEEN 1501 AND 1599
-		AND cs.CustID = @CustID
+		INNER JOIN (
+			SELECT t.IBCBettypeID Bettype
+			FROM dbo.CustGameType g WITH (NOLOCK)
+			INNER JOIN dbo.GameType t WITH (NOLOCK)
+			ON g.gametypeid = t.gametypeid
+			WHERE g.custid = @CustID
+				AND t.IBCBettypeID BETWEEN 1501 AND 1599
+				AND t.IsDisabled = 0
+		) gt
+		ON cs.Bettype = gt.Bettype
+	WHERE cs.CustID = @CustID
+		AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
-
-	
 END
 GO
 
