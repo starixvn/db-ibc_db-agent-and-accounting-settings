@@ -571,6 +571,27 @@
     <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\ExecRep_CustomerInfo\dbo.Acc_CustomerInfo_Execrep_01.sql">
       <SubType>NotInBuild</SubType>
     </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdSuperKeno_Commission.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdSuperKeno_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelEditMemberKeno.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\ExecRep_CustomerInfo\dbo.Acc_CustomerInfo_Execrep_00.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_10.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_Positiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
   </ItemGroup>
   <ItemGroup>
     <BuildContributorArgument Include="OutDir=$(OutDir)" />
@@ -580,6 +601,12 @@
       <SubType>Code</SubType>
     </Build>
     <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdDisableKeno.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_BetSetting.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_Commission.proc.sql">
       <SubType>Code</SubType>
     </Build>
   </ItemGroup>

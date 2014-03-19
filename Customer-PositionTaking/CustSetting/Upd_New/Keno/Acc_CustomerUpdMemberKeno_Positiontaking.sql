@@ -8,6 +8,7 @@
 	@SubAccID	INT = 0,
 	@IP			VARCHAR(50)='',	
 	@UserID		INT = 0,
+	@IsValidated BIT = 0,
 	@Language	VARCHAR(20) = 'E',		
 	@ErrCode	VARCHAR(300) = '' OUTPUT,
 	@ErrMsg		NVARCHAR(4000) = '' OUTPUT	
@@ -59,6 +60,9 @@ DECLARE @startRun	DATETIME,
 		
 	SET @startRun = GETDATE()
 	
+	IF(@IsValidated = 1)
+		GOTO PROCESS_PT
+
 	---------------------------
 	-- ***Check Downline Belonging***
 	EXEC Age_CustomerSelCheckBelonging 
@@ -77,6 +81,8 @@ DECLARE @startRun	DATETIME,
 		return
 	END
 	--end
+	
+	PROCESS_PT:
 		
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend
 	FROM custinfo WITH(NOLOCK)
