@@ -49,7 +49,7 @@ BEGIN
 	END
 	
 	-- Apply exec rep
-	EXEC Acc_CustSetting3rd_06
+	EXEC Acc_CustSetting3rd_06_xtest
 		@CustId = @CustID,
 		@RoleId = 4,
 		@mode = 'Keno',
@@ -112,9 +112,8 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbAdminNet]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Commission] TO [vnteam] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbDownlineNet]
 GO
-
-
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [vnteam]

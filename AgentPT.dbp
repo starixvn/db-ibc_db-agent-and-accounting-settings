@@ -481,6 +481,7 @@ Begin DataProject = "AgentPT"
             End
             Begin Folder = "Keno"
                Script = "Acc_CustomerUpdDisableKeno.sql"
+               Script = "Acc_CustomerUpdMemberKeno_Positiontaking.sql"
                Script = "Acc_CustomerUpdSuperKeno_Commission.sql"
                Script = "Acc_CustomerUpdSuperKeno_MinMaxBet.sql"
             End
