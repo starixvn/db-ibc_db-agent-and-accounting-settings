@@ -18,7 +18,7 @@ BEGIN
 	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
 	SELECT GameTypeID, IBCBetTypeID FROM GameType WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
-	DECLARE @downlines BIT
+	DECLARE @downlines BIT, @currency INT
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3) THEN 1 ELSE 0 END
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)
@@ -30,25 +30,39 @@ BEGIN
 	WHERE cg.CustID = @CustID AND ci.roleid = 3
 	GROUP BY cg.GameTypeID
 
+	SELECT @currency = currency FROM custinfo WITH(NOLOCK) WHERE custid = @custid
+
 	--Customer Info
 	SELECT firstname, lastname, phone, mobilephone, fax
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID 
 
 	--BetSetting & Enable status
-	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
-		, CASE WHEN @downlines = 0 then cg.IsDisabled ELSE d.DisableDownlines END AS DisableDownlinesKeno
+	SELECT	gt.IBCBetTypeID, 
+			cg.MinBet, 
+			bs.MinBet AS MinBet_Min,			
+			cg.MaxBet, 
+			cg.MaxPerGameType, 
+			cg.IsDisabled, 
+			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE d.DisableDownlines END AS DisableDownlinesKeno
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 
-	--PT
-	SELECT cs.spositiontaking, co.minpositiontaking
+	--PT & commission
+	SELECT	cs.Bettype,
+			cs.spositiontaking, --s4
+			co.minpositiontaking, --n4
+			gs.MaxPositiontaking, --l4
+			cs.sdiscount,
+			gs.Maxsdiscount
 	FROM dbo.CustSettingGame cs WITH (NOLOCK)
 		INNER JOIN dbo.CustOverrideGame co WITH (NOLOCK) ON cs.CustID = co.CustID AND cs.Bettype = co.Bettype AND cs.Sporttype = co.Sporttype
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
+		INNER JOIN ProductGlobalSetting gs ON gt.IBCBetTypeID = gs.bettype AND gs.sporttype = co.Sporttype 
 	WHERE cs.CustID = @CustID AND cs.Bettype BETWEEN 1501 AND 1599 AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
 END

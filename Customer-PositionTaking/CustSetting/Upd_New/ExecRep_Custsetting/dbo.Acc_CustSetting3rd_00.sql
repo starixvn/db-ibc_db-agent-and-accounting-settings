@@ -1,11 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustSetting3rd_00]    Script Date: 3/18/2014 3:55:14 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_00] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_00_xtest] 
 	@custid int = 0,
 	@recommend int = 0,
 	@mrecommend int = 0,
