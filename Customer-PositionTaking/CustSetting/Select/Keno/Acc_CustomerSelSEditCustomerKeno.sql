@@ -1,0 +1,86 @@
+USE [bodb02]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSEditCustomerKeno]    Script Date: 3/20/2014 8:57:59 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerKeno]
+	@CustID		INT
+AS
+/*
+	Created: 20140317@Patrick
+	Task: Super edit setting Keno on member
+	DB: DBAGE/BODB02
+		
+	Revisions:
+										
+	Parameters Explanations:
+			
+*/
+BEGIN
+	SET NOCOUNT ON
+	DECLARE @srecommend INT, @mrecommend INT
+	
+	--Customer Info
+	SELECT username, firstname, lastname, phone, mobilephone, fax
+	FROM dbo.Customer WITH (NOLOCK)
+	WHERE custID = @CustID
+
+	--BetSetting
+	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+	WHERE cg.CustID = @CustID AND gt.IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
+	ORDER BY gt.IBCBetTypeID
+
+	--PT
+	SELECT @srecommend = srecommend, @mrecommend = mrecommend
+	FROM dbo.custinfo WITH(NOLOCK) WHERE custid = @custid
+	
+	SELECT cs.bettype
+		, cs.apositiontaking AS APositionTaking --a1
+		, cs.mpositiontaking AS MPositionTaking --m1
+		, cs.spositiontaking AS SPositionTaking --s1
+		, cs.isautopositiontaking AS IsAuto_SPositionTaking_Mem --is1
+		, cs.autopositiontaking AS Auto_SPositionTaking_Mem --us1
+		, mcs.isautopositiontaking AS IsAuto_SPositionTaking --is3
+		, scs.spositiontaking AS Auto_SPositionTaking_Max  --us1_max = S4
+		, CASE WHEN scs.spositiontaking - mcs.mpositiontaking > sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking)
+				THEN scs.spositiontaking - mcs.mpositiontaking
+				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS SPositionTaking_Max -- s1_max = Max(N4-M1-A1, S4-M3)
+		,CASE WHEN sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) < 0 
+				THEN 0
+				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS SPositionTaking_Min -- s1_min = Max(0, N4-M1-A1)
+	FROM dbo.CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.bettype = cs.bettype AND mcs.sporttype = cs.sporttype
+		INNER JOIN dbo.CustSettingGame scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.bettype = cs.bettype AND scs.sporttype = cs.sporttype
+		INNER JOIN dbo.CustOverrideGame sco WITH(NOLOCK) ON sco.custid = @srecommend AND sco.bettype = cs.bettype AND sco.sporttype = cs.sporttype
+	WHERE cs.custid = @custid
+		AND cs.bettype BETWEEN 1501 AND 1599
+		AND cs.sporttype = 202
+
+END
+
+
+GO
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbAdminNet] AS [dbo]
+GO
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbDownlineNet] AS [dbo]
+GO
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbDownlineNetView] AS [dbo]
+GO
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbExtAccNet] AS [dbo]
+GO
+
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [vnteam] AS [dbo]
+GO
+
+

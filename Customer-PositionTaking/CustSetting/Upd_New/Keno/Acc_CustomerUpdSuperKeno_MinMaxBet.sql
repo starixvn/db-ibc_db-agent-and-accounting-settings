@@ -109,6 +109,7 @@ BEGIN
 			@TrackingValueDB VARCHAR(4000)
 		
 	Select @LogSPData ='<Acc_CustomerUpdSuperKeno_MinMaxBet custid="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" ' +
+	'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1)) + '" ' +
 	'MinB="'+ coalesce(cast(@MinBet as varchar(50)),space(1)) + '" ' +
 	'MaxB="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
@@ -120,6 +121,7 @@ BEGIN
 	'ErrMsg="'+ coalesce(cast(@ErrMsg as nvarchar(4000)),space(1)) + '" />'
 
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdSuperKeno_MinMaxBet custid="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" ' +
+	'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1)) + '" ' +
 	'MinB="'+ coalesce(cast(@MinBet_old as varchar(50)),space(1)) + '" ' +
 	'MaxB="'+ coalesce(cast(@MaxBet_old as varchar(50)),space(1)) + '" ' +
@@ -144,6 +146,7 @@ BEGIN
 	END TRY
 	BEGIN CATCH
 		Select @LogSPData ='<Acc_CustomerUpdSuperKeno_MinMaxBet custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1)) + '" ' +
 		'MinB="'+ coalesce(cast(@MinBet as varchar(50)),space(1)) + '" ' +
 		'MaxB="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
@@ -164,3 +167,7 @@ BEGIN
 	END CATCH
 END
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [vnteam] AS [dbo]

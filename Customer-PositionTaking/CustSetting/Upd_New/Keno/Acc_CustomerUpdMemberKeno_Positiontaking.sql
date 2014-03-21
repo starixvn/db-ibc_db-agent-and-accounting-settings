@@ -260,7 +260,7 @@ DECLARE @startRun	DATETIME,
 		RETURN	
 	END	
 	
-	EXEC dbo.Acc_CustSetting3rd_00
+	EXEC dbo.Acc_CustSetting3rd_00_xtest
 		@custid = @custid, 
 		@recommend = @recommend, 
 		@mrecommend = @mrecommend, 
