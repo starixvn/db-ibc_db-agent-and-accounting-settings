@@ -3,8 +3,8 @@
 	@sporttype INT = 202,
 	@bettype INT,
 	
-	@spositiontaking SMALLMONEY,
-	@Min_Positiontaking SMALLMONEY,
+	@spositiontaking SMALLMONEY, --s4
+	@Min_Positiontaking SMALLMONEY, --n4
 	@Discount DECIMAL(9,8)=0,
 			
 	@UpdatePositiontaking	BIT = 0,
@@ -111,5 +111,7 @@ END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno] TO [vnteam] AS [dbo]

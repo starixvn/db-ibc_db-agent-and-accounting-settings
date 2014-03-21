@@ -3,7 +3,7 @@
 	@sporttype INT = 202,
 	@bettype INT,
 	
-	@spositiontaking SMALLMONEY,
+	@spositiontaking SMALLMONEY, --s4
 		
 	@UserID INT = 0,	
 	@Language varchar(2) = 'E',
@@ -138,7 +138,7 @@ BEGIN
 
 	--u = (i3 or i1)?(u3 or u1)
 	--s1 = min(s4-m1-a1, u)
-	EXEC dbo.Acc_CustSetting3rd_07_xtest @srecommend = @custid , @roleid = 4, @mode = 'LiveCasino', @sporttype = @sporttype, @bettype = @bettype
+	EXEC dbo.Acc_CustSetting3rd_07_xtest @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)
@@ -201,5 +201,7 @@ END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]  TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [vnteam] AS [dbo]

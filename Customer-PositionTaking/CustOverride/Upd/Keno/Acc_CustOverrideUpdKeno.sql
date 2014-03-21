@@ -32,26 +32,7 @@ BEGIN
 	SET @startRun = GETDATE()
 
 	DECLARE @roleid INT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000)
-	DECLARE @Old_Min_Positiontaking SMALLMONEY
-
-	---------------------------
-	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
-		@SessionCustID = @UserID, 
-		@CustID = @CustID,
-		@roleid = @roleid OUTPUT
-	IF (@roleid = 0) RETURN
-	---------------------------
-
-	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @CustID = @CustID, @ErrCode = @ErrCode_Cur output, @ErrMsg = @ErrMsg_Cur output
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-		RETURN
-	END
-	--end
+	DECLARE @Old_Min_Positiontaking SMALLMONEY	
 
 	--Check Allowed downlines	
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	
@@ -146,3 +127,11 @@ BEGIN
 	END CATCH
 END
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdKeno] TO [vnteam] AS [dbo]

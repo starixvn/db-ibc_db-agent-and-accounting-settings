@@ -24,7 +24,10 @@ BEGIN
 	SET NOCOUNT ON
 	DECLARE @startRun     DATETIME,
 	        @endRun       DATETIME,
-	        @duration     INT
+	        @duration     INT,
+			@MaxDiscount  DECIMAL(9, 8)
+
+	SELECT @MaxDiscount = Maxsdiscount FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @Sporttype AND Bettype = @Bettype
 	
 	SET @startRun = GETDATE()
 	
@@ -36,10 +39,10 @@ BEGIN
 	       AND csg.Sporttype = @Sporttype
 	       AND csg.Bettype = @Bettype
 	
-	IF @Old_discount = @discount
+	IF @Old_discount = @discount 
 	    RETURN
 	
-	IF @discount < 0
+	IF @discount < 0 OR @discount > @MaxDiscount
 	BEGIN
 	    SELECT @ErrMsg = CASE @Language
 	                          WHEN 'E' THEN 'Invalid commission rate.'
@@ -116,5 +119,7 @@ END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbAdminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbDownlineNet]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [vnteam]

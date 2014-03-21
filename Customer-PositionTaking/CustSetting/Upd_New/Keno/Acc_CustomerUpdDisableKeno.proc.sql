@@ -274,7 +274,12 @@ BEGIN
 
 	RETURN
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdDisableKeno] TO [vnteam] AS [dbo]
