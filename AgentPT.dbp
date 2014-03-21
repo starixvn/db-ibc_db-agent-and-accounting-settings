@@ -294,6 +294,7 @@ Begin DataProject = "AgentPT"
             End
             Begin Folder = "Keno"
                Script = "Acc_CustomerSelEditAgentKeno.sql"
+               Script = "Acc_CustomerSelEditMasterKeno.sql"
                Script = "Acc_CustomerSelEditSuperKeno.sql"
                Script = "Acc_CustomerSelMEditCustomerKeno.sql"
                Script = "Acc_CustomerSelSEditCustomerKeno.sql"
