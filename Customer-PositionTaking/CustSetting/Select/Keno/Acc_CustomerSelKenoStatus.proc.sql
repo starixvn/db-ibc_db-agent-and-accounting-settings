@@ -2,6 +2,7 @@
 	@custid INT
 	, @roleid INT = NULL
 	, @uplineId INT = NULL
+	, @HasDownline BIT = 0 OUTPUT
 AS
 /*
 	Created: Bobby
@@ -23,7 +24,6 @@ BEGIN
 		gametypeid INT
 		,isdisabled BIT DEFAULT 0
 		)
-
 
 	SELECT TOP (1) @custRoleid = roleid
 		,@srecommend = srecommend
@@ -55,6 +55,11 @@ BEGIN
 
 	IF (@custRoleid = 4)
 	BEGIN
+		--check has-dowline
+		SELECT TOP 1 @HasDownline = 1
+		FROM dbo.custInfo c WITH (NOLOCK)
+		WHERE srecommend = @custid
+			AND roleid = 3
 		IF (
 				EXISTS (
 					SELECT TOP 1 1
@@ -90,6 +95,11 @@ BEGIN
 
 	IF (@custRoleid = 3)
 	BEGIN
+		--check has-dowline
+		SELECT TOP 1 @HasDownline = 1
+		FROM dbo.custInfo c WITH (NOLOCK)
+		WHERE mrecommend = @custid
+			AND roleid = 2
 		IF (
 				EXISTS (
 					SELECT TOP 1 1
@@ -125,6 +135,11 @@ BEGIN
 
 	IF (@custRoleid = 2)
 	BEGIN
+		--check has-dowline
+		SELECT TOP 1 @HasDownline = 1
+		FROM dbo.custInfo c WITH (NOLOCK)
+		WHERE recommend = @custid
+			AND roleid = 1
 		IF (
 				EXISTS (
 					SELECT TOP 1 1

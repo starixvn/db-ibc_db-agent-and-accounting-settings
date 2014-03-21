@@ -1,20 +1,16 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] 
 	@custid				INT
+	,@sporttype			INT = 202
 	,@bettype			INT
 	
+	,@UpdateStatus		BIT = 0
 	,@Disable			BIT = NULL
 
 	--min/max/maxpermatch
 	,@MinBet			MONEY = 0
 	,@MaxBet			MONEY = 0
 	,@MaxPerMatch		MONEY = 0
-	,@IsUpdateMinMaxBet BIT = 0
-
-	--pt setting
-	,@aPositiontaking	SMALLMONEY = NULL
-
-	--commision
-	,@discount			DECIMAL(9, 8) = NULL
+	,@UpdateMinMaxBet	BIT = 0
 
 	,@SubAccID			INT = 0
 	,@IP				VARCHAR(50) = ''
@@ -73,7 +69,8 @@ BEGIN
 	END
 
 	--update status
-	IF(@Disable IS NOT NULL)
+	IF(@UpdateStatus = 1
+		AND @Disable IS NOT NULL)
 	BEGIN
 		EXEC [Acc_CustomerUpdDisableKeno] 
 			@CustID = @custid
@@ -99,7 +96,7 @@ BEGIN
 	END
 
 	--update min/max/maxpermatch
-	IF(@IsUpdateMinMaxBet = 1)
+	IF(@UpdateMinMaxBet = 1)
 	BEGIN
 		EXEC [Acc_CustomerUpdMemberKeno_MinMaxBet] 
 			@custid = @custid
@@ -128,59 +125,6 @@ BEGIN
 			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
 
-	--update PT
-	IF(@aPositiontaking IS NOT NULL)
-	BEGIN
-		EXEC [Acc_CustomerUpdMemberKeno_Positiontaking]
-			@custid = @custid
-			,@bettype = @bettype
-
-			,@apositiontaking	= @apositiontaking
-
-			,@SubAccID = @SubAccID
-			,@IP = @IP
-			,@UserID = @UserID
-			,@Language = @Language
-			,@ErrCode = @ErrCode_Cur OUTPUT
-			,@ErrMsg = @ErrMsg_Cur OUTPUT
-			,@IsValidated = 1
-	
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7)
-				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-			RETURN
-		END
-		ELSE
-			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)	
-	END
-	--Update commision
-	IF(@discount IS NOT NULL)
-	BEGIN
-		EXEC [Acc_CustomerUpdMemberKeno_Commission]
-			@custid = @custid
-			,@bettype = @bettype
-
-			,@discount	= @discount
-
-			,@SubAccID = @SubAccID
-			,@IP = @IP
-			,@UserID = @UserID
-			,@Language = @Language
-			,@ErrCode = @ErrCode_Cur OUTPUT
-			,@ErrMsg = @ErrMsg_Cur OUTPUT
-	
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7)
-				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-			RETURN
-		END
-		ELSE
-			SELECT @ErrCode = @ErrCode + '-104' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)	
-	END
 	RETURN
 END
 GO
