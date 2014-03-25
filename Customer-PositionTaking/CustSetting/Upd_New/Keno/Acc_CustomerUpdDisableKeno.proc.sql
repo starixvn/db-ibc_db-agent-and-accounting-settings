@@ -42,7 +42,6 @@ BEGIN
 		,@RoleID_Ck TINYINT
 		,@UplineHideKeno BIT = 0
 		,@UplineDisable BIT = 0
-		,@HideKeno BIT = 0
 		,@Old_HideKeno BIT
 		,@Old_DisableBetType BIT
 		,@GameTypeID INT
@@ -252,7 +251,6 @@ BEGIN
 
 	SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'HideKeno="' + coalesce(cast(@HideKeno AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
@@ -265,7 +263,6 @@ BEGIN
 		--tracking values
 		,@TrackingValue = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'HideKeno="' + coalesce(cast(@Old_HideKeno AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Disable="' + coalesce(cast(@Old_DisableBetType AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
@@ -293,7 +290,6 @@ BEGIN
 	BEGIN CATCH
 		SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'HideKeno="' + coalesce(cast(@HideKeno AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
