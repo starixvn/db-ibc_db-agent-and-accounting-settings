@@ -609,5 +609,8 @@
     <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_Commission.proc.sql">
       <SubType>Code</SubType>
     </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
   </ItemGroup>
 </Project>

@@ -6,7 +6,6 @@
 	@MaxBet			MONEY,
 	@MaxPerMatch	MONEY,
 
-	@IsValidated BIT = 0,
 	@UserID			INT = 0,	
 	@Language		VARCHAR(2) = 'E',
 	@IP				VARCHAR(15)='',
@@ -39,31 +38,6 @@ BEGIN
 		,@maxpermatch_old MONEY
 		,@GameTypeID INT
 
-	IF(@IsValidated = 1)
-		GOTO PROCESS_PT
-
-	---------------------------
-	-- ***Check Downline Belonging***
-	EXEC Age_CustomerSelCheckBelonging 
-		@SessionCustID = @Userid, 
-		@Custid = @custid,
-		@roleid = @roleid OUTPUT
-		IF (@roleid = 0) RETURN
-	
-	---------------------------
-	--Check disable user
-	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
-	IF @ErrCode_Cur > 0
-	BEGIN
-		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-		return
-	END
-	--end
-	
-	PROCESS_PT:
-
-	SET @GameTypeID = ISNULL(@GameTypeID, 0)
 	SET @startRun = GETDATE()
 
 	DECLARE @ErrCode_Cur INT

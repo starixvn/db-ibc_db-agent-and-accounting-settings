@@ -109,7 +109,6 @@ BEGIN
 			,@SubAccID = @SubAccID
 			,@IP = @IP
 			,@UserID = @UserID
-			,@IsValidated = 1
 			,@Language = @Language
 			,@ErrCode = @ErrCode_Cur OUTPUT
 			,@ErrMsg = @ErrMsg_Cur OUTPUT

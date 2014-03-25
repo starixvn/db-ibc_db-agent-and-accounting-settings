@@ -11,6 +11,7 @@ AS
 	Task: get disable status of Keno
 	
 	Revisions:
+		20140320@Bobby: Add output @HasDownline
 */
 BEGIN
 	SET NOCOUNT ON

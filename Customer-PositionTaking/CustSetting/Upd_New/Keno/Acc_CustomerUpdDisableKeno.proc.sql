@@ -20,7 +20,7 @@ AS
 	Original: 
 	Revisions:
 		20140227@Bobby: Implement upd disabled keno gaming for credit customers
-		20140320@Bobby: Implement tracking values
+		20140320@Bobby: Implement tracking values & cheking HasDownline
 
 	Param's Explanation:
 		• @custid: customer id.   
@@ -166,7 +166,7 @@ BEGIN
 		--Check condition for update all downline
 		IF ( @RoleID > 1 
 				AND (@Disable = 1
-						OR (@Disable = 0 AND @DisableDownlines = 0)
+						OR (@Disable = 0 AND (@DisableDownlines = 0 AND @HasDownline = 1))
 				)
 			)
 		BEGIN
@@ -217,7 +217,8 @@ BEGIN
 		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK)
 		WHERE CustID = @CustID
 		
-		IF(@RoleID > 1)
+		IF(@RoleID > 1 
+			AND @HasDownline = 1)
 		BEGIN
 			BEGIN TRY	
 				--update HideKeno for all downline

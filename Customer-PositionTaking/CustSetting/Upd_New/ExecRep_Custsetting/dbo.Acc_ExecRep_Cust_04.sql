@@ -14,8 +14,6 @@
 	@BingoStatus BIT = 0,
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
-	@DisableKeno BIT = 0,
-	@GameTypeID INT = 0,
 	@rowcount INT = 0 OUTPUT
 AS 
 /*
