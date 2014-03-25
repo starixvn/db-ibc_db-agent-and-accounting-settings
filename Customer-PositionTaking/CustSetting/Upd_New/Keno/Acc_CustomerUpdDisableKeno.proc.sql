@@ -45,7 +45,8 @@ BEGIN
 		,@Old_HideKeno BIT
 		,@Old_DisableBetType BIT
 		,@GameTypeID INT
-		,@HasUpdatedDisable BIT = 0;
+		,@HasUpdatedDisable BIT = 0
+		,@HasDownline BIT = 0
 
 	--Check disable user
 	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
@@ -54,10 +55,16 @@ BEGIN
 
 	IF (@ErrCode <> 0) RETURN
 
-	SELECT TOP(1) @RoleID = RoleID
-		, @Old_HideKeno = ISNULL(HideKeno, 0)
+	SELECT	@RoleID = RoleID, 
+			@Old_HideKeno = ISNULL(HideKeno, 0)
 	FROM dbo.CustInfo WITH (NOLOCK)
 	WHERE CustID = @CustID
+
+	SELECT	@HasDownline = 1 
+	FROM dbo.CustInfo WITH (NOLOCK)
+	WHERE (@RoleID = 4 AND srecommend = @CustID and roleid = 3)
+		OR (@RoleID = 3 AND mrecommend = @CustID and roleid = 2)
+		OR (@RoleID = 2 AND recommend = @CustID and roleid = 1)
 
 	IF(@RoleID = 1)
 	BEGIN
@@ -212,7 +219,7 @@ BEGIN
 		
 		IF(@RoleID > 1)
 		BEGIN
-			BEGIN TRY			
+			BEGIN TRY	
 				--update HideKeno for all downline
 				EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
 					,@RoleID = @RoleID
@@ -252,7 +259,7 @@ BEGIN
 	SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'DisableDownlines="' + CASE WHEN @HasDownline = 1 THEN coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) ELSE '' END  + '" ' 
 		+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
 		+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'UplineID="' + coalesce(cast(@UplineID AS VARCHAR(50)), space(1)) + '" ' 
@@ -264,7 +271,7 @@ BEGIN
 		,@TrackingValue = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'Disable="' + coalesce(cast(@Old_DisableBetType AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'DisableDownlines="' + CASE WHEN @HasDownline = 1 THEN coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) ELSE '' END  + '" ' 
 		+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
 		+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'UplineID="' + coalesce(cast(@UplineID AS VARCHAR(50)), space(1)) + '" ' 
@@ -291,7 +298,7 @@ BEGIN
 		SELECT @LogSPData = '<Acc_CustomerUpdDisableKeno CustID="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'Bettype="' + coalesce(cast(@Bettype AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'Disable="' + coalesce(cast(@Disable AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'DisableDownlines="' + coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'DisableDownlines="' + CASE WHEN @HasDownline = 1 THEN coalesce(cast(@DisableDownlines AS VARCHAR(50)), space(1)) ELSE '' END  + '" ' 
 			+ 'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' 
 			+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'UplineID="' + coalesce(cast(@UplineID AS VARCHAR(50)), space(1)) + '" ' 
@@ -313,7 +320,6 @@ BEGIN
 END
 
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbadminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbDownlineNet] AS [dbo]

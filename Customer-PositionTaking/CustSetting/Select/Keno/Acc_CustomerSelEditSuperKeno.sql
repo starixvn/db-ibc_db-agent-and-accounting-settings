@@ -26,8 +26,8 @@ BEGIN
 	SELECT cg.GameTypeID, CASE WHEN SUM(CASE WHEN cg.IsDisabled = 1 THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-		INNER JOIN dbo.custInfo ci WITH (NOLOCK) ON cg.CustID = ci.srecommend
-	WHERE cg.CustID = @CustID AND ci.roleid = 3
+		INNER JOIN dbo.custInfo ci WITH (NOLOCK) ON cg.CustID = ci.CustID
+	WHERE ci.srecommend = @CustID AND ci.roleid = 3
 	GROUP BY cg.GameTypeID
 
 	SELECT @currency = currency FROM custinfo WITH(NOLOCK) WHERE custid = @custid
