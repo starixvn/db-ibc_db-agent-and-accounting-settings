@@ -3,13 +3,8 @@
 	@sporttype INT = 202,
 	@bettype INT,
 
-	@UpdatePT		BIT = 0,
 	@apositiontaking SMALLMONEY,
 	
-	--commision
-	@UpdateComm		BIT = 0,
-	@discount		DECIMAL(9, 8) = NULL,
-
 	@SubAccID	INT = 0,
 	@IP			VARCHAR(50)='',	
 	@UserID		INT = 0,
@@ -63,7 +58,7 @@ DECLARE @startRun	DATETIME,
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 		
 	SET @startRun = GETDATE()
-
+	
 	---------------------------
 	-- ***Check Downline Belonging***
 	EXEC Age_CustomerSelCheckBelonging 
@@ -82,7 +77,6 @@ DECLARE @startRun	DATETIME,
 		return
 	END
 	--end
-	
 		
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend
 	FROM custinfo WITH(NOLOCK)
@@ -260,7 +254,7 @@ DECLARE @startRun	DATETIME,
 		RETURN	
 	END	
 	
-	EXEC dbo.Acc_CustSetting3rd_00_xtest
+	EXEC dbo.Acc_CustSetting3rd_00
 		@custid = @custid, 
 		@recommend = @recommend, 
 		@mrecommend = @mrecommend, 
@@ -280,37 +274,6 @@ DECLARE @startRun	DATETIME,
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
 		RETURN	
 	END	
-	
-	--Update commision
-	IF(@UpdateComm = 1 
-		AND @discount IS NOT NULL)
-	BEGIN
-		EXEC [Acc_CustomerUpdMemberKeno_Commission]
-			@custid = @custid
-			,@bettype = @bettype
-
-			,@discount	= @discount
-
-			,@SubAccID = @SubAccID
-			,@IP = @IP
-			,@UserID = @UserID
-			,@Language = @Language
-			,@ErrCode = @ErrCode_Cur OUTPUT
-			,@ErrMsg = @ErrMsg_Cur OUTPUT
-	
-		IF (@@error <> 0)
-		BEGIN		
-			SELECT @ErrMsg_Cur = CASE @Language 
-									WHEN 'E' THEN 'Update process is unsuccessful !'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-								END, @ErrCode_Cur = 106	
-		
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-							@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
-			RETURN	
-		END	
-	END
-	
 			
 	DECLARE @LogSPData VARCHAR(5000),
 		@TrackingValueDB VARCHAR(5000)
