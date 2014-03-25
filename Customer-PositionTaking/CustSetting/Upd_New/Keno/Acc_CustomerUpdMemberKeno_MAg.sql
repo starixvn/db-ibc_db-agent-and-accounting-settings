@@ -16,7 +16,6 @@ ALTER PROCEDURE dbo.Acc_CustomerUpdMemberKeno_MAg
 	, @SubAccID	INT = 0 --Sub-AccountID
 	, @Language VARCHAR(2) = 'E'
 	, @IP VARCHAR(19) = ''
-	, @Username NVARCHAR(50) = '' OUTPUT
 	, @ErrCode VARCHAR(300) = '' OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
 )
@@ -32,7 +31,7 @@ BEGIN
 
 	SET NOCOUNT ON 
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @ErrType VARCHAR(1000), @roleid TINYINT, @ErrCode_Cur INT
-		, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000), @recommend INT, @srecommend INT, @mrecommend INT
+		, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000), @recommend INT, @srecommend INT, @mrecommend INT, @UserName VARCHAR(50)
 
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
 
@@ -107,7 +106,7 @@ BEGIN
 		AND	@Auto_MPositionTaking_Mem = @Old_Auto_MPositionTaking_Mem
 		AND @IsAuto_MPositionTaking_Mem = @Old_IsAuto_MPositionTaking_Mem)
 	BEGIN	
-		SELECT @ErrCode = @ErrCode + '-103'+ CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+		SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		RETURN
 	END
 	
@@ -130,7 +129,7 @@ BEGIN
 		BEGIN
 			SELECT @ErrCode_cur = 7
 					, @ErrMsg_cur = @UserName + ': '+ CASE @Language 
-									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									WHEN 'E' THEN 'Wrong auto position taking.<br>' + @ErrType
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009, @Language) + '<br>' + @ErrType END							
 			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN
@@ -162,36 +161,36 @@ BEGIN
 			
 	IF (@UpdatePositiontaking = 1 OR @UpdateAutoPositiontaking = 1)
 	BEGIN	
-		--Check m1<=m3
+		--Check m1<= max(0, min(m3,m4)-a1)
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + 'Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
 		FROM 
 		(
 			SELECT @SportType AS sporttype, @BetType AS bettype, @MPositionTaking AS mpositiontaking
-				, @MPositionTaking_Max AS maxmpositiontaking
+				, @MPositionTaking_Max AS maxmpositiontaking, @APositionTaking AS apositiontaking
 		)b
 			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
 			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-		WHERE b.mpositiontaking > b.maxmpositiontaking
+		WHERE b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking
 
 		IF @ErrType <> ''
 		BEGIN
 			SELECT @ErrCode_cur = 8, @ErrMsg_cur = @UserName + ': '+ CASE @Language 
-									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType END							
+									WHEN 'E' THEN 'Wrong  position taking.<br>' + @ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) + '<br>' + @ErrType END							
 			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN
 		END
 				
-		--Check m1 + a1 >= n3
+		--Check m1+a1>=n3
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + 'Min: ' + CAST(@MPositionTaking_Min AS VARCHAR(10))  
-							WHERE @APositionTaking + @MPositionTaking < @MPositionTaking_Min
+		WHERE @APositionTaking + @MPositionTaking < @MPositionTaking_Min
 		
-		IF @ErrType <>''
+		IF @ErrType <> ''
 		BEGIN
 			SELECT @ErrCode_cur = 9, @ErrMsg_cur = CASE @Language
-						WHEN 'E' THEN 'Wrong  position taking.<br>'+ @ErrType 
+						WHEN 'E' THEN 'Wrong  position taking.<br>' + @ErrType 
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) + '<br>' + @ErrType END
 			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN
@@ -200,15 +199,14 @@ BEGIN
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT @MPositionTaking = CASE WHEN @APositionTaking + @MPositionTaking > @MPositionTaking_Max 
 									THEN @MPositionTaking_Max - @APositionTaking ELSE @MPositionTaking END
-			, @MPositionTaking = CASE WHEN @MPositionTaking < 0 THEN 0 ELSE @MPositionTaking END
-			
+		SELECT @MPositionTaking = CASE WHEN @MPositionTaking < 0 THEN 0 ELSE @MPositionTaking END
 			
 		--Must include code for auto master
-			--um=im1>0?um1:um2
-			--im=im1>0?im1:im2
-			--m1=im>0?min(um,m3-a1):m1
-			--auto master
-			--um=im1>0?um1:um2
+			--++um=im1>0?um1:um2
+			--++im=im1>0?im1:im2
+			--++m1=im>0?min(um,m3-a1):m1
+			--++auto master
+			--++um=im1>0?um1:um2
 		SELECT @Auto_MPositionTaking = CASE WHEN @IsAuto_MPositionTaking_Mem > 0 THEN @Auto_MPositionTaking_Mem ELSE @Auto_MPositionTaking END
 			--im=im1>0?im1:im31
 			, @IsAuto_MPositionTaking = CASE WHEN @IsAuto_MPositionTaking_Mem > 0 THEN @IsAuto_MPositionTaking_Mem ELSE @IsAuto_MPositionTaking END
@@ -222,8 +220,8 @@ BEGIN
 					ELSE @MPositionTaking_Max - @APositionTaking END 
 				END
 		--Choose member autopositiontaking if member is set auto (regardless of the setting in master account)
-		SELECT @Auto_SPositionTaking = CASE WHEN @IsAuto_SPositionTaking_Mem >0 THEN @Auto_SPositionTaking_Mem ELSE @Auto_SPositionTaking END
-			, @IsAuto_SPositionTaking = CASE WHEN @IsAuto_SPositionTaking_Mem >0 THEN @IsAuto_SPositionTaking_Mem ELSE @IsAuto_SPositionTaking END		
+		SELECT @Auto_SPositionTaking = CASE WHEN @IsAuto_SPositionTaking_Mem > 0 THEN @Auto_SPositionTaking_Mem ELSE @Auto_SPositionTaking END
+			, @IsAuto_SPositionTaking = CASE WHEN @IsAuto_SPositionTaking_Mem > 0 THEN @IsAuto_SPositionTaking_Mem ELSE @IsAuto_SPositionTaking END		
 
 		--Use auto position taking
 		SELECT @SPositionTaking = CASE WHEN ISNULL(@IsAuto_SPositionTaking, 0) < = 0 
@@ -233,26 +231,22 @@ BEGIN
 					ELSE @SPositionTaking_Max - @MPositionTaking - @APositionTaking END
 				END
 		
-		----maxs1=isauto?s4:s4-m2
+		----max_s1=isauto?s4:s4-m2
 		SELECT @SPositionTaking_Max = CASE WHEN ISNULL(@IsAuto_SPositionTaking, 0) > 0 
 				THEN @SPositionTaking_Max 
-				ELSE @SPositionTaking_Max-@MPositionTaking_Max END
+				ELSE @SPositionTaking_Max - @MPositionTaking_Max END
 			--s1=s1>maxs1?maxs1:s1
 			, @SPositionTaking = CASE WHEN @SPositionTaking > @SPositionTaking_Max THEN @SPositionTaking_Max ELSE @SPositionTaking END
 	END
 
 	--don't update m1,s1 for member under agent was set im2=1
 	UPDATE cs WITH (ROWLOCK, UPDLOCK)
-	SET mpositiontaking = CASE WHEN cs.bettype = @BetType AND cs.sporttype = @SportType 
-								THEN @MPositionTaking ELSE cs.mpositiontaking END
-		, spositiontaking = CASE WHEN cs.bettype = @BetType AND cs.sporttype = @SportType
-								THEN @SPositionTaking ELSE cs.spositiontaking END
+	SET mpositiontaking = @MPositionTaking, spositiontaking = @SPositionTaking
 	FROM dbo.CustSettingGame cs
 		INNER JOIN dbo.custinfo c WITH(NOLOCK) ON cs.custid = c.custid
 		INNER JOIN dbo.CustSettingGame acs WITH(NOLOCK) ON acs.custid = c.recommend AND cs.bettype = acs.bettype AND cs.sporttype = acs.sporttype 
-	WHERE c.custid = @custid  AND cs.sporttype = @SportType AND c.roleid = 1 AND acs.isautompositiontaking = 0
-
-	
+	WHERE c.custid = @custid AND cs.BetType = @BetType  AND cs.sporttype = @SportType AND c.roleid = 1 AND acs.isautompositiontaking = 0
+		
 	--Update auto PT
 	--Update Member account (autompositiontaking field)
 	UPDATE dbo.CustSettingGame WITH (ROWLOCK, UPDLOCK) 
@@ -357,7 +351,7 @@ BEGIN
 			, @TrackingValue2 = @TrackingValueDB
 			, @duration = @duration
 	END CATCH
-	SELECT @ErrCode = @ErrCode + '-103'+CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+	SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 
 END
 
