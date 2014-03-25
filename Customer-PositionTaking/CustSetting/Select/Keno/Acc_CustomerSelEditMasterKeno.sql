@@ -21,7 +21,7 @@ BEGIN
 	DECLARE @downlines BIT, @srecommend INT
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3) THEN 1 ELSE 0 END
 	
-	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)
+	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)	
 	INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
 	SELECT cg.GameTypeID, CASE WHEN SUM(CASE WHEN cg.IsDisabled = 1 THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END
 	FROM dbo.CustGameType cg WITH (NOLOCK)
@@ -71,32 +71,50 @@ BEGIN
 	--BetSetting & Enable status
 	SELECT	gt.IBCBetTypeID, 
 			cg.MinBet, 
-			bs.MinBet AS MinBet_Min,			
-			cg.MaxBet, 
-			cg.MaxPerGameType, 
+			cg.MaxBet,
+			cg.MaxPerGameType,
+			s.MinBet AS MinBet_Min,			
+			s.MaxBet AS MaxBet_Max, 
+			s.MaxPerGameType AS MaxPerMatch_Max, 
 			cg.IsDisabled, 
-			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE d.DisableDownlines END AS DisableDownlinesKeno
+			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE ISNULL(d.DisableDownlines,1) END AS DisableDownlinesKeno
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-		INNER JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
-		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
+		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
+		INNER JOIN @SuperSetting s ON gt.IBCBetTypeID = s.bettype
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 
 	--PT & commission
 	SELECT	cs.Bettype,
-			cs.spositiontaking, --s4
-			co.minpositiontaking, --n4
-			gs.MaxPositiontaking, --l4
-			cs.sdiscount,
-			gs.Maxsdiscount
+			cs.spositiontaking, --s3
+			cs.mpositiontaking, --m3
+			co.minpositiontaking, --n3
+			cs.isautopositiontaking, --is3
+			cs.autopositiontaking, --us3
+			
+			scs.spositiontaking, --s4
+			
+			cs.adiscount,
+			scs.sdiscount AS discount_max
 	FROM dbo.CustSettingGame cs WITH (NOLOCK)
 		INNER JOIN dbo.CustOverrideGame co WITH (NOLOCK) ON cs.CustID = co.CustID AND cs.Bettype = co.Bettype AND cs.Sporttype = co.Sporttype
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
-		INNER JOIN ProductGlobalSetting gs ON gt.IBCBetTypeID = gs.bettype AND gs.sporttype = co.Sporttype 
+		INNER JOIN @SuperSetting scs ON cs.bettype = scs.bettype 
 	WHERE cs.CustID = @CustID AND cs.Bettype BETWEEN 1501 AND 1599 AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbAdminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbExtAccNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbDownlineNetView]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [vnteam]
 
 
 GO
