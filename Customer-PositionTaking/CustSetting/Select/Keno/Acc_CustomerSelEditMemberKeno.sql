@@ -88,15 +88,13 @@ BEGIN
 		,gt.IBCBettypeID
 
 	--select custgametype setting
-	SELECT cg.CustID
-		,@Sporttype AS sporttype
-		,gt.IBCBetTypeID AS BetType
+	SELECT gt.IBCBetTypeID
 		,cg.MinBet
 		,cg.MaxBet
-		,cg.MaxPerGameType AS MaxPerGame
+		,cg.MaxPerGameType
 		,ISNULL(mm.MinBet_Min, 0.00) MinBet_Min
 		,ISNULL(mm.MaxBet_Max, 0.00) MaxBet_Max
-		,ISNULL(mm.MaxperGame_Max, 0.00) MaxPerGame_Max
+		,ISNULL(mm.MaxperGame_Max, 0.00) MaxPerMatch_Max
 		,cg.IsDisabled
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN dbo.GameType gt WITH (NOLOCK)
@@ -157,14 +155,13 @@ BEGIN
 			AND cs.Bettype BETWEEN 1501 AND 1509
 		)
 	--select PT/Comm setting
-	SELECT cs.custid
-		,cs.bettype
+	SELECT cs.bettype
 		,cs.apositiontaking --a1
-		,ag.minpositiontaking --n2/MinPT
+		,ag.minpositiontaking AS apositiontaking_min--n2/MinPT
 		,CASE 
 			WHEN ag.apositiontaking <= at.AutoPT THEN ag.apositiontaking
 			ELSE at.AutoPT
-		END maxpositiontaking --l2/MaxPT
+		END apositiontaking_max --l2/MaxPT
 		,cs.playerdiscount --commission
 		,ag.discount AS playerdiscount_max --maxcommission
 	FROM CustSettingGame cs WITH (NOLOCK)
