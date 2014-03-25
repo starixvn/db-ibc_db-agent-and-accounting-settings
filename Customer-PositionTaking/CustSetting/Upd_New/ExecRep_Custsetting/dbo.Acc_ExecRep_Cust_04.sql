@@ -28,6 +28,7 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
 	- 20140228@Bobby: Update Keno status [Redmine:#12474]
+	- 20140320@Bobby: remove Keno disable
 	
 Param's Explanation:
 	@Action: 
