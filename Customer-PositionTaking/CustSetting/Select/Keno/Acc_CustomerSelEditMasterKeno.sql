@@ -93,7 +93,7 @@ BEGIN
 			cs.isautopositiontaking, --is3
 			cs.autopositiontaking, --us3
 			
-			scs.spositiontaking, --s4
+			scs.spositiontaking as spositiontaking_max, --s4
 			
 			cs.adiscount,
 			scs.sdiscount AS discount_max
@@ -104,17 +104,6 @@ BEGIN
 	WHERE cs.CustID = @CustID AND cs.Bettype BETWEEN 1501 AND 1599 AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbDownlineNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbExtAccNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbDownlineNetView]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [vnteam]
 
 
 GO
