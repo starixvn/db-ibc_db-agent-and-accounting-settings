@@ -195,7 +195,7 @@ BEGIN
 		END
 	END
 
-	IF @Auto_SPositionTaking = 1
+	IF @UpdateAutoPositionTaking = 1
 	BEGIN
 		--Update Master Agent account (autopositiontaking field)
 		UPDATE dbo.CustSettingGame WITH(UPDLOCK,ROWLOCK)
