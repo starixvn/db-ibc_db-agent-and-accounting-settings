@@ -23,7 +23,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 	Revisions:
 														
 	Parameter's Explanation
-		@ErrCode = -101 update successfully
+		@ErrCode <= 0 update successfully
 
 */
 BEGIN

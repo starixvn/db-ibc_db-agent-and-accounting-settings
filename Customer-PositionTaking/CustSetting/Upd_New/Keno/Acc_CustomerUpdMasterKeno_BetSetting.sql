@@ -96,7 +96,7 @@ BEGIN
 			, @ErrCode = @VarErrCode_Cur OUTPUT -- is -101 update sucessfully
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @VarErrCode_Cur <> '-101'
+		IF @VarErrCode_Cur > '0' --> fail
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 		END

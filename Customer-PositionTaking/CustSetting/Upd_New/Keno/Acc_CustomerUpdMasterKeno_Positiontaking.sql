@@ -33,7 +33,7 @@ AS
 	Revisions:
 
 	Parameters Explanation:
-		@ErrCode is -103 update successful
+		@ErrCode is 0 update successful
 */
 BEGIN
 
@@ -245,7 +245,7 @@ BEGIN
 		END
 	END
 	
-	SELECT @ErrCode = -103
+	--SELECT @ErrCode = -103
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))

@@ -23,8 +23,7 @@ AS
 							
 	Param's Explanation:
 	* @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+		<= 0 is successfully
   
 	* @ErrMsg: Error description.
 */

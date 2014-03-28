@@ -86,7 +86,7 @@ BEGIN
 		DECLARE @VarErrCode_Cur VARCHAR(200) = ''
 		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @VarErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @VarErrCode_Cur = '-103' --success
+		IF @VarErrCode_Cur <= '0' --success
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END

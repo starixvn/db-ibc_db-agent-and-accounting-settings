@@ -136,7 +136,7 @@ BEGIN
 			, @ErrCode = @ErrCode_Cur OUTPUT
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @ErrCode_Cur = -103
+		IF @ErrCode_Cur <= 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END

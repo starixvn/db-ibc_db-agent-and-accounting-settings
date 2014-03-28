@@ -107,7 +107,7 @@ BEGIN
 			@ErrCode = @VarErrorCode OUTPUT, 
 			@ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @VarErrorCode = '-101'
+		IF @VarErrorCode <= '0' --> success
 		BEGIN
 			Select @ErrCode = @ErrCode + '-101' + char(7), @ErrMsg = @ErrMsg + char(7)
 		END

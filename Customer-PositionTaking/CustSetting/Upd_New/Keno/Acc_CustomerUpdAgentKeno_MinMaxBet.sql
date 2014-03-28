@@ -24,7 +24,7 @@ AS
 	Revisions:
 	Param's Explanation:
 	• @ErrCode:
-		= -101 is successful
+		<= 0 is successful
   
 	• @ErrMsg: Error description.
 */
