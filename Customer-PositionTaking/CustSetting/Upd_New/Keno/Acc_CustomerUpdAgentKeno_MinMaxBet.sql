@@ -11,7 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet]
 	, @UserID INT = 0
 	, @Language VARCHAR(2) = 'E'
 	, @IP VARCHAR(15) = ''
-	, @ErrCode VARCHAR(300) = '' OUTPUT
+	, @ErrCode VARCHAR(200) = '' OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
 )
 AS
@@ -24,8 +24,7 @@ AS
 	Revisions:
 	Param's Explanation:
 	• @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+		= -101 is successful
   
 	• @ErrMsg: Error description.
 */
@@ -160,7 +159,7 @@ BEGIN
 		END
 	END
 	ELSE
-		SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)
 
 	-- Compare old value & new value Betting Limit: Popup Message For Betting Limit 
 	IF @MinBet <> @Old_MinBet OR @MaxBet <> @Old_MaxBet OR @MaxPerMatch <> @Old_MaxPerGame

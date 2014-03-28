@@ -89,6 +89,7 @@ BEGIN
 
 	IF @UpdateMinMaxBet = 1
 	BEGIN
+		DECLARE @VarErrorCode NVARCHAR(100) = ''
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 		EXEC dbo.Acc_CustomerUpdAgentKeno_MinMaxBet @CustID = @CustID
 			, @SportType = @Sporttype
@@ -99,19 +100,18 @@ BEGIN
 			, @UserID = @UserID
 			, @Language = @Language
 			, @IP = @IP
-			, @ErrCode = @ErrCode_Cur OUTPUT
+			, @ErrCode = @VarErrorCode OUTPUT
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-		END
-		ELSE
+		IF @VarErrorCode = '-101'
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
+		ELSE
+		BEGIN
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+		END
 	END
-		
 END 
 
 GO

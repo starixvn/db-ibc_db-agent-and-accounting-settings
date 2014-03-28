@@ -102,7 +102,7 @@ BEGIN
 			RETURN
 		END
 		ELSE	
-			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)	
+			SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)	
 	END
 
 	DECLARE @LogSPData VARCHAR (MAX),

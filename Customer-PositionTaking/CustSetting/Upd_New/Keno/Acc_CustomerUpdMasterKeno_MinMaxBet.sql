@@ -23,6 +23,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 	Revisions:
 														
 	Parameter's Explanation
+		@ErrCode = -101 update successfully
+
 */
 BEGIN
 	SET NOCOUNT ON
@@ -67,7 +69,7 @@ BEGIN
 	END
 	
 	DECLARE @GameTypeID INT
-	SELECT GameTypeID = @GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @BetType
+	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @BetType
 
 	SELECT @MinMinBet = 0, @MaxMaxBet = 0
 	SELECT @MinMinBet = MAX(ISNULL(MinBet, 0))
@@ -139,7 +141,7 @@ BEGIN
 		END
 	END
 	ELSE
-		SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)
 		
 	DECLARE @LogSPData VARCHAR(5000), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData ='<Acc_CustomerUpdMasterKeno_MinMaxBet CustId="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 

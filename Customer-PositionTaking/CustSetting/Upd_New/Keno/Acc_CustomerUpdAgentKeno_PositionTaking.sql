@@ -32,6 +32,7 @@ AS
 	
 	Revisions:
 	Parameters Explanation:
+		@ErrCode: -103 is successful
 */
 BEGIN
 	SET NOCOUNT ON
@@ -232,6 +233,7 @@ BEGIN
 			RETURN
 		END
 	END
+	SELECT @ErrCode = -103
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 
