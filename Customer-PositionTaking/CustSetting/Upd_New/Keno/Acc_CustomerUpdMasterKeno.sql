@@ -11,7 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno]
 	, @MPositiontaking_Min SMALLMONEY --n3
 
 	, @UpdateAllMembers	BIT = 0
-	, @NewMPositionTaking SMALLMONEY = 0
+	, @NewSPositionTaking SMALLMONEY = 0
 
 	, @Discount DECIMAL(9,8) = 0
 			
@@ -41,14 +41,14 @@ BEGIN
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 	--Check downline beloging
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging @SessionCustID = @UserID
+	EXEC dbo.Age_CustomerSelCheckBelonging @SessionCustID = @UserID
 		, @Custid = @CustId
 		, @roleid = @roleid OUTPUT
 
 	IF (@roleid = 0) RETURN
 	
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
@@ -119,7 +119,7 @@ BEGIN
 			, @MPositiontaking_Min = @MPositiontaking_Min --n3
 	
 			, @UpdateAllMembers	= @UpdateAllMembers
-			, @NewMPositionTaking = @NewMPositionTaking
+			, @NewSPositionTaking = @NewSPositionTaking
 			, @UpdatePositiontaking = @UpdatePositiontaking
 			, @UpdateMinPositiontaking = @UpdateMinPositiontaking
 			, @UpdateAutoPositionTaking = @UpdateAutoPositionTaking
@@ -141,10 +141,10 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno] TO [vnteam] AS [dbo]

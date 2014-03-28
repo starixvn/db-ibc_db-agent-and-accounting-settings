@@ -49,14 +49,14 @@ BEGIN
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 	--Check downline belonging
-	EXEC Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID = @Userid
 		, @Custid = @custid
 		, @roleid = @roleid OUTPUT
 	IF (@roleid = 0) RETURN
 
 	--Check disable user
-	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg=@ErrMsg_Cur OUTPUT
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg=@ErrMsg_Cur OUTPUT
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)

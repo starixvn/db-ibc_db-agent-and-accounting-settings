@@ -279,7 +279,7 @@ BEGIN
 			, @duration = @duration
 	END TRY
 	BEGIN CATCH
-		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			, @CustID = @CustID
 			, @ActionID = 444
 			, @TrackingValue = @LogSPData
