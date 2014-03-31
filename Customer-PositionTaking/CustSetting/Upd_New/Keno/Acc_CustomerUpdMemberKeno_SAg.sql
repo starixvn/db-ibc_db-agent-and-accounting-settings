@@ -14,7 +14,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_SAg]
 	, @IP VARCHAR(50) = ''
 	, @UserID INT = 0
 	, @Language VARCHAR(20) = 'E'
-	, @ErrCode VARCHAR(300) = '' OUTPUT
+	, @ErrCode VARCHAR(300) = '0' OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT  
 )
 AS  
@@ -27,7 +27,7 @@ AS
 		 
 	Param's Explanation:  
 	• @ErrCode:  
-		= 0: Update successfully.  
+		<= 0: Update successfully.  
 		> 0: Specific Error.  
 	    
 	• @ErrMsg: Error description.  
@@ -38,7 +38,7 @@ BEGIN
 		, @mrecommend INT, @recommend INT, @srecommend INT, @ErrType VARCHAR(1000), @Username VARCHAR(50)
 		, @SPositionTaking_Max SMALLMONEY, @MPositionTaking SMALLMONEY, @APositionTaking SMALLMONEY
 		, @Old_SPositionTaking SMALLMONEY, @Old_IsAuto_SPositionTaking SMALLMONEY, @Old_Auto_SPositionTaking SMALLMONEY 
-	SELECT @ErrCode_cur = 0, @ErrMsg_cur = '', @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
+	SELECT @ErrCode_cur = 0, @ErrMsg_cur = '', @ErrCode = '0', @ErrMsg = '', @startRun = GETDATE()
 
 	--Check downline belongin
 	EXEC dbo.Age_CustomerSelCheckBelonging   
@@ -227,7 +227,7 @@ BEGIN
 			, @duration = @duration
 	END CATCH	
 
-	SELECT @ErrCode = '-103' + char(7)
+	--SELECT @ErrCode = '-103' + char(7)
 END
 
 GO

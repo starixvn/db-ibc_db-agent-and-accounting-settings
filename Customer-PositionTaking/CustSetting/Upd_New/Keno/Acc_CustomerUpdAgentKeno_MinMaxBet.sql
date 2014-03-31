@@ -64,7 +64,7 @@ BEGIN
 	END
 
 	DECLARE @GameTypeID INT
-	SELECT GameTypeID = @GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
+	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
 
 	SELECT @MinMinBet = 0, @MaxMaxBet = 0
 	SELECT @MinMinBet = MAX(ISNULL(MinBet, 0))
@@ -143,7 +143,7 @@ BEGIN
 		RETURN
 	
 	UPDATE dbo.CustGameType WITH (ROWLOCK, UPDLOCK)
-	SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxMaxPerMatch
+	SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxPerMatch
 	WHERE custid = @custid AND GameTypeID = @GameTypeID
 
 	IF (@@ERROR <> 0)
@@ -159,7 +159,7 @@ BEGIN
 		END
 	END
 	ELSE
-		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)
+		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg
 
 	-- Compare old value & new value Betting Limit: Popup Message For Betting Limit 
 	IF @MinBet <> @Old_MinBet OR @MaxBet <> @Old_MaxBet OR @MaxPerMatch <> @Old_MaxPerGame

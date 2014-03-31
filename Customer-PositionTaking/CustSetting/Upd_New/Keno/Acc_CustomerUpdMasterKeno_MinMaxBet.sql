@@ -104,7 +104,7 @@ BEGIN
 		END
 	END
 	--Check @MaxPerMatch <= @MaxMaxPerMatch
-	IF (@MaxMaxPerMatch > 0 AND @MaxPerMatch > 0 AND @MaxPerMatch > @MaxMaxPerMatch)
+	IF (@MaxMaxPerMatch > 0 AND @MaxPerMatch > 0 AND @MaxPerMatch > @MaxPerMatch)
 	BEGIN
 		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10018, @Language) END +' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatch) + ').'

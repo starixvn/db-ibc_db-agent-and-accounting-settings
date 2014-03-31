@@ -59,7 +59,7 @@ BEGIN
 	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg=@ErrMsg_Cur OUTPUT
 	IF @ErrCode_Cur > 0
 	BEGIN
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300))+ CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 		RETURN
 	END
 
@@ -105,7 +105,7 @@ BEGIN
 		
 		IF @VarErrorCode <= '0' --> success
 		BEGIN
-			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+			SELECT @ErrCode = @VarErrorCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
 		ELSE
 		BEGIN
