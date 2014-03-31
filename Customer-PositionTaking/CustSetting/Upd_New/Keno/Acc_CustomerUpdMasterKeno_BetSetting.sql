@@ -31,17 +31,17 @@ AS
 	Revisions:
 
 	Parameters Explanation:
-		+ @ErrCode <0 : update successfully 
+		@ErrCode = -100 & -101: update successfully
 			-100: status
-			-101: Min max bet			
-		  @ErrCode > 0 : update not successfully
+			-101: Min max bet
+		else update not successfully
 	
 */
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @roleid TINYINT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	DECLARE @roleid TINYINT, @ErrCode_Cur INT, @VarErrCode_Cur VARCHAR(300), @ErrMsg_Cur NVARCHAR(4000)
+	SELECT @ErrCode_Cur = '', @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 	--Check downline belonging
 	EXEC dbo.Age_CustomerSelCheckBelonging @SessionCustID = @Userid
@@ -93,10 +93,10 @@ BEGIN
 			, @UserID = @UserID
 			, @Language = @Language
 			, @IP = @IP
-			, @ErrCode = @ErrCode_Cur OUTPUT
+			, @ErrCode = @VarErrCode_Cur OUTPUT -- is -101 update sucessfully
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @ErrCode_Cur > 0
+		IF @VarErrCode_Cur > '0' --> fail
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 		END

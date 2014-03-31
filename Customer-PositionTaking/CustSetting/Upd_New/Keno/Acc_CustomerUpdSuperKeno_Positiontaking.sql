@@ -18,9 +18,8 @@ AS
 	Revisions:
 				
 	Param's Explanation:
-	• @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+	• @ErrCode is:
+			0 update successful
 	  
 	• @ErrMsg: Error description.
 */
@@ -140,6 +139,7 @@ BEGIN
 	--s1 = min(s4-m1-a1, u)
 	EXEC dbo.Acc_CustSetting3rd_07_xtest @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
+	--SELECT @ErrCode = '-103'
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)
 	 

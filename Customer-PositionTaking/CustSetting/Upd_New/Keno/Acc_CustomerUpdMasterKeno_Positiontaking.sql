@@ -33,6 +33,7 @@ AS
 	Revisions:
 
 	Parameters Explanation:
+		@ErrCode is 0 update successful
 */
 BEGIN
 
@@ -181,7 +182,7 @@ BEGIN
 
 	IF @UpdatePositionTaking = 1
 	BEGIN
-		UPDATE dbo.CustSettingGame WITH(UPDLOCK,ROWLOCK)
+		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
 		SET spositiontaking = @SPositionTaking, mpositiontaking = @MPositionTaking
 		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 
@@ -198,7 +199,7 @@ BEGIN
 	IF @UpdateAutoPositionTaking = 1
 	BEGIN
 		--Update Master Agent account (autopositiontaking field)
-		UPDATE dbo.CustSettingGame WITH(UPDLOCK,ROWLOCK)
+		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
 		SET autopositiontaking = @Auto_SPositionTaking, isautopositiontaking = @IsAuto_SPositionTaking
 		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 	
@@ -228,7 +229,7 @@ BEGIN
 
 	IF @UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07 
+		EXEC dbo.Acc_CustSetting3rd_07_xtest 
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
@@ -243,6 +244,9 @@ BEGIN
 			RETURN
 		END
 	END
+	
+	--SELECT @ErrCode = -103
+
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'SPositionTaking="' + COALESCE(CAST(@SPositionTaking AS VARCHAR(50)), SPACE(1))
