@@ -14,7 +14,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerKeno]
 AS
 /*
 	Created: 20140317@Patrick	
-	Task: Master edit setting Keno on member
+	Task: Master edit setting of Keno on member
 	DB: DBAGE/BODB02
 	
 	Revisions:
@@ -48,11 +48,16 @@ BEGIN
 		, cs.autompositiontaking AS Auto_MPositionTaking_Mem --um1
 
 		, csa.isautompositiontaking  AS IsAuto_MPositionTaking --im2
-		, csm.mpositiontaking AS Auto_MPositionTaking --m1_max
+		, csm.mpositiontaking AS Auto_MPositionTaking_Max --um1_max=min(m3,m4)
 
 		, CASE WHEN NOT (cs.isautopositiontaking = 0 AND csm.isautopositiontaking = 0)
-			THEN cs.mpositiontaking - cs.apositiontaking ELSE CASE WHEN csm.mpositiontaking - cs.apositiontaking <= css.spositiontaking - cs.spositiontaking - cs.apositiontaking THEN csm.mpositiontaking - cs.apositiontaking ELSE css.spositiontaking - cs.spositiontaking - cs.apositiontaking END END AS MPositionTaking_Max --!(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
-		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 ELSE 	sco.minpositiontaking - cs.apositiontaking END AS MPositionTaking_Min --um1_min
+			THEN csm.mpositiontaking - cs.apositiontaking 
+			ELSE CASE WHEN csm.mpositiontaking - cs.apositiontaking <= css.spositiontaking - cs.spositiontaking - cs.apositiontaking 
+				THEN csm.mpositiontaking - cs.apositiontaking 
+				ELSE css.spositiontaking - cs.spositiontaking - cs.apositiontaking END 
+			END AS MPositionTaking_Max --!(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)--> m1_max
+		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 
+			ELSE sco.minpositiontaking - cs.apositiontaking END AS MPositionTaking_Min --m1_min=um1_min=Max(0, N3-A1)
 	FROM dbo.CustSettingGame AS cs WITH (NOLOCK) 
 		INNER JOIN dbo.CustSettingGame csa WITH (NOLOCK) ON csa.custid = @recommend AND csa.bettype = cs.bettype AND csa.sporttype = cs.sporttype 
 		INNER JOIN dbo.CustSettingGame csm WITH (NOLOCK) ON csm.custid = @mrecommend AND csm.bettype = cs.bettype AND csm.sporttype = cs.sporttype 

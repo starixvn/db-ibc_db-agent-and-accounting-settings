@@ -19,7 +19,7 @@ AS
 /*
 Created: 20121126@Thien
 Task : Update customer/custinfo settings
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 
 Revisions:
 	- 20121126@Thien: implement the 'VirtualMultiplier' update
@@ -45,8 +45,7 @@ Param's Explanation:
 		+ 'AutoSuspend': Auto suspend all: Soccer and Other Sports [@AutoSuspendSoccer, @AutoSuspendOtherSports]
 		+ 'AutoSuspendSoccer': Auto suspend for Soccer[@AutoSuspendSoccer]
 		+ 'AutoSuspendOther': Auto suspend for Other Sports [@AutoSuspendOtherSports]
-		+ 'DisableKeno' : Disable Keno gaming
-		+ 'KenoGameTypeID' : Keno game ID
+		+ 'UpdKeno-Hide' : Hide Keno gaming
    
 */
 SET NOCOUNT ON 
@@ -344,8 +343,8 @@ begin
 			AND Recommend = @CustID
 	END
 end
-GO
 
+GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_ExecRep_Cust_04] TO [vnteam] AS [dbo]

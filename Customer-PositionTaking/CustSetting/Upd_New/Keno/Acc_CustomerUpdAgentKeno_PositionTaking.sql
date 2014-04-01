@@ -32,6 +32,7 @@ AS
 	
 	Revisions:
 	Parameters Explanation:
+		@ErrCode: 0 is successful
 */
 BEGIN
 	SET NOCOUNT ON
@@ -41,13 +42,13 @@ BEGIN
 
 	--Checking total downlines before UPDATEs 
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
-			, @roleid = 2
-			, @isExecRep = 1
-			, @isUpdatePT = 1
-			, @Sporttype = 1
-			, @Language = 'E'
-			, @ErrMsg = @ErrMsg OUTPUT
-			, @ErrCode = @ErrCode OUTPUT
+		, @roleid = 2
+		, @isExecRep = 1
+		, @isUpdatePT = 1
+		, @Sporttype = 1
+		, @Language = 'E'
+		, @ErrMsg = @ErrMsg OUTPUT
+		, @ErrCode = @ErrCode OUTPUT
 
 	IF	@ErrCode <> 0 
 		RETURN 
@@ -96,7 +97,7 @@ BEGIN
 		AND (((b.isauto_mpositiontaking = 0) AND (b.mpositiontaking + b.apositiontaking < co.minpositiontaking)) 
 			OR (b.isauto_mpositiontaking > 0 AND (b.apositiontaking + b.auto_mpositiontaking < co.minpositiontaking)))
 
-	IF @ErrType <>''
+	IF @ErrType <> ''
 	BEGIN
 		SELECT @ErrCode = 101
 		SELECT @ErrMsg = @UserName + ': '+ CASE @Language 
@@ -115,7 +116,7 @@ BEGIN
 		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
 	WHERE b.apositiontaking < co.minpositiontaking
 
-	IF @ErrType <>''
+	IF @ErrType <> ''
 	BEGIN
 		SELECT @ErrCode = 102
 		SELECT @ErrMsg = @UserName + ': '+ CASE @Language 
@@ -139,7 +140,7 @@ BEGIN
 		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
 	WHERE (b.apositiontaking + b.mpositiontaking > b.max_mapositiontaking) 
 
-	IF @ErrType <>''
+	IF @ErrType <> ''
 	BEGIN
 		select @ErrCode = 103
 		Select @ErrMsg = @UserName + ': '+ CASE @Language 
@@ -232,6 +233,7 @@ BEGIN
 			RETURN
 		END
 	END
+	--SELECT @ErrCode = -103
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 
@@ -279,7 +281,7 @@ BEGIN
 			, @duration = @duration
 	END TRY
 	BEGIN CATCH
-		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			, @CustID = @CustID
 			, @ActionID = 444
 			, @TrackingValue = @LogSPData

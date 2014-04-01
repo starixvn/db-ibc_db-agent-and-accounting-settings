@@ -90,7 +90,8 @@ BEGIN
 
 	IF @UpdateMinMaxBet = 1
 	BEGIN
-		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''	
+		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
+		DECLARE @VarErrorCode VARCHAR(200) = ''
 		EXEC Acc_CustomerUpdSuperKeno_MinMaxBet
 			@CustID = @CustID,
 			@Sporttype = @Sporttype,
@@ -103,18 +104,17 @@ BEGIN
 			@UserID = @UserID,
 			@Language = @Language,
 			@IP = @IP,
-			@ErrCode = @ErrCode_Cur OUTPUT, 
+			@ErrCode = @VarErrorCode OUTPUT, 
 			@ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @ErrCode_Cur > 0
+		IF @VarErrorCode <= '0' --> success
 		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-			--return
+			Select @ErrCode = @ErrCode + '-101' + char(7), @ErrMsg = @ErrMsg + char(7)
 		END
 		ELSE
 		BEGIN
-			Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 		END
 	END
 		

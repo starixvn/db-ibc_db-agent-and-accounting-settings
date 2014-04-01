@@ -1,6 +1,7 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet]
 	@CustID			INT,
 	@Bettype		INT,
+	@sporttype		INT = 202,
 
 	@MinBet			MONEY,
 	@MaxBet			MONEY,
@@ -38,6 +39,7 @@ BEGIN
 		,@maxpermatch_old MONEY
 		,@GameTypeID INT
 
+	SET @GameTypeID = ISNULL(@GameTypeID, 0)
 	SET @startRun = GETDATE()
 
 	DECLARE @ErrCode_Cur INT
@@ -102,7 +104,7 @@ BEGIN
 
 	-- update CustGameType proccess
 	SELECT @GameTypeID = g.GameTypeID
-	FROM dbo.GameType g WITH (NOLOCK)
+	FROM DBPRO.bodb02.dbo.GameType g WITH (NOLOCK)
 	WHERE g.IBCBetTypeID = @Bettype
 		AND g.IsDisabled = 0 -- active bettype
 
@@ -164,6 +166,7 @@ BEGIN
 		,@TrackingValueDB VARCHAR(4000)
 
 	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
 		+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' 
@@ -175,6 +178,7 @@ BEGIN
 		+ 'ErrMsg="' + coalesce(cast(@ErrMsg AS NVARCHAR(4000)), space(1)) + '" />'
 
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
+		+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
 		+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'MinB="' + coalesce(cast(@MinBet_old AS VARCHAR(50)), space(1)) + '" ' 
 		+ 'MaxB="' + coalesce(cast(@MaxBet_old AS VARCHAR(50)), space(1)) + '" ' 
@@ -199,6 +203,7 @@ BEGIN
 
 	BEGIN CATCH
 		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@custid AS VARCHAR(50)), space(1)) + '" ' 
+			+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
 			+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' 
 			+ 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' 
@@ -217,14 +222,12 @@ BEGIN
 			,@duration = @duration
 	END CATCH
 END
-GO
 
+GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [vnteam] AS [dbo]
 GO
 

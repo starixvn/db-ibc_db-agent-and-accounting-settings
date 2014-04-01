@@ -22,22 +22,13 @@ BEGIN
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3) THEN 1 ELSE 0 END
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)
-	IF EXISTS (SELECT 1 FROM custInfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3 )
-	BEGIN
-		INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
-		SELECT cg.GameTypeID, CASE WHEN SUM(CASE WHEN cg.IsDisabled = 1 THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END
-		FROM dbo.CustGameType cg WITH (NOLOCK)
-			INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-			INNER JOIN dbo.custInfo ci WITH (NOLOCK) ON cg.CustID = ci.CustID
-		WHERE ci.srecommend = @CustID AND ci.roleid = 3
-		GROUP BY cg.GameTypeID
-	END
-	ELSE
-	BEGIN
-		INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
-		SELECT GameTypeID, 1
-		FROM @GameType
-	END
+	INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
+	SELECT cg.GameTypeID, CASE WHEN SUM(CASE WHEN cg.IsDisabled = 1 THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
+		INNER JOIN dbo.custInfo ci WITH (NOLOCK) ON cg.CustID = ci.CustID
+	WHERE ci.srecommend = @CustID AND ci.roleid = 3
+	GROUP BY cg.GameTypeID	
 
 	SELECT @currency = currency FROM custinfo WITH(NOLOCK) WHERE custid = @custid
 
@@ -53,10 +44,10 @@ BEGIN
 			cg.MaxBet, 
 			cg.MaxPerGameType, 
 			cg.IsDisabled, 
-			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE d.DisableDownlines END AS DisableDownlinesKeno
+			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE ISNULL(d.DisableDownlines,1) END AS DisableDownlinesKeno
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-		INNER JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
+		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
 		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID

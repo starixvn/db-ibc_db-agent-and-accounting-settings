@@ -2135,9 +2135,9 @@ SET NOCOUNT ON
 		
 		--inser into CustSetting3rd
 		INSERT INTO [dbo].[CustSetting3rd]([custid], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], MinBet, MaxBet, autopositiontaking, isautopositiontaking, alivepositiontaking,mlivepositiontaking,slivepositiontaking,autolivepositiontaking,isautolivepositiontaking,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
-		select @custid, 2, 201, 0, @v201mpositiontaking_2, @v201spositiontaking_2, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		select @custid, 2, 201, 0, ISNULL(@v201mpositiontaking_2,0), ISNULL(@v201spositiontaking_2,0), 0, ISNULL(@v201discount,0), ISNULL(@v201adiscount,0), ISNULL(@v201sdiscount,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
-		select @custid, 3, 201, 0, @v201mpositiontaking_3, @v201spositiontaking_3, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		select @custid, 3, 201, 0, ISNULL(@v201mpositiontaking_3,0), ISNULL(@v201spositiontaking_3,0), 0, ISNULL(@v201discount,0), ISNULL(@v201adiscount,0), ISNULL(@v201sdiscount,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 		--v151
 		UNION ALL
@@ -2336,5 +2336,6 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
-	END --end roleid = 1
+		--End Keno
+	END
 END

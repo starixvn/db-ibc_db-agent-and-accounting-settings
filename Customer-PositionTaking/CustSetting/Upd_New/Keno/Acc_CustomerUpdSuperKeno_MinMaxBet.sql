@@ -23,8 +23,7 @@ AS
 							
 	Param's Explanation:
 	* @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+		<= 0 is successfully
   
 	* @ErrMsg: Error description.
 */
@@ -102,7 +101,7 @@ BEGIN
 			RETURN
 		END
 		ELSE	
-			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)	
+			SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)	
 	END
 
 	DECLARE @LogSPData VARCHAR (MAX),

@@ -24,9 +24,10 @@ AS
 	Revisions:
 				
 	Param's Explanation:
-	• @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+	• @ErrCode is:
+			-101 update success commission
+			-102 update success min PT
+			-103 update success PT
 	  
 	• @ErrMsg: Error description.
 */
@@ -82,16 +83,18 @@ BEGIN
 
 	IF @UpdatePositiontaking = 1
 	BEGIN
-		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+		DECLARE @VarErrCode_Cur VARCHAR(200) = ''
+		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @VarErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @ErrCode_Cur <> 0
+		IF @VarErrCode_Cur <= '0' --success
 		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN	
+			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
 		ELSE
-			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
+		BEGIN
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			RETURN	
+		END	
 	END
 
 	IF @UpdateMinPositiontaking = 1
@@ -105,7 +108,7 @@ BEGIN
 			RETURN	
 		END
 		ELSE
-			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
+			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
 END
 

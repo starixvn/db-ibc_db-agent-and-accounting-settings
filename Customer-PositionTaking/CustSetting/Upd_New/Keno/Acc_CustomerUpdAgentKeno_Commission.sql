@@ -1,13 +1,12 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_Commission] 
 (
-	@custid INT --Agent
-	, @Discount DECIMAL(9,8)
+	@CustId INT --Agent
+	, @Discount DECIMAL(9,8) = 0
 	, @SportType INT = 202
 	, @BetType INT
 	, @UserID INT
-	, @SubAccID INT
-	, @Language VARCHAR(10)
-	, @IP VARCHAR(21)
+	, @Language VARCHAR(10) = 'E'
+	, @IP VARCHAR(21) = ''
 	, @ErrCode INT = 0 OUTPUT
 	, @ErrMsg NVARCHAR(200) = '' OUTPUT
 )
@@ -24,7 +23,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	IF @discount = 0
+	IF @Discount = 0
 		RETURN
 
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @username NVARCHAR(50)
@@ -42,12 +41,11 @@ BEGIN
 	--check if not change setting
 	IF @Old_discount = @discount RETURN
 
-	--Get maxdiscount
+	--Get maxdiscount from system config
 	SELECT @MaxDiscount = MaxSDiscount FROM [dbo].[ProductGlobalSetting] WHERE SportType = @SportType AND BetType = @BetType
 	IF (@discount < 0 AND @discount > @MaxDiscount)
 	BEGIN
-		SELECT @ErrMsg = CASE @Language
-					WHEN 'E' THEN N'Invalid commission rate'
+		SELECT @ErrMsg = CASE @Language	WHEN 'E' THEN N'Invalid commission rate'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](1, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](202, @Language) + ')' END
 			, @ErrCode = 101
 		RETURN
@@ -67,7 +65,6 @@ BEGIN
 		, @BetType = @BetType
 
 	SELECT @endRun = GETDATE(), @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
-
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 
 	SELECT @LogSPData = '<Acc_CustomerUpdAgentKeno_Commission CustId="' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1))
@@ -75,7 +72,6 @@ BEGIN
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) 
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(15)), SPACE(1)) 
 		+ '" ' + 'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) 
@@ -86,7 +82,6 @@ BEGIN
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) 
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(15)), SPACE(1)) 
 		+ '" ' + 'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) 

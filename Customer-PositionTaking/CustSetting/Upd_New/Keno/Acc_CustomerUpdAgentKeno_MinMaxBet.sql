@@ -11,7 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet]
 	, @UserID INT = 0
 	, @Language VARCHAR(2) = 'E'
 	, @IP VARCHAR(15) = ''
-	, @ErrCode VARCHAR(300) = '' OUTPUT
+	, @ErrCode VARCHAR(200) = '' OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
 )
 AS
@@ -24,8 +24,7 @@ AS
 	Revisions:
 	Param's Explanation:
 	• @ErrCode:
-		= 0: Transaction recorded successfully.
-		> 0: Specific Error.
+		<= 0 is successful
   
 	• @ErrMsg: Error description.
 */
@@ -65,7 +64,7 @@ BEGIN
 	END
 
 	DECLARE @GameTypeID INT
-	SELECT GameTypeID = @GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
+	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
 
 	SELECT @MinMinBet = 0, @MaxMaxBet = 0
 	SELECT @MinMinBet = MAX(ISNULL(MinBet, 0))
@@ -139,31 +138,31 @@ BEGIN
 	FROM dbo.CustGameType AS cg WITH (NOLOCK)
 	WHERE cg.custid = @custid AND GameTypeID = @GameTypeID
 
-	IF (@Old_MinBet <> @Minbet OR @Old_MaxBet <> @MaxBet OR @Old_MaxPerGame <> @MaxPerMatch)
-	BEGIN
-		UPDATE dbo.CustGameType WITH (ROWLOCK, UPDLOCK)
-		SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxMaxPerMatch
-		WHERE custid = @custid AND GameTypeID = @GameTypeID
+	--Check not change value
+	IF (@Old_MinBet = @Minbet AND @Old_MaxBet = @MaxBet AND @Old_MaxPerGame = @MaxPerMatch)
+		RETURN
+	
+	UPDATE dbo.CustGameType WITH (ROWLOCK, UPDLOCK)
+	SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxPerMatch
+	WHERE custid = @custid AND GameTypeID = @GameTypeID
 
-		IF (@@ERROR <> 0)
+	IF (@@ERROR <> 0)
+	BEGIN
+		SELECT @ErrMsg_Cur = @UserName + ': ' + CASE @Language
+				WHEN 'E' THEN 'Update process is unsuccessful !'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)	END
+			, @ErrCode_Cur = 105
+		IF @ErrCode_Cur > 0
 		BEGIN
-			SELECT @ErrMsg_Cur = @UserName + ': ' + CASE @Language
-					WHEN 'E' THEN 'Update process is unsuccessful !'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-					END
-				, @ErrCode_Cur = 105
-			IF @ErrCode_Cur > 0
-			BEGIN
-				SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-				RETURN
-			END
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			RETURN
 		END
-		ELSE
-			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 	END
+	ELSE
+		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg
 
 	-- Compare old value & new value Betting Limit: Popup Message For Betting Limit 
-	IF @MinBet != @Old_MinBet OR @MaxBet != @Old_MaxBet OR @MaxPerMatch != @Old_MaxPerGame
+	IF @MinBet <> @Old_MinBet OR @MaxBet <> @Old_MaxBet OR @MaxPerMatch <> @Old_MaxPerGame
 	BEGIN
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid
 			, @userID = @UserID
