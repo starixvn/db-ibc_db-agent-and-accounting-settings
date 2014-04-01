@@ -82,7 +82,6 @@ BEGIN
 		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK)
 		ON cs.custid = ci.custid
 	WHERE ci.custid IN (@srecommend, @mrecommend, @recommend)
-		AND ci.HideKeno = 0
 		AND gt.IsDisabled = 0
 	GROUP BY gt.GameTypeID
 		,gt.IBCBettypeID
@@ -105,63 +104,12 @@ BEGIN
 		AND gt.IBCBetTypeID BETWEEN 1501 AND 1509
 		AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
-		--check auto PT
-		;
 
-	WITH SuperPT
-	AS (
-		SELECT sporttype
-			,bettype
-			,spositiontaking
-		FROM CustSettingGame WITH (NOLOCK)
-		WHERE custid = @srecommend
-			AND sporttype = @Sporttype
-			AND Bettype BETWEEN 1501 AND 1509
-		)
-		,AutoPT
-	AS (
-		--max_a1=iif(im=1,a2,iif(i1|i3,m3-m1,min(m3-m1,s4-m1-s1)
-		SELECT cs.Bettype
-			,CASE 
-				WHEN (
-						acs.isautompositiontaking = 1
-						OR cs.isautompositiontaking = 1
-						) THEN acs.apositiontaking
-				ELSE CASE 
-						WHEN NOT (
-								cs.isautopositiontaking = 0
-								AND mcs.isautopositiontaking = 0
-								) THEN mcs.mpositiontaking - cs.mpositiontaking
-						ELSE CASE 
-								WHEN mcs.mpositiontaking - cs.mpositiontaking <= st.spositiontaking - cs.spositiontaking - cs.mpositiontaking THEN mcs.mpositiontaking - cs.mpositiontaking
-								ELSE st.spositiontaking - cs.spositiontaking - cs.mpositiontaking
-								END
-						END
-				END AutoPT --US1
-		FROM CustSettingGame cs WITH (NOLOCK)
-			INNER JOIN CustSettingGame mcs WITH (NOLOCK)
-			ON mcs.custid = @mrecommend
-				AND mcs.sporttype = cs.sporttype
-				AND mcs.bettype = cs.bettype
-			INNER JOIN CustSettingGame acs WITH (NOLOCK)
-			ON acs.custid = @recommend
-				AND acs.sporttype = cs.sporttype
-				AND acs.bettype = cs.bettype
-			INNER JOIN SuperPT st
-			ON cs.sporttype = st.sporttype
-				AND cs.bettype = st.bettype
-		WHERE cs.custid = @custid
-			AND cs.sporttype = @Sporttype
-			AND cs.Bettype BETWEEN 1501 AND 1509
-		)
 	--select PT/Comm setting
 	SELECT cs.bettype
 		,cs.apositiontaking --a1
 		,ag.minpositiontaking AS apositiontaking_min--n2/MinPT
-		,CASE 
-			WHEN ag.apositiontaking <= at.AutoPT THEN ag.apositiontaking
-			ELSE at.AutoPT
-		END apositiontaking_max --l2/MaxPT
+		,ag.apositiontaking AS apositiontaking_max --l2/MaxPT
 		,cs.playerdiscount --commission
 		,ag.discount AS playerdiscount_max --maxcommission
 	FROM CustSettingGame cs WITH (NOLOCK)
@@ -190,8 +138,6 @@ BEGIN
 			AND t.IsDisabled = 0
 		) gt
 		ON cs.Bettype = gt.Bettype
-		LEFT JOIN AutoPT at
-		ON cs.Bettype = at.Bettype
 	WHERE cs.CustID = @CustID
 		AND cs.Sporttype = @Sporttype
 	ORDER BY cs.Bettype
