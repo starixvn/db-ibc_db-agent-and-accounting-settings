@@ -1,17 +1,15 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet]
-	@CustID			INT,
-	@Bettype		INT,
-	@sporttype		INT = 202,
-
-	@MinBet			MONEY,
-	@MaxBet			MONEY,
-	@MaxPerMatch	MONEY,
-
-	@UserID			INT = 0,	
-	@Language		VARCHAR(2) = 'E',
-	@IP				VARCHAR(15)='',
-	@ErrCode		VARCHAR(300)  = ''  OUTPUT,
-	@ErrMsg			NVARCHAR(4000) = '' OUTPUT
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] 
+	@CustID INT
+	,@Bettype INT
+	,@sporttype INT = 202
+	,@MinBet MONEY
+	,@MaxBet MONEY
+	,@MaxPerMatch MONEY
+	,@UserID INT = 0
+	,@Language VARCHAR(2) = 'E'
+	,@IP VARCHAR(15) = ''
+	,@ErrCode INT = 0 OUTPUT
+	,@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
 	Created: 20140319@Bobby
@@ -42,31 +40,20 @@ BEGIN
 	SET @GameTypeID = ISNULL(@GameTypeID, 0)
 	SET @startRun = GETDATE()
 
-	DECLARE @ErrCode_Cur INT
-		,@ErrMsg_Cur NVARCHAR(4000)
-
-	SELECT @ErrCode_Cur = 0
-		,@ErrMsg_Cur = ''
-		,@ErrCode = ''
+	SELECT @ErrCode = ''
 		,@ErrMsg = ''
 
 	IF @MinBet < 0
 		OR @MaxBet < 0
 		OR @MaxPerMatch < 0
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language
+		SELECT @ErrMsg = CASE @Language
 				WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language)
 				END
-			,@ErrCode_Cur = 101
+			,@ErrCode = 101
 
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-			RETURN
-		END
+		RETURN
 	END
 
 	IF (
@@ -87,19 +74,13 @@ BEGIN
 				)
 			)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language
+		SELECT @ErrMsg = CASE @Language
 				WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language)
 				END
-			,@ErrCode_Cur = 102
+			,@ErrCode = 102
 
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-			RETURN
-		END
+		RETURN
 	END
 
 	-- update CustGameType proccess
@@ -113,7 +94,7 @@ BEGIN
 	IF (@GameTypeID = 0)
 	BEGIN
 		SELECT @ErrMsg = 'Bettype is disabled. Update process is unsuccessful.'
-			,@ErrCode = 105
+			,@ErrCode = 103
 
 		RETURN
 	END
@@ -141,53 +122,22 @@ BEGIN
 
 		IF (@@error <> 0)
 		BEGIN
-			SELECT @ErrMsg_Cur = CASE @Language
+			SELECT @ErrMsg = CASE @Language
 					WHEN 'E' THEN 'Update process is unsuccessful!'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 					END
-				,@ErrCode_Cur = 103
+				,@ErrCode = 104
 
 			RETURN
 		END
-
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-			RETURN
-		END
-		ELSE
-			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7)
-				,@ErrMsg = @ErrMsg + CHAR(7)
 	END
 
 	DECLARE @LogSPData VARCHAR(MAX)
 		,@TrackingValueDB VARCHAR(4000)
 
-	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
-		+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MPM="' + coalesce(cast(@MaxPerMatch AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' 
-		+ 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' 
-		+ 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' 
-		+ 'ErrMsg="' + coalesce(cast(@ErrMsg AS NVARCHAR(4000)), space(1)) + '" />'
+	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' + 'sporttype="' + COALESCE(CAST(@sporttype AS VARCHAR(10)), SPACE(1)) + '" ' + 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' + 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' + 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' + 'MPM="' + coalesce(cast(@MaxPerMatch AS VARCHAR(50)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' + 'ErrMsg="' + coalesce(cast(@ErrMsg AS NVARCHAR(4000)), space(1)) + '" />'
 
-	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
-		+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MinB="' + coalesce(cast(@MinBet_old AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MaxB="' + coalesce(cast(@MaxBet_old AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'MPM="' + coalesce(cast(@MaxPerMatch_old AS VARCHAR(50)), space(1)) + '" ' 
-		+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" '
-		+ 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' 
-		+ 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' 
-		+ 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' 
-		+ 'ErrMsg="' + coalesce(cast(@ErrMsg AS NVARCHAR(4000)), space(1)) + '" />'
+	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@CustID AS VARCHAR(50)), space(1)) + '" ' + 'sporttype="' + COALESCE(CAST(@sporttype AS VARCHAR(10)), SPACE(1)) + '" ' + 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' + 'MinB="' + coalesce(cast(@MinBet_old AS VARCHAR(50)), space(1)) + '" ' + 'MaxB="' + coalesce(cast(@MaxBet_old AS VARCHAR(50)), space(1)) + '" ' + 'MPM="' + coalesce(cast(@MaxPerMatch_old AS VARCHAR(50)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' + 'ErrMsg="' + coalesce(cast(@ErrMsg AS NVARCHAR(4000)), space(1)) + '" />'
 
 	SET @endRun = getdate()
 	SET @duration = datediff(millisecond, @startRun, @endRun)
@@ -202,17 +152,7 @@ BEGIN
 	END TRY
 
 	BEGIN CATCH
-		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@custid AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" '
-			+ 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'MPM="' + coalesce(cast(@MaxPerMatch AS VARCHAR(50)), space(1)) + '" '
-			+ 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' 
-			+ 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' 
-			+ 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' 
-			+ 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' 
-			+ 'ErrMsg="' + ERROR_MESSAGE() + '" />'
+		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet custid="' + coalesce(cast(@custid AS VARCHAR(50)), space(1)) + '" ' + 'sporttype="' + COALESCE(CAST(@sporttype AS VARCHAR(10)), SPACE(1)) + '" ' + 'bettype="' + coalesce(cast(@bettype AS VARCHAR(50)), space(1)) + '" ' + 'MinB="' + coalesce(cast(@MinBet AS VARCHAR(50)), space(1)) + '" ' + 'MaxB="' + coalesce(cast(@MaxBet AS VARCHAR(50)), space(1)) + '" ' + 'MPM="' + coalesce(cast(@MaxPerMatch AS VARCHAR(50)), space(1)) + '" ' + 'UserID="' + coalesce(cast(@UserID AS VARCHAR(50)), space(1)) + '" ' + 'Language="' + coalesce(cast(@Language AS VARCHAR(2)), space(1)) + '" ' + 'IP="' + coalesce(cast(@IP AS VARCHAR(15)), space(1)) + '" ' + 'ErrCode="' + coalesce(cast(@ErrCode AS VARCHAR(300)), space(1)) + '" ' + 'ErrMsg="' + ERROR_MESSAGE() + '" />'
 
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			,@CustID = @CustID
@@ -222,14 +162,15 @@ BEGIN
 			,@duration = @duration
 	END CATCH
 END
-
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
 GO
+
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [vnteam] AS [dbo]
 GO
-
 
 

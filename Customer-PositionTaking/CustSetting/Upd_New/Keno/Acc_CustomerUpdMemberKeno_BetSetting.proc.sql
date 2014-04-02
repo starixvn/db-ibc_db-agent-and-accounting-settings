@@ -101,14 +101,13 @@ BEGIN
 		EXEC [Acc_CustomerUpdMemberKeno_MinMaxBet] 
 			@custid = @custid
 			,@bettype = @bettype
-			,@sporttype = @sporttype
 
 			,@MinBet	= @MinBet
 			,@MaxBet	= @MaxBet
 			,@MaxPerMatch = @MaxPerMatch
 
-			,@IP = @IP
 			,@UserID = @UserID
+			,@IP = @IP
 			,@Language = @Language
 			,@ErrCode = @ErrCode_Cur OUTPUT
 			,@ErrMsg = @ErrMsg_Cur OUTPUT
@@ -126,11 +125,13 @@ BEGIN
 
 	RETURN
 END
-
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbAdminNet] AS [dbo]
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
+
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [vnteam] AS [dbo]
 GO
