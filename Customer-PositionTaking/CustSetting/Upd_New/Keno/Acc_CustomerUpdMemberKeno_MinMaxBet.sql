@@ -162,14 +162,15 @@ BEGIN
 			,@duration = @duration
 	END CATCH
 END
-
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
+
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
 GO
+
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_MinMaxBet] TO [vnteam] AS [dbo]
 GO
-
 
 
