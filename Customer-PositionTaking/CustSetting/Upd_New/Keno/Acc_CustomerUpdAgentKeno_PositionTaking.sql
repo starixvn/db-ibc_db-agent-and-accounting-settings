@@ -1,3 +1,10 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdAgentKeno_PositionTaking]    Script Date: 4/2/2014 10:52:19 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_PositionTaking]
 (
 	@custid INT
@@ -233,7 +240,6 @@ BEGIN
 			RETURN
 		END
 	END
-	--SELECT @ErrCode = -103
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 
@@ -289,7 +295,6 @@ BEGIN
 			, @duration = @duration
 	END CATCH	
 END
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_PositionTaking] TO [bodbAdminNet] AS [dbo]

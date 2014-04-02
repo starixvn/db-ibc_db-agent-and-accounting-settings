@@ -101,14 +101,13 @@ BEGIN
 		EXEC [Acc_CustomerUpdMemberKeno_MinMaxBet] 
 			@custid = @custid
 			,@bettype = @bettype
-			,@sporttype = @sporttype
 
 			,@MinBet	= @MinBet
 			,@MaxBet	= @MaxBet
 			,@MaxPerMatch = @MaxPerMatch
 
-			,@IP = @IP
 			,@UserID = @UserID
+			,@IP = @IP
 			,@Language = @Language
 			,@ErrCode = @ErrCode_Cur OUTPUT
 			,@ErrMsg = @ErrMsg_Cur OUTPUT
@@ -123,9 +122,8 @@ BEGIN
 		ELSE
 			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
-
-	RETURN
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbAdminNet] AS [dbo]

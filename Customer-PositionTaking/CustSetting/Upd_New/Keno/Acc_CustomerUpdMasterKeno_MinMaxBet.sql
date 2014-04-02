@@ -11,7 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 	, @UserId INT
 	, @IP VARCHAR(50)= ''
 	, @Language	VARCHAR(20) = 'E'
-	, @ErrCode VARCHAR(300) = '' OUTPUT
+	, @ErrCode INT = 0 OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
 )
  AS
@@ -23,16 +23,18 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 	Revisions:
 														
 	Parameter's Explanation
-		@ErrCode <= 0 update successfully
+		@ErrCode:
+			= 0: Update successfully.
+			> 0: Specific Error.
 
 */
 BEGIN
 	SET NOCOUNT ON
 	DECLARE @startRun DATETIME, @endRun	DATETIME, @duration INT, @srecommend INT, @Username VARCHAR(50)
 		, @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY
-		, @Old_MinBet MONEY, @Old_MaxBet MONEY,	@Old_MaxPerMatch MONEY, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
+		, @Old_MinBet MONEY, @Old_MaxBet MONEY,	@Old_MaxPerMatch MONEY
 	
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
+	SELECT @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
 	
 	SELECT @srecommend = srecommend, @UserName = username
 	FROM dbo.custinfo WITH(NOLOCK)
@@ -43,29 +45,21 @@ BEGIN
 	--Check @MinBet, @MaxBet & @MaxPerMatch >= 0
 	IF @MinBet < 0 OR @MaxBet < 0 OR @MaxPerMatch < 0
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language)	END
-			, @ErrCode_Cur = 101
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+			, @ErrCode = 101
+		RETURN
 	END
 	--Check @MinBet <= @MaxBet <= @MaxPerMatch
 	IF (@MinBet <> 0 AND @MaxBet <> 0 AND  @MinBet > @MaxBet) 
 		OR (@MaxBet <> 0 AND @MaxPerMatch <> 0 AND @MaxBet > @MaxPerMatch) 
 		OR (@MinBet <> 0 AND @MaxPerMatch <> 0 AND @MinBet > @MaxPerMatch)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match!!!'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language) END
-			, @ErrCode_Cur = 102
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+			, @ErrCode = 102
+		RETURN
 	END
 	
 	DECLARE @GameTypeID INT
@@ -82,38 +76,26 @@ BEGIN
 	--Check @MinBet >= @MinMinBet
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Min bet must be equal to or greater than Super Agent min bet'
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Min bet must be equal to or greater than Super Agent min bet'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10016, @Language) END +' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
-				, @ErrCode_Cur = 103
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+				, @ErrCode = 103
+		RETURN
 	END
 	--Check @MaxBet <= @MaxMaxBet
 	IF (@MaxMaxBet > 0 AND @MaxBet > 0 AND @MaxBet > @MaxMaxBet)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Max bet must be equal to or less than Super Agent max bet'
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Max bet must be equal to or less than Super Agent max bet'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10017, @Language) END +' (' + CONVERT(VARCHAR(20), @MaxMaxBet) + ').'
-				, @ErrCode_Cur = 104
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+				, @ErrCode = 104
+		RETURN
 	END
 	--Check @MaxPerMatch <= @MaxMaxPerMatch
 	IF (@MaxMaxPerMatch > 0 AND @MaxPerMatch > 0 AND @MaxPerMatch > @MaxPerMatch)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match'
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10018, @Language) END +' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatch) + ').'
-				, @ErrCode_Cur = 105
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+				, @ErrCode = 105
+		RETURN
 	END
 	
 	--check old values and new values before update
@@ -131,17 +113,11 @@ BEGIN
 
 	IF (@@ERROR <> 0)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Update process is unsuccessful !'
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Update process is unsuccessful !'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)	END
-			, @ErrCode_cur = 106
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+			, @ErrCode = 106
+		RETURN
 	END
-	ELSE
-		SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)
 		
 	DECLARE @LogSPData VARCHAR(5000), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData ='<Acc_CustomerUpdMasterKeno_MinMaxBet CustId="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
@@ -189,6 +165,7 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
 GO

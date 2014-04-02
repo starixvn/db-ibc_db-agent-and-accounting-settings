@@ -10,7 +10,7 @@
 	@UserID			INT = 0,	
 	@Language		VARCHAR(2) = 'E',
 	@IP				VARCHAR(15)='',
-	@ErrCode		VARCHAR(300)  = ''  OUTPUT,
+	@ErrCode		INT  = 0  OUTPUT,
 	@ErrMsg			NVARCHAR(4000) = '' OUTPUT
 AS
 /*
@@ -23,7 +23,8 @@ AS
 							
 	Param's Explanation:
 	* @ErrCode:
-		<= 0 is successfully
+		= 0: Update successfully.
+		> 0: Specific Error.
   
 	* @ErrMsg: Error description.
 */
@@ -32,26 +33,17 @@ BEGIN
 	DECLARE @startRun datetime, @endRun datetime, @duration int,
 			@minbet_old money, @maxbet_old money, @maxpermatch_old money
 
-	SET @startRun = GETDATE()
+	SET @startRun = GETDATE()	
 
-	DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
-
-	IF 
-		@MinBet < 0
+	IF @MinBet < 0
 		or @MaxBet < 0
 		or @MaxPerMatch <0	
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10003,@Language) END, 
-				@ErrCode_Cur = 101
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+				@ErrCode = 101
+		RETURN
 	END
 
 	IF(@MinBet <> 0 AND @MaxBet <> 0 AND  @MinBet > @MaxBet) 
@@ -59,16 +51,11 @@ BEGIN
 		or (@MinBet <> 0 AND @MaxPerMatch <> 0 AND @MinBet > @MaxPerMatch) 
 	BEGIN
 		SELECT
-			@ErrMsg_Cur =	CASE @Language 
+			@ErrMsg =	CASE @Language 
 								WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language) END, 
-			@ErrCode_Cur = 102
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
+			@ErrCode = 102
+		RETURN
 	END
 
 	SELECT @minbet_old = cg.MinBet, @maxbet_old = cg.MaxBet, @maxpermatch_old = cg.MaxPerGameType
@@ -87,21 +74,12 @@ BEGIN
 	
 		IF (@@error <> 0)
 		BEGIN
-			SELECT	@ErrMsg_Cur = CASE @Language 
+			SELECT	@ErrMsg = CASE @Language 
 								WHEN 'E' THEN 'Update process is unsuccessful!'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language) END, 
-					@ErrCode_Cur = 103 
+					@ErrCode = 103 
 			RETURN
-		END
-	
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			RETURN
-		END
-		ELSE	
-			SELECT @ErrCode = '-101', @ErrMsg = @ErrMsg + CHAR(7)	
+		END		
 	END
 
 	DECLARE @LogSPData VARCHAR (MAX),
@@ -165,6 +143,11 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [vnteam] AS [dbo]
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]

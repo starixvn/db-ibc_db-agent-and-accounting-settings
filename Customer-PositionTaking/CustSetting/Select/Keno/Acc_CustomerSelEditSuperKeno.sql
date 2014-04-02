@@ -33,7 +33,7 @@ BEGIN
 	SELECT @currency = currency FROM custinfo WITH(NOLOCK) WHERE custid = @custid
 
 	--Customer Info
-	SELECT firstname, lastname, phone, mobilephone, fax
+	SELECT username, firstname, lastname, phone, mobilephone, fax
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID 
 

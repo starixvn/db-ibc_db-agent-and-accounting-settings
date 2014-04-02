@@ -136,7 +136,7 @@ BEGIN
 			, @ErrCode = @ErrCode_Cur OUTPUT
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @ErrCode_Cur <= 0
+		IF @ErrCode_Cur = 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
@@ -147,6 +147,8 @@ BEGIN
 		END
 	END
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno] TO [bodbAdminNet] AS [dbo]

@@ -64,7 +64,7 @@ BEGIN
 	ORDER BY gt.IBCBetTypeID
 
 	--Customer Info
-	SELECT firstname, lastname, phone, mobilephone, fax
+	SELECT username, firstname, lastname, phone, mobilephone, fax
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID 
 

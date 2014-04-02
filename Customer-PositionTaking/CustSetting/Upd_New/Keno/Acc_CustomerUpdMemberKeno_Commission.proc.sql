@@ -9,7 +9,7 @@
 	,@IP VARCHAR(50) = ''
 	,@UserID INT = 0
 	,@Language VARCHAR(20) = 'E'
-	,@ErrCode VARCHAR(300) = '' OUTPUT
+	,@ErrCode INT = 0 OUTPUT
 	,@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
@@ -61,8 +61,7 @@ BEGIN
 		AND bettype = @bettype
 
 	IF (@discount < 0
-		OR @discount > @uplinePlayerDiscount
-		OR  @discount > 0.01 ) --global production comm setting
+		OR @discount > @uplinePlayerDiscount )
 	BEGIN
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E' THEN 'Invalid commission rate.'
@@ -153,13 +152,11 @@ BEGIN
 			,@duration = @duration
 	END CATCH
 END
-GO
 
+GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Commission] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Commission] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_Commission] TO [vnteam] AS [dbo]
 GO

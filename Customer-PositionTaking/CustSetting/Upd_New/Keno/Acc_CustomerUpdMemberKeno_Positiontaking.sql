@@ -9,7 +9,7 @@
 	@IP			VARCHAR(50)='',	
 	@UserID		INT = 0,
 	@Language	VARCHAR(20) = 'E',		
-	@ErrCode	VARCHAR(300) = '' OUTPUT,
+	@ErrCode	INT = 0 OUTPUT,
 	@ErrMsg		NVARCHAR(4000) = '' OUTPUT	
 AS
 /*
@@ -49,13 +49,11 @@ DECLARE @startRun	DATETIME,
 			
 		@spositiontaking_min			SMALLMONEY,
 			
-		@roleid		TINYINT, 
-		@ErrCode_Cur INT, 
-		@ErrMsg_Cur NVARCHAR(4000),
+		@roleid		TINYINT, 		
 		@ErrType	NVARCHAR(4000)
 			
 					
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	SELECT @ErrCode = 0, @ErrMsg = ''
 		
 	SET @startRun = GETDATE()
 	
@@ -69,14 +67,9 @@ DECLARE @startRun	DATETIME,
 	
 	---------------------------
 	--Check disable user
-	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
-	IF @ErrCode_Cur > 0
-	BEGIN
-		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-		return
-	END
-	--end
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+	IF @ErrCode > 0
+		RETURN
 		
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend
 	FROM custinfo WITH(NOLOCK)
@@ -84,15 +77,11 @@ DECLARE @startRun	DATETIME,
 		
 	IF @apositiontaking < 0 OR @apositiontaking > 0.85
 	BEGIN
-		SELECT @ErrMsg_Cur = 
+		SELECT @ErrMsg = 
 						CASE @Language 
 							WHEN 'E' THEN 'Wrong position taking.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
-						END, @ErrCode_Cur = 100
-						
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-		
+						END, @ErrCode = 100
 		RETURN		
 	END
 	
@@ -110,15 +99,11 @@ DECLARE @startRun	DATETIME,
 	
 	IF @ErrType <> ''
 	BEGIN
-		SELECT @ErrMsg_Cur = 
+		SELECT @ErrMsg = 
 						CASE @Language 
 							WHEN 'E' THEN 'Wrong position taking (min/max set by company).<br>'+@ErrType
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + '<br>' + @ErrType
-						END, @ErrCode_Cur = 101
-		
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-		
+						END, @ErrCode = 101					
 		RETURN	
 	END
 	
@@ -132,15 +117,11 @@ DECLARE @startRun	DATETIME,
 	
 	IF @ErrType <> ''
 	BEGIN
-		SELECT @ErrMsg_Cur = 
+		SELECT @ErrMsg = 
 					CASE @Language 
 						WHEN 'E' THEN 'Wrong position taking (min/max set by company).<br>'+@ErrType
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + '<br>' + @ErrType
-					END, @ErrCode_Cur = 102
-					
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-				
+					END, @ErrCode = 102											
 		RETURN	
 	END
 	
@@ -195,15 +176,11 @@ DECLARE @startRun	DATETIME,
 
 	IF @ErrType <> ''
 	BEGIN
-		SELECT @ErrMsg_Cur = 
+		SELECT @ErrMsg = 
 					CASE @Language 
 						WHEN 'E' THEN 'Wrong position taking .<br>'+@ErrType
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
-					END, @ErrCode_Cur = 103
-		
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-							
+					END, @ErrCode = 103
 		RETURN	
 	END
 	
@@ -244,13 +221,10 @@ DECLARE @startRun	DATETIME,
 	
 	IF (@@error <> 0)
 	BEGIN		
-		SELECT @ErrMsg_Cur = CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 								WHEN 'E' THEN 'Update process is unsuccessful !'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode_Cur = 104	
-		
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-						@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
+							END, @ErrCode = 104					
 		RETURN	
 	END	
 	
@@ -265,13 +239,10 @@ DECLARE @startRun	DATETIME,
 	
 	IF (@@error <> 0)
 	BEGIN		
-		SELECT @ErrMsg_Cur = CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 								WHEN 'E' THEN 'Update process is unsuccessful !'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END, @ErrCode_Cur = 105	
-		
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-						@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
+							END, @ErrCode = 105			
 		RETURN	
 	END	
 			
@@ -331,13 +302,7 @@ DECLARE @startRun	DATETIME,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration	
-	END CATCH			
-	
-	SELECT @ErrCode_Cur = -101 --success
-	
-	SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
+	END CATCH				
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [bodbadminNet] AS [dbo]

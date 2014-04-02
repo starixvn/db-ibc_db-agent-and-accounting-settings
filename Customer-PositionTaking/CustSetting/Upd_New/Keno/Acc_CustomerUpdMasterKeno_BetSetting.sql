@@ -1,5 +1,3 @@
-USE [CustDB]
-GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_BetSetting]
 (
 	@CustId INT --Master
@@ -93,10 +91,10 @@ BEGIN
 			, @UserID = @UserID
 			, @Language = @Language
 			, @IP = @IP
-			, @ErrCode = @VarErrCode_Cur OUTPUT -- is -101 update sucessfully
+			, @ErrCode = @ErrCode_Cur OUTPUT 
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @VarErrCode_Cur > '0' --> fail
+		IF @ErrCode_Cur > 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 		END
@@ -111,12 +109,9 @@ END
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [bodbadminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [bodbDownlineNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [vnteam] AS [dbo]
 

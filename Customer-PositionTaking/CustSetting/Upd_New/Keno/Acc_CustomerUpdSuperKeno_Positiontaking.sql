@@ -8,7 +8,7 @@
 	@UserID INT = 0,	
 	@Language varchar(2) = 'E',
 	@IP VARCHAR(15)='',
-	@ErrCode VARCHAR(300)  = '' OUTPUT,
+	@ErrCode INT  = 0 OUTPUT,
 	@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
@@ -19,7 +19,8 @@ AS
 				
 	Param's Explanation:
 	• @ErrCode is:
-			0 update successful
+			= 0: Transaction recorded successfully.
+			> 0: Specific Error.
 	  
 	• @ErrMsg: Error description.
 */
@@ -29,8 +30,7 @@ BEGIN
 
 	SET @startRun = GETDATE()
 
-	DECLARE @roleid TINYINT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000)
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	DECLARE @roleid TINYINT
 
 	---------------------------
 	-- ***Check Downline Belonging***
@@ -42,13 +42,9 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
-	IF @ErrCode_Cur > 0
-	BEGIN
-		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-		return
-	END
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+	IF @ErrCode <> 0
+		RETURN
 	--end
 
 	---- Checking total downlines before UPDATEs 
@@ -74,6 +70,7 @@ BEGIN
 	IF @old_spositiontaking = @spositiontaking
 		RETURN
 
+	Declare @ErrAcc nvarchar(4000)
 	--check all s3+m3<=s4 if i3 = 0,
 	--m3<=s4 and u3<=s4 if i3=1
 	SELECT @ErrAcc = ''
@@ -85,8 +82,6 @@ BEGIN
 		AND cs.sporttype = @sporttype AND bettype = @bettype
 		AND ((cs.isautopositiontaking = 0 AND cs.spositiontaking + cs.mpositiontaking > @spositiontaking)
 			OR (cs.isautopositiontaking = 1 AND (cs.mpositiontaking > @spositiontaking OR cs.autopositiontaking > @spositiontaking)))
-
-
 	IF @ErrAcc<>''
 	BEGIN
 		Select @ErrMsg =
@@ -100,7 +95,6 @@ BEGIN
 	--check all s1+m1+a1 <= s4
 	--check all u1<=s4 if i1=1
 	SELECT @ErrAcc = ''
-
 	SELECT @ErrAcc = @ErrAcc + ci.username + ', '	
 	FROM CustSettingGame cs WITH(NOLOCK)
 		INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
@@ -118,7 +112,6 @@ BEGIN
 					end, @ErrCode = 104
 		RETURN
 	END
-
 
 	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
 	SET spositiontaking = @spositiontaking
@@ -139,7 +132,6 @@ BEGIN
 	--s1 = min(s4-m1-a1, u)
 	EXEC dbo.Acc_CustSetting3rd_07_xtest @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
-	--SELECT @ErrCode = '-103'
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)
 	 

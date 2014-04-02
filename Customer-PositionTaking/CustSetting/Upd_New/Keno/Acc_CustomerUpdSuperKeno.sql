@@ -83,17 +83,17 @@ BEGIN
 
 	IF @UpdatePositiontaking = 1
 	BEGIN
-		DECLARE @VarErrCode_Cur VARCHAR(200) = ''
-		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @VarErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @VarErrCode_Cur <= '0' --success
-		BEGIN
-			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
-		END
-		ELSE
+		IF @ErrCode_Cur <> 0 --success
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN	
+			
+		END
+		ELSE
+		BEGIN
+			SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END	
 	END
 

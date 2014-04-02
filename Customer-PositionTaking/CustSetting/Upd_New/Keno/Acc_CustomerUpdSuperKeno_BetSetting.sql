@@ -80,7 +80,7 @@ BEGIN
 		BEGIN
 			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-			--return
+			RETURN
 		END
 		ELSE
 		BEGIN
@@ -104,17 +104,18 @@ BEGIN
 			@UserID = @UserID,
 			@Language = @Language,
 			@IP = @IP,
-			@ErrCode = @VarErrorCode OUTPUT, 
+			@ErrCode = @ErrCode_Cur OUTPUT, 
 			@ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @VarErrorCode <= '0' --> success
-		BEGIN
-			Select @ErrCode = @ErrCode + '-101' + char(7), @ErrMsg = @ErrMsg + char(7)
-		END
-		ELSE
+		IF @ErrCode_Cur > 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		ELSE
+		BEGIN
+			Select @ErrCode = @ErrCode + '-101' + char(7), @ErrMsg = @ErrMsg + char(7)
 		END
 	END
 		

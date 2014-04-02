@@ -1,10 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdAgentKeno_BetSetting]    Script Date: 3/20/2014 10:58:16 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_BetSetting]
 (
 	@CustId INT --Agent
@@ -77,9 +70,10 @@ BEGIN
 			, @ErrCode = @ErrCode_Cur OUTPUT
 			, @ErrMsg = @ErrMsg_Cur OUTPUT
 			, @IP = @IP
-		IF @ErrCode_Cur > 0
+		IF @ErrCode_Cur <> 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			RETURN
 		END
 		ELSE
 		BEGIN
@@ -100,16 +94,17 @@ BEGIN
 			, @UserID = @UserID
 			, @Language = @Language
 			, @IP = @IP
-			, @ErrCode = @VarErrorCode OUTPUT
+			, @ErrCode = @ErrCode_Cur OUTPUT
 			, @ErrMsg	= @ErrMsg_Cur OUTPUT
 		
-		IF @VarErrorCode <= '0' --> success
+		IF @ErrCode_Cur <> 0
 		BEGIN
-			SELECT @ErrCode = @VarErrorCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			RETURN
 		END
 		ELSE
 		BEGIN
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			SELECT @ErrCode = @ErrCode + '-101' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
 	END
 END 
@@ -117,12 +112,9 @@ END
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_BetSetting] TO [bodbadminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_BetSetting] TO [bodbDownlineNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentKeno_BetSetting] TO [vnteam] AS [dbo]
 

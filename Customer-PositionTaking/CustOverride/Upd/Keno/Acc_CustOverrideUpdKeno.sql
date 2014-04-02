@@ -31,7 +31,7 @@ BEGIN
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT
 	SET @startRun = GETDATE()
 
-	DECLARE @roleid INT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000)
+	DECLARE @roleid INT
 	DECLARE @Old_Min_Positiontaking SMALLMONEY	
 
 	--Check Allowed downlines	

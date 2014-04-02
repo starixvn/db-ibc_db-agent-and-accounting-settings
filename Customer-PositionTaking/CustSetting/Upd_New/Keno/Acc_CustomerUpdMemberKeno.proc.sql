@@ -119,16 +119,12 @@ BEGIN
 		ELSE
 			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
-
-	RETURN
 END
-GO
 
+GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno] TO [vnteam] AS [dbo]
 GO
