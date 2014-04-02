@@ -1,4 +1,4 @@
-ALTER PROCEDURE dbo.Acc_CustomerUpdMemberKeno_MAg
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MAg]
 (
 	@custid INT
 	, @SportType INT = 202 
@@ -36,7 +36,7 @@ BEGIN
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @ErrType VARCHAR(1000), @roleid TINYINT, @ErrCode_Cur INT
 		, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000), @recommend INT, @srecommend INT, @mrecommend INT, @UserName VARCHAR(50)
 
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '0', @ErrMsg = '', @startRun = GETDATE()
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
 
 	--Check downline belongin
 	EXEC dbo.Age_CustomerSelCheckBelonging @SessionCustID = @mrecommend
@@ -354,7 +354,6 @@ BEGIN
 			, @TrackingValue2 = @TrackingValueDB
 			, @duration = @duration
 	END CATCH
-	--SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 
 END
 

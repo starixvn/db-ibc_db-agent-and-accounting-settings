@@ -124,13 +124,11 @@ BEGIN
 	END
 END
 
-GO
 
+GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [vnteam] AS [dbo]
 GO

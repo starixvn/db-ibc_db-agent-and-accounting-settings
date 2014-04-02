@@ -1,14 +1,3 @@
-USE [bodb02]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditAgentKeno]    Script Date: 3/20/2014 8:59:56 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 ALTER PROCEDURE [dbo].[Acc_CustomerSelEditAgentKeno]
 (
 	@custid INT

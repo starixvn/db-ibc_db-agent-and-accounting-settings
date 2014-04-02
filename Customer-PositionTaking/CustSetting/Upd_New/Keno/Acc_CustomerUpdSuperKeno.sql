@@ -85,7 +85,7 @@ BEGIN
 	BEGIN
 		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
-		IF @ErrCode_Cur <> 0 --success
+		IF @ErrCode_Cur <> 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 			RETURN	

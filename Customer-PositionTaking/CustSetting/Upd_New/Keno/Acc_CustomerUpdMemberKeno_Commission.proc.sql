@@ -61,7 +61,8 @@ BEGIN
 		AND bettype = @bettype
 
 	IF (@discount < 0
-		OR @discount > @uplinePlayerDiscount )
+		OR @discount > @uplinePlayerDiscount
+		OR  @discount > 0.01 ) --global production comm setting
 	BEGIN
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E' THEN 'Invalid commission rate.'

@@ -39,7 +39,7 @@ BEGIN
 	SET NOCOUNT ON
 
 	DECLARE @roleid TINYINT, @ErrCode_Cur INT, @VarErrCode_Cur VARCHAR(300), @ErrMsg_Cur NVARCHAR(4000)
-	SELECT @ErrCode_Cur = '', @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 	--Check downline belonging
 	EXEC dbo.Age_CustomerSelCheckBelonging @SessionCustID = @Userid

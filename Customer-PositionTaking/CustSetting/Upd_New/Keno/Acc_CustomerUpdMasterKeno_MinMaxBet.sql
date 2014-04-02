@@ -34,7 +34,7 @@ BEGIN
 		, @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY
 		, @Old_MinBet MONEY, @Old_MaxBet MONEY,	@Old_MaxPerMatch MONEY
 	
-	SELECT @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
+	SELECT @ErrCode = 0, @ErrMsg = '', @startRun = GETDATE()
 	
 	SELECT @srecommend = srecommend, @UserName = username
 	FROM dbo.custinfo WITH(NOLOCK)
