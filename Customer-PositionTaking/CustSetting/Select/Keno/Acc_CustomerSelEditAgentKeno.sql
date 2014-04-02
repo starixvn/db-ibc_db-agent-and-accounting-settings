@@ -82,6 +82,7 @@ BEGIN
 		--, mcs.mpositiontaking AS auto_mpositiontaking_max --u2_max
 		, co.minpositiontaking AS apositiontaking_min --n2
 	FROM dbo.custsettingGame cs WITH(NOLOCK)
+		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.custsettingGame mcs WITH(NOLOCK) ON mcs.CustID = @mrecommend AND cs.bettype = mcs.bettype AND cs.Sporttype = mcs.sporttype
 		INNER JOIN dbo.custoverrideGame co WITH(NOLOCK) ON cs.custid = co.custid AND cs.sporttype = co.sporttype AND cs.bettype = co.bettype
 	WHERE cs.custid = @custid AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202

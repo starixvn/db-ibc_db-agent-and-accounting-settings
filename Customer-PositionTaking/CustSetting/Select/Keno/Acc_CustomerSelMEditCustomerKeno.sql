@@ -1,14 +1,3 @@
-USE [bodb02]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelMEditCustomerKeno]    Script Date: 3/20/2014 8:58:53 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerKeno]
 	@custid		INT
 AS
@@ -58,7 +47,8 @@ BEGIN
 			END AS MPositionTaking_Max --!(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)--> m1_max
 		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 
 			ELSE sco.minpositiontaking - cs.apositiontaking END AS MPositionTaking_Min --m1_min=um1_min=Max(0, N3-A1)
-	FROM dbo.CustSettingGame AS cs WITH (NOLOCK) 
+	FROM dbo.CustSettingGame AS cs WITH (NOLOCK)
+		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame csa WITH (NOLOCK) ON csa.custid = @recommend AND csa.bettype = cs.bettype AND csa.sporttype = cs.sporttype 
 		INNER JOIN dbo.CustSettingGame csm WITH (NOLOCK) ON csm.custid = @mrecommend AND csm.bettype = cs.bettype AND csm.sporttype = cs.sporttype 
 		INNER JOIN dbo.CustSettingGame css WITH (NOLOCK) ON css.custid = @srecommend AND css.bettype = cs.bettype AND css.sporttype = cs.sporttype 
@@ -66,6 +56,7 @@ BEGIN
 	WHERE cs.custid = @custId 
 		AND cs.bettype BETWEEN 1501 AND 1599
 		AND cs.sporttype = 202
+		AND IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 END
 

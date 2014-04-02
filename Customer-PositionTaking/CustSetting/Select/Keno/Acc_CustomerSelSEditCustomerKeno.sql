@@ -1,13 +1,3 @@
-USE [bodb02]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSEditCustomerKeno]    Script Date: 3/20/2014 8:57:59 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerKeno]
 	@CustID		INT
 AS
@@ -56,12 +46,14 @@ BEGIN
 				THEN 0
 				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS SPositionTaking_Min -- s1_min = Max(0, N4-M1-A1)
 	FROM dbo.CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.bettype = cs.bettype AND mcs.sporttype = cs.sporttype
 		INNER JOIN dbo.CustSettingGame scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.bettype = cs.bettype AND scs.sporttype = cs.sporttype
 		INNER JOIN dbo.CustOverrideGame sco WITH(NOLOCK) ON sco.custid = @srecommend AND sco.bettype = cs.bettype AND sco.sporttype = cs.sporttype
 	WHERE cs.custid = @custid
 		AND cs.bettype BETWEEN 1501 AND 1599
 		AND cs.sporttype = 202
+		AND IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 END
 
