@@ -126,8 +126,9 @@ Param's Explanation:
 			@HideVirtualSports		= ISNULL(HideVirtualSports,0),
 			@MaxPerMatch180			= MaxPerMatch180,
 			@MaxPerMatch181			= MaxPerMatch181,
-			@MaxPerMatch182			= MaxPerMatch182,
+			@MaxPerMatch183			= MaxPerMatch183,
 			@MaxPerMatch184			= MaxPerMatch184,
+			@MaxPerMatch185			= MaxPerMatch185,
 			@MaxPerMatch186			= MaxPerMatch186
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid
