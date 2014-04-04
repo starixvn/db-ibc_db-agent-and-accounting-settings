@@ -1,10 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
+﻿ALTER PROCEDURE [Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
 	@recommend INT = 0,
 	@roleid INT,
-	
+ 
+
 	@groupa DECIMAL(9,8) = 0, 
 	@groupb DECIMAL(9,8) = 0, 
 	@groupc DECIMAL(9,8) = 0, 
@@ -99,12 +100,14 @@
 	@v180spositiontaking_1201 smallmoney = 0,
 	@v181spositiontaking_1231 smallmoney = 0,
 	@v182spositiontaking_1231 smallmoney = 0,
+	@v183spositiontaking_1231 smallmoney = 0,
 	@v184spositiontaking_1231 smallmoney = 0,
+	@v185spositiontaking_1231 smallmoney = 0,
 	@v186spositiontaking_1220 smallmoney = 0,
 	
 
-	@v201spositiontaking_2 smallmoney = 0,
-	@v201spositiontaking_3 smallmoney = 0,
+	--@v201spositiontaking_2 smallmoney = 0,
+	--@v201spositiontaking_3 smallmoney = 0,
 	---
 	---create new master
 	@auto_spositiontaking_1 smallmoney = 0,
@@ -177,7 +180,9 @@
 	@min_v180spositiontaking_1201 smallmoney = 0,	 --VS
 	@min_v181spositiontaking_1231 smallmoney = 0,
 	@min_v182spositiontaking_1231 smallmoney = 0,
+	@min_v183spositiontaking_1231 smallmoney = 0,
 	@min_v184spositiontaking_1231 smallmoney = 0,
+	@min_v185spositiontaking_1231 smallmoney = 0,
 	@min_v186spositiontaking_1220 smallmoney = 0,
 	
 
@@ -335,12 +340,14 @@
 	@v180mpositiontaking_1201 smallmoney = 0,
 	@v181mpositiontaking_1231 smallmoney = 0,
 	@v182mpositiontaking_1231 smallmoney = 0,
+	@v183mpositiontaking_1231 smallmoney = 0,
 	@v184mpositiontaking_1231 smallmoney = 0,
+	@v185mpositiontaking_1231 smallmoney = 0,
 	@v186mpositiontaking_1220 smallmoney = 0,
 	
 
-	@v201mpositiontaking_2 smallmoney = 0,
-	@v201mpositiontaking_3 smallmoney = 0,
+	--@v201mpositiontaking_2 smallmoney = 0,
+	--@v201mpositiontaking_3 smallmoney = 0,
 	---
 	---create agent
 	--Auto Master PT
@@ -416,7 +423,9 @@
 	@min_v180mpositiontaking_1201 smallmoney = 0,--VS
 	@min_v181mpositiontaking_1231 smallmoney = 0,
 	@min_v182mpositiontaking_1231 smallmoney = 0,
+	@min_v183mpositiontaking_1231 smallmoney = 0,
 	@min_v184mpositiontaking_1231 smallmoney = 0,
+	@min_v185mpositiontaking_1231 smallmoney = 0,
 	@min_v186mpositiontaking_1220 smallmoney = 0,
 	
 
@@ -560,7 +569,9 @@
 	@v180apositiontaking_1201 smallmoney = 0,
 	@v181apositiontaking_1231 smallmoney = 0,
 	@v182apositiontaking_1231 smallmoney = 0,
+	@v183apositiontaking_1231 smallmoney = 0,
 	@v184apositiontaking_1231 smallmoney = 0,
+	@v185apositiontaking_1231 smallmoney = 0,
 	@v186apositiontaking_1220 smallmoney = 0,
 	
 	
@@ -596,8 +607,12 @@
 	@maxbetv181 money = 0,
 	@minbetv182 money = 0,
 	@maxbetv182 money = 0,
+	@minbetv183 money = 0,
+	@maxbetv183 money = 0,
 	@minbetv184 money = 0,
 	@maxbetv184 money = 0,
+	@minbetv185 money = 0,
+	@maxbetv185 money = 0,
 	@minbetv186 money = 0,
 	@maxbetv186 money = 0,
 	
@@ -661,9 +676,9 @@
 	@v153sdiscount_51 decimal(9,8) = 0,
 	
 	--v201
-	@v201discount decimal(9,8) = 0,
-	@v201adiscount decimal(9,8) = 0,
-	@v201sdiscount decimal(9,8) = 0,
+	--@v201discount decimal(9,8) = 0,
+	--@v201adiscount decimal(9,8) = 0,
+	--@v201sdiscount decimal(9,8) = 0,
 	
 	--v162
 	@v162discount_1101 decimal(9,8) = 0,
@@ -692,21 +707,21 @@
 				+ Acc_CustomerInsMember_SAg
 				+ Acc_CustomerInsMember_MAg
 				+ Acc_CustomerInsMember_Ag
+			- 20140303@Patrick	: Add more sport:202 for Keno
+			- 20140331@Sophia: remove Fi sporttype = 201
+			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 		
 		Parameter's Explanation:
 	*/
 BEGIN
 SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
+	DECLARE @IsExistTables tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
 			AND xtype = 'U'
+			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2')
 
-	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-			AND xtype = 'V'
-			
-	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
+	if @IsExistTables <> 7 RETURN
 	
 	IF @roleid = 4
 	BEGIN					
@@ -777,11 +792,11 @@ SET NOCOUNT ON
 
 		--insert into CustSetting3rd
 		INSERT INTO [dbo].[CustSetting3rd]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking],  [playerdiscount], [discount], [adiscount], [sdiscount], [Minbet], [Maxbet], autopositiontaking, isautopositiontaking, alivepositiontaking, mlivepositiontaking, slivepositiontaking, autolivepositiontaking, isautolivepositiontaking,[autompositiontaking],[isautompositiontaking],[autolivempositiontaking],[isautolivempositiontaking])
-					SELECT @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL	SELECT @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--			SELECT @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--UNION ALL	SELECT @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 		--v151
-		UNION ALL	SELECT @custid, 31, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+					SELECT @custid, 31, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 32, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 41, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 42, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -811,7 +826,9 @@ SET NOCOUNT ON
 		UNION ALL	SELECT @custid, 1201, 180, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 1231, 181, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 1231, 182, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL	SELECT @custid, 1231, 183, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 1231, 184, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL	SELECT @custid, 1231, 185, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 1220, 186, 0.9, 0.9, 0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 		
@@ -894,10 +911,10 @@ SET NOCOUNT ON
 
 		-- Insert Into CustOverride3rd
 		INSERT INTO [dbo].[CustOverride3rd]([custId], [bettype], [sporttype], minpositiontaking, maxpositiontaking,minlivepositiontaking,maxlivepositiontaking)
-		SELECT @custid, 2, 201, 0, 0.5, 0, 0.9
-		UNION ALL SELECT @custid, 3, 201, 0, 0.5, 0, 0.9
+		--SELECT @custid, 2, 201, 0, 0.5, 0, 0.9
+		--UNION ALL SELECT @custid, 3, 201, 0, 0.5, 0, 0.9
 		--v151 
-		UNION ALL SELECT @custid, 31, 151, 0, 0.5, 0, 0.9
+				  SELECT @custid, 31, 151, 0, 0.5, 0, 0.9
 		UNION ALL SELECT @custid, 32, 151, 0, 0.5, 0, 0.9
 		UNION ALL SELECT @custid, 41, 151, 0, 0.5, 0, 0.9
 		UNION ALL SELECT @custid, 42, 151, 0, 0.5, 0, 0.9
@@ -924,9 +941,10 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 1201, 180, 0, 0.9, 0, 0.9
 		UNION ALL SELECT @custid, 1231, 181, 0, 0.9, 0, 0.9
 		UNION ALL SELECT @custid, 1231, 182, 0, 0.9, 0, 0.9
+		UNION ALL SELECT @custid, 1231, 183, 0, 0.9, 0, 0.9
 		UNION ALL SELECT @custid, 1231, 184, 0, 0.9, 0, 0.9
+		UNION ALL SELECT @custid, 1231, 185, 0, 0.9, 0, 0.9
 		UNION ALL SELECT @custid, 1220, 186, 0, 0.9, 0, 0.9
-
 		
 
 		IF @@ERROR <> 0
@@ -1044,6 +1062,33 @@ SET NOCOUNT ON
 			
 			RETURN
 		END
+
+		--Keno
+		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
+		SELECT	GameTypeID, @Custid, 0, 0, 0, 1
+		FROM	bodb02.dbo.GameType WITH(NOLOCK)
+		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
+
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode = 156
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			
+			RETURN
+		END
+
+		--end keno
 	END--end roleid = 4
 	ELSE IF @roleid = 3
 	BEGIN			
@@ -1181,17 +1226,18 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 52, 153, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-		--v201
-		UNION ALL
-		select @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL
-		select @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		----v201
+		--UNION ALL
+		--select @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--UNION ALL
+		--select @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 		--- v161   
 		--custid, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount, minbet, maxbet, autopositiontaking, isautopositiontaking, autompositiontaking, isautompositiontaking, alivepositiontaking, mlivepositiontaking,
 		-- slivepositiontaking, autolivepositiontaking, isautolivepositiontaking, autolivempositiontaking, isautolivempositiontaking
 		UNION ALL
 		select @custid, 81, 161, 0, @v161mpositiontaking_81, @v161spositiontaking_81, 0, 0, @discountnumber, 0, @minbetv161, @maxbetv161, @auto_v161spositiontaking_81, @isauto_v161spositiontaking_81, 0, 0, 0, 0, 0, 0, 0, 0,0
+
 		UNION ALL				 
 		select @custid, 83, 161, 0, @v161mpositiontaking_83, @v161spositiontaking_83, 0, 0, @discountnumber, 0, @minbetv161, @maxbetv161, @auto_v161spositiontaking_83, @isauto_v161spositiontaking_83, 0, 0, 0, 0, 0, 0, 0, 0,0
 		UNION ALL
@@ -1213,9 +1259,13 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 1231, 181, 0, 0, ISNULL(@min_v181spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv181,0), ISNULL(@maxbetv181,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
-		select @custid, 1231, 182, 0, 0, ISNULL(@min_v182spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv182,0), ISNULL(@maxbetv182,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		select @custid, 1231, 182, 0, 0, ISNULL(@min_v182spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv182,0), ISNULL(@maxbetv182,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0		
+		UNION ALL
+		select @custid, 1231, 183, 0, 0, ISNULL(@min_v183spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv183,0), ISNULL(@maxbetv183,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0		
 		UNION ALL
 		select @custid, 1231, 184, 0, 0, ISNULL(@min_v184spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv184,0), ISNULL(@maxbetv184,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL
+		select @custid, 1231, 185, 0, 0, ISNULL(@min_v185spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 1220, 186, 0, 0, ISNULL(@min_v186spositiontaking_1220,0), 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
@@ -1298,10 +1348,10 @@ SET NOCOUNT ON
 
 		--Insert into CustOverride3rd
 		INSERT INTO [dbo].[CustOverride3rd]([custid], [bettype], [sporttype], minpositiontaking, maxpositiontaking, minlivepositiontaking, maxlivepositiontaking)
-				  select @custid, 2, 201, 0, 0.5, 0, 0.9
-		UNION ALL select @custid, 3, 201, 0, 0.5, 0, 0.9
+		--		  select @custid, 2, 201, 0, 0.5, 0, 0.9
+		--UNION ALL select @custid, 3, 201, 0, 0.5, 0, 0.9
 		--v151
-		UNION ALL select @custid, 31, 151, 0, 0.5, 0, 0.9
+				  select @custid, 31, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 32, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 41, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 42, 151, 0, 0.5, 0, 0.9
@@ -1328,7 +1378,9 @@ SET NOCOUNT ON
 		UNION ALL select @custid, 1201, 180, 0, 0.9, 0, 0.9
 		UNION ALL select @custid, 1231, 181, 0, 0.9, 0, 0.9
 		UNION ALL select @custid, 1231, 182, 0, 0.9, 0, 0.9
+		UNION ALL select @custid, 1231, 183, 0, 0.9, 0, 0.9
 		UNION ALL select @custid, 1231, 184, 0, 0.9, 0, 0.9
+		UNION ALL select @custid, 1231, 185, 0, 0.9, 0, 0.9
 		UNION ALL select @custid, 1220, 186, 0, 0.9, 0, 0.9
 
 		
@@ -1456,7 +1508,35 @@ SET NOCOUNT ON
 			DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 						
 			RETURN
-		END     
+		END
+		
+		--Keno: copy all bet setting from super to master
+		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
+		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
+		FROM dbo.CustGameType cg WITH(NOLOCK) 
+			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+		WHERE custid = @srecommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 156
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
+									
+			RETURN
+		END
+		--End Keno
+		     
 	END--end roleid =3
 	ELSE IF @roleid = 2
 	BEGIN				
@@ -1563,12 +1643,12 @@ SET NOCOUNT ON
 
 		--Insert into CustSetting3rd  
 		INSERT INTO [dbo].[CustSetting3rd]([custid], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [MinBet], [MaxBet], [autopositiontaking], [isautopositiontaking], [autompositiontaking], [isautompositiontaking], [alivepositiontaking],[mlivepositiontaking], [slivepositiontaking],[autolivepositiontaking], [isautolivepositiontaking], [autolivempositiontaking], [isautolivempositiontaking])
-		--v201
-		select @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL
-		select @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		----v201
+		--select @custid, 2, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--UNION ALL
+		--select @custid, 3, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		--v151
-		UNION ALL
+		 
 		select @custid, 31, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 32, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1623,8 +1703,12 @@ SET NOCOUNT ON
 		select @custid, 1231, 181, 0, ISNULL(@min_v181mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv181,0), ISNULL(@maxbetv181,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL -- v182 Virtual Greyhounds
 		select @custid, 1231, 182, 0, ISNULL(@min_v182mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv182,0), ISNULL(@maxbetv182,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL -- v183 Virtual Speedway
+		select @custid, 1231, 183, 0, ISNULL(@min_v183mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv183,0), ISNULL(@maxbetv183,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL -- v184 Virtual Motor Racing
 		select @custid, 1231, 184, 0, ISNULL(@min_v184mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv184,0), ISNULL(@maxbetv184,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL -- v185 Virtual Cycling
+		select @custid, 1231, 185, 0, ISNULL(@min_v185mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL -- v186 virtual tennis
 		select @custid, 1220, 186, 0, ISNULL(@min_v186mpositiontaking_1220,0), 0, 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		
@@ -1708,11 +1792,11 @@ SET NOCOUNT ON
 
 		--Insert Into CustOverride3rd
 		INSERT INTO [dbo].[CustOverride3rd]([custid], [bettype], [sporttype], [minpositiontaking], [maxpositiontaking],[minlivepositiontaking],[maxlivepositiontaking])
-				  select @custid, 2, 201, 0, 0.5, 0, 0.9
-		UNION ALL select @custid, 3, 201, 0, 0.5, 0, 0.9
+		--		  select @custid, 2, 201, 0, 0.5, 0, 0.9
+		--UNION ALL select @custid, 3, 201, 0, 0.5, 0, 0.9
 
 		--v151
-		UNION ALL select @custid, 31, 151, 0, 0.5, 0, 0.9
+				  select @custid, 31, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 32, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 41, 151, 0, 0.5, 0, 0.9
 		UNION ALL select @custid, 42, 151, 0, 0.5, 0, 0.9
@@ -1742,8 +1826,12 @@ SET NOCOUNT ON
 		UNION ALL select @custid, 1231, 181, 0, 0.9, 0, 0.9
 		-- v182  Virtual Greyhounds
 		UNION ALL select @custid, 1231, 182, 0, 0.9, 0, 0.9
+		-- v183  Virtual Speedway
+		UNION ALL select @custid, 1231, 183, 0, 0.9, 0, 0.9
 		-- v184 Virtual Motor Racing
 		UNION ALL select @custid, 1231, 184, 0, 0.9, 0, 0.9
+		-- v185  Virtual Cycling
+		UNION ALL select @custid, 1231, 185, 0, 0.9, 0, 0.9
 		---- v186 virtual tennis
 		UNION ALL select @custid, 1220, 186, 0, 0.9, 0, 0.9
 		
@@ -1858,6 +1946,34 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
+
+		--Keno: copy gametype from master to agent
+		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
+		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
+		FROM dbo.CustGameType cg WITH(NOLOCK) 
+			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+		WHERE custid = @mrecommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
+
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 156
+				
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+
+			RETURN
+		END
+		--End Keno
+
 	END--end roleid =2
 	ELSE IF @roleid = 1
 	BEGIN			
@@ -1965,12 +2081,12 @@ SET NOCOUNT ON
 		
 		--inser into CustSetting3rd
 		INSERT INTO [dbo].[CustSetting3rd]([custid], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], MinBet, MaxBet, autopositiontaking, isautopositiontaking, alivepositiontaking,mlivepositiontaking,slivepositiontaking,autolivepositiontaking,isautolivepositiontaking,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
-		select @custid, 2, 201, 0, @v201mpositiontaking_2, @v201spositiontaking_2, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL
-		select @custid, 3, 201, 0, @v201mpositiontaking_3, @v201spositiontaking_3, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--select @custid, 2, 201, 0, @v201mpositiontaking_2, @v201spositiontaking_2, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		--UNION ALL
+		--select @custid, 3, 201, 0, @v201mpositiontaking_3, @v201spositiontaking_3, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 		--v151
-		UNION ALL
+
 		select @custid, 31, 151, 0, @v151mpositiontaking_31, @v151spositiontaking_31, @v151playerdiscount_31, @v151discount_31, @v151adiscount_31, @v151sdiscount_31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 32, 151, 0, @v151mpositiontaking_32, @v151spositiontaking_32, @v151playerdiscount_31, @v151discount_31, @v151adiscount_31, @v151sdiscount_31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -2024,9 +2140,14 @@ SET NOCOUNT ON
 		UNION ALL
 		select @custid, 1231, 182, ISNULL(@v182apositiontaking_1231,0), ISNULL(@v182mpositiontaking_1231,0), ISNULL(@v182spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv182,0), ISNULL(@maxbetv182,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
 		UNION ALL
+		select @custid, 1231, 183, ISNULL(@v183apositiontaking_1231,0), ISNULL(@v183mpositiontaking_1231,0), ISNULL(@v183spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv183,0), ISNULL(@maxbetv183,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
+		UNION ALL
 		select @custid, 1231, 184, ISNULL(@v184apositiontaking_1231,0), ISNULL(@v184mpositiontaking_1231,0), ISNULL(@v184spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv184,0), ISNULL(@maxbetv184,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
 		UNION ALL
+		select @custid, 1231, 185, ISNULL(@v185apositiontaking_1231,0), ISNULL(@v185mpositiontaking_1231,0), ISNULL(@v185spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
+		UNION ALL
 		select @custid, 1220, 186, ISNULL(@v186apositiontaking_1220,0), ISNULL(@v186mpositiontaking_1220,0), ISNULL(@v186spositiontaking_1220,0), 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
+
 
 		
 		if @@Error <> 0
@@ -2123,8 +2244,34 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
+
+		--Keno: copy CustGameType from Agent to Member
+		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
+		SELECT cg.GameTypeID, @Custid, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
+		FROM dbo.CustGameType cg WITH(NOLOCK) 
+			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
+
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 156
+				
+			-- ROLLBACK MANUALLY
+			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid			
+				
+			RETURN
+		END
+		--End Keno
 	END
 END
+
+
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo]

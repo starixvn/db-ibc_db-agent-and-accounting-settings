@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberVS_MinMaxBet]
+﻿ALTER PROCEDURE [Acc_CustomerUpdMemberVS_MinMaxBet]
 	@custid			INT,
 	@sporttype		INT,
 	@bettype		INT,
@@ -18,7 +18,7 @@ AS
 		Created: Johnson
 		Date: 2012-08-16
 		Task: update bet setting for virtual sports on member
-		DB: DBTXN/BODB02
+		DB: DBTXN/custDB
 		
 		Revisions:
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
@@ -27,7 +27,7 @@ AS
 								- change linked server DB053 to DBAGE
 								- write log on DBTXN if DBLOG failure
 			- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
-											
+			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]											
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -75,7 +75,9 @@ SET NOCOUNT ON
 			@maxpermatch_old = CASE WHEN @sporttype = 180 THEN maxpermatch180
 									WHEN @sporttype = 181 THEN maxpermatch181
 									WHEN @sporttype = 182 THEN maxpermatch182
+									WHEN @sporttype = 183 THEN maxpermatch183
 									WHEN @sporttype = 184 THEN maxpermatch184
+									WHEN @sporttype = 185 THEN maxpermatch185
 									WHEN @sporttype = 186 THEN maxpermatch186 end
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid AND roleid = 1
@@ -91,7 +93,9 @@ SET NOCOUNT ON
 	SELECT @maxmaxpermatch = CASE	WHEN @sporttype = 180 THEN maxpermatch180
 									WHEN @sporttype = 181 THEN maxpermatch181
 									WHEN @sporttype = 182 THEN maxpermatch182
+									WHEN @sporttype = 183 THEN maxpermatch183
 									WHEN @sporttype = 184 THEN maxpermatch184
+									WHEN @sporttype = 185 THEN maxpermatch185
 									WHEN @sporttype = 186 THEN maxpermatch186 END 
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @recommend
@@ -206,7 +210,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 180)
 		BEGIN
 		
-			EXEC Acc_CustomerUpdMaxPerMatchVS180_1201
+						EXEC Acc_CustomerUpdMaxPerMatchVS180_1201
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
@@ -217,7 +221,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 181)
 		BEGIN
 		
-			EXEC Acc_CustomerUpdMaxPerMatchVS181_1231
+						EXEC Acc_CustomerUpdMaxPerMatchVS181_1231
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
@@ -228,17 +232,30 @@ SET NOCOUNT ON
 		IF (@sporttype = 182)
 		BEGIN
 		
-												EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
+						EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
 				@ErrCode = @ErrCode_Cur OUTPUT,
 				@ErrMsg = @ErrMsg_Cur OUTPUT
 		END
+
+		IF (@sporttype = 183)
+		BEGIN
+		
+						EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
+				@custid = @custid,
+				@MaxPerMatch = @MaxPerMatch,
+				@Language = @Language,
+				@ErrCode = @ErrCode_Cur OUTPUT,
+				@ErrMsg = @ErrMsg_Cur OUTPUT
+		END
+
+
 		IF (@sporttype = 184)
 		BEGIN
 		
-												EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
+						EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
@@ -246,10 +263,21 @@ SET NOCOUNT ON
 				@ErrMsg = @ErrMsg_Cur OUTPUT
 		END
 		
+		IF (@sporttype = 185)
+		BEGIN
+		
+						EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
+				@custid = @custid,
+				@MaxPerMatch = @MaxPerMatch,
+				@Language = @Language,
+				@ErrCode = @ErrCode_Cur OUTPUT,
+				@ErrMsg = @ErrMsg_Cur OUTPUT
+		END
+
 		IF (@sporttype = 186)
 		BEGIN
 		
-			EXEC Acc_CustomerUpdMaxPerMatchVS186_1220
+						EXEC Acc_CustomerUpdMaxPerMatchVS186_1220
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
@@ -330,6 +358,7 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
