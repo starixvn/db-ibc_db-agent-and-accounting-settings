@@ -34,6 +34,8 @@ BEGIN
 	DECLARE @roleid INT
 	DECLARE @Old_Min_Positiontaking SMALLMONEY	
 
+	SELECT @roleid = roleid FROM CustInfo WITH (NOLOCK) WHERE custid = @custid
+
 	--Check Allowed downlines	
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	
 		@CustID = @CustID,
@@ -57,7 +59,6 @@ BEGIN
 	UPDATE CustOverrideGame WITH(UPDLOCK, ROWLOCK)
 	SET minpositiontaking = @Min_Positiontaking
 	WHERE custid = @CustID AND sporttype = @Sporttype AND bettype = @Bettype
-
 	IF @roleid = 4
 	BEGIN		
 		EXEC [Acc_CustSetting3rd_04_xtest] @srecommend = @CustID, @roleid = 4, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
