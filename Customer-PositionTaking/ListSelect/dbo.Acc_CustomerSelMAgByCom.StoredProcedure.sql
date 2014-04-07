@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom_xtest]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing bit = NULL,
@@ -11,35 +11,35 @@
 	@TotalItems int=0 OUTPUT
 AS
 /*
-Task : Select Direct Master Agent list
-DB: DBAGE/bodb02, DBTXN/bodb02
-Original: magentsite/account\customerlist.asp
+	Task : Select Direct Master Agent list
+	DB: DBAGE/bodb02, DBTXN/CustDB
+	Original: magentsite/account\customerlist.asp
 
-Revisions:
-    - @update2008/01/14 search username
-    - phuong.nguyen, check customer's currency for Horseracing spottype
-    - 20090329@Kiwi: Improve Performance:
-					+ At count @TotalPages, remove inner join custsetting, exchange, group by.
-					+ Remove un-necessary inner join exchange at selection details.
-	- 20090331@Shifu: Remove allowHRCurrency
-	- 20090522@PhuongDao: Add 1x2 Commission 
-	- 20090807@Simon: Add a column "enabled" in Select and Order by it.	
-	- 20101001@Lukas: Get commission for Number Game 
-	- 20110117@Steven: get synccasino
-	- 20110623@Sophia: add username2
-	- 20120525@Dom: exclude licensee customer
-	- 20120927@Johnson: - get double comm losing status and upline double comm losing status
-						- output total records affect 
-	- 20131018@Kathy: Add HR Fixed Odds (154)[Redmine:#6505]
-	- 20140116@Elodie: Hot fix to get information of disabled customer
-Pattern Explanation:
-Search keyword: '%keyword%'
-First char
-	A: 'A%'
-	B: 'B%'
-	0-9: '[0-9]%'
-	
-	- 20090910@Shifu: Add IsInternal
+	Revisions:
+		- @update2008/01/14 search username
+		- phuong.nguyen, check customer's currency for Horseracing spottype
+		- 20090329@Kiwi: Improve Performance:
+						+ At count @TotalPages, remove inner join custsetting, exchange, group by.
+						+ Remove un-necessary inner join exchange at selection details.
+		- 20090331@Shifu: Remove allowHRCurrency	
+		- 20090522@PhuongDao: Add 1x2 Commission 
+		- 20090807@Simon: Add a column "enabled" in Select and Order by it.	
+		- 20090910@Shifu: Add IsInternal
+		- 20101001@Lukas: Get commission for Number Game 
+		- 20110117@Steven: get synccasino
+		- 20110623@Sophia: add username2
+		- 20120525@Dom: exclude licensee customer
+		- 20120927@Johnson: - get double comm losing status and upline double comm losing status
+							- output total records affect 
+		- 20131018@Kathy: Add HR Fixed Odds (154)[Redmine:#6505]
+		- 20140116@Elodie: Hot fix to get information of disabled customer
+		- 20140407@Elodie: Add Keno product [Redmine:#13156]
+	Pattern Explanation:
+	Search keyword: '%keyword%'
+	First char
+		A: 'A%'
+		B: 'B%'
+		0-9: '[0-9]%'	
 */
 
 SET NOCOUNT ON
@@ -98,12 +98,23 @@ Select * From
 		cm.isinternal,
 		ci.synccasino,
 		ci.DoubleCommLosing,
+
+		max(case when g.IBCBetTypeID = 1501 then cg.IsDisabled else 0 end) as Disable1501,
+		max(case when g.IBCBetTypeID = 1503 then cg.IsDisabled else 0 end) as Disable1503,
+		max(case when g.IBCBetTypeID = 1504 then cg.IsDisabled else 0 end) as Disable1504,
+		max(case when g.IBCBetTypeID = 1505 then cg.IsDisabled else 0 end) as Disable1505,
+		max(case when g.IBCBetTypeID = 1507 then cg.IsDisabled else 0 end) as Disable1507,
+		max(case when g.IBCBetTypeID = 1508 then cg.IsDisabled else 0 end) as Disable1508,
+		max(case when g.IBCBetTypeID = 1509 then cg.IsDisabled else 0 end) as Disable1509,
+
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
 		LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
+		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
+		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509)						
 		INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
 		INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 	WHERE m.SRecommend < 100 and m.roleid=3

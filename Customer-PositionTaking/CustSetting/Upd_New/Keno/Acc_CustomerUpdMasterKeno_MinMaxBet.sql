@@ -108,7 +108,7 @@ BEGIN
 		RETURN
 
 	UPDATE dbo.CustGameType WITH (ROWLOCK, UPDLOCK)
-	SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxMaxPerMatch
+	SET MinBet = @MinBet, MaxBet = @MaxBet, MaxPerGameType = @MaxPerMatch
 	WHERE custid = @custid AND GameTypeID = @GameTypeID
 
 	IF (@@ERROR <> 0)
