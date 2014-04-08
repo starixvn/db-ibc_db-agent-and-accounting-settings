@@ -337,6 +337,7 @@ END
 
 
 
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet] AS [dbo]
 GO
