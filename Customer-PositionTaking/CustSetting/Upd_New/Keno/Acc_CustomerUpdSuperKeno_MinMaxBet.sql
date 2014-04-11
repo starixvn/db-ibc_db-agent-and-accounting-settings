@@ -46,9 +46,9 @@ BEGIN
 		RETURN
 	END
 
-	IF(@MinBet <> 0 AND @MaxBet <> 0 AND  @MinBet > @MaxBet) 
-		or (@MaxBet <> 0 AND @MaxPerMatch <> 0 AND @MaxBet > @MaxPerMatch) 
-		or (@MinBet <> 0 AND @MaxPerMatch <> 0 AND @MinBet > @MaxPerMatch) 
+	IF(@MinBet > @MaxBet) 
+		or (@MaxBet > @MaxPerMatch) 
+		or (@MinBet > @MaxPerMatch) 
 	BEGIN
 		SELECT
 			@ErrMsg =	CASE @Language 
@@ -58,29 +58,40 @@ BEGIN
 		RETURN
 	END
 
+	IF EXISTS (SELECT 1 FROM ProductBetSetting WITH (NOLOCK) WHERE sporttype = @Sporttype AND bettype = @bettype AND MinBet > @MinBet)
+	BEGIN
+		SELECT
+			@ErrMsg =	CASE @Language 
+								WHEN 'E' THEN 'Min Bet must be greater than or equal to Min Bet limit.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](10030,@Language) END, 
+			@ErrCode = 103
+		RETURN
+	END
+
 	SELECT @minbet_old = cg.MinBet, @maxbet_old = cg.MaxBet, @maxpermatch_old = cg.MaxPerGameType
 	FROM CustGameType cg WITH(NOLOCK)
 		INNER JOIN bodb02.dbo.GameType gt ON cg.GameTypeID = gt.GameTypeID
 	WHERE custid = @CustID and gt.IBCBetTypeID = @bettype
 
-	IF @MinBet <> @minbet_old OR @MaxBet <> @maxbet_old OR @MaxPerMatch <> @maxpermatch_old
-	BEGIN
-		UPDATE cg with (ROWLOCK, UPDLOCK)
-		SET	MinBet = @MinBet, 
-			MaxBet= @MaxBet,
-			MaxPerGameType = @MaxPerMatch
-		FROM CustGameType cg INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid=@CustID AND gt.IBCBetTypeID = @bettype
+	--Check not change value
+	IF (@minbet_old = @MinBet AND @maxbet_old = @MaxBet AND @maxpermatch_old = @MaxPerMatch)
+		RETURN
 	
-		IF (@@error <> 0)
-		BEGIN
-			SELECT	@ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful!'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language) END, 
-					@ErrCode = 103 
-			RETURN
-		END		
-	END
+	UPDATE cg with (ROWLOCK, UPDLOCK)
+	SET	MinBet = @MinBet, 
+		MaxBet= @MaxBet,
+		MaxPerGameType = @MaxPerMatch
+	FROM CustGameType cg INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+	WHERE custid=@CustID AND gt.IBCBetTypeID = @bettype
+	
+	IF (@@error <> 0)
+	BEGIN
+		SELECT	@ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Update process is unsuccessful!'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language) END, 
+				@ErrCode = 104
+		RETURN
+	END		
 
 	DECLARE @LogSPData VARCHAR (MAX),
 			@TrackingValueDB VARCHAR(4000)
@@ -143,11 +154,6 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [vnteam] AS [dbo]
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]

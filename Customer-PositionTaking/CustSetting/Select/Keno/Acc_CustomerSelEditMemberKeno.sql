@@ -1,8 +1,5 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMemberKeno] 
 	@CustID INT
-	,@Sporttype INT = 202
-	,@ErrCode VARCHAR(300) = '' OUTPUT
-	,@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
 	Created: Bobby
@@ -18,28 +15,44 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @roleId TINYINT
-		,@srecommend INT
-		,@mrecommend INT
-		,@recommend INT
-		,@spositiontaking SMALLMONEY
+	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
+	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
-	---------------------------
-	--Check disable user
-	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
-		,@ErrCode = @ErrCode OUTPUT
-		,@ErrMsg = @ErrMsg OUTPUT
-
-	IF (@ErrCode > 0) RETURN
-
-	SELECT TOP 1 @roleId = roleId
-		,@mrecommend = srecommend
-		,@srecommend = mrecommend
-		,@recommend = recommend
+	DECLARE @srecommend INT, @mrecommend INT, @recommend INT
+	SELECT @mrecommend = srecommend, @srecommend = mrecommend, @recommend = recommend
 	FROM dbo.custinfo WITH (NOLOCK)
 	WHERE custid = @CustID
 
-	IF (@roleId <> 1) RETURN;
+	DECLARE @AgentDisabled TABLE (gametypeid INT, IsDisabled BIT)
+	INSERT INTO @AgentDisabled (gametypeid, IsDisabled)
+	SELECT cg.gametypeid, cg.IsDisabled
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN @GameType gt ON cg.gametypeid = gt.gametypeid
+	WHERE cg.CustID = @recommend
+
+	--calculate min, max for minbet, maxbet, maxpermatch
+	DECLARE @AgentSetting TABLE (
+		gametypeid INT
+		,MinBet_Min MONEY
+		,Maxbet_Max MONEY
+		,MaxPerMatch_Max MONEY
+		)
+
+	INSERT INTO @AgentSetting (
+		Gametypeid
+		,MinBet_Min
+		,Maxbet_Max
+		,MaxPerMatch_Max
+		)
+	SELECT gt.GameTypeID
+		,MAX(ISNULL(MinBet, 0)) AS MinBet_Min
+		,MIN(ISNULL(MaxBet, 0)) AS Maxbet_Max
+		,MIN(ISNULL(MaxPerGameType, 0)) AS MaxPerMatch_Max
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN @GameType gt ON cg.gametypeid = gt.gametypeid
+	WHERE cg.custid IN (@srecommend, @mrecommend, @recommend)
+	GROUP BY gt.GameTypeID
 
 	-- Customer Info
 	SELECT c.custid
@@ -52,108 +65,46 @@ BEGIN
 	FROM dbo.Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID
 
-	--calculate min, max for minbet, maxbet, maxpermatch for Web
-	DECLARE @MinMaxBetUpline TABLE (
-		sporttype INT
-		,gametypeid INT
-		,bettype INT
-		,MinBet_Min MONEY
-		,Maxbet_Max MONEY
-		,MaxperGame_Max MONEY
-		)
-
-	INSERT INTO @MinMaxBetUpline (
-		sporttype
-		,gametypeid
-		,bettype
-		,MinBet_Min
-		,Maxbet_Max
-		,MaxperGame_Max
-		)
-	SELECT @sporttype AS sporttype
-		,gt.GameTypeID
-		,gt.IBCBettypeID AS bettype
-		,ISNULL(MIN(MinBet), 0) AS MinBet_Min
-		,ISNULL(MIN(MaxBet), 0) AS Maxbet_Max
-		,ISNULL(MIN(MaxPerGameType), 0) AS MaxperGame_Max
-	FROM dbo.CustGameType AS cs WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt WITH (NOLOCK)
-		ON cs.gametypeid = gt.gametypeid
-		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK)
-		ON cs.custid = ci.custid
-	WHERE ci.custid IN (@srecommend, @mrecommend, @recommend)
-		AND gt.IsDisabled = 0
-	GROUP BY gt.GameTypeID
-		,gt.IBCBettypeID
-
 	--select custgametype setting
 	SELECT gt.IBCBetTypeID
 		,cg.MinBet
 		,cg.MaxBet
 		,cg.MaxPerGameType
-		,ISNULL(mm.MinBet_Min, 0.00) MinBet_Min
-		,ISNULL(mm.MaxBet_Max, 0.00) MaxBet_Max
-		,ISNULL(mm.MaxperGame_Max, 0.00) MaxPerMatch_Max
+		,acs.MinBet_Min
+		,acs.MaxBet_Max
+		,acs.MaxPerMatch_Max
 		,cg.IsDisabled
+		,ad.IsDisabled AS DisableUplinesKeno
 	FROM dbo.CustGameType cg WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt WITH (NOLOCK)
-		ON cg.GameTypeID = gt.GameTypeID
-		INNER JOIN @MinMaxBetUpline mm
-		ON cg.GameTypeID = mm.gametypeid
+		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
+		INNER JOIN @AgentSetting acs ON cg.GameTypeID = acs.GameTypeID
+		INNER JOIN @AgentDisabled ad ON cg.GameTypeID = ad.GameTypeID
 	WHERE cg.CustID = @CustID
-		AND gt.IBCBetTypeID BETWEEN 1501 AND 1509
-		AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
 
 	--select PT/Comm setting
 	SELECT cs.bettype
 		,cs.apositiontaking --a1
-		,ag.minpositiontaking AS apositiontaking_min--n2/MinPT
-		,ag.apositiontaking AS apositiontaking_max --l2/MaxPT
+		,aco.minpositiontaking AS apositiontaking_min--n2/MinPT
+		,acs.apositiontaking AS apositiontaking_max --l2/MaxPT
 		,cs.playerdiscount --commission
-		,ag.discount AS playerdiscount_max --maxcommission
+		,acs.discount AS playerdiscount_max --maxcommission
 	FROM CustSettingGame cs WITH (NOLOCK)
-		INNER JOIN (
-		SELECT cg.Bettype
-			,apositiontaking
-			,discount
-			,co.minpositiontaking
-		FROM CustSettingGame cg WITH (NOLOCK)
-			INNER JOIN dbo.CustOverrideGame co WITH (NOLOCK)
-			ON cg.CustID = co.CustID
-				AND cg.Sporttype = co.Sporttype
-				AND cg.Bettype = co.Bettype
-		WHERE cg.CustID = @recommend
-			AND cg.Bettype BETWEEN 1501 AND 1509
-			AND cg.Sporttype = @Sporttype
-		) ag
-		ON cs.bettype = ag.bettype
-		INNER JOIN (
-		SELECT t.IBCBettypeID Bettype
-		FROM dbo.CustGameType g WITH (NOLOCK)
-			INNER JOIN dbo.GameType t WITH (NOLOCK)
-			ON g.gametypeid = t.gametypeid
-		WHERE g.custid = @CustID
-			AND t.IBCBettypeID BETWEEN 1501 AND 1509
-			AND t.IsDisabled = 0
-		) gt
-		ON cs.Bettype = gt.Bettype
-	WHERE cs.CustID = @CustID
-		AND cs.Sporttype = @Sporttype
+		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID 
+		INNER JOIN CustSettingGame acs WITH (NOLOCK) ON acs.CustID = @recommend AND cs.bettype = acs.bettype AND cs.Sporttype = acs.sporttype
+		INNER JOIN dbo.CustOverrideGame aco WITH (NOLOCK) ON aco.custid = @recommend AND cs.sporttype = aco.sporttype AND cs.bettype = aco.bettype		 
+	WHERE cs.CustID = @CustID AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202
 	ORDER BY cs.Bettype
+
 END
-GO
 
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbAdminNet]
 GO
-
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbAdminNet]
 GO
-
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbDownlineNet]
 GO
-
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbDownlineNetView]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbExtAccNet]
 GO
-
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbDownlineNetView]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [vnteam]

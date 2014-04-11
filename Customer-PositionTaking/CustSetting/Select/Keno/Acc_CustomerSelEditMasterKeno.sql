@@ -16,10 +16,10 @@ BEGIN
 	SET NOCOUNT ON
 	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
 	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
-	SELECT GameTypeID, IBCBetTypeID FROM GameType WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 	DECLARE @downlines BIT, @srecommend INT
-	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3) THEN 1 ELSE 0 END
+	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE mrecommend = @CustID AND roleid = 2) THEN 1 ELSE 0 END
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)	
 	INSERT INTO @DisableDownlinesKeno (GameTypeID, DisableDownlines)
@@ -40,13 +40,14 @@ BEGIN
 			adiscount			DECIMAL(9,8),
 			MinBet				MONEY,
 			MaxBet				MONEY,
-			MaxPerGameType		MONEY				
+			MaxPerGameType		MONEY,
+			IsDisabled			BIT		
 	)
 	SELECT @srecommend = srecommend
 	FROM dbo.CustInfo WITH (NOLOCK)
 	WHERE custID = @CustID 
 
-	INSERT INTO @SuperSetting (bettype, mpositiontaking, spositiontaking, minpositiontaking, sdiscount, adiscount, minbet, maxbet, MaxPerGameType)
+	INSERT INTO @SuperSetting (bettype, mpositiontaking, spositiontaking, minpositiontaking, sdiscount, adiscount, minbet, maxbet, MaxPerGameType, IsDisabled)
 	SELECT	gt.IBCBetTypeID, 
 			cs.mpositiontaking,
 			cs.spositiontaking,
@@ -55,7 +56,8 @@ BEGIN
 			cs.adiscount,
 			cg.MinBet, 
 			cg.MaxBet, 
-			cg.MaxPerGameType
+			cg.MaxPerGameType,
+			cg.IsDisabled
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN CustSettingGame cs ON cs.CustID = cg.CustID AND cs.Sporttype = 202 AND cs.Bettype = gt.IBCBetTypeID
@@ -77,6 +79,7 @@ BEGIN
 			s.MaxBet AS MaxBet_Max, 
 			s.MaxPerGameType AS MaxPerMatch_Max, 
 			cg.IsDisabled, 
+			s.IsDisabled AS DisableUplinesKeno,
 			CASE WHEN @downlines = 0 then cg.IsDisabled ELSE ISNULL(d.DisableDownlines,1) END AS DisableDownlinesKeno
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
@@ -104,7 +107,6 @@ BEGIN
 	WHERE cs.CustID = @CustID AND cs.Bettype BETWEEN 1501 AND 1599 AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
 END
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterKeno] TO [bodbAdminNet]
