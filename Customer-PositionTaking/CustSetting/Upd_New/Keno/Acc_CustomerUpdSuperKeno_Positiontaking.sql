@@ -30,7 +30,7 @@ BEGIN
 
 	SET @startRun = GETDATE()
 
-	DECLARE @roleid TINYINT
+	DECLARE @roleid TINYINT, @MaxPT SMALLMONEY
 
 	---------------------------
 	-- ***Check Downline Belonging***
@@ -69,6 +69,17 @@ BEGIN
 	--check if not change value
 	IF @old_spositiontaking = @spositiontaking
 		RETURN
+	
+	SELECT @MaxPT = MaxPositiontaking FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @sporttype AND Bettype = @bettype
+	IF @MaxPT < @spositiontaking
+	BEGIN
+		SELECT @ErrMsg =
+					CASE @Language 
+							WHEN 'E' then 'Super Max PT exceeded Company limit:' + cast(@MaxPT AS VARCHAR(10)) + '.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20018,@Language) + cast(@MaxPT AS VARCHAR(10)) + '.'
+					END, @ErrCode = 102
+		RETURN
+	END
 
 	Declare @ErrAcc nvarchar(4000)
 	--check all s3+m3<=s4 if i3 = 0,
