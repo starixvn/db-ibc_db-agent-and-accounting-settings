@@ -46,9 +46,9 @@ BEGIN
 		RETURN
 	END
 
-	IF(@MinBet > @MaxBet) 
-		or (@MaxBet > @MaxPerMatch) 
-		or (@MinBet > @MaxPerMatch) 
+	IF((@MinBet <> 0 OR @MaxBet <> 0) AND @MinBet > @MaxBet) 
+		or ((@MaxBet <> 0 OR @MaxPerMatch <> 0) AND @MaxBet > @MaxPerMatch) 
+		or ((@MinBet <> 0 OR @MaxPerMatch <> 0) AND @MinBet > @MaxPerMatch) 
 	BEGIN
 		SELECT
 			@ErrMsg =	CASE @Language 
@@ -58,7 +58,7 @@ BEGIN
 		RETURN
 	END
 
-	IF EXISTS (SELECT 1 FROM ProductBetSetting WITH (NOLOCK) WHERE sporttype = @Sporttype AND bettype = @bettype AND MinBet > @MinBet)
+	IF EXISTS (SELECT 1 FROM ProductBetSetting WITH (NOLOCK) WHERE sporttype = @Sporttype AND bettype = @bettype AND MinBet > @MinBet AND @MinBet <> 0)
 	BEGIN
 		SELECT
 			@ErrMsg =	CASE @Language 

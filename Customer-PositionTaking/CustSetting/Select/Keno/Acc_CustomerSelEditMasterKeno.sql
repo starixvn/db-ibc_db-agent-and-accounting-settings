@@ -18,7 +18,7 @@ BEGIN
 	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
 	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
-	DECLARE @downlines BIT, @srecommend INT
+	DECLARE @downlines BIT, @srecommend INT, @currency INT
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE mrecommend = @CustID AND roleid = 2) THEN 1 ELSE 0 END
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)	
@@ -43,7 +43,7 @@ BEGIN
 			MaxPerGameType		MONEY,
 			IsDisabled			BIT		
 	)
-	SELECT @srecommend = srecommend
+	SELECT @srecommend = srecommend, @currency = currency 
 	FROM dbo.CustInfo WITH (NOLOCK)
 	WHERE custID = @CustID 
 
@@ -75,7 +75,7 @@ BEGIN
 			cg.MinBet, 
 			cg.MaxBet,
 			cg.MaxPerGameType,
-			s.MinBet AS MinBet_Min,			
+			CASE WHEN s.MinBet < bs.MinBet THEN bs.MinBet ELSE s.MinBet END AS MinBet_Min,			
 			s.MaxBet AS MaxBet_Max, 
 			s.MaxPerGameType AS MaxPerMatch_Max, 
 			cg.IsDisabled, 
@@ -85,6 +85,7 @@ BEGIN
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
 		INNER JOIN @SuperSetting s ON gt.IBCBetTypeID = s.bettype
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 

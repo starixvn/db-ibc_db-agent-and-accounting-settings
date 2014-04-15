@@ -36,8 +36,8 @@ BEGIN
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT
 	SELECT @ErrCode = 0, @ErrMsg = '', @startRun = GETDATE()
 
-	DECLARE @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY, @UserName VARCHAR(50), @mrecommend INT, @srecommend INT
-	SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend
+	DECLARE @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY, @UserName VARCHAR(50), @mrecommend INT, @srecommend INT, @currency INT
+	SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend, @currency = currency
 	FROM dbo.customer WITH (NOLOCK) WHERE CustID = @CustID AND roleid = 2
 
 	IF (@UserName IS NULL) RETURN
@@ -51,9 +51,9 @@ BEGIN
 	END
 
 	--Check @MinBet <= @MaxBet <= @MaxPerMatch
-	IF (@MinBet > @MaxBet) 
-		OR (@MaxBet > @MaxPerMatch) 
-		OR (@MinBet > @MaxPerMatch)
+	IF((@MinBet <> 0 OR @MaxBet <> 0) AND @MinBet > @MaxBet) 
+		or ((@MaxBet <> 0 OR @MaxPerMatch <> 0) AND @MaxBet > @MaxPerMatch) 
+		or ((@MinBet <> 0 OR @MaxPerMatch <> 0) AND @MinBet > @MaxPerMatch) 
 	BEGIN
 		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match!!!'
@@ -72,6 +72,9 @@ BEGIN
 	FROM dbo.CustGameType AS cg WITH (NOLOCK)
 		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cg.CustID = ci.custid
 	WHERE cg.custid IN (@mrecommend, @srecommend) AND cg.GameTypeID = @GameTypeID
+
+	IF @MinMinBet = 0 
+		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency
 
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
 	BEGIN

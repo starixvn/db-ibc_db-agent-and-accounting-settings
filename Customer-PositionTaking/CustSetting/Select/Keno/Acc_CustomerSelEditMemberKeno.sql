@@ -19,8 +19,8 @@ BEGIN
 	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
 	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
-	DECLARE @srecommend INT, @mrecommend INT, @recommend INT
-	SELECT @mrecommend = srecommend, @srecommend = mrecommend, @recommend = recommend
+	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @currency INT
+	SELECT @mrecommend = srecommend, @srecommend = mrecommend, @recommend = recommend, @currency = currency
 	FROM dbo.custinfo WITH (NOLOCK)
 	WHERE custid = @CustID
 
@@ -70,7 +70,7 @@ BEGIN
 		,cg.MinBet
 		,cg.MaxBet
 		,cg.MaxPerGameType
-		,acs.MinBet_Min
+		,CASE WHEN acs.MinBet_Min < bs.MinBet THEN bs.MinBet ELSE acs.MinBet_Min END MinBet_Min
 		,acs.MaxBet_Max
 		,acs.MaxPerMatch_Max
 		,cg.IsDisabled
@@ -79,6 +79,7 @@ BEGIN
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN @AgentSetting acs ON cg.GameTypeID = acs.GameTypeID
 		INNER JOIN @AgentDisabled ad ON cg.GameTypeID = ad.GameTypeID
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 

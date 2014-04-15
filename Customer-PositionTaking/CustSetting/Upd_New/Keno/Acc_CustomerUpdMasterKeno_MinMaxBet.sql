@@ -31,13 +31,13 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @startRun DATETIME, @endRun	DATETIME, @duration INT, @srecommend INT, @Username VARCHAR(50)
+	DECLARE @startRun DATETIME, @endRun	DATETIME, @duration INT, @srecommend INT, @Username VARCHAR(50), @currency INT
 		, @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY
 		, @Old_MinBet MONEY, @Old_MaxBet MONEY,	@Old_MaxPerMatch MONEY
 	
 	SELECT @ErrCode = 0, @ErrMsg = '', @startRun = GETDATE()
 	
-	SELECT @srecommend = srecommend, @UserName = username
+	SELECT @srecommend = srecommend, @UserName = username, @currency = currency
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid = @custid AND roleid = 3
 
@@ -54,9 +54,9 @@ BEGIN
 	END
 
 	--Check @MinBet <= @MaxBet <= @MaxPerMatch
-	IF (@MinBet > @MaxBet) 
-		OR (@MaxBet > @MaxPerMatch) 
-		OR (@MinBet > @MaxPerMatch)
+	IF((@MinBet <> 0 OR @MaxBet <> 0) AND @MinBet > @MaxBet) 
+		or ((@MaxBet <> 0 OR @MaxPerMatch <> 0) AND @MaxBet > @MaxPerMatch) 
+		or ((@MinBet <> 0 OR @MaxPerMatch <> 0) AND @MinBet > @MaxPerMatch) 
 	BEGIN
 		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match!!!'
@@ -68,13 +68,16 @@ BEGIN
 	DECLARE @GameTypeID INT
 	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @BetType
 
-	SELECT @MinMinBet = MAX(ISNULL(MinBet, 0))
-		, @MaxMaxBet = MIN(ISNULL(MaxBet, 0))
-		, @MaxMaxPerMatch = MIN(ISNULL(cg.MaxPerGameType, 0))
+	SELECT @MinMinBet = ISNULL(cg.MinBet, 0)
+		, @MaxMaxBet = ISNULL(MaxBet, 0)
+		, @MaxMaxPerMatch = ISNULL(cg.MaxPerGameType, 0)
 	FROM dbo.CustGameType AS cg WITH (NOLOCK)
 		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cg.CustID = ci.custid
 	WHERE cg.custid = @srecommend AND cg.GameTypeID = @GameTypeID
 	
+	IF @MinMinBet = 0 
+		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency
+
 	--Check @MinBet >= @MinMinBet
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
 	BEGIN
