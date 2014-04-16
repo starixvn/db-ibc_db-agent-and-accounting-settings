@@ -46,9 +46,9 @@ BEGIN
 		,MaxPerMatch_Max
 		)
 	SELECT gt.GameTypeID
-		,MAX(ISNULL(MinBet, 0)) AS MinBet_Min
-		,MIN(ISNULL(MaxBet, 0)) AS Maxbet_Max
-		,MIN(ISNULL(MaxPerGameType, 0)) AS MaxPerMatch_Max
+		,ISNULL(MAX(CASE WHEN MinBet = 0 THEN NULL ELSE MinBet END), 0) AS MinBet_Min
+		,ISNULL(MIN(CASE WHEN MaxBet = 0 THEN NULL ELSE MaxBet END), 0) AS Maxbet_Max
+		,ISNULL(MIN(CASE WHEN MaxPerGameType = 0 THEN NULL ELSE MaxPerGameType END), 0) AS MaxPerMatch_Max
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.gametypeid = gt.gametypeid
 	WHERE cg.custid IN (@srecommend, @mrecommend, @recommend)

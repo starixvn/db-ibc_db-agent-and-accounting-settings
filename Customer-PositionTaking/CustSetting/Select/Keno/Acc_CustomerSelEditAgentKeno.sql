@@ -45,9 +45,9 @@ BEGIN
 	DECLARE @MasterSetting TABLE (GameTypeID INT, MinBet_Min MONEY, MaxBet_Max MONEY, MaxPerMatch_Max MONEY)
 	INSERT INTO @MasterSetting(GameTypeID, MinBet_Min, MaxBet_Max, MaxPerMatch_Max)
 	SELECT cg.GameTypeID
-		, MAX(ISNULL(cg.MinBet, 0)) AS MinBet_Min
-		, MIN(ISNULL(cg.MaxBet, 0)) AS MaxBet_Max
-		, MIN(ISNULL(cg.MaxPerGameType, 0)) AS MaxperMatch_Max
+		, ISNULL(MAX(CASE WHEN cg.MinBet = 0 THEN NULL ELSE cg.MinBet END), 0) AS MinBet_Min
+		, ISNULL(MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END), 0) AS MaxBet_Max
+		, ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0) AS MaxperMatch_Max
 	FROM dbo.CustGameType cg WITH(NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 	WHERE cg.custid IN (@srecommend, @mrecommend)

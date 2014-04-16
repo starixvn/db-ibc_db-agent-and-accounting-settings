@@ -66,12 +66,13 @@ BEGIN
 
 	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
 
-	SELECT @MinMinBet = MAX(ISNULL(MinBet, 0))
-		, @MaxMaxBet = MIN(ISNULL(MaxBet, 0))
-		, @MaxMaxperMatch = MIN(ISNULL(cg.MaxPerGameType, 0))
+	SELECT @MinMinBet = ISNULL(MAX(CASE WHEN cg.MinBet = 0 THEN NULL ELSE cg.MinBet END), 0)
+		, @MaxMaxBet = ISNULL(MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END), 0)
+		, @MaxMaxperMatch = ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0)
 	FROM dbo.CustGameType AS cg WITH (NOLOCK)
 		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cg.CustID = ci.custid
 	WHERE cg.custid IN (@mrecommend, @srecommend,@recommend) AND cg.GameTypeID = @GameTypeID
+	GROUP BY cg.GameTypeID
 
 	IF @MinMinBet = 0 
 		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency
