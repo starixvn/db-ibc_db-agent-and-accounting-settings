@@ -98,7 +98,8 @@ BEGIN
 			cs.autopositiontaking, --us3
 			
 			scs.spositiontaking as spositiontaking_max, --s4
-			
+			scs.mpositiontaking as  mpositiontaking_max, --m4
+			scs.minpositiontaking as n4,  --n4
 			cs.adiscount,
 			scs.sdiscount AS discount_max
 	FROM dbo.CustSettingGame cs WITH (NOLOCK)

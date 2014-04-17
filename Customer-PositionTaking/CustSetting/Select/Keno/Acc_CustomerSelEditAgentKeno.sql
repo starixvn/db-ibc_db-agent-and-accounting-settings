@@ -47,10 +47,10 @@ BEGIN
 	SELECT cg.GameTypeID
 		, ISNULL(MAX(CASE WHEN cg.MinBet = 0 THEN NULL ELSE cg.MinBet END), 0) AS MinBet_Min
 		, ISNULL(MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END), 0) AS MaxBet_Max
-		, ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0) AS MaxperMatch_Max
+		, ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0) AS MaxperMatch_Max		
 	FROM dbo.CustGameType cg WITH(NOLOCK)
-		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-	WHERE cg.custid IN (@srecommend, @mrecommend)
+		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID		
+	WHERE cg.custid IN (@srecommend, @mrecommend) 
 	GROUP BY cg.GameTypeID
 
 	--Get custinfo
@@ -80,14 +80,16 @@ BEGIN
 		, ISNULL(mcs.adiscount, 0) AS discount_max
 		, cs.apositiontaking AS apositiontaking --a2
 		, cs.mpositiontaking AS mpositiontaking --m2
-		, mcs.mpositiontaking AS mpositiontaking_max --m3 = u2_max
 		, cs.autompositiontaking AS auto_mpositiontaking --u2
 		, cs.isautompositiontaking AS isauto_mpositiontaking --i2
-		--, mcs.mpositiontaking AS auto_mpositiontaking_max --u2_max
 		, co.minpositiontaking AS apositiontaking_min --n2
+		
+		, mco.minpositiontaking AS n3		
+		, mcs.mpositiontaking AS mpositiontaking_max --m3
 	FROM dbo.custsettingGame cs WITH(NOLOCK)
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.custsettingGame mcs WITH(NOLOCK) ON mcs.CustID = @mrecommend AND cs.bettype = mcs.bettype AND cs.Sporttype = mcs.sporttype
+		INNER JOIN dbo.custoverrideGame mco WITH(NOLOCK) ON mco.CustID = @mrecommend AND cs.bettype = mco.bettype AND cs.Sporttype = mco.sporttype
 		INNER JOIN dbo.custoverrideGame co WITH(NOLOCK) ON cs.custid = co.custid AND cs.sporttype = co.sporttype AND cs.bettype = co.bettype
 	WHERE cs.custid = @custid AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202
 

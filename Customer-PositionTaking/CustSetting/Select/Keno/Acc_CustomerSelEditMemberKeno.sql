@@ -54,6 +54,52 @@ BEGIN
 	WHERE cg.custid IN (@srecommend, @mrecommend, @recommend)
 	GROUP BY gt.GameTypeID
 
+	--setting upline
+	DECLARE @AgentPT TABLE (	
+			bettype				INT,	
+			apositiontaking		SMALLMONEY,--a2
+			minpositiontaking	SMALLMONEY--a2_min			
+	)
+	--a2=min(a2,l2,a4)
+	--n2
+	INSERT INTO @AgentPT (
+			bettype, 
+			apositiontaking, 
+			minpositiontaking 					
+	)
+	SELECT acs.bettype,
+			CASE WHEN acs.apositiontaking<scs.apositiontaking
+					THEN acs.apositiontaking
+					ELSE scs.apositiontaking 
+				END AS apositiontaking, 	
+			aco.minpositiontaking					
+	FROM custinfo ci WITH(NOLOCK)
+		INNER JOIN custsettingGame acs WITH(NOLOCK) ON ci.custid = acs.custid 
+		INNER JOIN custoverrideGame aco WITH(NOLOCK) ON ci.custid = aco.custid AND acs.sporttype = aco.sporttype AND acs.bettype = aco.bettype
+		INNER JOIN custsettingGame scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = aco.sporttype AND scs.bettype = aco.bettype
+		INNER JOIN @GameType gt ON acs.bettype = gt.IBCBetTypeID AND acs.sporttype = 202
+	WHERE acs.custid = @recommend 
+
+	DECLARE @MemberPT TABLE (
+		bettype			INT,
+		apositiontaking	SMALLMONEY --a1_max
+	)			
+	--max_a1=iif(im=1,a2,iif(i1|i3,m3-m1,min(m3-m1,s4-m1-s1)
+	INSERT INTO @MemberPT (bettype , apositiontaking)
+	SELECT cs.bettype, 
+		CASE WHEN (acs.isautompositiontaking = 1 OR cs.isautompositiontaking = 1) THEN acs.apositiontaking 
+						ELSE CASE WHEN NOT (cs.isautopositiontaking=0 AND mcs.isautopositiontaking=0 ) THEN mcs.mpositiontaking-cs.mpositiontaking 
+									ELSE CASE WHEN mcs.mpositiontaking-cs.mpositiontaking<= scs.spositiontaking - cs.spositiontaking - cs.mpositiontaking then  mcs.mpositiontaking-cs.mpositiontaking else scs.spositiontaking - cs.spositiontaking - cs.mpositiontaking END
+								END
+						 END as apositiontaking
+	FROM CustSettingGame cs WITH(NOLOCK)
+		INNER JOIN CustSettingGame scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype
+		INNER JOIN CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 
+		INNER JOIN CustSettingGame acs WITH(NOLOCK) ON acs.custid = @recommend AND acs.sporttype = cs.sporttype AND acs.bettype = cs.bettype 		
+		INNER JOIN @GameType gt ON acs.bettype = gt.IBCBetTypeID AND acs.sporttype = 202
+	WHERE cs.custid = @custid 
+	
+
 	-- Customer Info
 	SELECT c.custid
 		,c.username
@@ -86,14 +132,16 @@ BEGIN
 	--select PT/Comm setting
 	SELECT cs.bettype
 		,cs.apositiontaking --a1
-		,aco.minpositiontaking AS apositiontaking_min--n2/MinPT
-		,acs.apositiontaking AS apositiontaking_max --l2/MaxPT
+		,acs.minpositiontaking AS apositiontaking_min--n2/MinPT
+		,CASE WHEN acs.apositiontaking <= m.apositiontaking THEN acs.apositiontaking ELSE m.apositiontaking END AS apositiontaking_max --l2/MaxPT
 		,cs.playerdiscount --commission
-		,acs.discount AS playerdiscount_max --maxcommission
+		,ac.discount AS playerdiscount_max --maxcommission
 	FROM CustSettingGame cs WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID 
-		INNER JOIN CustSettingGame acs WITH (NOLOCK) ON acs.CustID = @recommend AND cs.bettype = acs.bettype AND cs.Sporttype = acs.sporttype
+		INNER JOIN CustSettingGame ac WITH (NOLOCK) ON ac.CustID = @recommend AND cs.bettype = ac.bettype AND cs.Sporttype = ac.sporttype
 		INNER JOIN dbo.CustOverrideGame aco WITH (NOLOCK) ON aco.custid = @recommend AND cs.sporttype = aco.sporttype AND cs.bettype = aco.bettype		 
+		INNER JOIN @AgentPT acs ON cs.bettype = acs.bettype
+		INNER JOIN @MemberPT m ON cs.bettype= m.bettype
 	WHERE cs.CustID = @CustID AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202
 	ORDER BY cs.Bettype
 
