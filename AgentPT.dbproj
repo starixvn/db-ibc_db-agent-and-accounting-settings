@@ -64,6 +64,11 @@
     <Folder Include="Data Generation Plans" />
     <Folder Include="Schema Comparisons" />
     <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\Bingo" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\Keno" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Select\Keno" />
+    <Folder Include="Customer-PositionTaking\CustSetting\Ins\ExecRep_CustomerInfo" />
   </ItemGroup>
   <ItemGroup>
     <PropertiesFile Include="Properties\Database.sqlsettings">
@@ -422,12 +427,189 @@
     <NotInBuild Include="Transfer\TransferCondition\dbo.Admin_Tools_TransferAllMembers.proc.sql" />
     <NotInBuild Include="zzMisc\dbo.f_GetSubUsername.func.sql" />
     <NotInBuild Include="zzMisc\dbo.IsAllowChangePositiontaking.proc.sql" />
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\Acc_CustSetting_00.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_00_bk.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_02.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_04.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_05.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_06.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_07.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_08.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting_09.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_00.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_00_bk.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_01.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_02.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_03.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_04.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_05.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_06.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_07.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_08.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_09.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_ExecRep_Cust_04.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdAgentVS_MaxPositiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdAgentVS_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdAgentVS_MinMaxPositiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdAgentVS_PositionTaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdDisableVS.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdEnableBetSettingVS_deleted.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMasterVS_MaxPositiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMasterVS_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMasterVS_MinMaxPositiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMasterVS_Positiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMaxPerMatchVS180_1201.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMaxPerMatchVS181_1231.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMaxPerMatchVS182_1231.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMaxPerMatchVS184_1231.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMaxPerMatchVS186_1220.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMemberVS_MAg.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMemberVS_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMemberVS_MinMaxPositiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMemberVS_Positiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdMemberVS_SAg.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdSuperVS_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdSuperVS_Positiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdVS_Enable.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\VirtualSport\dbo.Acc_CustomerUpdVS_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelEditSuperKeno.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelKenoStatus.proc.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\ExecRep_CustomerInfo\dbo.Acc_CustomerInfo_Execrep_01.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdSuperKeno_Commission.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdSuperKeno_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Select\Keno\Acc_CustomerSelEditMemberKeno.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_MinMaxBet.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Ins\ExecRep_CustomerInfo\dbo.Acc_CustomerInfo_Execrep_00.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\ExecRep_Custsetting\dbo.Acc_CustSetting3rd_10.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
+    <NotInBuild Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_Positiontaking.sql">
+      <SubType>NotInBuild</SubType>
+    </NotInBuild>
   </ItemGroup>
   <ItemGroup>
     <BuildContributorArgument Include="OutDir=$(OutDir)" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Bingo\Acc_CustomerUpdSyncBingo.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdDisableKeno.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_BetSetting.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno_Commission.proc.sql">
+      <SubType>Code</SubType>
+    </Build>
+    <Build Include="Customer-PositionTaking\CustSetting\Upd_New\Keno\Acc_CustomerUpdMemberKeno.proc.sql">
       <SubType>Code</SubType>
     </Build>
   </ItemGroup>

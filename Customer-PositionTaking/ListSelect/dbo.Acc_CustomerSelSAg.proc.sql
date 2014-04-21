@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg_xtest]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing BIT = NULL,
@@ -13,7 +13,7 @@
 AS
 /*
 Task : Select Super Agent list
-DB: DBAGE/bodb02, DBTXN/bodb02
+DB: DBAGE/bodb02, DBTXN/CustDB
 Revisions:
     - @update2008/01/14 search username
     - phuong.nguyen, check customer's currency for Horseracing spottype
@@ -37,6 +37,8 @@ Revisions:
 	- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 	- 20131029@Elodie: Put link server DBAGE [Redmine:#7261]
 	- 20140116@Elodie: Hot fix to get information of disabled customer
+	- 20140407@Elodie: Add Keno product [Redmine:#13156]
+
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -104,6 +106,15 @@ BEGIN
 		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds,
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
+
+		max(case when g.IBCBetTypeID = 1501 then cg.IsDisabled else 0 end) as Disable1501,
+		max(case when g.IBCBetTypeID = 1503 then cg.IsDisabled else 0 end) as Disable1503,
+		max(case when g.IBCBetTypeID = 1504 then cg.IsDisabled else 0 end) as Disable1504,
+		max(case when g.IBCBetTypeID = 1505 then cg.IsDisabled else 0 end) as Disable1505,
+		max(case when g.IBCBetTypeID = 1507 then cg.IsDisabled else 0 end) as Disable1507,
+		max(case when g.IBCBetTypeID = 1508 then cg.IsDisabled else 0 end) as Disable1508,
+		max(case when g.IBCBetTypeID = 1509 then cg.IsDisabled else 0 end) as Disable1509,
+
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		
 	FROM 
@@ -111,6 +122,8 @@ BEGIN
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
 		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
+		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
+		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509)			
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 		and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -199,12 +212,23 @@ BEGIN
 		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds,
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
+
+		max(case when g.IBCBetTypeID = 1501 then cg.IsDisabled else 0 end) as Disable1501,
+		max(case when g.IBCBetTypeID = 1503 then cg.IsDisabled else 0 end) as Disable1503,
+		max(case when g.IBCBetTypeID = 1504 then cg.IsDisabled else 0 end) as Disable1504,
+		max(case when g.IBCBetTypeID = 1505 then cg.IsDisabled else 0 end) as Disable1505,
+		max(case when g.IBCBetTypeID = 1507 then cg.IsDisabled else 0 end) as Disable1507,
+		max(case when g.IBCBetTypeID = 1508 then cg.IsDisabled else 0 end) as Disable1508,
+		max(case when g.IBCBetTypeID = 1509 then cg.IsDisabled else 0 end) as Disable1509,
+
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
 		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
+		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
+		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509)
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE	
 			m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
