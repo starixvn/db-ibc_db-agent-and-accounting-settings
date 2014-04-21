@@ -177,12 +177,7 @@ Begin DataProject = "AgentPT"
             End
             Script = "dbo.Acc_CustomerInsMember_Ag.sql"
             Script = "dbo.Acc_CustomerInsMember_Ag_CheckParam.StoredProcedure.sql"
-<<<<<<< HEAD
-            Script = "dbo.Acc_CustomerInsMember_Com.StoredProcedure.sql"
-            Node = "dbo.Acc_CustomerInsMember_Com_11236"
-=======
-            Script = "dbo.Acc_CustomerInsMember_Com.sql"
->>>>>>> remotes/origin/Keno20140225
+
             Script = "dbo.Acc_CustomerInsMember_Com_CheckParam.StoredProcedure.sql"
             Script = "dbo.Acc_CustomerInsMember_MAg.sql"
             Script = "dbo.Acc_CustomerInsMember_MAg_CheckParam.StoredProcedure.sql"
