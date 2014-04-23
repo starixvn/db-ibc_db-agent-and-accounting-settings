@@ -282,7 +282,6 @@ BEGIN
 		RETURN  
 	END  
 END  
-GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet]
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet] AS [dbo]
