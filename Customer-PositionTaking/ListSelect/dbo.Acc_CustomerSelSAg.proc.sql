@@ -107,13 +107,8 @@ BEGIN
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
 
-		max(case when g.IBCBetTypeID = 1501 then cg.IsDisabled else 0 end) as Disable1501,
-		max(case when g.IBCBetTypeID = 1503 then cg.IsDisabled else 0 end) as Disable1503,
-		max(case when g.IBCBetTypeID = 1504 then cg.IsDisabled else 0 end) as Disable1504,
-		max(case when g.IBCBetTypeID = 1505 then cg.IsDisabled else 0 end) as Disable1505,
-		max(case when g.IBCBetTypeID = 1507 then cg.IsDisabled else 0 end) as Disable1507,
-		max(case when g.IBCBetTypeID = 1508 then cg.IsDisabled else 0 end) as Disable1508,
-		max(case when g.IBCBetTypeID = 1509 then cg.IsDisabled else 0 end) as Disable1509,
+		ci.HideKeno,
+		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509) then cg.IsDisabled else 1 end) as DisableKeno,
 
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		
@@ -151,7 +146,8 @@ BEGIN
 		m.currency, 
 		m.roleid,--phuong.nguyen, get currency name	
 		ci.matchlimit,
-		ci.virtualmultiplier
+		ci.virtualmultiplier,
+		ci.HideKeno
 	--ORDER BY ci.closed, m.username
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
@@ -213,13 +209,8 @@ BEGIN
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
 
-		max(case when g.IBCBetTypeID = 1501 then cg.IsDisabled else 0 end) as Disable1501,
-		max(case when g.IBCBetTypeID = 1503 then cg.IsDisabled else 0 end) as Disable1503,
-		max(case when g.IBCBetTypeID = 1504 then cg.IsDisabled else 0 end) as Disable1504,
-		max(case when g.IBCBetTypeID = 1505 then cg.IsDisabled else 0 end) as Disable1505,
-		max(case when g.IBCBetTypeID = 1507 then cg.IsDisabled else 0 end) as Disable1507,
-		max(case when g.IBCBetTypeID = 1508 then cg.IsDisabled else 0 end) as Disable1508,
-		max(case when g.IBCBetTypeID = 1509 then cg.IsDisabled else 0 end) as Disable1509,
+		ci.HideKeno,
+		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509) then cg.IsDisabled else 1 end) as DisableKeno,
 
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
@@ -257,7 +248,8 @@ BEGIN
 		m.currency, 
 		m.roleid,--phuong.nguyen, get currency name	
 		ci.matchlimit,
-		ci.virtualmultiplier
+		ci.virtualmultiplier,
+		ci.HideKeno
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
