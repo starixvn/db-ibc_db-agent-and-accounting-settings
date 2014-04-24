@@ -18,6 +18,7 @@ Revisions:
 	- 20131211@Elodie: retrieve bet setting for Virtual Racing(181), Greyhounds(182), Motor Racing(184), Tennis(186)
 	- 20140123@Elodie: retrieve bet setting for HR Fixed Odds(154) [Redmine:#10922]
 	- 20140305@Elodie: retrieve bet setting for Keno(202) [Redmine:#11658]
+	- 20140424@Elodie: Fix bug for case not existsed data in CustGameType
 									
 Param's Explanation:
 */
@@ -665,8 +666,8 @@ FROM
 	CustInfo ci WITH (NOLOCK)  
 	INNER JOIN Dep_CustSetting cs WITH (NOLOCK) ON ci.custid = cs.custid    
 	INNER JOIN Dep_CustSetting3rd cs3rd WITH (NOLOCK) ON ci.custid = cs3rd.custid    
-	INNER JOIN CustGameType cg WITH (NOLOCK) ON ci.custid = cg.custid  
-	INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+	LEFT JOIN CustGameType cg WITH (NOLOCK) ON ci.custid = cg.custid  
+	LEFT JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
 WHERE ci.custid=@CustID   
 GROUP BY    
 	ci.username, 
@@ -695,7 +696,7 @@ GROUP BY
 	ci.maxpermatch182,
 	ci.maxpermatch184,
 	ci.maxpermatch186
-
+	
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Admin] AS [dbo]
 GO

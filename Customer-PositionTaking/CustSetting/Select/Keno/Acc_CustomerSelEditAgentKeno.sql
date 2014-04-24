@@ -13,7 +13,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @mrecommend INT, @srecommend INT, @currency INT
+	DECLARE @mrecommend INT, @srecommend INT, @currency INT, @DisableAutoMPT BIT
 	SELECT @mrecommend = mrecommend, @srecommend = srecommend, @currency = currency FROM dbo.CustInfo WITH (NOLOCK) WHERE CustId = @custid
 
 	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
@@ -53,8 +53,13 @@ BEGIN
 	WHERE cg.custid IN (@srecommend, @mrecommend) 
 	GROUP BY cg.GameTypeID
 
+	--Disable auto master PT
+	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT ,0)
+	FROM CustMaster WITH (NOLOCK) 
+	WHERE CustID = @Mrecommend
+
 	--Get custinfo
-	SELECT username, firstname, lastname, phone, mobilephone, fax
+	SELECT username, firstname, lastname, phone, mobilephone, fax, @DisableAutoMPT as DisableAutoMPT
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID
 

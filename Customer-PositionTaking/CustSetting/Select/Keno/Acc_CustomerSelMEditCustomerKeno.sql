@@ -12,11 +12,7 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @srecommend INT, @mrecommend INT, @recommend INT
-	--Customer Info
-	SELECT username, firstname, lastname, phone, mobilephone, fax
-	FROM dbo.Customer WITH (NOLOCK)
-	WHERE custID = @CustID
+	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @DisableAutoMPT BIT	
 
 	--BetSetting
 	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
@@ -28,6 +24,16 @@ BEGIN
 	--PT
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend
 	FROM dbo.custinfo WITH (NOLOCK) WHERE custid = @custid
+
+	--Disable auto master PT
+	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT,0)
+	FROM CustMaster WITH (NOLOCK) 
+	WHERE CustID = @mrecommend
+
+	--Customer Info
+	SELECT username, firstname, lastname, phone, mobilephone, fax, @DisableAutoMPT as DisableAutoMPT
+	FROM dbo.Customer WITH (NOLOCK)
+	WHERE custID = @CustID
 
 	--Get master PT value
 	SELECT cs.bettype
@@ -63,16 +69,12 @@ END
 
 
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerKeno] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerKeno] TO [bodbDownlineNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerKeno] TO [bodbDownlineNetView] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMEditCustomerKeno] TO [vnteam] AS [dbo]
 GO
 

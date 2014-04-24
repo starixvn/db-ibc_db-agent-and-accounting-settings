@@ -18,7 +18,7 @@ BEGIN
 	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
 	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
-	DECLARE @downlines BIT, @srecommend INT, @currency INT
+	DECLARE @downlines BIT, @srecommend INT, @currency INT, @DisableAutoMPT	BIT
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE mrecommend = @CustID AND roleid = 2) THEN 1 ELSE 0 END
 	
 	DECLARE @DisableDownlinesKeno TABLE (GameTypeID INT, DisableDownlines BIT)	
@@ -65,8 +65,13 @@ BEGIN
 	WHERE cg.CustID = @srecommend
 	ORDER BY gt.IBCBetTypeID
 
+	--Disable auto master PT
+	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT,0)
+	FROM CustMaster (nolock) 
+	WHERE CustID = @custid
+
 	--Customer Info
-	SELECT username, firstname, lastname, phone, mobilephone, fax
+	SELECT username, firstname, lastname, phone, mobilephone, fax, @DisableAutoMPT DisableAutoMPT
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID 
 
