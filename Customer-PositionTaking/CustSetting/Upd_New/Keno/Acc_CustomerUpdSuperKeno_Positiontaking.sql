@@ -70,7 +70,7 @@ BEGIN
 	IF @old_spositiontaking = @spositiontaking
 		RETURN
 	
-	SELECT @MaxPT = MaxPositiontaking FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @sporttype AND Bettype = @bettype
+	SELECT @MaxPT = MaxPositiontaking FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @sporttype AND Bettype = @bettype and IsDep = 0
 	IF @MaxPT < @spositiontaking
 	BEGIN
 		SELECT @ErrMsg =

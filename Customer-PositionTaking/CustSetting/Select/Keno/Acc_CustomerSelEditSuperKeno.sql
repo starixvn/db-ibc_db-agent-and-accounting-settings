@@ -48,7 +48,7 @@ BEGIN
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
-		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency	AND IsDep = 0
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 
@@ -62,7 +62,7 @@ BEGIN
 	FROM dbo.CustSettingGame cs WITH (NOLOCK)
 		INNER JOIN dbo.CustOverrideGame co WITH (NOLOCK) ON cs.CustID = co.CustID AND cs.Bettype = co.Bettype AND cs.Sporttype = co.Sporttype
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
-		INNER JOIN ProductGlobalSetting gs ON gt.IBCBetTypeID = gs.bettype AND gs.sporttype = co.Sporttype 
+		INNER JOIN ProductGlobalSetting gs ON gt.IBCBetTypeID = gs.bettype AND gs.sporttype = co.Sporttype AND IsDep = 0
 	WHERE cs.CustID = @CustID AND cs.Bettype BETWEEN 1501 AND 1599 AND cs.Sporttype = 202
 	ORDER BY cs.Bettype
 END

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿ALTER PROCEDURE [Acc_CustomerInfo_Execrep_00]
-=======
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00_xtest]
->>>>>>> remotes/origin/Keno20140225
+ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -110,12 +106,8 @@
 	@v186spositiontaking_1220 smallmoney = 0,
 	
 
-<<<<<<< HEAD
 	--@v201spositiontaking_2 smallmoney = 0,
 	--@v201spositiontaking_3 smallmoney = 0,
-=======
-	@v201spositiontaking_2 smallmoney = 0,
-	@v201spositiontaking_3 smallmoney = 0,
 
 	@v202spositiontaking_1501 smallmoney = 0,
 	@v202spositiontaking_1502 smallmoney = 0,
@@ -126,7 +118,6 @@
 	@v202spositiontaking_1507 smallmoney = 0,
 	@v202spositiontaking_1508 smallmoney = 0,
 	@v202spositiontaking_1509 smallmoney = 0,
->>>>>>> remotes/origin/Keno20140225
 	---
 	---create new master
 	@auto_spositiontaking_1 smallmoney = 0,
@@ -365,12 +356,8 @@
 	@v186mpositiontaking_1220 smallmoney = 0,
 	
 
-<<<<<<< HEAD
 	--@v201mpositiontaking_2 smallmoney = 0,
 	--@v201mpositiontaking_3 smallmoney = 0,
-=======
-	@v201mpositiontaking_2 smallmoney = 0,
-	@v201mpositiontaking_3 smallmoney = 0,
 
 	@v202mpositiontaking_1501 smallmoney = 0,
 	@v202mpositiontaking_1502 smallmoney = 0,
@@ -381,7 +368,6 @@
 	@v202mpositiontaking_1507 smallmoney = 0,
 	@v202mpositiontaking_1508 smallmoney = 0,
 	@v202mpositiontaking_1509 smallmoney = 0,
->>>>>>> remotes/origin/Keno20140225
 	---
 	---create agent
 	--Auto Master PT
@@ -779,15 +765,10 @@
 				+ Acc_CustomerInsMember_SAg
 				+ Acc_CustomerInsMember_MAg
 				+ Acc_CustomerInsMember_Ag
-<<<<<<< HEAD
 			- 20140303@Patrick	: Add more sport:202 for Keno
 			- 20140331@Sophia: remove Fi sporttype = 201
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
-		
-=======
-			- 20140303@Patrick: Add more sport:202 for Keno
 			- 20140318@Elodie: Add CustSettingGame for Keno [Redmine:#13156]
->>>>>>> remotes/origin/Keno20140225
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -796,11 +777,7 @@ SET NOCOUNT ON
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
 			AND xtype = 'U'
-<<<<<<< HEAD
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2')
-=======
 			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
->>>>>>> remotes/origin/Keno20140225
 
 	if @IsExistTables <> 7 RETURN
 	
@@ -1165,11 +1142,7 @@ SET NOCOUNT ON
 		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
 		SELECT	GameTypeID, @Custid, 0, 0, 0, 1
 		FROM	bodb02.dbo.GameType WITH(NOLOCK)
-<<<<<<< HEAD
-		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
-=======
 		WHERE	IBCBetTypeID BETWEEN 1501 AND 1509
->>>>>>> remotes/origin/Keno20140225
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -1508,6 +1481,7 @@ SET NOCOUNT ON
 		UNION ALL 
 		SELECT @custid  , 1002 , StakeLevel1 , 0 , 0 , 0 , 0 FROM dbo.P2PGAMESETTING WITH(ROWLOCK) WHERE custid = @srecommend AND bettype = 1002
 		 
+		 
 		if @@error <> 0
 		BEGIN
 			--Error Occurs
@@ -1531,6 +1505,7 @@ SET NOCOUNT ON
 		--SELECT @custid custId,groupID,sdiscount,0 adiscount,0 discount,0 playerdiscount
 		--FROM dbo.P2PGroupComm
 		--Where custid  = @srecommend ; 
+
 		 
 		if @@error <> 0
 		BEGIN
@@ -1622,12 +1597,7 @@ SET NOCOUNT ON
 		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
 		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
 		FROM dbo.CustGameType cg WITH(NOLOCK) 
-<<<<<<< HEAD
-			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @srecommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
-=======
 		WHERE custid = @srecommend
->>>>>>> remotes/origin/Keno20140225
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -2071,14 +2041,8 @@ SET NOCOUNT ON
 		--Keno: copy gametype from master to agent
 		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
 		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-<<<<<<< HEAD
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @mrecommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
-=======
 		FROM dbo.CustGameType cg WITH(NOLOCK) 			
 		WHERE custid = @mrecommend
->>>>>>> remotes/origin/Keno20140225
 
 		IF @@error <> 0
 		BEGIN
@@ -2207,15 +2171,9 @@ SET NOCOUNT ON
 		
 		--inser into CustSetting3rd
 		INSERT INTO [dbo].[CustSetting3rd]([custid], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], MinBet, MaxBet, autopositiontaking, isautopositiontaking, alivepositiontaking,mlivepositiontaking,slivepositiontaking,autolivepositiontaking,isautolivepositiontaking,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
-<<<<<<< HEAD
 		--select @custid, 2, 201, 0, @v201mpositiontaking_2, @v201spositiontaking_2, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		--UNION ALL
 		--select @custid, 3, 201, 0, @v201mpositiontaking_3, @v201spositiontaking_3, 0, @v201discount, @v201adiscount, @v201sdiscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-=======
-		select @custid, 2, 201, 0, ISNULL(@v201mpositiontaking_2,0), ISNULL(@v201spositiontaking_2,0), 0, ISNULL(@v201discount,0), ISNULL(@v201adiscount,0), ISNULL(@v201sdiscount,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL
-		select @custid, 3, 201, 0, ISNULL(@v201mpositiontaking_3,0), ISNULL(@v201spositiontaking_3,0), 0, ISNULL(@v201discount,0), ISNULL(@v201adiscount,0), ISNULL(@v201sdiscount,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
->>>>>>> remotes/origin/Keno20140225
 
 		--v151
 
@@ -2395,39 +2353,6 @@ SET NOCOUNT ON
 				
 			RETURN
 		END
-<<<<<<< HEAD
-
-		--Keno: copy CustGameType from Agent to Member
-		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @Custid, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
-
-		IF @@error <> 0
-		BEGIN
-			--Error occur
-			SET @ErrCode = 156
-				
-			-- ROLLBACK MANUALLY
-			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
-			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
-			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid			
-				
-			RETURN
-		END
-		--End Keno
-	END
-END
-
-
-
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo]
-=======
 
 		--Keno: copy CustGameType from Agent to Member
 		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
@@ -2454,4 +2379,3 @@ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo
 		--End Keno
 	END
 END
->>>>>>> remotes/origin/Keno20140225

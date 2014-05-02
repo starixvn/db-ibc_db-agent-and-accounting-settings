@@ -125,7 +125,7 @@ BEGIN
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		INNER JOIN @AgentSetting acs ON cg.GameTypeID = acs.GameTypeID
 		INNER JOIN @AgentDisabled ad ON cg.GameTypeID = ad.GameTypeID
-		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency AND IsDep = 0
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 

@@ -12,14 +12,7 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @DisableAutoMPT BIT	
-
-	--BetSetting
-	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
-	FROM dbo.CustGameType cg WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-	WHERE cg.CustID = @CustID and gt.IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
-	ORDER BY gt.IBCBetTypeID
+	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @DisableAutoMPT BIT		
 	
 	--PT
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend
@@ -34,6 +27,13 @@ BEGIN
 	SELECT username, firstname, lastname, phone, mobilephone, fax, @DisableAutoMPT as DisableAutoMPT
 	FROM dbo.Customer WITH (NOLOCK)
 	WHERE custID = @CustID
+
+	--BetSetting
+	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
+	FROM dbo.CustGameType cg WITH (NOLOCK)
+		INNER JOIN dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+	WHERE cg.CustID = @CustID and gt.IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
+	ORDER BY gt.IBCBetTypeID
 
 	--Get master PT value
 	SELECT cs.bettype

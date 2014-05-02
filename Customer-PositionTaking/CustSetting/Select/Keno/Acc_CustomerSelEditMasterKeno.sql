@@ -90,7 +90,7 @@ BEGIN
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
 		INNER JOIN @SuperSetting s ON gt.IBCBetTypeID = s.bettype
-		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency AND IsDep = 0
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 

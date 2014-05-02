@@ -76,7 +76,7 @@ BEGIN
 	WHERE cg.custid = @srecommend AND cg.GameTypeID = @GameTypeID
 	
 	IF @MinMinBet = 0 
-		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency
+		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency AND IsDep = 0
 
 	--Check @MinBet >= @MinMinBet
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)

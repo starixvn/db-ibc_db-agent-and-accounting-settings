@@ -58,7 +58,7 @@ BEGIN
 		RETURN
 	END
 
-	IF EXISTS (SELECT 1 FROM ProductBetSetting WITH (NOLOCK) WHERE sporttype = @Sporttype AND bettype = @bettype AND MinBet > @MinBet AND @MinBet <> 0)
+	IF EXISTS (SELECT 1 FROM ProductBetSetting WITH (NOLOCK) WHERE sporttype = @Sporttype AND bettype = @bettype AND MinBet > @MinBet AND @MinBet <> 0 AND IsDep = 0)
 	BEGIN
 		SELECT
 			@ErrMsg =	CASE @Language 

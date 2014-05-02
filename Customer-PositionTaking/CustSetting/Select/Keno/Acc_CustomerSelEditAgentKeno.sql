@@ -75,7 +75,7 @@ BEGIN
 		INNER JOIN @MasterDisabled md ON cg.GameTypeID = md.GameTypeID
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
 		LEFT JOIN @DisableDownlinesKeno d ON cg.GameTypeID = d.GameTypeID
-		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency		
+		INNER JOIN ProductBetSetting bs ON gt.IBCBetTypeID = bs.bettype AND bs.sporttype = 202 AND Currency = @Currency	AND IsDep = 0
 	WHERE cg.CustID = @CustID
 	ORDER BY gt.IBCBetTypeID
 

@@ -42,7 +42,7 @@ BEGIN
 	IF @Old_discount = @discount RETURN
 
 	--Get maxdiscount from system config
-	SELECT @MaxDiscount = MaxSDiscount FROM [dbo].[ProductGlobalSetting] WHERE SportType = @SportType AND BetType = @BetType
+	SELECT @MaxDiscount = MaxSDiscount FROM [dbo].[ProductGlobalSetting] WHERE SportType = @SportType AND BetType = @BetType AND IsDep = 0
 	IF (@discount < 0 AND @discount > @MaxDiscount)
 	BEGIN
 		SELECT @ErrMsg = CASE @Language	WHEN 'E' THEN N'Invalid commission rate'

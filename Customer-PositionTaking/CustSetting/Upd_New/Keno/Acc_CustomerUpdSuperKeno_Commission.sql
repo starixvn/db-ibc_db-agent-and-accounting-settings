@@ -27,7 +27,7 @@ BEGIN
 	        @duration     INT,
 			@MaxDiscount  DECIMAL(9, 8)
 
-	SELECT @MaxDiscount = Maxsdiscount FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @Sporttype AND Bettype = @Bettype
+	SELECT @MaxDiscount = Maxsdiscount FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @Sporttype AND Bettype = @Bettype AND IsDep = 0
 	
 	SET @startRun = GETDATE()
 	
