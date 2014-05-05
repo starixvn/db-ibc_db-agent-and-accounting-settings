@@ -246,21 +246,18 @@ AS
 		
 		Revision:
 			- 20131105@Elodie: Add HR Fixed Odds [Redmine:#6505]
+			- 20140220@Johnson: Merge code correct pt on members after update auto pt
+			- 20140424@Johnson: fix bug correct super pt on member after master update auto pt on member
 		Parameter's Explanation:
 	*/
 BEGIN
 	SET NOCOUNT ON 
-	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
+	DECLARE @IsExistTables tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
 			AND xtype = 'U'
 	
-	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
-			AND xtype = 'V'
-			
-	if @IsExistTables <> 3 AND @IsExistViews <> 3 
-		RETURN
+	if @IsExistTables <> 3 RETURN
 	
 	Declare @bettype int,	
 			
@@ -302,7 +299,59 @@ BEGIN
 			@srecommend int,
 			@mrecommend int,
 			@recommend int
-
+	
+	
+	DECLARE @tmp_sag TABLE(custid int, sporttype smallint, bettype smallint,
+		spositiontaking smallmoney, slivepositiontaking smallmoney, mpositiontaking smallmoney, mlivepositiontaking smallmoney, minpositiontaking smallmoney, minlivepositiontaking smallmoney, maxpositiontaking smallmoney, maxlivepositiontaking smallmoney
+	) 
+	
+	DECLARE @tmp_mag TABLE(custid int, sporttype smallint, bettype smallint,
+		mpositiontaking smallmoney, mlivepositiontaking smallmoney, isautopositiontaking bit, isautolivepositiontaking bit, autopositiontaking smallmoney, autolivepositiontaking smallmoney,
+		minpositiontaking smallmoney, minlivepositiontaking smallmoney, maxpositiontaking smallmoney, maxlivepositiontaking smallmoney
+	)
+	
+	DECLARE @tmp_ag TABLE(custid int, sporttype smallint, bettype smallint,
+		apositiontaking smallmoney, alivepositiontaking smallmoney, isautompositiontaking bit, autompositiontaking smallmoney, isautolivempositiontaking bit, autolivempositiontaking smallmoney, 
+		minpositiontaking smallmoney, minlivepositiontaking smallmoney, maxpositiontaking smallmoney, maxlivepositiontaking smallmoney)
+	
+	DECLARE @tmp_cs TABLE(custid int, sporttype smallint, bettype smallint,
+		spositiontaking smallmoney, mpositiontaking smallmoney, apositiontaking smallmoney, slivepositiontaking smallmoney, mlivepositiontaking smallmoney, alivepositiontaking smallmoney,
+		autopositiontaking smallmoney, autolivepositiontaking smallmoney, isautopositiontaking bit, isautolivepositiontaking bit,
+		autompositiontaking smallmoney, autolivempositiontaking smallmoney, isautompositiontaking bit, isautolivempositiontaking bit
+	)
+	
+	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
+	
+	select @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend from custinfo with (NOLOCK) where custid = @custid
+	
+	INSERT INTO @tmp_cs (custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, slivepositiontaking, mlivepositiontaking, alivepositiontaking,
+		autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking,
+		autompositiontaking, autolivempositiontaking, isautompositiontaking, isautolivempositiontaking
+	)
+	SELECT custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, slivepositiontaking, mlivepositiontaking, alivepositiontaking,
+		autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking, 
+		autompositiontaking, autolivempositiontaking, isautompositiontaking, isautolivempositiontaking
+	FROM custsetting WITH(NOLOCK)
+	WHERE custid = @custid		
+	
+	INSERT INTO @tmp_sag(custid, sporttype, bettype, spositiontaking, slivepositiontaking, mpositiontaking, mlivepositiontaking, minpositiontaking, minlivepositiontaking, maxpositiontaking, maxlivepositiontaking)
+	SELECT scs.custid, scs.sporttype, scs.bettype, spositiontaking, slivepositiontaking, mpositiontaking, mlivepositiontaking, sco.minpositiontaking, sco.minlivepositiontaking, sco.maxpositiontaking, sco.maxlivepositiontaking
+	FROM custsetting scs with(NOLOCK)
+		INNER JOIN custoverride sco WITH(NOLOCK) on scs.custid = sco.custid and scs.sporttype = sco.sporttype and scs.bettype = sco.bettype
+	WHERE scs.custid = @srecommend
+	
+	INSERT INTO @tmp_mag(custid, sporttype, bettype, mpositiontaking, mlivepositiontaking, isautopositiontaking, isautolivepositiontaking, autopositiontaking , autolivepositiontaking, minpositiontaking, minlivepositiontaking, maxpositiontaking, maxlivepositiontaking)
+	SELECT mcs.custid, mcs.sporttype, mcs.bettype, mpositiontaking, mlivepositiontaking, isautopositiontaking, isautolivepositiontaking, autopositiontaking , autolivepositiontaking, mco.minpositiontaking, mco.minlivepositiontaking, mco.maxpositiontaking, mco.maxlivepositiontaking
+	FROM custsetting mcs WITH(NOLOCK)
+		inner JOIN custoverride mco WITH(NOLOCK) on mcs.custid = mco.custid and mcs.sporttype = mco.sporttype and mcs.bettype = mco.bettype
+	WHERE mcs.custid = @mrecommend	
+	
+	INSERT INTO @tmp_ag(custid, sporttype, bettype, apositiontaking, alivepositiontaking, isautompositiontaking , autompositiontaking , isautolivempositiontaking , autolivempositiontaking , minpositiontaking, minlivepositiontaking, maxpositiontaking, maxlivepositiontaking)
+	SELECT cs.custid, cs.sporttype, cs.bettype, apositiontaking, alivepositiontaking, isautompositiontaking , autompositiontaking , cs.isautolivempositiontaking , autolivempositiontaking, minpositiontaking, minlivepositiontaking, maxpositiontaking, maxlivepositiontaking
+	FROM custoverride co WITH(NOLOCK)
+		inner join custSetting cs WITH(NOLOCK) on cs.custid = co.custid and cs.sporttype = co.sporttype and cs.bettype = co.bettype
+	WHERE cs.custid = @recommend 	
+	
 	IF @roleid = 4
 	BEGIN
 		Declare			
@@ -559,8 +608,7 @@ BEGIN
 			-- mixed sports
 			@master_isauto_v99spositiontaking_9 bit,
 			@master_isauto_v154spositiontaking_20 bit
-
-		select @srecommend = srecommend, @mrecommend = mrecommend from custinfo with (NOLOCK) where custid = @custid
+		
 		--Get old Auto PT of Member
 		if (@UpdateMultiple = 0 or @UpdatePositiontaking = 1)
 				BEGIN --@UpdatePositiontaking 
@@ -729,9 +777,66 @@ BEGIN
 				BEGIN --UpdatePositiontakingv154
 					select @master_auto_v154spositiontaking_20 = autopositiontaking, @master_isauto_v154spositiontaking_20 = isautopositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and bettype=20 and sporttype=154
 				END  --UpdatePositiontakingv154
+		
+		--Update Member account (autopositiontaking field)
+		update cs
+		SET  autopositiontaking = b.autopositiontaking, autolivepositiontaking = b.autolivepositiontaking, isautopositiontaking = b.isautopositiontaking, isautolivepositiontaking = b.isautolivepositiontaking
+		from @tmp_cs cs			
+			inner join (
+						select 1 as bettype, 1 as sporttype, @auto_spositiontaking_1 as autopositiontaking, @auto_slivepositiontaking_1	as autolivepositiontaking, @isauto_spositiontaking_1 as isautopositiontaking, @isauto_slivepositiontaking_1	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 2 as bettype, 1 as sporttype, @auto_spositiontaking_2 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_2 as isautopositiontaking, 0				as isautolivepositiontaking  WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 3 as bettype, 1 as sporttype, @auto_spositiontaking_3 as autopositiontaking, @auto_slivepositiontaking_3 	as autolivepositiontaking, @isauto_spositiontaking_3 as isautopositiontaking, @isauto_slivepositiontaking_3	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 4 as bettype, 1 as sporttype, @auto_spositiontaking_4 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_4 as isautopositiontaking, 0				as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 5 as bettype, 1 as sporttype, @auto_spositiontaking_5 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_5 as isautopositiontaking, 0				as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 6 as bettype, 1 as sporttype, @auto_spositiontaking_6 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_6 as isautopositiontaking, 0				as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 7 as bettype, 1 as sporttype, @auto_spositiontaking_7 as autopositiontaking, @auto_slivepositiontaking_7 	as autolivepositiontaking, @isauto_spositiontaking_7 as isautopositiontaking, @isauto_slivepositiontaking_7	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 8 as bettype, 1 as sporttype, @auto_spositiontaking_8 as autopositiontaking, @auto_slivepositiontaking_8 	as autolivepositiontaking, @isauto_spositiontaking_8 as isautopositiontaking, @isauto_slivepositiontaking_8	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 9 as bettype, 1 as sporttype, @auto_spositiontaking_9 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_9 as isautopositiontaking, 0				as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
+				union all 	select 10 as bettype, 1 as sporttype, @auto_spositiontaking_10 as autopositiontaking, 0				as autolivepositiontaking, @isauto_spositiontaking_10 as isautopositiontaking, 0				as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontaking = 1
 				
+				union all 	select 1 as bettype, 2 as sporttype, @auto_v2spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				union all 	select 2 as bettype, 2 as sporttype, @auto_v2spositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				union all 	select 3 as bettype, 2 as sporttype, @auto_v2spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				union all 	select 7 as bettype, 2 as sporttype, @auto_v2spositiontaking_7 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_7 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				union all 	select 8 as bettype, 2 as sporttype, @auto_v2spositiontaking_8 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_8 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+--				union all 	select 9 as bettype, 2 as sporttype, @auto_v2spositiontaking_9 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_9 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				union all 	select 20 as bettype, 2 as sporttype, @auto_v2spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv2 = 1
+				
+				union all 	select 1 as bettype, 3 as sporttype, @auto_v3spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv3 = 1
+				union all 	select 2 as bettype, 3 as sporttype, @auto_v3spositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3spositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv3 = 1
+				union all 	select 3 as bettype, 3 as sporttype, @auto_v3spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv3 = 1
+				union all 	select 20 as bettype, 3 as sporttype, @auto_v3spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv3 = 1
 
-			--Update Member account (autopositiontaking field)
+				union all 	select 1 as bettype, 5 as sporttype, @auto_v5spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv5 = 1
+				union all 	select 2 as bettype, 5 as sporttype, @auto_v5spositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5spositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv5 = 1
+				union all 	select 3 as bettype, 5 as sporttype, @auto_v5spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv5 = 1
+				union all 	select 20 as bettype, 5 as sporttype, @auto_v5spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv5 = 1
+
+				union all 	select 1 as bettype, 8 as sporttype, @auto_v8spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv8 = 1
+				union all 	select 3 as bettype, 8 as sporttype, @auto_v8spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv8 = 1
+				union all 	select 20 as bettype, 8 as sporttype, @auto_v8spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv8 = 1
+
+				union all 	select 1 as bettype, 10 as sporttype, @auto_v10spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv10 = 1
+				union all 	select 2 as bettype, 10 as sporttype, @auto_v10spositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10spositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv10 = 1
+				union all 	select 3 as bettype, 10 as sporttype, @auto_v10spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv10 = 1
+				union all 	select 20 as bettype, 10 as sporttype, @auto_v10spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv10 = 1
+
+				union all 	select 1 as bettype, 11 as sporttype, @auto_v11spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v11spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv11 = 1
+				union all 	select 20 as bettype, 11 as sporttype, @auto_v11spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v11spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv11 = 1
+
+				union all 	select 1 as bettype, 99 as sporttype, @auto_v99spositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99spositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv99 = 1
+				union all 	select 2 as bettype, 99 as sporttype, @auto_v99spositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99spositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv99 = 1
+				union all 	select 3 as bettype, 99 as sporttype, @auto_v99spositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99spositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv99 = 1
+				union all 	select 20 as bettype, 99 as sporttype, @auto_v99spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv99 = 1
+
+				-- mixed sports
+				union all 	select 9 as bettype, 99 as sporttype, @auto_v99spositiontaking_9 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99spositiontaking_9 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv99MP = 1
+				union all 	select 20 as bettype, 154 as sporttype, @auto_v154spositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v154spositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking WHERE @UpdateMultiple = 0 or @UpdatePositiontakingv154 = 1
+			
+			) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
+	
+	
+		/*	--Update Member account (autopositiontaking field)
 			update custsetting with (ROWLOCK, UPDLOCK) set autopositiontaking = b.autopositiontaking, autolivepositiontaking = b.autolivepositiontaking, isautopositiontaking = b.isautopositiontaking, isautolivepositiontaking = b.isautolivepositiontaking
 			from custsetting inner join 
 					(
@@ -787,7 +892,7 @@ BEGIN
 					
 					) as b on b.bettype = custsetting.bettype and b.sporttype = custsetting.sporttype
 			where custsetting.custid = @custid
-
+			*/
 			--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in master account)
 			select 
 				@auto_spositiontaking_1 = case when @isauto_spositiontaking_1>0 then @auto_spositiontaking_1 else @master_auto_spositiontaking_1 end,
@@ -940,10 +1045,18 @@ BEGIN
 				Begin --@UpdatePositiontaking
 					if @isautopositiontaking >0
 					BEGIN
-						select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=1 and bettype = @bettype
+						select @maxpos = spositiontaking from @tmp_sag where sporttype=1 and bettype = @bettype
+						
+						update cs
+						SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking> @autopositiontaking then @autopositiontaking else @maxpos - mpositiontaking-apositiontaking end
+						from @tmp_cs cs
+						where bettype = @bettype and sporttype = 1
+						
+						/*select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=1 and bettype = @bettype
+						
 						update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking> @autopositiontaking then @autopositiontaking else @maxpos - mpositiontaking-apositiontaking end
 						where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=1
-						
+						*/
 					END
 		--		END
 				--Update LIVE
@@ -951,11 +1064,19 @@ BEGIN
 					BEGIN
 						if @isautolivepositiontaking >0
 						BEGIN
+							select @maxpos = slivepositiontaking from @tmp_sag where sporttype=1 and bettype = @bettype
+							
+							update cs
+							SET slivepositiontaking = case when @maxpos - mlivepositiontaking-alivepositiontaking>@autolivepositiontaking then @autolivepositiontaking else @maxpos - mlivepositiontaking-alivepositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 1
+							/*
 							select @maxpos = slivepositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=1 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set slivepositiontaking = case when @maxpos - mlivepositiontaking-alivepositiontaking>@autolivepositiontaking then @autolivepositiontaking else @maxpos - mlivepositiontaking-alivepositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=1
-							
+							*/
 						END
 					END		
 				End --@UpdatePositiontaking
@@ -967,11 +1088,19 @@ BEGIN
 					Begin --@UpdatePositiontakingv2
 						if @isautov2positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=2 and bettype = @bettype
+							
+							update cs
+							set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov2positiontaking then @autov2positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 2
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=2 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov2positiontaking then @autov2positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=2
-							
+							*/
 						END
 					End --@UpdatePositiontakingv2
 				END
@@ -983,11 +1112,19 @@ BEGIN
 					Begin --@UpdatePositiontakingv3
 						if @isautov3positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=3 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov3positiontaking then @autov3positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 3
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=3 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov3positiontaking then @autov3positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=3
-							
+							*/
 						END
 					End --@UpdatePositiontakingv3
 				END
@@ -999,11 +1136,20 @@ BEGIN
 					Begin --@UpdatePositiontakingv5
 						if @isautov5positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=5 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov5positiontaking then @autov5positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 5
+							
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=5 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov5positiontaking then @autov5positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=5
-							
+							*/
 						END
 					End--@UpdatePositiontakingv5
 				END
@@ -1015,11 +1161,20 @@ BEGIN
 					Begin --@UpdatePositiontakingv8
 						if @isautov8positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=8 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov8positiontaking then @autov8positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 8
+							
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=8 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov8positiontaking then @autov8positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=8
-							
+							*/
 						END
 					End--@UpdatePositiontakingv8
 				END
@@ -1031,11 +1186,19 @@ BEGIN
 					Begin --@UpdatePositiontakingv10
 						if @isautov10positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=10 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov10positiontaking then @autov10positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 10
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=10 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov10positiontaking then @autov10positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=10
-							
+							*/
 						END
 					End--@UpdatePositiontakingv10
 				END
@@ -1047,11 +1210,20 @@ BEGIN
 					Begin --@UpdatePositiontakingv11
 						if @isautov11positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_sag where sporttype=11 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov11positiontaking then @autov11positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 11
+							
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=11 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov11positiontaking then @autov11positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=11
-							
+							*/
 						END
 					End--@UpdatePositiontakingv11
 				END
@@ -1063,11 +1235,20 @@ BEGIN
 					Begin --@UpdatePositiontakingv99
 						if @isautov99positiontaking >0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_Sag where sporttype=99 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov99positiontaking then @autov99positiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 99
+							
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=99 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov99positiontaking then @autov99positiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=99
-							
+							*/
 						END
 					End--@UpdatePositiontakingv99
 				END
@@ -1079,11 +1260,20 @@ BEGIN
 					Begin --@UpdatePositiontakingv99MP
 						if @isautov99mppositiontaking > 0
 						BEGIN
+							select @maxpos = spositiontaking from @tmp_Sag where sporttype=99 and bettype = @bettype
+							
+							update cs
+							SET spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov99mppositiontaking then @autov99mppositiontaking else @maxpos - mpositiontaking-apositiontaking end
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 99
+							
+							/*
 							select @maxpos = spositiontaking from custsetting with (NOLOCK) where custid = @srecommend and sporttype=99 and bettype = @bettype
+							
 							update custsetting with (ROWLOCK, UPDLOCK) set spositiontaking = case when @maxpos - mpositiontaking-apositiontaking>@autov99mppositiontaking then @autov99mppositiontaking else @maxpos - mpositiontaking-apositiontaking end
 							from custsetting
 							where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=99
-							
+							*/
 						END
 					END --@UpdatePositiontakingv99MP
 				END
@@ -1095,12 +1285,21 @@ BEGIN
 					BEGIN
 						IF @isautov154positiontaking > 0
 						BEGIN
+							SELECT @maxpos = cs.spositiontaking FROM @tmp_Sag cs WHERE cs.bettype = @bettype AND cs.sporttype = 154
+							
+							update cs
+							SET spositiontaking = CASE WHEN @maxpos - mpositiontaking - apositiontaking > @autov154positiontaking THEN @autov154positiontaking ELSE @maxpos - mpositiontaking - apositiontaking END
+							from @tmp_cs cs
+							where bettype = @bettype and sporttype = 154
+							
+							/*
 							SELECT @maxpos = cs.spositiontaking FROM custSetting cs WITH (NOLOCK) WHERE cs.custid = @srecommend AND cs.bettype = @bettype AND cs.sporttype = 154
 							
 							UPDATE custSetting WITH(UPDLOCK, ROWLOCK)
 							SET spositiontaking = CASE WHEN @maxpos - mpositiontaking - apositiontaking > @autov154positiontaking THEN @autov154positiontaking ELSE @maxpos - mpositiontaking - apositiontaking END
 							from custsetting
 							WHERE custid = @custid AND bettype = @bettype AND sporttype = 154
+							*/
 						END
 					END
 				END
@@ -1119,6 +1318,7 @@ BEGIN
 			END
 			CLOSE CUR
 			DEALLOCATE CUR
+			
 	END
 	ELSE IF @roleid = 3
 	BEGIN 
@@ -1235,8 +1435,6 @@ BEGIN
 			@isauto_v99mpositiontaking_9 bit,
 			@isauto_v154mpositiontaking_20 bit
 
-		select @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend from custinfo with (NOLOCK) where custid = @custid
-
 		--Get Auto PT of member from agent
 		--um2,im2
 		select @auto_mpositiontaking_1 = autompositiontaking, @auto_mlivepositiontaking_1 = autolivempositiontaking, @isauto_mpositiontaking_1 = isautompositiontaking, @isauto_mlivepositiontaking_1 = isautolivempositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=1 and sporttype=1
@@ -1289,7 +1487,64 @@ BEGIN
 		select @auto_v99mpositiontaking_9 = autompositiontaking, @isauto_v99mpositiontaking_9 = isautompositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=9 and sporttype=99
 		select @auto_v154mpositiontaking_20 = autompositiontaking, @isauto_v154mpositiontaking_20 = isautompositiontaking from custsetting with (NOLOCK) where custid = @recommend and bettype=20 and sporttype=154
 
+		
+		update cs
+		SET autompositiontaking = b.autompositiontaking, autolivempositiontaking = b.autolivempositiontaking, isautompositiontaking = b.isautompositiontaking, isautolivempositiontaking = b.isautolivempositiontaking
+		FROM @tmp_cs cs
+			INNER JOIN (
+								select 1 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_1 as autompositiontaking, @auto_mlivepositiontaking_mem_1	as autolivempositiontaking, @isauto_mpositiontaking_mem_1 as isautompositiontaking, @isauto_mlivepositiontaking_mem_1	as isautolivempositiontaking
+					union all 	select 2 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_2 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_2 as isautompositiontaking, 0				as isautolivempositiontaking
+					union all 	select 3 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_3 as autompositiontaking, @auto_mlivepositiontaking_mem_3 	as autolivempositiontaking, @isauto_mpositiontaking_mem_3 as isautompositiontaking, @isauto_mlivepositiontaking_mem_3	as isautolivempositiontaking
+					union all 	select 4 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_4 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_4 as isautompositiontaking, 0				as isautolivempositiontaking
+					union all 	select 5 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_5 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_5 as isautompositiontaking, 0				as isautolivempositiontaking
+					union all 	select 6 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_6 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_6 as isautompositiontaking, 0				as isautolivempositiontaking
+					union all 	select 7 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_7 as autompositiontaking, @auto_mlivepositiontaking_mem_7 	as autolivempositiontaking, @isauto_mpositiontaking_mem_7 as isautompositiontaking, @isauto_mlivepositiontaking_mem_7	as isautolivempositiontaking
+					union all 	select 8 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_8 as autompositiontaking, @auto_mlivepositiontaking_mem_8 	as autolivempositiontaking, @isauto_mpositiontaking_mem_8 as isautompositiontaking, @isauto_mlivepositiontaking_mem_8	as isautolivempositiontaking			
+					union all 	select 9 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_9 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_9 as isautompositiontaking, 0				as isautolivempositiontaking
+					union all 	select 10 as bettype, 1 as sporttype, @auto_mpositiontaking_mem_10 as autompositiontaking, 0				as autolivempositiontaking, @isauto_mpositiontaking_mem_10 as isautompositiontaking, 0				as isautolivempositiontaking
+					
+					union all 	select 1 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 2 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_2 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_2 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 7 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_7 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_7 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 8 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_8 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_8 as isautompositiontaking, 0	as isautolivempositiontaking
+		--			union all 	select 9 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_9 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_9 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 2 as sporttype, @auto_v2mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v2mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+					
+					union all 	select 1 as bettype, 3 as sporttype, @auto_v3mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v3mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 2 as bettype, 3 as sporttype, @auto_v3mpositiontaking_mem_2 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v3mpositiontaking_mem_2 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 3 as sporttype, @auto_v3mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v3mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 3 as sporttype, @auto_v3mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v3mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
 
+					union all 	select 1 as bettype, 5 as sporttype, @auto_v5mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v5mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 2 as bettype, 5 as sporttype, @auto_v5mpositiontaking_mem_2 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v5mpositiontaking_mem_2 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 5 as sporttype, @auto_v5mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v5mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 5 as sporttype, @auto_v5mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v5mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+
+					union all 	select 1 as bettype, 8 as sporttype, @auto_v8mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v8mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 8 as sporttype, @auto_v8mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v8mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 8 as sporttype, @auto_v8mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v8mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+
+					union all 	select 1 as bettype, 10 as sporttype, @auto_v10mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v10mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 2 as bettype, 10 as sporttype, @auto_v10mpositiontaking_mem_2 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v10mpositiontaking_mem_2 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 10 as sporttype, @auto_v10mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v10mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 10 as sporttype, @auto_v10mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v10mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+
+					union all 	select 1 as bettype, 11 as sporttype, @auto_v11mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v11mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 11 as sporttype, @auto_v11mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v11mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+
+					union all 	select 1 as bettype, 99 as sporttype, @auto_v99mpositiontaking_mem_1 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v99mpositiontaking_mem_1 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 2 as bettype, 99 as sporttype, @auto_v99mpositiontaking_mem_2 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v99mpositiontaking_mem_2 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 3 as bettype, 99 as sporttype, @auto_v99mpositiontaking_mem_3 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v99mpositiontaking_mem_3 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 99 as sporttype, @auto_v99mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v99mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+
+					-- mixed sports
+					union all 	select 9 as bettype, 99 as sporttype, @auto_v99mpositiontaking_mem_9 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v99mpositiontaking_mem_9 as isautompositiontaking, 0	as isautolivempositiontaking
+					union all 	select 20 as bettype, 154 as sporttype, @auto_v154mpositiontaking_mem_20 as autompositiontaking, 0	as autolivempositiontaking, @isauto_v154mpositiontaking_mem_20 as isautompositiontaking, 0	as isautolivempositiontaking
+				
+				) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
+		
+		/*
 		--Update Member account (autompositiontaking field)
 		update custsetting with (ROWLOCK, UPDLOCK) set autompositiontaking = b.autompositiontaking, autolivempositiontaking = b.autolivempositiontaking, isautompositiontaking = b.isautompositiontaking, isautolivempositiontaking = b.isautolivempositiontaking
 		from custsetting inner join 
@@ -1346,7 +1601,7 @@ BEGIN
 				
 				) as b on b.bettype = custsetting.bettype and b.sporttype = custsetting.sporttype
 		where custsetting.custid = @custid
-			
+		*/	
 		--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in agent account)
 		select 
 			@auto_mpositiontaking_1 = case when @isauto_mpositiontaking_mem_1>0 then @auto_mpositiontaking_mem_1 else @auto_mpositiontaking_1 end,
@@ -1494,21 +1749,39 @@ BEGIN
 		BEGIN
 				if @isautopositiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=1 and bettype = @bettype
+					
+					update cs
+					SET mpositiontaking = case when @maxpos - apositiontaking> @autopositiontaking then @autopositiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=1
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=1 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking> @autopositiontaking then @autopositiontaking else @maxpos - apositiontaking end
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=1
-					
+					*/					
 				END
 			--Update LIVE
 			if @bettype in (1,3,7,8) 
 			BEGIN
 				if @isautolivepositiontaking >0
 				BEGIN
+					select @maxpos = mlivepositiontaking from @tmp_mag where sporttype=1 and bettype = @bettype
+					
+					UPDATE cs
+					SET mlivepositiontaking = case when @maxpos - alivepositiontaking>@autolivepositiontaking then @autolivepositiontaking else @maxpos - alivepositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=1
+					
+					/*
 					select @maxpos = mlivepositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=1 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mlivepositiontaking = case when @maxpos - alivepositiontaking>@autolivepositiontaking then @autolivepositiontaking else @maxpos - alivepositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=1
-					
+					*/
 				END
 			END		
 			--Update Basketball
@@ -1516,11 +1789,20 @@ BEGIN
 			BEGIN
 				if @isautov2positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=2 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov2positiontaking then @autov2positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=2
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=2 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov2positiontaking then @autov2positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=2
-					
+					*/					
 				END
 			END
 			
@@ -1529,11 +1811,19 @@ BEGIN
 			BEGIN
 				if @isautov3positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=3 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov3positiontaking then @autov3positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=3
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=3 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov3positiontaking then @autov3positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=3
-					
+					*/
 				END
 			END
 
@@ -1542,11 +1832,20 @@ BEGIN
 			BEGIN
 				if @isautov5positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=5 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov5positiontaking then @autov5positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=5
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=5 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov5positiontaking then @autov5positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=5
-					
+					*/
 				END
 			END
 
@@ -1555,11 +1854,20 @@ BEGIN
 			BEGIN
 				if @isautov8positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=8 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov8positiontaking then @autov8positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=8
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=8 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov8positiontaking then @autov8positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=8
-					
+					*/
 				END
 			END
 
@@ -1568,11 +1876,20 @@ BEGIN
 			BEGIN
 				if @isautov10positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=10 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov10positiontaking then @autov10positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=10
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=10 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov10positiontaking then @autov10positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=10
-					
+					*/
 				END
 			END
 
@@ -1581,11 +1898,20 @@ BEGIN
 			BEGIN
 				if @isautov11positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=11 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov11positiontaking then @autov11positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=11
+					
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=11 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov11positiontaking then @autov11positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=11
-					
+					*/
 				END
 			END
 
@@ -1594,11 +1920,19 @@ BEGIN
 			BEGIN
 				if @isautov99positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=99 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov99positiontaking then @autov99positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=99
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=99 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov99positiontaking then @autov99positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=99
-					
+					*/
 				END
 			END
 			
@@ -1607,11 +1941,19 @@ BEGIN
 			BEGIN
 				if @isautov99mppositiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=99 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov99mppositiontaking then @autov99mppositiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=99
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=99 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov99mppositiontaking then @autov99mppositiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=99
-					
+					*/
 				END
 			END				
 			--Update HR Fixed Odds
@@ -1619,10 +1961,19 @@ BEGIN
 			BEGIN
 				if @isautov154positiontaking >0
 				BEGIN
+					select @maxpos = mpositiontaking from @tmp_mag where sporttype=154 and bettype = @bettype
+					
+					UPDATE cs
+					SET mpositiontaking = case when @maxpos - apositiontaking>@autov154positiontaking then @autov154positiontaking else @maxpos - apositiontaking end
+					FROM @tmp_cs cs
+					WHERE cs.bettype = @bettype and cs.sporttype=154
+					/*
 					select @maxpos = mpositiontaking from custsetting with (NOLOCK) where custid = @mrecommend and sporttype=154 and bettype = @bettype
+					
 					update custsetting with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@autov154positiontaking then @autov154positiontaking else @maxpos - apositiontaking end
 					from custsetting
 					where custid = @custid and custsetting.bettype = @bettype and custsetting.sporttype=154					
+					*/
 				END
 			END
 			FETCH NEXT FROM CUR INTO
@@ -1641,4 +1992,229 @@ BEGIN
 		CLOSE CUR
 		DEALLOCATE CUR		
 	END
+	
+	--correct pt after update s1
+	--check agent min/max
+	--update a1=n2 when a1<n2
+	update cs
+	SET cs.apositiontaking = aco.minpositiontaking,
+		cs.mpositiontaking = case when cs.mpositiontaking + aco.minpositiontaking > mcs.mpositiontaking then mcs.mpositiontaking - aco.minpositiontaking ELSE cs.mpositiontaking END			
+	from @tmp_cs cs
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.apositiontaking < aco.minpositiontaking
+				
+	update cs
+	SET cs.alivepositiontaking = aco.minlivepositiontaking,
+		cs.mlivepositiontaking = case when cs.mlivepositiontaking + aco.minlivepositiontaking > mcs.mlivepositiontaking then mcs.mlivepositiontaking - aco.minlivepositiontaking ELSE cs.mlivepositiontaking END			
+	from @tmp_cs cs
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking < aco.minlivepositiontaking
+	
+	--update a1=l2 when a1>l2
+	update cs
+	SET apositiontaking = aco.maxpositiontaking
+	from @tmp_cs cs
+		inner join @tmp_ag aco ON cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.apositiontaking > aco.maxpositiontaking
+		
+	update cs
+	SET alivepositiontaking = aco.maxlivepositiontaking
+	from @tmp_cs cs
+		inner join @tmp_ag aco ON cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking > aco.maxlivepositiontaking
+	
+	--Recal AUTO MPT 
+	--Update m1=min(m4-a1,m3-a1,(im1?um1,um2))
+	Update cs
+		set mpositiontaking = 
+			case when scs.mpositiontaking > mcs.mpositiontaking then
+					case when mcs.mpositiontaking- cs.apositiontaking > (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+					then (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+					else  mcs.mpositiontaking-cs.apositiontaking end
+				else 
+					case when scs.mpositiontaking- cs.apositiontaking > (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+					then (case when cs.isautompositiontaking = 1 then cs.autompositiontaking else acs.autompositiontaking end)
+					else  scs.mpositiontaking-cs.apositiontaking end
+				end
+	from
+		@tmp_cs cs
+		inner join @tmp_mag as mcs on mcs.sporttype= cs.sporttype and mcs.bettype= cs.bettype
+		inner join @tmp_sag as scs on scs.sporttype= cs.sporttype and scs.bettype= cs.bettype
+		inner join @tmp_ag as acs on acs.sporttype= cs.sporttype and acs.bettype= cs.bettype
+	where
+		(acs.isautompositiontaking = 1 or cs.isautompositiontaking = 1)
+	
+	Update cs
+		set mlivepositiontaking =
+			case when scs.mlivepositiontaking > mcs.mlivepositiontaking then
+				case when mcs.mlivepositiontaking-cs.alivepositiontaking > (case when cs.isautolivempositiontaking = 1 then cs.autolivempositiontaking else acs.autolivempositiontaking end)
+					then (case when cs.isautolivempositiontaking = 1 then cs.autolivempositiontaking else acs.autolivempositiontaking end)
+				else  mcs.mlivepositiontaking-cs.alivepositiontaking end
+			else
+				case when scs.mlivepositiontaking- cs.alivepositiontaking > (case when cs.isautolivempositiontaking = 1 then cs.autolivempositiontaking else acs.autolivempositiontaking end)
+					then (case when cs.isautolivempositiontaking = 1 then cs.autolivempositiontaking else acs.autolivempositiontaking end)
+				else  scs.mlivepositiontaking- cs.alivepositiontaking end
+			end
+	from
+		@tmp_cs cs
+		inner join @tmp_mag as mcs on mcs.sporttype= cs.sporttype and mcs.bettype= cs.bettype
+		inner join @tmp_sag as scs on scs.sporttype= cs.sporttype and scs.bettype= cs.bettype
+		inner join @tmp_ag as acs on acs.sporttype= cs.sporttype and acs.bettype= cs.bettype
+	where
+		 (acs.isautolivempositiontaking = 1 or cs.isautolivempositiontaking = 1)
+			
+				
+	--check master min/max
+	--update m1=n3-a1 if a1+m1<n3
+	update cs
+	set cs.mpositiontaking = mco.minpositiontaking - cs.apositiontaking
+	from @tmp_cs cs
+		inner join @tmp_mag mco on cs.sporttype = mco.sporttype and cs.bettype = mco.bettype
+	where cs.apositiontaking + cs.mpositiontaking < mco.minpositiontaking
+	
+	update cs
+	set cs.mlivepositiontaking = mco.minlivepositiontaking - cs.alivepositiontaking
+	from @tmp_cs cs
+		inner join @tmp_mag mco on cs.sporttype = mco.sporttype and cs.bettype = mco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking + cs.mlivepositiontaking < mco.minlivepositiontaking
+	
+	
+	--update m1,a1 when a1+m1>l3
+	--update m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
+	--update a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
+	Update cs
+	set @maxmapos = case when mcs.mpositiontaking>mcs.maxpositiontaking then mcs.maxpositiontaking else mcs.mpositiontaking end,
+		@mpos = case when @maxmapos-cs.apositiontaking<0 then 0 else @maxmapos-cs.apositiontaking end,
+		mpositiontaking = @mpos,
+		@apos = case when cs.apositiontaking + @mpos>@maxmapos then @maxmapos-@mpos else cs.apositiontaking end,
+		apositiontaking = case when @apos<aco.minpositiontaking then aco.minpositiontaking else @apos end	
+	from @tmp_cs cs
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.apositiontaking +cs.mpositiontaking > mcs.maxpositiontaking
+	
+	Update cs
+	set @maxmapos = case when mcs.mlivepositiontaking>mcs.maxlivepositiontaking then mcs.maxlivepositiontaking else mcs.mlivepositiontaking end,
+		@mpos = case when @maxmapos-cs.alivepositiontaking<0 then 0 else @maxmapos-cs.alivepositiontaking end,
+		mlivepositiontaking = @mpos,
+		@apos = case when cs.alivepositiontaking + @mpos>@maxmapos then @maxmapos-@mpos else cs.alivepositiontaking end,
+		alivepositiontaking = case when @apos<aco.minlivepositiontaking then aco.minlivepositiontaking else @apos end	
+	from @tmp_cs cs
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking +cs.mlivepositiontaking > mcs.maxlivepositiontaking
+	
+	--recal autopos
+	Update cs
+		set spositiontaking = case when scs.spositiontaking- cs.mpositiontaking- cs.apositiontaking >
+								(case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+	from
+		@tmp_cs cs
+		inner join @tmp_mag as mcs on mcs.sporttype= cs.sporttype and mcs.bettype= cs.bettype
+		inner join @tmp_sag as scs on scs.sporttype= cs.sporttype and scs.bettype= cs.bettype
+	where
+		(cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
+
+	Update cs
+		set slivepositiontaking = case when scs.slivepositiontaking- cs.mlivepositiontaking-cs.alivepositiontaking >
+								(case when cs.isautolivepositiontaking=1 then cs.autolivepositiontaking else mcs.autolivepositiontaking end) then (case when cs.isautolivepositiontaking=1 then cs.autolivepositiontaking else mcs.autolivepositiontaking end) else scs.slivepositiontaking-cs.mlivepositiontaking-cs.alivepositiontaking end 
+	from
+		@tmp_cs cs
+		inner join @tmp_mag as mcs on mcs.sporttype= cs.sporttype and mcs.bettype= cs.bettype
+		inner join @tmp_sag as scs on scs.sporttype= cs.sporttype and scs.bettype= cs.bettype
+	where
+		(cs.isautolivepositiontaking=1 or mcs.isautolivepositiontaking=1)
+				
+	--check super min/max
+	--update s1 when s1+m1+a1<n4 or s1+m1+a1>l4
+	update cs
+	set spositiontaking = sco.minpositiontaking - cs.mpositiontaking - cs.apositiontaking
+	from @tmp_cs cs
+		inner JOIN @tmp_sag sco on cs.sporttype = sco.sporttype and cs.bettype = sco.bettype
+	where cs.apositiontaking + cs.mpositiontaking + cs.spositiontaking < sco.minpositiontaking 			
+	
+	update cs
+	set slivepositiontaking = sco.minlivepositiontaking - cs.mlivepositiontaking - cs.alivepositiontaking
+	from @tmp_cs cs
+		inner JOIN @tmp_sag sco on cs.sporttype = sco.sporttype and cs.bettype = sco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.alivepositiontaking + cs.mlivepositiontaking + cs.slivepositiontaking < sco.minlivepositiontaking 			
+	
+	
+	--update s1,m1,a1 in case s1+m1+a1>s4
+	--s1=max(0,s4-m1-a1)
+	--@mapos1=iif(s1_new+m1+a1>s4,s4-s1_new,m1+a1)
+	--@maxmapos=min(m3,l3)
+	--@mapos2=min(@mapos1,@maxmapos)
+	--@mapos=max(@mapos2,n3)
+	--m1=max(0,@mapos-a1)
+	--a1=iif(m1_new+a1>@mapos,@mapos-m1_new,a1)
+	update cs
+	set @spos = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking<0 then 0 else scs.spositiontaking - cs.mpositiontaking - cs.apositiontaking end,
+		spositiontaking = @spos,
+		@mapos1 = case when @spos+cs.mpositiontaking+cs.apositiontaking>scs.spositiontaking then scs.spositiontaking-@spos else cs.mpositiontaking+cs.apositiontaking end,
+		@maxmapos = case when mcs.mpositiontaking>mcs.maxpositiontaking then mcs.maxpositiontaking else mcs.mpositiontaking end,
+		@mapos2 = case when @mapos1>@maxmapos then @maxmapos else @mapos1 end,
+		@mapos = case when @mapos2<mcs.minpositiontaking then mcs.minpositiontaking else @mapos2 end,
+		@mpos = case when @mapos-cs.apositiontaking<0 then 0 else @mapos-cs.apositiontaking end,
+		mpositiontaking = @mpos,
+		@apos = case when cs.apositiontaking + @mpos>@mapos then @mapos-@mpos else cs.apositiontaking end,
+		apositiontaking = case when @apos<aco.minpositiontaking then aco.minpositiontaking else @apos end	
+	from @tmp_cs cs
+		inner join @tmp_sag scs on cs.sporttype = scs.sporttype and cs.bettype = scs.bettype 
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on  cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking
+		
+	update cs
+	set @spos = case when scs.slivepositiontaking-cs.mlivepositiontaking-cs.alivepositiontaking<0 then 0 else scs.slivepositiontaking - cs.mlivepositiontaking - cs.alivepositiontaking end,
+		slivepositiontaking = @spos,
+		@mapos1 = case when @spos+cs.mlivepositiontaking+cs.alivepositiontaking>scs.slivepositiontaking then scs.slivepositiontaking-@spos else cs.mlivepositiontaking+cs.alivepositiontaking end,
+		@maxmapos = case when mcs.mlivepositiontaking>mcs.maxlivepositiontaking then mcs.maxlivepositiontaking else mcs.mlivepositiontaking end,
+		@mapos2 = case when @mapos1>@maxmapos then @maxmapos else @mapos1 end,
+		@mapos = case when @mapos2<mcs.minlivepositiontaking then mcs.minlivepositiontaking else @mapos2 end,
+		@mpos = case when @mapos-cs.alivepositiontaking<0 then 0 else @mapos-cs.alivepositiontaking end,
+		mlivepositiontaking = @mpos,
+		@apos = case when cs.alivepositiontaking + @mpos>@mapos then @mapos-@mpos else cs.alivepositiontaking end,
+		alivepositiontaking = case when @apos<aco.minlivepositiontaking then aco.minlivepositiontaking else @apos end	
+	from @tmp_cs cs
+		inner join @tmp_sag scs on cs.sporttype = scs.sporttype and cs.bettype = scs.bettype 
+		inner join @tmp_mag mcs on cs.sporttype = mcs.sporttype and cs.bettype = mcs.bettype
+		inner join @tmp_ag aco on  cs.sporttype = aco.sporttype and cs.bettype = aco.bettype
+	where cs.sporttype = 1 and cs.bettype in (1,3,7,8) and cs.slivepositiontaking + cs.mlivepositiontaking + cs.alivepositiontaking > scs.slivepositiontaking
+		
+	
+	update cs
+	SET cs.apositiontaking = t.apositiontaking,
+		cs.mpositiontaking = t.mpositiontaking,
+		cs.spositiontaking = t.spositiontaking,
+		cs.alivepositiontaking = t.alivepositiontaking,
+		cs.mlivepositiontaking = t.mlivepositiontaking,
+		cs.slivepositiontaking = t.slivepositiontaking,
+		cs.autopositiontaking = t.autopositiontaking,
+		cs.autolivepositiontaking = t.autolivepositiontaking,	
+		cs.autompositiontaking = t.autompositiontaking,
+		cs.autolivempositiontaking = t.autolivempositiontaking,		
+		cs.isautopositiontaking = t.isautopositiontaking,
+		cs.isautolivepositiontaking = t.isautolivepositiontaking,
+		cs.isautompositiontaking = t.isautompositiontaking,
+		cs.isautolivempositiontaking = t.isautolivempositiontaking			
+	FROM @tmp_cs t
+		INNER JOIN custsetting cs WITH(UPDLOCK,ROWLOCK) ON t.custid = cs.custid and t.sporttype = cs.sporttype and t.bettype = cs.bettype
+	WHERE cs.apositiontaking <> t.apositiontaking
+			OR cs.mpositiontaking <> t.mpositiontaking
+			OR cs.spositiontaking <> t.spositiontaking
+			OR cs.alivepositiontaking <> t.alivepositiontaking
+			OR cs.mlivepositiontaking <> t.mlivepositiontaking
+			OR cs.slivepositiontaking <> t.slivepositiontaking
+			OR cs.autopositiontaking <> t.autopositiontaking
+			OR cs.autolivepositiontaking <> t.autolivepositiontaking	
+			OR cs.autompositiontaking <> t.autompositiontaking
+			OR cs.autolivempositiontaking <> t.autolivempositiontaking		
+			OR cs.isautopositiontaking <> t.isautopositiontaking
+			OR cs.isautolivepositiontaking <> t.isautolivepositiontaking
+			OR cs.isautompositiontaking <> t.isautompositiontaking
+			OR cs.isautolivempositiontaking <> t.isautolivempositiontaking	
+	
 END
