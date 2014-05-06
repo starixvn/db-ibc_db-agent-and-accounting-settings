@@ -41,7 +41,7 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @roleid TINYINT, @SyncLiveCasino BIT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000)
+	DECLARE @roleid TINYINT, @srecommend INT, @SyncLiveCasino BIT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000)
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 	--Check downline beloging
@@ -59,6 +59,8 @@ BEGIN
 		RETURN
 	END
 	
+	SELECT @srecommend = srecommend FROM CustInfo WITH (NOLOCK) WHERE custid = @Custid
+
 	IF @UpdateCommission = 1
 	BEGIN
 		EXEC dbo.Acc_CustomerUpdMasterKeno_Commission @custid = @custid
@@ -98,6 +100,7 @@ BEGIN
 			, @sporttype = @sporttype
 			, @bettype = @bettype
 			, @Min_Positiontaking = @MPositiontaking_Min
+			, @UplineID = @srecommend
 			, @IP = @IP
 			, @UserID = @userid
 			, @Language = @Language
