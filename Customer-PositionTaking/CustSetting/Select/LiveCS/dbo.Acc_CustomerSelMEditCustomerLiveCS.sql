@@ -8,7 +8,7 @@ AS
 	DB: DB053.BODB02
 	
 	Revisions:
-	
+		- 20140307@Johnson: apply new m1_max is m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
 	Parameters Explanation:
 */
 BEGIN
@@ -20,7 +20,7 @@ BEGIN
 			@roleid								TINYINT,			
 			@v162mpositiontaking_1101_max		SMALLMONEY,
 			@v162mpositiontaking_1101_min		SMALLMONEY,
-			@max_v162mpositiontaking_1101		SMALLMONEY,
+			--@max_v162mpositiontaking_1101		SMALLMONEY,
 			@max_v162spositiontaking_1101		SMALLMONEY,
 			@isauto_v162mpositiontaking_1101	BIT,
 			@DisableAutoMPT						BIT	
@@ -58,13 +58,14 @@ BEGIN
 	FROM CustOverrideGame WITH(NOLOCK)
 	WHERE custid = @MasterID AND sporttype = 162 AND bettype = 1101
 	
+	/*
 	--@max_v162mpositiontaking_1101 = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
 	SELECT @max_v162mpositiontaking_1101 = MAX(CASE WHEN NOT (cs.isautopositiontaking = 0 AND mcs.isautopositiontaking = 0) THEN mcs.mpositiontaking-cs.apositiontaking ELSE CASE WHEN mcs.mpositiontaking - cs.apositiontaking <= @max_v162spositiontaking_1101 - cs.spositiontaking - cs.apositiontaking THEN mcs.mpositiontaking - cs.apositiontaking ELSE @max_v162spositiontaking_1101 - cs.spositiontaking - cs.apositiontaking END END)
 	FROM custsettingGame cs WITH(NOLOCK)
 		INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
 		INNER JOIN custsettingGame mcs WITH(NOLOCK) ON c.mrecommend = mcs.custid AND cs.sporttype = mcs.sporttype AND cs.bettype = mcs.bettype
 	WHERE cs.custid = @custid AND cs.sporttype = 162 AND cs.bettype = 1101
-		
+	*/	
 	
 	SELECT 	
 		ISNULL(@DisableAutoMPT,0) AS DisableAutoMPT,
@@ -76,8 +77,9 @@ BEGIN
 		@isauto_v162mpositiontaking_1101 AS isauto_v162mpositiontaking_1101,
 
 		@v162mpositiontaking_1101_max AS auto_v162mpositiontaking_1101_max,
-
-		@max_v162mpositiontaking_1101 AS v162mpositiontaking_1101_max,
+		
+		--m1_max = m3 - a1
+		@v162mpositiontaking_1101_max - apositiontaking AS v162mpositiontaking_1101_max,
 
 		CASE WHEN @v162mpositiontaking_1101_min - apositiontaking < 0 THEN 0 ELSE @v162mpositiontaking_1101_min - apositiontaking END AS v162mpositiontaking_1101_min
 	FROM CustSettingGame WITH(NOLOCK)

@@ -352,6 +352,7 @@ Revisions:
 	- 20131031@Johnson: Aplly execrep when update pt on member [redmine:#3244]	
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
 	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
+	- 20140214@Johnson: Check s1, us1 with constraint min_s1
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1006,6 +1007,72 @@ BEGIN--Update Position Taking
 		
 		@v99mspositiontaking_9_max SMALLMONEY,
 		
+		--min_s1 = max(n4-m1-a1,0)
+		@mspositiontaking_1_min SMALLMONEY,  
+		@mspositiontaking_2_min SMALLMONEY,  
+		@mspositiontaking_3_min SMALLMONEY,  
+		@mspositiontaking_4_min SMALLMONEY,  
+		@mspositiontaking_5_min SMALLMONEY,  
+		@mspositiontaking_6_min SMALLMONEY,  
+		@mspositiontaking_7_min SMALLMONEY,  
+		@mspositiontaking_8_min SMALLMONEY,  
+		@mspositiontaking_9_min SMALLMONEY,  
+		@mspositiontaking_10_min SMALLMONEY,  
+
+		@mslivepositiontaking_1_min SMALLMONEY,  
+		@mslivepositiontaking_3_min SMALLMONEY,  
+		@mslivepositiontaking_7_min SMALLMONEY,  
+		@mslivepositiontaking_8_min SMALLMONEY,  
+
+		@v2mspositiontaking_1_min SMALLMONEY,  
+		@v2mspositiontaking_2_min SMALLMONEY,  
+		@v2mspositiontaking_3_min SMALLMONEY,  
+		@v2mspositiontaking_7_min SMALLMONEY,  
+		@v2mspositiontaking_8_min SMALLMONEY,  	
+		@v2mspositiontaking_20_min SMALLMONEY,  
+
+		@v3mspositiontaking_1_min SMALLMONEY,  
+		@v3mspositiontaking_2_min SMALLMONEY,  
+		@v3mspositiontaking_3_min SMALLMONEY,   
+		@v3mspositiontaking_20_min SMALLMONEY,  
+
+		@v5mspositiontaking_1_min SMALLMONEY,  
+		@v5mspositiontaking_2_min SMALLMONEY,  
+		@v5mspositiontaking_3_min SMALLMONEY,   
+		@v5mspositiontaking_20_min SMALLMONEY,  
+
+		@v8mspositiontaking_1_min SMALLMONEY,  
+		@v8mspositiontaking_3_min SMALLMONEY,   
+		@v8mspositiontaking_20_min SMALLMONEY,  
+
+		@v10mspositiontaking_1_min SMALLMONEY,  
+		@v10mspositiontaking_2_min SMALLMONEY,  
+		@v10mspositiontaking_3_min SMALLMONEY,   
+		@v10mspositiontaking_20_min SMALLMONEY,  
+
+		@v11mspositiontaking_1_min SMALLMONEY,  
+		@v11mspositiontaking_20_min SMALLMONEY,  
+		
+		@v99mspositiontaking_1_min SMALLMONEY,  
+		@v99mspositiontaking_2_min SMALLMONEY,  
+		@v99mspositiontaking_3_min SMALLMONEY,   
+		@v99mspositiontaking_20_min SMALLMONEY,
+		
+		@v154mspositiontaking_20_min SMALLMONEY,
+		
+		@v161mspositiontaking_81_min SMALLMONEY,  
+		@v161mspositiontaking_83_min SMALLMONEY,  
+		@v161mspositiontaking_86_min SMALLMONEY,   
+		@v161mspositiontaking_88_min SMALLMONEY,
+		
+		@v161mslivepositiontaking_85_min SMALLMONEY,  
+		@v161mslivepositiontaking_86_min SMALLMONEY,  
+		@v161mslivepositiontaking_87_min SMALLMONEY,   
+		@v161mslivepositiontaking_89_min SMALLMONEY,
+		@v161mslivepositiontaking_90_min SMALLMONEY,
+		
+		@v99mspositiontaking_9_min SMALLMONEY,
+		
 		--m3
 		@mpos_1 SMALLMONEY,  
 		@mpos_2 SMALLMONEY,  
@@ -1501,7 +1568,7 @@ BEGIN--Update Position Taking
 	where custid = @mrecommend
 
 	SELECT  
-	--m1_max = min(s4,l4)  - m3
+	--s1_max = min(s4,l4)  - m3
 		@mspositiontaking_1_max = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),  
 		@mspositiontaking_2_max = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=1 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),  
 		@mspositiontaking_3_max = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=1 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),  
@@ -1555,7 +1622,64 @@ BEGIN--Update Position Taking
 		@v99mspositiontaking_9_max = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=99 THEN CASE WHEN cs.spositiontaking<co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),
 		
 		-- HR Fixed Odds
-		@v154mspositiontaking_20_max = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 THEN CASE WHEN cs.spositiontaking< co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END)  
+		@v154mspositiontaking_20_max = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 THEN CASE WHEN cs.spositiontaking< co.maxpositiontaking THEN cs.spositiontaking ELSE co.maxpositiontaking END ELSE 0 END),
+	
+	--s1_min = max(n4-m1-a1,0)
+		@mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_4_min = MAX(CASE WHEN cs.bettype = 4 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_5_min = MAX(CASE WHEN cs.bettype = 5 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_6_min = MAX(CASE WHEN cs.bettype = 6 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_9_min = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+		@mspositiontaking_10_min = MAX(CASE WHEN cs.bettype = 10 AND cs.sporttype=1 THEN co.minpositiontaking ELSE 0 END),  
+
+		@mslivepositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 THEN co.minlivepositiontaking ELSE 0 END),  
+		@mslivepositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=1 THEN co.minlivepositiontaking ELSE 0 END),  
+		@mslivepositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=1 THEN co.minlivepositiontaking ELSE 0 END),  
+		@mslivepositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=1 THEN co.minlivepositiontaking ELSE 0 END),  
+
+		@v2mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+		@v2mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+		@v2mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+		@v2mspositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+		@v2mspositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+		@v2mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=2 THEN co.minpositiontaking ELSE 0 END),  
+
+		@v3mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=3 THEN co.minpositiontaking ELSE 0 END),  
+		@v3mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=3 THEN co.minpositiontaking ELSE 0 END),  
+		@v3mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=3 THEN co.minpositiontaking ELSE 0 END),  
+		@v3mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=3 THEN co.minpositiontaking ELSE 0 END),  
+
+		@v5mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=5 THEN co.minpositiontaking ELSE 0 END),  
+		@v5mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=5 THEN co.minpositiontaking ELSE 0 END),  
+		@v5mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=5 THEN co.minpositiontaking ELSE 0 END),  
+		@v5mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=5 THEN co.minpositiontaking ELSE 0 END),  
+
+		@v8mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=8 THEN co.minpositiontaking ELSE 0 END),  
+		@v8mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=8 THEN co.minpositiontaking ELSE 0 END),  
+		@v8mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=8 THEN co.minpositiontaking ELSE 0 END),  
+
+		@v10mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=10 THEN co.minpositiontaking ELSE 0 END),  
+		@v10mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=10 THEN co.minpositiontaking ELSE 0 END),  
+		@v10mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=10 THEN co.minpositiontaking ELSE 0 END),  
+		@v10mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=10 THEN co.minpositiontaking ELSE 0 END),  
+
+		@v11mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=11 THEN co.minpositiontaking ELSE 0 END),  
+		@v11mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=11 THEN co.minpositiontaking ELSE 0 END),  
+		
+		@v99mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=99 THEN co.minpositiontaking ELSE 0 END),  
+		@v99mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=99 THEN co.minpositiontaking ELSE 0 END),  
+		@v99mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=99 THEN co.minpositiontaking ELSE 0 END),  
+		@v99mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=99 THEN co.minpositiontaking ELSE 0 END),  
+			
+		@v99mspositiontaking_9_min = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=99 THEN co.minpositiontaking ELSE 0 END),  
+		
+		-- HR Fixed Odds
+		@v154mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 THEN co.minpositiontaking ELSE 0 END)
+	
 	FROM 	
 		CustSetting AS cs WITH (NOLOCK)
 	LEFT JOIN custoverride AS co WITH (NOLOCK) ON cs.custid = co.custid AND cs.sporttype=co.sporttype AND cs.bettype=co.bettype  
@@ -1572,78 +1696,166 @@ BEGIN--Update Position Taking
 		@v161mslivepositiontaking_86_max = MAX(CASE WHEN cs3.bettype = 86 AND cs3.sporttype=161 THEN CASE WHEN cs3.slivepositiontaking<co3.maxlivepositiontaking THEN cs3.slivepositiontaking ELSE co3.maxlivepositiontaking END ELSE 0 END),  
 		@v161mslivepositiontaking_87_max = MAX(CASE WHEN cs3.bettype = 87 AND cs3.sporttype=161 THEN CASE WHEN cs3.slivepositiontaking<co3.maxlivepositiontaking THEN cs3.slivepositiontaking ELSE co3.maxlivepositiontaking END ELSE 0 END),  
 		@v161mslivepositiontaking_89_max = MAX(CASE WHEN cs3.bettype = 89 AND cs3.sporttype=161 THEN CASE WHEN cs3.slivepositiontaking<co3.maxlivepositiontaking THEN cs3.slivepositiontaking ELSE co3.maxlivepositiontaking END ELSE 0 END),  
-		@v161mslivepositiontaking_90_max = MAX(CASE WHEN cs3.bettype = 90 AND cs3.sporttype=161 THEN CASE WHEN cs3.slivepositiontaking<co3.maxlivepositiontaking THEN cs3.slivepositiontaking ELSE co3.maxlivepositiontaking END ELSE 0 END)		
+		@v161mslivepositiontaking_90_max = MAX(CASE WHEN cs3.bettype = 90 AND cs3.sporttype=161 THEN CASE WHEN cs3.slivepositiontaking<co3.maxlivepositiontaking THEN cs3.slivepositiontaking ELSE co3.maxlivepositiontaking END ELSE 0 END),		
+		
+		@v161mspositiontaking_81_min = MAX(CASE WHEN cs3.bettype = 81 AND cs3.sporttype=161 THEN co3.minpositiontaking ELSE 0 END),  
+		@v161mspositiontaking_83_min = MAX(CASE WHEN cs3.bettype = 83 AND cs3.sporttype=161 THEN co3.minpositiontaking ELSE 0 END),  
+		@v161mspositiontaking_86_min = MAX(CASE WHEN cs3.bettype = 86 AND cs3.sporttype=161 THEN co3.minpositiontaking ELSE 0 END),  
+		@v161mspositiontaking_88_min = MAX(CASE WHEN cs3.bettype = 88 AND cs3.sporttype=161 THEN co3.minpositiontaking ELSE 0 END),  
+		
+		@v161mslivepositiontaking_85_min = MAX(CASE WHEN cs3.bettype = 85 AND cs3.sporttype=161 THEN co3.minlivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_86_min = MAX(CASE WHEN cs3.bettype = 86 AND cs3.sporttype=161 THEN co3.minlivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_87_min = MAX(CASE WHEN cs3.bettype = 87 AND cs3.sporttype=161 THEN co3.minlivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_89_min = MAX(CASE WHEN cs3.bettype = 89 AND cs3.sporttype=161 THEN co3.minlivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_90_min = MAX(CASE WHEN cs3.bettype = 90 AND cs3.sporttype=161 THEN co3.minlivepositiontaking ELSE 0 END)
+
 	FROM 
 		CustSetting3rd as cs3 WITH (NOLOCK) 
 	LEFT join custoverride3rd as co3 WITH (NOLOCK) on cs3.custid = co3.custid AND cs3.sporttype=co3.sporttype AND cs3.bettype=co3.bettype 
 	WHERE cs3.CustID = @srecommend 
 	
-	--m1_max = min(s4,l4) - m3
-	SELECT @mspositiontaking_1_max = @mspositiontaking_1_max - @mpos_1,
-			@mspositiontaking_2_max = @mspositiontaking_2_max - @mpos_2,
-			@mspositiontaking_3_max = @mspositiontaking_3_max - @mpos_3,
-			@mspositiontaking_4_max = @mspositiontaking_4_max - @mpos_4,
-			@mspositiontaking_5_max = @mspositiontaking_5_max - @mpos_5,
-			@mspositiontaking_6_max = @mspositiontaking_6_max - @mpos_6,
-			@mspositiontaking_7_max = @mspositiontaking_7_max - @mpos_7,
-			@mspositiontaking_8_max = @mspositiontaking_8_max - @mpos_8,
-			@mspositiontaking_9_max = @mspositiontaking_9_max - @mpos_9,
-			@mspositiontaking_10_max = @mspositiontaking_10_max - @mpos_10,
+		
+	--min_s1 = max(n4-m1-a1,0)
+	SELECT @mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 THEN @mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=1 THEN @mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=1 THEN @mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_4_min = MAX(CASE WHEN cs.bettype = 4 AND cs.sporttype=1 THEN @mspositiontaking_4_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_5_min = MAX(CASE WHEN cs.bettype = 5 AND cs.sporttype=1 THEN @mspositiontaking_5_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_6_min = MAX(CASE WHEN cs.bettype = 6 AND cs.sporttype=1 THEN @mspositiontaking_6_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=1 THEN @mspositiontaking_7_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=1 THEN @mspositiontaking_8_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_9_min = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=1 THEN @mspositiontaking_9_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@mspositiontaking_10_min = MAX(CASE WHEN cs.bettype = 10 AND cs.sporttype=1 THEN @mspositiontaking_10_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@mslivepositiontaking_1_max = @mslivepositiontaking_1_max - @mlivepos_1,
-			@mslivepositiontaking_3_max = @mslivepositiontaking_3_max - @mlivepos_3,
-			@mslivepositiontaking_7_max = @mslivepositiontaking_7_max - @mlivepos_7,
-			@mslivepositiontaking_8_max = @mslivepositiontaking_8_max - @mlivepos_8,
+			@mslivepositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=1 THEN @mslivepositiontaking_1_min - mlivepositiontaking - alivepositiontaking ELSE 0 END),
+			@mslivepositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=1 THEN @mslivepositiontaking_3_min - mlivepositiontaking - alivepositiontaking ELSE 0 END),
+			@mslivepositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=1 THEN @mslivepositiontaking_7_min - mlivepositiontaking - alivepositiontaking ELSE 0 END),
+			@mslivepositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=1 THEN @mslivepositiontaking_8_min - mlivepositiontaking - alivepositiontaking ELSE 0 END),
 			
-			@v2mspositiontaking_1_max = @v2mspositiontaking_1_max - @v2mpos_1,
-			@v2mspositiontaking_2_max = @v2mspositiontaking_2_max - @v2mpos_2,
-			@v2mspositiontaking_3_max = @v2mspositiontaking_3_max - @v2mpos_3,			
-			@v2mspositiontaking_7_max = @v2mspositiontaking_7_max - @v2mpos_7,
-			@v2mspositiontaking_8_max = @v2mspositiontaking_8_max - @v2mpos_8,
-			@v2mspositiontaking_20_max = @v2mspositiontaking_20_max - @v2mpos_20,
+			@v2mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=2 THEN @v2mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v2mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=2 THEN @v2mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v2mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=2 THEN @v2mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v2mspositiontaking_7_min = MAX(CASE WHEN cs.bettype = 7 AND cs.sporttype=2 THEN @v2mspositiontaking_7_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v2mspositiontaking_8_min = MAX(CASE WHEN cs.bettype = 8 AND cs.sporttype=2 THEN @v2mspositiontaking_8_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v2mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=2 THEN @v2mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v3mspositiontaking_1_max = @v3mspositiontaking_1_max - @v3mpos_1,
-			@v3mspositiontaking_2_max = @v3mspositiontaking_2_max - @v3mpos_2,
-			@v3mspositiontaking_3_max = @v3mspositiontaking_3_max - @v3mpos_3,			
-			@v3mspositiontaking_20_max = @v3mspositiontaking_20_max - @v3mpos_20,
+			@v3mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=3 THEN @v3mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v3mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=3 THEN @v3mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v3mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=3 THEN @v3mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v3mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=3 THEN @v3mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v5mspositiontaking_1_max = @v5mspositiontaking_1_max - @v5mpos_1,
-			@v5mspositiontaking_2_max = @v5mspositiontaking_2_max - @v5mpos_2,
-			@v5mspositiontaking_3_max = @v5mspositiontaking_3_max - @v5mpos_3,			
-			@v5mspositiontaking_20_max = @v5mspositiontaking_20_max - @v5mpos_20,
+			@v5mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=5 THEN @v5mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v5mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=5 THEN @v5mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v5mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=5 THEN @v5mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v5mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=5 THEN @v5mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v8mspositiontaking_1_max = @v8mspositiontaking_1_max - @v8mpos_1,
-			@v8mspositiontaking_3_max = @v8mspositiontaking_3_max - @v8mpos_3,
-			@v8mspositiontaking_20_max = @v8mspositiontaking_20_max - @v8mpos_20,		
+			@v8mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=8 THEN @v8mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v8mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=8 THEN @v8mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v8mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=8 THEN @v8mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v10mspositiontaking_1_max = @v10mspositiontaking_1_max - @v10mpos_1,
-			@v10mspositiontaking_2_max = @v10mspositiontaking_2_max - @v10mpos_2,
-			@v10mspositiontaking_3_max = @v10mspositiontaking_3_max - @v10mpos_3,			
-			@v10mspositiontaking_20_max = @v10mspositiontaking_20_max - @v10mpos_20,
+			@v10mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=10 THEN @v10mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v10mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=10 THEN @v10mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v10mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=10 THEN @v10mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v10mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=10 THEN @v10mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v11mspositiontaking_1_max = @v11mspositiontaking_1_max - @v11mpos_1,
-			@v11mspositiontaking_20_max = @v11mspositiontaking_20_max - @v11mpos_20,
+			@v11mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=11 THEN @v11mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),			
+			@v11mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=11 THEN @v11mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v99mspositiontaking_1_max = @v99mspositiontaking_1_max - @v99mpos_1,
-			@v99mspositiontaking_2_max = @v99mspositiontaking_2_max - @v99mpos_2,
-			@v99mspositiontaking_3_max = @v99mspositiontaking_3_max - @v99mpos_3,			
-			@v99mspositiontaking_20_max = @v99mspositiontaking_20_max - @v99mpos_20,
+			@v99mspositiontaking_1_min = MAX(CASE WHEN cs.bettype = 1 AND cs.sporttype=99 THEN @v99mspositiontaking_1_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v99mspositiontaking_2_min = MAX(CASE WHEN cs.bettype = 2 AND cs.sporttype=99 THEN @v99mspositiontaking_2_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v99mspositiontaking_3_min = MAX(CASE WHEN cs.bettype = 3 AND cs.sporttype=99 THEN @v99mspositiontaking_3_min - mpositiontaking - apositiontaking ELSE 0 END),
+			@v99mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=99 THEN @v99mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v99mspositiontaking_9_max = @v99mspositiontaking_9_max - @v99mpos_9,
+			@v99mspositiontaking_9_min = MAX(CASE WHEN cs.bettype = 9 AND cs.sporttype=99 THEN @v99mspositiontaking_9_min - mpositiontaking - apositiontaking ELSE 0 END),
 			
-			@v154mspositiontaking_20_max = @v154mspositiontaking_20_max - @v154mpos_20
+			@v154mspositiontaking_20_min = MAX(CASE WHEN cs.bettype = 20 AND cs.sporttype=154 THEN @v154mspositiontaking_20_min - mpositiontaking - apositiontaking ELSE 0 END)
+	FROM CustSetting cs WITH(NOLOCK)
+		
+	WHERE custid = @custid 
+	
+	SELECT @v161mspositiontaking_81_min = MAX(CASE WHEN cs3.bettype = 81 AND cs3.sporttype=161 THEN @v161mspositiontaking_81_min - cs3.mpositiontaking - cs3.apositiontaking ELSE 0 END),  
+		@v161mspositiontaking_83_min = MAX(CASE WHEN cs3.bettype = 83 AND cs3.sporttype=161 THEN @v161mspositiontaking_83_min - cs3.mpositiontaking - cs3.apositiontaking ELSE 0 END),  
+		@v161mspositiontaking_86_min = MAX(CASE WHEN cs3.bettype = 86 AND cs3.sporttype=161 THEN @v161mspositiontaking_86_min - cs3.mpositiontaking - cs3.apositiontaking ELSE 0 END),  
+		@v161mspositiontaking_88_min = MAX(CASE WHEN cs3.bettype = 88 AND cs3.sporttype=161 THEN @v161mspositiontaking_88_min - cs3.mpositiontaking - cs3.apositiontaking ELSE 0 END),  
+		
+		@v161mslivepositiontaking_85_min = MAX(CASE WHEN cs3.bettype = 85 AND cs3.sporttype=161 THEN @v161mslivepositiontaking_85_min - cs3.mlivepositiontaking - cs3.alivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_86_min = MAX(CASE WHEN cs3.bettype = 86 AND cs3.sporttype=161 THEN @v161mslivepositiontaking_86_min - cs3.mlivepositiontaking - cs3.alivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_87_min = MAX(CASE WHEN cs3.bettype = 87 AND cs3.sporttype=161 THEN @v161mslivepositiontaking_87_min - cs3.mlivepositiontaking - cs3.alivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_89_min = MAX(CASE WHEN cs3.bettype = 89 AND cs3.sporttype=161 THEN @v161mslivepositiontaking_89_min - cs3.mlivepositiontaking - cs3.alivepositiontaking ELSE 0 END),  
+		@v161mslivepositiontaking_90_min = MAX(CASE WHEN cs3.bettype = 90 AND cs3.sporttype=161 THEN @v161mslivepositiontaking_90_min - cs3.mlivepositiontaking - cs3.alivepositiontaking ELSE 0 END)
+
+	FROM CustSetting3rd cs3 WITH(NOLOCK)
+	
+	WHERE custid = @custid 
+	
+	
+	--s1_max = max(min(s4,l4) - m3,s1_min)	
+	SELECT @mspositiontaking_1_max = case when @mspositiontaking_1_max - @mpos_1 > @mspositiontaking_1_min THEN @mspositiontaking_1_max - @mpos_1 ELSE @mspositiontaking_1_min end,
+			@mspositiontaking_2_max = case when @mspositiontaking_2_max - @mpos_2 > @mspositiontaking_2_min THEN @mspositiontaking_2_max - @mpos_2 ELSE @mspositiontaking_2_min end,
+			@mspositiontaking_3_max = case when @mspositiontaking_3_max - @mpos_3 > @mspositiontaking_3_min THEN @mspositiontaking_3_max - @mpos_3 ELSE @mspositiontaking_3_min end,
+			@mspositiontaking_4_max = case when @mspositiontaking_4_max - @mpos_4 > @mspositiontaking_4_min THEN @mspositiontaking_4_max - @mpos_4 ELSE @mspositiontaking_4_min end,
+			@mspositiontaking_5_max = case when @mspositiontaking_5_max - @mpos_5 > @mspositiontaking_5_min THEN @mspositiontaking_5_max - @mpos_5 ELSE @mspositiontaking_5_min  end,
+			@mspositiontaking_6_max = case when @mspositiontaking_6_max - @mpos_6 > @mspositiontaking_6_min THEN @mspositiontaking_6_max - @mpos_6 ELSE @mspositiontaking_6_min end,
+			@mspositiontaking_7_max = case when @mspositiontaking_7_max - @mpos_7 > @mspositiontaking_7_min THEN @mspositiontaking_7_max - @mpos_7 ELSE @mspositiontaking_7_min end,
+			@mspositiontaking_8_max = case when @mspositiontaking_8_max - @mpos_8 > @mspositiontaking_8_min THEN @mspositiontaking_8_max - @mpos_8 ELSE @mspositiontaking_8_min  end,
+			@mspositiontaking_9_max = case when @mspositiontaking_9_max - @mpos_9 > @mspositiontaking_9_min THEN @mspositiontaking_9_max - @mpos_9 ELSE @mspositiontaking_9_min end,
+			@mspositiontaking_10_max = case when @mspositiontaking_10_max - @mpos_10 > @mspositiontaking_10_min THEN @mspositiontaking_10_max - @mpos_10 ELSE @mspositiontaking_10_min end,
+			
+			@mslivepositiontaking_1_max = case when @mslivepositiontaking_1_max - @mlivepos_1 > @mslivepositiontaking_1_min THEN @mslivepositiontaking_1_max - @mlivepos_1 ELSE @mslivepositiontaking_1_min end,
+			@mslivepositiontaking_3_max = case when @mslivepositiontaking_3_max - @mlivepos_3 > @mslivepositiontaking_3_min THEN @mslivepositiontaking_3_max - @mlivepos_3 ELSE @mslivepositiontaking_3_min end,
+			@mslivepositiontaking_7_max = case when @mslivepositiontaking_7_max - @mlivepos_7 > @mslivepositiontaking_7_min THEN @mslivepositiontaking_7_max - @mlivepos_7 ELSE @mslivepositiontaking_7_min end,
+			@mslivepositiontaking_8_max = case when @mslivepositiontaking_8_max - @mlivepos_8 > @mslivepositiontaking_8_min THEN @mslivepositiontaking_8_max - @mlivepos_8 ELSE @mslivepositiontaking_8_min end,
+			
+			@v2mspositiontaking_1_max = case when @v2mspositiontaking_1_max - @v2mpos_1 > @v2mspositiontaking_1_min THEN @v2mspositiontaking_1_max - @v2mpos_1 ELSE @v2mspositiontaking_1_min end ,
+			@v2mspositiontaking_2_max = case when @v2mspositiontaking_2_max - @v2mpos_2 > @v2mspositiontaking_2_min THEN @v2mspositiontaking_2_max - @v2mpos_2 ELSE @v2mspositiontaking_2_min end,
+			@v2mspositiontaking_3_max = case when @v2mspositiontaking_3_max - @v2mpos_3 > @v2mspositiontaking_3_min THEN @v2mspositiontaking_3_max - @v2mpos_3 ELSE @v2mspositiontaking_3_min end ,			
+			@v2mspositiontaking_7_max = case when @v2mspositiontaking_7_max - @v2mpos_7 > @v2mspositiontaking_7_min THEN @v2mspositiontaking_7_max - @v2mpos_7 ELSE @v2mspositiontaking_7_min end,
+			@v2mspositiontaking_8_max = case when @v2mspositiontaking_8_max - @v2mpos_8 > @v2mspositiontaking_8_min THEN @v2mspositiontaking_8_max - @v2mpos_8 ELSE @v2mspositiontaking_8_min end,
+			@v2mspositiontaking_20_max = case when @v2mspositiontaking_20_max - @v2mpos_20 > @v2mspositiontaking_20_min THEN @v2mspositiontaking_20_max - @v2mpos_20 ELSE @v2mspositiontaking_20_min end,
+			
+			@v3mspositiontaking_1_max = case when @v3mspositiontaking_1_max - @v3mpos_1 > @v3mspositiontaking_1_min THEN @v3mspositiontaking_1_max - @v3mpos_1 ELSE @v3mspositiontaking_1_min end,
+			@v3mspositiontaking_2_max = case when @v3mspositiontaking_2_max - @v3mpos_2 > @v3mspositiontaking_2_min THEN @v3mspositiontaking_2_max - @v3mpos_2 ELSE @v3mspositiontaking_2_min end,
+			@v3mspositiontaking_3_max = case when @v3mspositiontaking_3_max - @v3mpos_3 > @v3mspositiontaking_3_min THEN @v3mspositiontaking_3_max - @v3mpos_3 ELSE @v3mspositiontaking_3_min end,
+			@v3mspositiontaking_20_max = case when @v3mspositiontaking_20_max - @v3mpos_20 > @v3mspositiontaking_20_min THEN @v3mspositiontaking_20_max - @v3mpos_20 ELSE @v3mspositiontaking_20_min end,
+			
+			@v5mspositiontaking_1_max = case when @v5mspositiontaking_1_max - @v5mpos_1 > @v5mspositiontaking_1_min THEN @v5mspositiontaking_1_max - @v5mpos_1 ELSE @v5mspositiontaking_1_min end ,
+			@v5mspositiontaking_2_max = case when @v5mspositiontaking_2_max - @v5mpos_2 > @v5mspositiontaking_2_min THEN @v5mspositiontaking_3_max - @v5mpos_2 ELSE @v5mspositiontaking_2_min end ,
+			@v5mspositiontaking_3_max = case when @v5mspositiontaking_3_max - @v5mpos_3 > @v5mspositiontaking_3_min THEN @v5mspositiontaking_3_max - @v5mpos_3 ELSE @v5mspositiontaking_3_min end ,
+			@v5mspositiontaking_20_max = case when @v5mspositiontaking_20_max - @v5mpos_20 > @v5mspositiontaking_20_min THEN @v5mspositiontaking_20_max - @v5mpos_20 ELSE @v5mspositiontaking_20_min end ,
+			
+			@v8mspositiontaking_1_max = case when @v8mspositiontaking_1_max - @v8mpos_1 > @v8mspositiontaking_1_min THEN @v8mspositiontaking_1_max - @v8mpos_1 ELSE @v8mspositiontaking_1_min end,
+			@v8mspositiontaking_3_max = case when @v8mspositiontaking_3_max - @v8mpos_3 > @v8mspositiontaking_3_min THEN @v8mspositiontaking_3_max - @v8mpos_3 ELSE @v8mspositiontaking_3_min end,
+			@v8mspositiontaking_20_max = case when @v8mspositiontaking_20_max - @v8mpos_20 > @v8mspositiontaking_20_min THEN @v8mspositiontaking_20_max - @v8mpos_20 ELSE @v8mspositiontaking_20_min end,
+			
+			@v10mspositiontaking_1_max = case when @v10mspositiontaking_1_max - @v10mpos_1 > @v10mspositiontaking_1_min THEN @v10mspositiontaking_1_max - @v10mpos_1 ELSE @v10mspositiontaking_1_min end,
+			@v10mspositiontaking_2_max = case when @v10mspositiontaking_2_max - @v10mpos_2 > @v10mspositiontaking_2_min THEN @v10mspositiontaking_2_max - @v10mpos_2 ELSE @v10mspositiontaking_2_min end,
+			@v10mspositiontaking_3_max = case when @v10mspositiontaking_3_max - @v10mpos_3 > @v10mspositiontaking_3_min THEN @v10mspositiontaking_3_max - @v10mpos_3 ELSE @v10mspositiontaking_3_min end,
+			@v10mspositiontaking_20_max = case when @v10mspositiontaking_20_max - @v10mpos_20 > @v10mspositiontaking_20_min THEN @v10mspositiontaking_20_max - @v10mpos_20 ELSE @v10mspositiontaking_20_min end,
+			
+			@v11mspositiontaking_1_max = case when @v11mspositiontaking_1_max - @v11mpos_1 > @v11mspositiontaking_1_min THEN @v11mspositiontaking_1_max - @v11mpos_1 ELSE @v11mspositiontaking_1_min end,
+			@v11mspositiontaking_20_max = case when @v11mspositiontaking_20_max - @v11mpos_20 > @v11mspositiontaking_20_min THEN @v11mspositiontaking_20_max - @v11mpos_20 ELSE @v11mspositiontaking_20_min end,
+			
+			@v99mspositiontaking_1_max = case when @v99mspositiontaking_1_max - @v99mpos_1 > @v99mspositiontaking_1_min THEN @v99mspositiontaking_1_max - @v99mpos_1 ELSE @v99mspositiontaking_1_min end,
+			@v99mspositiontaking_2_max = case when @v99mspositiontaking_2_max - @v99mpos_2 > @v99mspositiontaking_2_min THEN @v99mspositiontaking_2_max - @v99mpos_2 ELSE @v99mspositiontaking_2_min end,
+			@v99mspositiontaking_3_max = case when @v99mspositiontaking_3_max - @v99mpos_3 > @v99mspositiontaking_3_min THEN @v99mspositiontaking_3_max - @v99mpos_3 ELSE @v99mspositiontaking_3_min end,
+			@v99mspositiontaking_20_max = case when @v99mspositiontaking_20_max - @v99mpos_20 > @v99mspositiontaking_20_min THEN @v99mspositiontaking_20_max - @v99mpos_20 ELSE @v99mspositiontaking_20_min end,
+			
+			@v99mspositiontaking_9_max = case when @v99mspositiontaking_9_max - @v99mpos_9 > @v99mspositiontaking_9_min THEN @v99mspositiontaking_9_max - @v99mpos_9 ELSE @v99mspositiontaking_9_min end,
+			
+			@v154mspositiontaking_20_max = case when @v154mspositiontaking_20_max - @v154mpos_20 > @v154mspositiontaking_20_min THEN @v154mspositiontaking_20_max - @v154mpos_20 ELSE @v154mspositiontaking_20_min end
 	
 	SELECT
-		@v161mspositiontaking_81_max = 	@v161mspositiontaking_81_max - @v161mpos_81,
-		@v161mspositiontaking_83_max = 	@v161mspositiontaking_83_max - @v161mpos_83,
-		@v161mspositiontaking_86_max = 	@v161mspositiontaking_86_max - @v161mpos_86,
-		@v161mspositiontaking_88_max = 	@v161mspositiontaking_88_max - @v161mpos_88,	
+		@v161mspositiontaking_81_max = 	case when @v161mspositiontaking_81_max - @v161mpos_81 > @v161mspositiontaking_81_min THEN @v161mspositiontaking_81_max - @v161mpos_81 ELSE @v161mspositiontaking_81_min end ,
+		@v161mspositiontaking_83_max = 	case when @v161mspositiontaking_83_max - @v161mpos_83 > @v161mspositiontaking_83_min THEN @v161mspositiontaking_83_max - @v161mpos_83 ELSE @v161mspositiontaking_83_min end ,
+		@v161mspositiontaking_86_max = 	case when @v161mspositiontaking_86_max - @v161mpos_86 > @v161mspositiontaking_86_min THEN @v161mspositiontaking_86_max - @v161mpos_86 ELSE @v161mspositiontaking_86_min end ,
+		@v161mspositiontaking_88_max = 	case when @v161mspositiontaking_88_max - @v161mpos_88 > @v161mspositiontaking_88_min THEN @v161mspositiontaking_88_max - @v161mpos_88 ELSE @v161mspositiontaking_88_min end ,
 		
-		@v161mslivepositiontaking_85_max = @v161mslivepositiontaking_85_max - @v161mlivepos_85,
-		@v161mslivepositiontaking_86_max = @v161mslivepositiontaking_86_max - @v161mlivepos_86,
-		@v161mslivepositiontaking_87_max = @v161mslivepositiontaking_87_max - @v161mlivepos_87,
-		@v161mslivepositiontaking_89_max = @v161mslivepositiontaking_89_max - @v161mlivepos_89,
-		@v161mslivepositiontaking_90_max = @v161mslivepositiontaking_90_max - @v161mlivepos_90			
+		@v161mslivepositiontaking_85_max = case when @v161mslivepositiontaking_85_max - @v161mlivepos_85 > @v161mslivepositiontaking_85_min THEN @v161mslivepositiontaking_85_max - @v161mlivepos_85 ELSE @v161mslivepositiontaking_85_min end,
+		@v161mslivepositiontaking_86_max = case when @v161mslivepositiontaking_86_max - @v161mlivepos_86 > @v161mslivepositiontaking_86_min THEN @v161mslivepositiontaking_86_max - @v161mlivepos_86 ELSE @v161mslivepositiontaking_86_min end,
+		@v161mslivepositiontaking_87_max = case when @v161mslivepositiontaking_87_max - @v161mlivepos_87 > @v161mslivepositiontaking_87_min THEN @v161mslivepositiontaking_87_max - @v161mlivepos_87 ELSE @v161mslivepositiontaking_87_min end,
+		@v161mslivepositiontaking_89_max = case when @v161mslivepositiontaking_89_max - @v161mlivepos_89 > @v161mslivepositiontaking_89_min THEN @v161mslivepositiontaking_89_max - @v161mlivepos_89 ELSE @v161mslivepositiontaking_89_min end,
+		@v161mslivepositiontaking_90_max = case when @v161mslivepositiontaking_90_max - @v161mlivepos_90 > @v161mslivepositiontaking_90_min THEN @v161mslivepositiontaking_90_max - @v161mlivepos_90 ELSE @v161mslivepositiontaking_90_min end
+	
 			
 	if (@UpdateMultiple = 0 or @UpdatePositiontaking = 1)
 		BEGIN --@UpdatePositiontaking 
@@ -1690,9 +1902,9 @@ BEGIN--Update Position Taking
 					)
 			 AS b 
 						on co.sporttype=b.sporttype and co.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) 
+				INNER JOIN bodb02.dbo.sports with (nolock) 
 						on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) 
+				INNER JOIN bodb02.dbo.bettype with (nolock) 
 						on b.bettype = bettype.typeid
 			where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=1 and b.bettype in (1,3,7,8) and b.autolivepositiontaking>co.maxlivepositiontaking))
 			
@@ -1742,7 +1954,41 @@ BEGIN--Update Position Taking
 				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
-			END				
+			END
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10))
+			+ CASE WHEN b.sporttype=1 and b.bettype in (1,3,7,8) THEN '-MinLive: '+ cast((b.autolivepositiontaking_min) AS varchar(10)) ELSE '' END + '<br>'
+			from 
+				(
+							SELECT 1 AS bettype, 1 AS sporttype, @auto_spositiontaking_1 AS autopositiontaking, @isauto_spositiontaking_1 AS isautopositiontaking, @mspositiontaking_1_min as autopositiontaking_min, @auto_slivepositiontaking_1 AS autolivepositiontaking, @isauto_slivepositiontaking_1 AS isautolivepositiontaking, @mslivepositiontaking_1_min as autolivepositiontaking_min
+					UNION ALL 	SELECT 2 AS bettype, 1 AS sporttype, @auto_spositiontaking_2 AS autopositiontaking, @isauto_spositiontaking_2 AS isautopositiontaking, @mspositiontaking_2_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 1 AS sporttype, @auto_spositiontaking_3 AS autopositiontaking, @isauto_spositiontaking_3 AS isautopositiontaking, @mspositiontaking_3_min as autopositiontaking_min, @auto_slivepositiontaking_3 AS autolivepositiontaking, @isauto_slivepositiontaking_3 AS isautolivepositiontaking, @mslivepositiontaking_3_min as autolivepositiontaking_min
+					UNION ALL 	SELECT 4 AS bettype, 1 AS sporttype, @auto_spositiontaking_4 AS autopositiontaking, @isauto_spositiontaking_4 AS isautopositiontaking, @mspositiontaking_4_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+					UNION ALL 	SELECT 5 AS bettype, 1 AS sporttype, @auto_spositiontaking_5 AS autopositiontaking, @isauto_spositiontaking_5 AS isautopositiontaking, @mspositiontaking_5_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+					UNION ALL 	SELECT 6 AS bettype, 1 AS sporttype, @auto_spositiontaking_6 AS autopositiontaking, @isauto_spositiontaking_6 AS isautopositiontaking, @mspositiontaking_6_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+					UNION ALL 	SELECT 7 AS bettype, 1 AS sporttype, @auto_spositiontaking_7 AS autopositiontaking, @isauto_spositiontaking_7 AS isautopositiontaking, @mspositiontaking_7_min as autopositiontaking_min, @auto_slivepositiontaking_7 AS autolivepositiontaking, @isauto_slivepositiontaking_7 AS isautolivepositiontaking, @mslivepositiontaking_7_min as autolivepositiontaking_min
+					UNION ALL 	SELECT 8 AS bettype, 1 AS sporttype, @auto_spositiontaking_8 AS autopositiontaking, @isauto_spositiontaking_8 AS isautopositiontaking, @mspositiontaking_8_min as autopositiontaking_min, @auto_slivepositiontaking_8 AS autolivepositiontaking, @isauto_slivepositiontaking_8 AS isautolivepositiontaking, @mslivepositiontaking_8_min as autolivepositiontaking_min
+					UNION ALL 	SELECT 9 AS bettype, 1 AS sporttype, @auto_spositiontaking_9 AS autopositiontaking, @isauto_spositiontaking_9 AS isautopositiontaking, @mspositiontaking_9_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+					UNION ALL 	SELECT 10 AS bettype, 1 AS sporttype, @auto_spositiontaking_10 AS autopositiontaking, @isauto_spositiontaking_10 AS isautopositiontaking, @mspositiontaking_10_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 AS autolivepositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where ((b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) or (b.bettype in (1,3,7,8) and b.sporttype=1 and b.isautolivepositiontaking = 1 and b.autolivepositiontaking < b.autolivepositiontaking_min ))
+				
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END						
 
 			--Check s1<=s4
 			SELECT @ErrType = ''
@@ -1808,6 +2054,39 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10))
+			+ CASE WHEN b.sporttype=1 and b.bettype in (1,3,7,8) THEN '-MinLive: '+ cast((b.livepositiontaking_min) AS varchar(10)) ELSE '' END + '<br>'
+			from
+				(
+					SELECT 1 AS bettype, 1 AS sporttype, @spositiontaking_1 AS positiontaking, @isauto_spositiontaking_1 as isauto_spositiontaking, @isauto_smpositiontaking_1 as isauto_smpositiontaking, @mspositiontaking_1_min as positiontaking_min, @slivepositiontaking_1 AS livepositiontaking, @isauto_slivepositiontaking_1 as isauto_slivepositiontaking, @isauto_smlivepositiontaking_1 as isauto_smlivepositiontaking, @mslivepositiontaking_1_min as livepositiontaking_min
+					UNION ALL 	SELECT 2 AS bettype, 1 AS sporttype, @spositiontaking_2 AS positiontaking, @isauto_spositiontaking_2 as isauto_spositiontaking, @isauto_smpositiontaking_2 as isauto_smpositiontaking, @mspositiontaking_2_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 1 AS sporttype, @spositiontaking_3 AS positiontaking, @isauto_spositiontaking_3 as isauto_spositiontaking, @isauto_smpositiontaking_3 as isauto_smpositiontaking, @mspositiontaking_3_min as positiontaking_min, @slivepositiontaking_3 AS livepositiontaking, @isauto_slivepositiontaking_3 as isauto_slivepositiontaking, @isauto_smlivepositiontaking_3 as isauto_smlivepositiontaking, @mslivepositiontaking_3_min AS livepositiontaking_min
+					UNION ALL 	SELECT 4 AS bettype, 1 AS sporttype, @spositiontaking_4 AS positiontaking, @isauto_spositiontaking_4 as isauto_spositiontaking, @isauto_smpositiontaking_4 as isauto_smpositiontaking, @mspositiontaking_4_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min
+					UNION ALL 	SELECT 5 AS bettype, 1 AS sporttype, @spositiontaking_5 AS positiontaking, @isauto_spositiontaking_5 as isauto_spositiontaking, @isauto_smpositiontaking_5 as isauto_smpositiontaking, @mspositiontaking_5_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min
+					UNION ALL 	SELECT 6 AS bettype, 1 AS sporttype, @spositiontaking_6 AS positiontaking, @isauto_spositiontaking_6 as isauto_spositiontaking, @isauto_smpositiontaking_6 as isauto_smpositiontaking, @mspositiontaking_6_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min
+					UNION ALL 	SELECT 7 AS bettype, 1 AS sporttype, @spositiontaking_7 AS positiontaking, @isauto_spositiontaking_7 as isauto_spositiontaking, @isauto_smpositiontaking_7 as isauto_smpositiontaking, @mspositiontaking_7_min as positiontaking_min, @slivepositiontaking_7 AS livepositiontaking, @isauto_slivepositiontaking_7 as isauto_slivepositiontaking, @isauto_smlivepositiontaking_7 as isauto_smlivepositiontaking, @mslivepositiontaking_7_min AS livepositiontaking_min
+					UNION ALL 	SELECT 8 AS bettype, 1 AS sporttype, @spositiontaking_8 AS positiontaking, @isauto_spositiontaking_8 as isauto_spositiontaking, @isauto_smpositiontaking_8 as isauto_smpositiontaking, @mspositiontaking_8_min as positiontaking_min, @slivepositiontaking_8 AS livepositiontaking, @isauto_slivepositiontaking_8 as isauto_slivepositiontaking, @isauto_smlivepositiontaking_8 as isauto_smlivepositiontaking, @mslivepositiontaking_8_min AS livepositiontaking_min
+					UNION ALL 	SELECT 9 AS bettype, 1 AS sporttype, @spositiontaking_9 AS positiontaking, @isauto_spositiontaking_9 as isauto_spositiontaking, @isauto_smpositiontaking_9 as isauto_smpositiontaking, @mspositiontaking_9_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min
+					UNION ALL 	SELECT 10 AS bettype, 1 AS sporttype, @spositiontaking_10 AS positiontaking, @isauto_spositiontaking_10 as isauto_spositiontaking, @isauto_smpositiontaking_10 as isauto_smpositiontaking, @mspositiontaking_10_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 AS livepositiontaking_min		
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0) or (b.bettype in (1,3,7,8) and b.livepositiontaking < b.livepositiontaking_min and b.isauto_slivepositiontaking= 0 and b.isauto_smlivepositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -1901,7 +2180,34 @@ BEGIN--Update Position Taking
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
 				END
-			
+				
+				--Check u1>=us1_min (= min_s1)
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+				from 
+					(
+								SELECT 1 AS bettype, 2 AS sporttype, @auto_v2spositiontaking_1 AS autopositiontaking, @isauto_v2spositiontaking_1 AS isautopositiontaking, @v2mspositiontaking_1_min as autopositiontaking_min
+						UNION ALL 	SELECT 2 AS bettype, 2 AS sporttype, @auto_v2spositiontaking_2 AS autopositiontaking, @isauto_v2spositiontaking_2 AS isautopositiontaking, @v2mspositiontaking_2_min as autopositiontaking_min
+						UNION ALL 	SELECT 3 AS bettype, 2 AS sporttype, @auto_v2spositiontaking_3 AS autopositiontaking, @isauto_v2spositiontaking_3 AS isautopositiontaking, @v2mspositiontaking_3_min as autopositiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 2 AS sporttype, @auto_v2spositiontaking_20 AS autopositiontaking, @isauto_v2spositiontaking_20 AS isautopositiontaking, @v2mspositiontaking_20_min as autopositiontaking_min
+											
+						) AS b 
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 11							
+					SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END			
+					
 				--Check s1<=s4
 				SELECT @ErrType = ''
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))
@@ -1925,6 +2231,7 @@ BEGIN--Update Position Taking
 						
 				if @ErrType <>''
 				BEGIN
+
 					SELECT @ErrMsg_cur =	@UserName + ': '+
 										case @Language 
 											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
@@ -1959,6 +2266,35 @@ BEGIN--Update Position Taking
 											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 										END, @ErrCode_cur = 8							
+					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END
+				
+				--Check s1>=s1_min
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+				from
+					(
+						SELECT 1 AS bettype, 2 AS sporttype, @v2spositiontaking_1 AS positiontaking, @isauto_v2spositiontaking_1 as isauto_spositiontaking, @isauto_v2smpositiontaking_1 as isauto_smpositiontaking, @v2mspositiontaking_1_min as positiontaking_min
+						UNION ALL 	SELECT 2 AS bettype, 2 AS sporttype, @v2spositiontaking_2 AS positiontaking, @isauto_v2spositiontaking_2 as isauto_spositiontaking, @isauto_v2smpositiontaking_2 as isauto_smpositiontaking, @v2mspositiontaking_2_min as positiontaking_min
+						UNION ALL 	SELECT 3 AS bettype, 2 AS sporttype, @v2spositiontaking_3 AS positiontaking, @isauto_v2spositiontaking_3 as isauto_spositiontaking, @isauto_v2smpositiontaking_3 as isauto_smpositiontaking, @v2mspositiontaking_3_min as positiontaking_min
+						UNION ALL 	SELECT 7 AS bettype, 2 AS sporttype, @v2spositiontaking_7 AS positiontaking, @isauto_v2spositiontaking_7 as isauto_spositiontaking, @isauto_v2smpositiontaking_7 as isauto_smpositiontaking, @v2mspositiontaking_7_min as positiontaking_min
+						UNION ALL 	SELECT 8 AS bettype, 2 AS sporttype, @v2spositiontaking_8 AS positiontaking, @isauto_v2spositiontaking_8 as isauto_spositiontaking, @isauto_v2smpositiontaking_8 as isauto_smpositiontaking, @v2mspositiontaking_8_min as positiontaking_min
+						--UNION ALL 	SELECT 9 AS bettype, 2 AS sporttype, @v2spositiontaking_9 AS positiontaking, @isauto_v2spositiontaking_9 as isauto_spositiontaking, @isauto_v2smpositiontaking_9 as isauto_smpositiontaking, @v2mspositiontaking_9_min as positiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 2 AS sporttype, @v2spositiontaking_20 AS positiontaking, @isauto_v2spositiontaking_20 as isauto_spositiontaking, @isauto_v2smpositiontaking_20 as isauto_smpositiontaking, @v2mspositiontaking_20_min as positiontaking_min
+					) b
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 12							
 					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
@@ -2043,7 +2379,34 @@ BEGIN--Update Position Taking
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
 				END
-
+				
+				--Check u1>=us1_min (= min_s1)
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+				from 
+					(
+								SELECT 1 AS bettype, 3 AS sporttype, @auto_v3spositiontaking_1 AS autopositiontaking, @isauto_v3spositiontaking_1 AS isautopositiontaking, @v3mspositiontaking_1_min as autopositiontaking_min
+						UNION ALL 	SELECT 2 AS bettype, 3 AS sporttype, @auto_v3spositiontaking_2 AS autopositiontaking, @isauto_v3spositiontaking_2 AS isautopositiontaking, @v3mspositiontaking_2_min as autopositiontaking_min
+						UNION ALL 	SELECT 3 AS bettype, 3 AS sporttype, @auto_v3spositiontaking_3 AS autopositiontaking, @isauto_v3spositiontaking_3 AS isautopositiontaking, @v3mspositiontaking_3_min as autopositiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 3 AS sporttype, @auto_v3spositiontaking_20 AS autopositiontaking, @isauto_v3spositiontaking_20 AS isautopositiontaking, @v3mspositiontaking_20_min as autopositiontaking_min
+											
+						) AS b 
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 11							
+					SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END		
+				
 				--Check s1<=s4
 				SELECT @ErrType = ''
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))
@@ -2094,6 +2457,32 @@ BEGIN--Update Position Taking
 											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 										END, @ErrCode_cur = 8							
+					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END
+				
+				--Check s1>=s1_min
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+				from
+					(
+						SELECT 1 AS bettype, 3 AS sporttype, @v3spositiontaking_1 AS positiontaking, @isauto_v3spositiontaking_1 as isauto_spositiontaking, @isauto_v3smpositiontaking_1 as isauto_smpositiontaking, @v3mspositiontaking_1_min as positiontaking_min
+						UNION ALL 	SELECT 2 AS bettype, 3 AS sporttype, @v3spositiontaking_2 AS positiontaking, @isauto_v3spositiontaking_2 as isauto_spositiontaking, @isauto_v3smpositiontaking_2 as isauto_smpositiontaking, @v3mspositiontaking_2_min as positiontaking_min
+						UNION ALL 	SELECT 3 AS bettype, 3 AS sporttype, @v3spositiontaking_3 AS positiontaking, @isauto_v3spositiontaking_3 as isauto_spositiontaking, @isauto_v3smpositiontaking_3 as isauto_smpositiontaking, @v3mspositiontaking_3_min as positiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 3 AS sporttype, @v3spositiontaking_20 AS positiontaking, @isauto_v3spositiontaking_20 as isauto_spositiontaking, @isauto_v3smpositiontaking_20 as isauto_smpositiontaking, @v3mspositiontaking_20_min as positiontaking_min
+					) b
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 12							
 					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
@@ -2179,9 +2568,37 @@ BEGIN--Update Position Taking
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
 				END
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+			from 
+				(
+							SELECT 1 AS bettype, 5 AS sporttype, @auto_v5spositiontaking_1 AS autopositiontaking, @isauto_v5spositiontaking_1 AS isautopositiontaking, @v5mspositiontaking_1_min as autopositiontaking_min
+					UNION ALL 	SELECT 2 AS bettype, 5 AS sporttype, @auto_v5spositiontaking_2 AS autopositiontaking, @isauto_v5spositiontaking_2 AS isautopositiontaking, @v5mspositiontaking_2_min as autopositiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 5 AS sporttype, @auto_v5spositiontaking_3 AS autopositiontaking, @isauto_v5spositiontaking_3 AS isautopositiontaking, @v5mspositiontaking_3_min as autopositiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 5 AS sporttype, @auto_v5spositiontaking_20 AS autopositiontaking, @isauto_v5spositiontaking_20 AS isautopositiontaking, @v5mspositiontaking_20_min as autopositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END		
 
 			--Check s1<=s4
 			SELECT @ErrType = ''
+
 			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))
 			+ CASE WHEN b.sporttype=1 and b.bettype in (1,3,7,8) THEN '-MaxLive: '+ cast((cs.slivepositiontaking) AS varchar(10)) ELSE '' END + '<br>'
 			from custsetting AS cs with (NOLOCK) inner join
@@ -2191,8 +2608,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 5 AS sporttype, @v5spositiontaking_3 AS positiontaking, 0 AS livepositiontaking
 					UNION ALL 	SELECT 20 AS bettype, 5 AS sporttype, @v5spositiontaking_20 AS positiontaking, 0 AS livepositiontaking				
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2219,8 +2636,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 5 AS sporttype, @v5spositiontaking_3 AS positiontaking, @isauto_v5spositiontaking_3 as isauto_spositiontaking, @isauto_v5smpositiontaking_3 as isauto_smpositiontaking, @v5mspositiontaking_3_max as positiontaking_max
 					UNION ALL 	SELECT 20 AS bettype, 5 AS sporttype, @v5spositiontaking_20 AS positiontaking, @isauto_v5spositiontaking_20 as isauto_spositiontaking, @isauto_v5smpositiontaking_20 as isauto_smpositiontaking, @v5mspositiontaking_20_max as positiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 			
 			if @ErrType <>''
@@ -2230,6 +2647,32 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+			from
+				(
+					SELECT 1 AS bettype, 5 AS sporttype, @v5spositiontaking_1 AS positiontaking, @isauto_v5spositiontaking_1 as isauto_spositiontaking, @isauto_v5smpositiontaking_1 as isauto_smpositiontaking, @v5mspositiontaking_1_min as positiontaking_min
+					UNION ALL 	SELECT 2 AS bettype, 5 AS sporttype, @v5spositiontaking_2 AS positiontaking, @isauto_v5spositiontaking_2 as isauto_spositiontaking, @isauto_v5smpositiontaking_2 as isauto_smpositiontaking, @v5mspositiontaking_2_min as positiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 5 AS sporttype, @v5spositiontaking_3 AS positiontaking, @isauto_v5spositiontaking_3 as isauto_spositiontaking, @isauto_v5smpositiontaking_3 as isauto_smpositiontaking, @v5mspositiontaking_3_min as positiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 5 AS sporttype, @v5spositiontaking_20 AS positiontaking, @isauto_v5spositiontaking_20 as isauto_spositiontaking, @isauto_v5smpositiontaking_20 as isauto_smpositiontaking, @v5mspositiontaking_20_min as positiontaking_min
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -2293,8 +2736,8 @@ BEGIN--Update Position Taking
 						UNION ALL 	SELECT 3 AS bettype, 8 AS sporttype, @auto_v8spositiontaking_3 AS autopositiontaking, 0 AS autolivepositiontaking
 						UNION ALL 	SELECT 20 AS bettype, 8 AS sporttype, @auto_v8spositiontaking_20 AS autopositiontaking, 0 AS autolivepositiontaking
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where cs.custid = @srecommend
 					and 
 					((cs.spositiontaking<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.autolivepositiontaking))
@@ -2310,7 +2753,33 @@ BEGIN--Update Position Taking
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
 				END
-		
+				
+				--Check u1>=us1_min (= min_s1)
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+				from 
+					(
+								SELECT 1 AS bettype, 8 AS sporttype, @auto_v8spositiontaking_1 AS autopositiontaking, @isauto_v8spositiontaking_1 AS isautopositiontaking, @v8mspositiontaking_1_min as autopositiontaking_min						
+						UNION ALL 	SELECT 3 AS bettype, 8 AS sporttype, @auto_v8spositiontaking_3 AS autopositiontaking, @isauto_v8spositiontaking_3 AS isautopositiontaking, @v8mspositiontaking_3_min as autopositiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 8 AS sporttype, @auto_v8spositiontaking_20 AS autopositiontaking, @isauto_v8spositiontaking_20 AS isautopositiontaking, @v8mspositiontaking_20_min as autopositiontaking_min
+											
+						) AS b 
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 11							
+					SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END	
+				
 				--Check s1<=s4
 				SELECT @ErrType = ''
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))
@@ -2322,8 +2791,8 @@ BEGIN--Update Position Taking
 						UNION ALL 	SELECT 20 AS bettype, 8 AS sporttype, @v8spositiontaking_20 AS positiontaking, 0 AS livepositiontaking
 						
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-					inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-					inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+					INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+					INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where cs.custid = @srecommend
 					and 
 					((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2349,8 +2818,8 @@ BEGIN--Update Position Taking
 						UNION ALL 	SELECT 3 AS bettype, 8 AS sporttype, @v8spositiontaking_3 AS positiontaking, @isauto_v8spositiontaking_3 as isauto_spositiontaking, @isauto_v8smpositiontaking_3 as isauto_smpositiontaking, @v8mspositiontaking_3_max as positiontaking_max
 						UNION ALL 	SELECT 20 AS bettype, 8 AS sporttype, @v8spositiontaking_20 AS positiontaking, @isauto_v8spositiontaking_20 as isauto_spositiontaking, @isauto_v8smpositiontaking_20 as isauto_smpositiontaking, @v8mspositiontaking_20_max as positiontaking_max
 					) b
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 				
 				if @ErrType <>''
@@ -2360,6 +2829,31 @@ BEGIN--Update Position Taking
 											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 										END, @ErrCode_cur = 8							
+					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END
+				
+				--Check s1>=s1_min
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+				from
+					(
+						SELECT 1 AS bettype, 8 AS sporttype, @v8spositiontaking_1 AS positiontaking, @isauto_v8spositiontaking_1 as isauto_spositiontaking, @isauto_v8smpositiontaking_1 as isauto_smpositiontaking, @v8mspositiontaking_1_min as positiontaking_min						
+						UNION ALL 	SELECT 3 AS bettype, 8 AS sporttype, @v8spositiontaking_3 AS positiontaking, @isauto_v8spositiontaking_3 as isauto_spositiontaking, @isauto_v8smpositiontaking_3 as isauto_smpositiontaking, @v8mspositiontaking_3_min as positiontaking_min
+						UNION ALL 	SELECT 20 AS bettype, 8 AS sporttype, @v8spositiontaking_20 AS positiontaking, @isauto_v8spositiontaking_20 as isauto_spositiontaking, @isauto_v8smpositiontaking_20 as isauto_smpositiontaking, @v8mspositiontaking_20_min as positiontaking_min
+					) b
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 12							
 					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
@@ -2395,9 +2889,9 @@ BEGIN--Update Position Taking
 					UNION ALL	SELECT 10 AS sporttype, 20 AS bettype, @auto_v10spositiontaking_20 AS autopositiontaking, @isauto_v10spositiontaking_20 AS isautopositiontaking, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking
 				) AS b 
 					on co.sporttype=b.sporttype and co.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) 
+			INNER JOIN bodb02.dbo.sports with (nolock) 
 					on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) 
+			INNER JOIN bodb02.dbo.bettype with (nolock) 
 					on b.bettype = bettype.typeid
 				where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=1 and b.bettype in (1,3,7,8) and b.autolivepositiontaking>co.maxlivepositiontaking))
 
@@ -2423,8 +2917,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_3 AS autopositiontaking, 0 AS autolivepositiontaking
 					UNION ALL 	SELECT 20 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_20 AS autopositiontaking, 0 AS autolivepositiontaking
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.autolivepositiontaking))
@@ -2440,7 +2934,33 @@ BEGIN--Update Position Taking
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
 				END
-
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+			from 
+				(
+							SELECT 1 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_1 AS autopositiontaking, @isauto_v10spositiontaking_1 AS isautopositiontaking, @v10mspositiontaking_1_min as autopositiontaking_min						
+					UNION ALL 	SELECT 2 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_2 AS autopositiontaking, @isauto_v10spositiontaking_2 AS isautopositiontaking, @v10mspositiontaking_2_min as autopositiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_3 AS autopositiontaking, @isauto_v10spositiontaking_3 AS isautopositiontaking, @v10mspositiontaking_3_min as autopositiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 10 AS sporttype, @auto_v10spositiontaking_20 AS autopositiontaking, @isauto_v10spositiontaking_20 AS isautopositiontaking, @v10mspositiontaking_20_min as autopositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END	
 
 			--Check s1<=s4
 			SELECT @ErrType = ''
@@ -2454,8 +2974,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 20 AS bettype, 10 AS sporttype, @v10spositiontaking_20 AS positiontaking, 0 AS livepositiontaking
 			
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2482,8 +3002,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 10 AS sporttype, @v10spositiontaking_3 AS positiontaking, @isauto_v10spositiontaking_3 as isauto_spositiontaking, @isauto_v10smpositiontaking_3 as isauto_smpositiontaking, @v10mspositiontaking_3_max as positiontaking_max
 					UNION ALL 	SELECT 20 AS bettype, 10 AS sporttype, @v10spositiontaking_20 AS positiontaking, @isauto_v10spositiontaking_20 as isauto_spositiontaking, @isauto_v10smpositiontaking_20 as isauto_smpositiontaking, @v10mspositiontaking_20_max as positiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 			
 			if @ErrType <>''
@@ -2493,6 +3013,32 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+			from
+				(
+					SELECT 1 AS bettype, 10 AS sporttype, @v10spositiontaking_1 AS positiontaking, @isauto_v10spositiontaking_1 as isauto_spositiontaking, @isauto_v10smpositiontaking_1 as isauto_smpositiontaking, @v10mspositiontaking_1_min as positiontaking_min						
+					UNION ALL 	SELECT 2 AS bettype, 10 AS sporttype, @v10spositiontaking_2 AS positiontaking, @isauto_v10spositiontaking_2 as isauto_spositiontaking, @isauto_v10smpositiontaking_2 as isauto_smpositiontaking, @v10mspositiontaking_2_min as positiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 10 AS sporttype, @v10spositiontaking_3 AS positiontaking, @isauto_v10spositiontaking_3 as isauto_spositiontaking, @isauto_v10smpositiontaking_3 as isauto_smpositiontaking, @v10mspositiontaking_3_min as positiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 10 AS sporttype, @v10spositiontaking_20 AS positiontaking, @isauto_v10spositiontaking_20 as isauto_spositiontaking, @isauto_v10smpositiontaking_20 as isauto_smpositiontaking, @v10mspositiontaking_20_min as positiontaking_min
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -2524,9 +3070,9 @@ BEGIN--Update Position Taking
 					UNION ALL	SELECT 11 AS sporttype, 20 AS bettype, @auto_v11spositiontaking_20 AS autopositiontaking, @isauto_v11spositiontaking_20 AS isautopositiontaking, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking
 				) AS b 
 					on co.sporttype=b.sporttype and co.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) 
+			INNER JOIN bodb02.dbo.sports with (nolock) 
 					on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) 
+			INNER JOIN bodb02.dbo.bettype with (nolock) 
 					on b.bettype = bettype.typeid
 
 				where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=1 and b.bettype in (1,3,7,8) and b.autolivepositiontaking>co.maxlivepositiontaking))
@@ -2553,8 +3099,8 @@ BEGIN--Update Position Taking
 				UNION ALL 	SELECT 20 AS bettype, 11 AS sporttype, @auto_v11spositiontaking_20 AS autopositiontaking, 0 AS autolivepositiontaking
 
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.autolivepositiontaking))
@@ -2571,6 +3117,31 @@ BEGIN--Update Position Taking
 				return
 			END
 			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+			from 
+				(
+							SELECT 1 AS bettype, 11 AS sporttype, @auto_v11spositiontaking_1 AS autopositiontaking, @isauto_v11spositiontaking_1 AS isautopositiontaking, @v11mspositiontaking_1_min as autopositiontaking_min						
+					UNION ALL 	SELECT 20 AS bettype, 11 AS sporttype, @auto_v11spositiontaking_20 AS autopositiontaking, @isauto_v11spositiontaking_20 AS isautopositiontaking, @v11mspositiontaking_20_min as autopositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END	
+			
 			--Check s1<=s4
 			SELECT @ErrType = ''
 			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))
@@ -2581,8 +3152,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 20 AS bettype, 11 AS sporttype, @v11spositiontaking_20 AS positiontaking, 0 AS livepositiontaking
 
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2607,8 +3178,8 @@ BEGIN--Update Position Taking
 					SELECT 1 AS bettype, 11 AS sporttype, @v11spositiontaking_1 AS positiontaking, @isauto_v11spositiontaking_1 as isauto_spositiontaking, @isauto_v11smpositiontaking_1 as isauto_smpositiontaking, @v11mspositiontaking_1_max as positiontaking_max
 					UNION ALL 	SELECT 20 AS bettype, 11 AS sporttype, @v11spositiontaking_20 AS positiontaking, @isauto_v11spositiontaking_20 as isauto_spositiontaking, @isauto_v11smpositiontaking_20 as isauto_smpositiontaking, @v11mspositiontaking_20_max as positiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 			
 			if @ErrType <>''
@@ -2618,6 +3189,30 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+			from
+				(
+					SELECT 1 AS bettype, 11 AS sporttype, @v11spositiontaking_1 AS positiontaking, @isauto_v11spositiontaking_1 as isauto_spositiontaking, @isauto_v11smpositiontaking_1 as isauto_smpositiontaking, @v11mspositiontaking_1_min as positiontaking_min						
+					UNION ALL 	SELECT 20 AS bettype, 11 AS sporttype, @v11spositiontaking_20 AS positiontaking, @isauto_v11spositiontaking_20 as isauto_spositiontaking, @isauto_v11smpositiontaking_20 as isauto_smpositiontaking, @v11mspositiontaking_20_min as positiontaking_min
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -2653,9 +3248,9 @@ BEGIN--Update Position Taking
 					UNION ALL	SELECT 99 AS sporttype, 20 AS bettype, @auto_v99spositiontaking_20 AS autopositiontaking, @isauto_v99spositiontaking_20 AS isautopositiontaking, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking
 				) AS b 
 					on co.sporttype=b.sporttype and co.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) 
+			INNER JOIN bodb02.dbo.sports with (nolock) 
 					on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) 
+			INNER JOIN bodb02.dbo.bettype with (nolock) 
 					on b.bettype = bettype.typeid
 
 			where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=1 and b.bettype in (1,3,7,8) and b.autolivepositiontaking>co.maxlivepositiontaking))
@@ -2687,8 +3282,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 9 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_9 AS autopositiontaking, 0 AS autolivepositiontaking
 
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.autolivepositiontaking))
@@ -2704,6 +3299,33 @@ BEGIN--Update Position Taking
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
 			END
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+			from 
+				(
+							SELECT 1 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_1 AS autopositiontaking, @isauto_v99spositiontaking_1 AS isautopositiontaking, @v99mspositiontaking_1_min as autopositiontaking_min						
+					UNION ALL 	SELECT 2 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_2 AS autopositiontaking, @isauto_v99spositiontaking_2 AS isautopositiontaking, @v99mspositiontaking_2_min as autopositiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_3 AS autopositiontaking, @isauto_v99spositiontaking_3 AS isautopositiontaking, @v99mspositiontaking_3_min as autopositiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_20 AS autopositiontaking, @isauto_v99spositiontaking_20 AS isautopositiontaking, @v99mspositiontaking_20_min as autopositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END	
 
 			--Check s1<=s4
 			SELECT @ErrType = ''
@@ -2716,8 +3338,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 99 AS sporttype, @v99spositiontaking_3 AS positiontaking, 0 AS livepositiontaking
 					UNION ALL 	SELECT 20 AS bettype, 99 AS sporttype, @v99spositiontaking_20 AS positiontaking, 0 AS livepositiontaking
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2744,8 +3366,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 3 AS bettype, 99 AS sporttype, @v99spositiontaking_3 AS positiontaking, @isauto_v99spositiontaking_3 as isauto_spositiontaking, @isauto_v99smpositiontaking_3 as isauto_smpositiontaking, @v99mspositiontaking_3_max as positiontaking_max
 					UNION ALL 	SELECT 20 AS bettype, 99 AS sporttype, @v99spositiontaking_20 AS positiontaking, @isauto_v99spositiontaking_20 as isauto_spositiontaking, @isauto_v99smpositiontaking_20 as isauto_smpositiontaking, @v99mspositiontaking_20_max as positiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 			
 			if @ErrType <>''
@@ -2755,6 +3377,32 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+			from
+				(
+					SELECT 1 AS bettype, 99 AS sporttype, @v99spositiontaking_1 AS positiontaking, @isauto_v99spositiontaking_1 as isauto_spositiontaking, @isauto_v99smpositiontaking_1 as isauto_smpositiontaking, @v99mspositiontaking_1_min as positiontaking_min						
+					UNION ALL 	SELECT 2 AS bettype, 99 AS sporttype, @v99spositiontaking_2 AS positiontaking, @isauto_v99spositiontaking_2 as isauto_spositiontaking, @isauto_v99smpositiontaking_2 as isauto_smpositiontaking, @v99mspositiontaking_2_min as positiontaking_min
+					UNION ALL 	SELECT 3 AS bettype, 99 AS sporttype, @v99spositiontaking_3 AS positiontaking, @isauto_v99spositiontaking_3 as isauto_spositiontaking, @isauto_v99smpositiontaking_3 as isauto_smpositiontaking, @v99mspositiontaking_3_min as positiontaking_min
+					UNION ALL 	SELECT 20 AS bettype, 99 AS sporttype, @v99spositiontaking_20 AS positiontaking, @isauto_v99spositiontaking_20 as isauto_spositiontaking, @isauto_v99smpositiontaking_20 as isauto_smpositiontaking, @v99mspositiontaking_20_min as positiontaking_min
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -2791,9 +3439,9 @@ BEGIN--Update Position Taking
 					
 				) AS b 
 					on co.sporttype=b.sporttype and co.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) 
+			INNER JOIN bodb02.dbo.sports with (nolock) 
 					on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) 
+			INNER JOIN bodb02.dbo.bettype with (nolock) 
 					on b.bettype = bettype.typeid
 				where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=1 and b.bettype in (1,3,7,8) and b.autolivepositiontaking>co.maxlivepositiontaking))
 
@@ -2817,8 +3465,8 @@ BEGIN--Update Position Taking
 				(
 						SELECT 9 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_9 AS autopositiontaking, 0 AS autolivepositiontaking
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.autopositiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.autolivepositiontaking))
@@ -2834,6 +3482,29 @@ BEGIN--Update Position Taking
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
 			END
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+			from 
+				(
+						SELECT 9 AS bettype, 99 AS sporttype, @auto_v99spositiontaking_9 AS autopositiontaking, @isauto_v99spositiontaking_9 AS isautopositiontaking, @v99mspositiontaking_9_min as autopositiontaking_min						
+				) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END	
 
 			--Check s1<=s4
 			SELECT @ErrType = ''
@@ -2844,8 +3515,8 @@ BEGIN--Update Position Taking
 						SELECT 9 AS bettype, 99 AS sporttype, @v99spositiontaking_9 AS positiontaking, 0 AS livepositiontaking
 				
 				) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs.custid = @srecommend
 				and 
 				((cs.spositiontaking<b.positiontaking) or (b.bettype in (1,3,7,8) and b.sporttype=1 and cs.slivepositiontaking<b.livepositiontaking))
@@ -2869,8 +3540,8 @@ BEGIN--Update Position Taking
 				(
 					SELECT 9 AS bettype, 99 AS sporttype, @v99spositiontaking_9 AS positiontaking, @isauto_v99spositiontaking_9 as isauto_spositiontaking, @isauto_v99smpositiontaking_9 as isauto_smpositiontaking, @v99mspositiontaking_9_max as positiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 			
 			if @ErrType <>''
@@ -2880,6 +3551,29 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+			from
+				(
+					SELECT 9 AS bettype, 99 AS sporttype, @v99spositiontaking_9 AS positiontaking, @isauto_v99spositiontaking_9 as isauto_spositiontaking, @isauto_v99smpositiontaking_9 as isauto_smpositiontaking, @v99mspositiontaking_9_min as positiontaking_min						
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -2906,9 +3600,9 @@ BEGIN--Update Position Taking
 							@isauto_v154spositiontaking_20 AS isautopositiontaking
 					) AS b 
 						on co.sporttype=b.sporttype and co.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) 
+				INNER JOIN bodb02.dbo.sports with (nolock) 
 						on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) 
+				INNER JOIN bodb02.dbo.bettype with (nolock) 
 						on b.bettype = bettype.typeid
 
 				where co.custid = @srecommend 
@@ -2934,8 +3628,8 @@ BEGIN--Update Position Taking
 					(
 						SELECT 20 AS bettype, 154 AS sporttype, @auto_v154spositiontaking_20 AS autopositiontaking
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where cs.custid = @srecommend
 					and cs.spositiontaking<b.autopositiontaking
 				
@@ -2952,6 +3646,29 @@ BEGIN--Update Position Taking
 					
 				END
 				
+				--Check u1>=us1_min (= min_s1)
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10)) + '<br>'
+				from 
+					(
+							SELECT 20 AS bettype, 154 AS sporttype, @auto_v154spositiontaking_20 AS autopositiontaking, @isauto_v154spositiontaking_20 AS isautopositiontaking, @v154mspositiontaking_20_min as autopositiontaking_min						
+					) AS b 
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) 
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 11							
+					SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END	
+				
 				--Check s1<=s4
 				SELECT @ErrType = ''
 				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Max: '+ cast((cs.spositiontaking) AS varchar(10))+ '<br>'
@@ -2959,8 +3676,8 @@ BEGIN--Update Position Taking
 					(
 						SELECT 20 AS bettype, 154 AS sporttype,@v154spositiontaking_20 AS positiontaking	
 					) AS b on cs.sporttype=b.sporttype and cs.bettype=b.bettype
-					inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-					inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+					INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+					INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where cs.custid = @srecommend
 					and cs.spositiontaking<b.positiontaking
 					
@@ -2986,8 +3703,8 @@ BEGIN--Update Position Taking
 						@isauto_v154smpositiontaking_20 as isauto_smpositiontaking, 
 						@v154mspositiontaking_20_max as positiontaking_max
 					) b
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 				where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
 				
 				if @ErrType <>''
@@ -2997,6 +3714,29 @@ BEGIN--Update Position Taking
 											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 										END, @ErrCode_cur = 8							
+					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+					return
+				END
+				
+				--Check s1>=s1_min
+				SELECT @ErrType = ''
+				SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10)) + '<br>'
+				from
+					(
+						SELECT 20 AS bettype, 154 AS sporttype, @v154spositiontaking_20 AS positiontaking, @isauto_v154spositiontaking_20 as isauto_spositiontaking, @isauto_v154smpositiontaking_20 as isauto_smpositiontaking, @v154mspositiontaking_20_min as positiontaking_min						
+					) b
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0)
+				
+				if @ErrType <>''
+				BEGIN
+					SELECT @ErrMsg_cur =	@UserName + ': '+
+										case @Language 
+											WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+										END, @ErrCode_cur = 12							
 					select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 							@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 					return
@@ -3038,8 +3778,8 @@ BEGIN--Update Position Taking
 				UNION ALL	SELECT 161 AS sporttype, 90 AS bettype, 0 AS autopositiontaking, 0 AS isautopositiontaking, @auto_v161slivepositiontaking_90 AS autolivepositiontaking, @isauto_v161slivepositiontaking_90 AS isautolivepositiontaking
 				
 			) AS b on co3.sporttype=b.sporttype and co3.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 
 			where co3.custid = @srecommEND and ((b.isautopositiontaking>0 and b.autopositiontaking>co3.maxpositiontaking) or (b.isautolivepositiontaking>0 and b.sporttype=161 and b.bettype in (85,86,87) and b.autolivepositiontaking>co3.maxlivepositiontaking))
 
@@ -3075,8 +3815,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 90 AS bettype, 161 AS sporttype, 0 AS autopositiontaking, @auto_v161slivepositiontaking_90 AS autolivepositiontaking
 					
 				) AS b on cs3.sporttype=b.sporttype and cs3.bettype=b.bettype
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs3.custid = @srecommEND
 				and 
 				((cs3.spositiontaking<b.autopositiontaking) or (b.bettype in (85,86,87,89,90) and b.sporttype=161 and cs3.slivepositiontaking<b.autolivepositiontaking))
@@ -3092,6 +3832,39 @@ BEGIN--Update Position Taking
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
 			END
+			
+			--Check u1>=us1_min (= min_s1)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.autopositiontaking_min) AS varchar(10))
+			+ CASE WHEN b.sporttype=161 and b.bettype in (85,86,87,89,90) THEN '-MinLive: '+ cast((b.autolivepositiontaking_min) AS varchar(10)) ELSE '' END + '<br>'
+			from 
+				(
+							SELECT 81 AS bettype, 161 AS sporttype, @auto_v161spositiontaking_81 AS autopositiontaking, @isauto_v161spositiontaking_81 AS isautopositiontaking, @v161mspositiontaking_81_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 as autolivepositiontaking_min
+					UNION ALL 	SELECT 83 AS bettype, 161 AS sporttype, @auto_v161spositiontaking_83 AS autopositiontaking, @isauto_v161spositiontaking_83 AS isautopositiontaking, @v161mspositiontaking_83_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 as autolivepositiontaking_min
+					UNION ALL 	SELECT 88 AS bettype, 161 AS sporttype, @auto_v161spositiontaking_88 AS autopositiontaking, @isauto_v161spositiontaking_88 AS isautopositiontaking, @v161mspositiontaking_88_min as autopositiontaking_min, 0 AS autolivepositiontaking, 0 AS isautolivepositiontaking, 0 as autolivepositiontaking_min
+					UNION ALL 	SELECT 85 AS bettype, 161 AS sporttype, 0 AS autopositiontaking, 0 AS isautopositiontaking, 0 as autopositiontaking_min, @auto_v161slivepositiontaking_85 AS autolivepositiontaking, @isauto_v161slivepositiontaking_85 AS isautolivepositiontaking, @v161mslivepositiontaking_85_min AS autolivepositiontaking_min
+					UNION ALL 	SELECT 86 AS bettype, 161 AS sporttype, @auto_v161spositiontaking_86 AS autopositiontaking, @isauto_v161spositiontaking_86 AS isautopositiontaking, @v161mspositiontaking_86_min as autopositiontaking_min, @auto_v161slivepositiontaking_86 AS autolivepositiontaking, @isauto_v161slivepositiontaking_86 AS isautolivepositiontaking, @v161mslivepositiontaking_86_min AS autolivepositiontaking_min
+					UNION ALL 	SELECT 87 AS bettype, 161 AS sporttype, 0 AS autopositiontaking, 0 AS isautopositiontaking, 0 as autopositiontaking_min, @auto_v161slivepositiontaking_87 AS autolivepositiontaking, @isauto_v161slivepositiontaking_87 AS isautolivepositiontaking, @v161mslivepositiontaking_87_min AS autolivepositiontaking_min
+					UNION ALL 	SELECT 89 AS bettype, 161 AS sporttype, 0 AS autopositiontaking, 0 AS isautopositiontaking, 0 as autopositiontaking_min, @auto_v161slivepositiontaking_89 AS autolivepositiontaking, @isauto_v161slivepositiontaking_89 AS isautolivepositiontaking, @v161mslivepositiontaking_89_min AS autolivepositiontaking_min
+					UNION ALL 	SELECT 90 AS bettype, 161 AS sporttype, 0 AS autopositiontaking, 0 AS isautopositiontaking, 0 as autopositiontaking_min, @auto_v161slivepositiontaking_90 AS autolivepositiontaking, @isauto_v161slivepositiontaking_90 AS isautolivepositiontaking, @v161mslivepositiontaking_90_min AS autolivepositiontaking_min
+										
+					) AS b 
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where ((b.isautopositiontaking = 1 and b.autopositiontaking < b.autopositiontaking_min) or (b.bettype in (1,3,7,8) and b.sporttype=1 and b.isautolivepositiontaking = 1 and b.autolivepositiontaking < b.autolivepositiontaking_min ))
+				
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 11							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END						
+
 			-- number game
 			--Check s1<=s4
 			SELECT @ErrType = ''
@@ -3109,8 +3882,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 90 AS bettype, 161 AS sporttype, 0 AS positiontaking, @v161slivepositiontaking_90 AS livepositiontaking
 					
 				) AS b on cs3.sporttype=b.sporttype and cs3.bettype=b.bettype
-				inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-				inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+				INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+				INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where cs3.custid = @srecommEND
 				and 
 				((cs3.spositiontaking<b.positiontaking) or (b.bettype in (85,86,87,89,90) and b.sporttype=161 and cs3.slivepositiontaking<b.livepositiontaking))
@@ -3142,8 +3915,8 @@ BEGIN--Update Position Taking
 					UNION ALL 	SELECT 89 AS bettype, 161 AS sporttype, 0						AS positiontaking, 0							  as isauto_spositiontaking, 0								 as isauto_smpositiontaking, 0							  as positiontaking_max, @v161slivepositiontaking_89 AS livepositiontaking, @isauto_v161slivepositiontaking_89 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_89 as isauto_smlivepositiontaking, @v161mslivepositiontaking_89_max AS livepositiontaking_max
 					UNION ALL 	SELECT 90 AS bettype, 161 AS sporttype, 0						AS positiontaking, 0							  as isauto_spositiontaking, 0								 as isauto_smpositiontaking, 0							  as positiontaking_max, @v161slivepositiontaking_90 AS livepositiontaking, @isauto_v161slivepositiontaking_90 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_90 as isauto_smlivepositiontaking, @v161mslivepositiontaking_90_max AS livepositiontaking_max
 				) b
-			inner join bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
-			inner join bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
 			where (b.positiontaking > b.positiontaking_max and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0) or (b.bettype in (85,86,87,89,90) and b.livepositiontaking > b.livepositiontaking_max and b.isauto_slivepositiontaking= 0 and b.isauto_smlivepositiontaking = 0)
 			
 			if @ErrType <>''
@@ -3153,6 +3926,38 @@ BEGIN--Update Position Taking
 										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 									END, @ErrCode_cur = 8							
+				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				return
+			END
+			
+			--Check s1>=s1_min
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + '-Min: '+ cast((b.positiontaking_min) AS varchar(10))
+			+ CASE WHEN b.sporttype=161 and b.bettype in (85,86,87,89,90) THEN '-MinLive: '+ cast((b.livepositiontaking_min) AS varchar(10)) ELSE '' END + '<br>'
+			from
+				(
+								SELECT 81 AS bettype, 161 AS sporttype, @v161spositiontaking_81 AS positiontaking, @isauto_v161spositiontaking_81 as isauto_spositiontaking, @isauto_v161smpositiontaking_81 as isauto_smpositiontaking, @v161mspositiontaking_81_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 as livepositiontaking_min
+					UNION ALL 	SELECT 83 AS bettype, 161 AS sporttype, @v161spositiontaking_83 AS positiontaking, @isauto_v161spositiontaking_83 as isauto_spositiontaking, @isauto_v161smpositiontaking_83 as isauto_smpositiontaking, @v161mspositiontaking_83_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 as livepositiontaking_min
+					UNION ALL 	SELECT 88 AS bettype, 161 AS sporttype, @v161spositiontaking_88 AS positiontaking, @isauto_v161spositiontaking_88 as isauto_spositiontaking, @isauto_v161smpositiontaking_88 as isauto_smpositiontaking, @v161mspositiontaking_88_min as positiontaking_min, 0 AS livepositiontaking, 0 as isauto_slivepositiontaking, 0 as isauto_smlivepositiontaking, 0 as livepositiontaking_min
+					UNION ALL 	SELECT 85 AS bettype, 161 AS sporttype, 0 AS positiontaking, 0 as isauto_spositiontaking, 0 as isauto_smpositiontaking, 0 as positiontaking_min, @v161slivepositiontaking_85 AS livepositiontaking, @isauto_v161slivepositiontaking_85 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_85 as isauto_smlivepositiontaking, @v161mslivepositiontaking_85_min as livepositiontaking_min
+					UNION ALL 	SELECT 86 AS bettype, 161 AS sporttype, @v161spositiontaking_86 AS positiontaking, @isauto_v161spositiontaking_86 as isauto_spositiontaking, @isauto_v161smpositiontaking_86 as isauto_smpositiontaking, @v161mspositiontaking_86_min as positiontaking_min, @v161slivepositiontaking_86 AS livepositiontaking, @isauto_v161slivepositiontaking_86 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_86 as isauto_smlivepositiontaking, @v161mslivepositiontaking_86_min as livepositiontaking_min
+					UNION ALL 	SELECT 87 AS bettype, 161 AS sporttype, 0 AS positiontaking, 0 as isauto_spositiontaking, 0 as isauto_smpositiontaking, 0 as positiontaking_min, @v161slivepositiontaking_87 AS livepositiontaking, @isauto_v161slivepositiontaking_87 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_87 as isauto_smlivepositiontaking, @v161mslivepositiontaking_87_min as livepositiontaking_min
+					UNION ALL 	SELECT 89 AS bettype, 161 AS sporttype, 0 AS positiontaking, 0 as isauto_spositiontaking, 0 as isauto_smpositiontaking, 0 as positiontaking_min, @v161slivepositiontaking_89 AS livepositiontaking, @isauto_v161slivepositiontaking_89 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_89 as isauto_smlivepositiontaking, @v161mslivepositiontaking_89_min as livepositiontaking_min
+					UNION ALL 	SELECT 90 AS bettype, 161 AS sporttype, 0 AS positiontaking, 0 as isauto_spositiontaking, 0 as isauto_smpositiontaking, 0 as positiontaking_min, @v161slivepositiontaking_90 AS livepositiontaking, @isauto_v161slivepositiontaking_90 as isauto_slivepositiontaking, @isauto_v161smlivepositiontaking_90 as isauto_smlivepositiontaking, @v161mslivepositiontaking_90_min as livepositiontaking_min
+					
+				) b
+			INNER JOIN bodb02.dbo.sports with (nolock) on b.sporttype = sports.sporttype
+			INNER JOIN bodb02.dbo.bettype with (nolock) on b.bettype = bettype.typeid
+			where (b.positiontaking < b.positiontaking_min and b.isauto_spositiontaking= 0 and b.isauto_smpositiontaking = 0) or (b.bettype in (85,86,87,89,90) and b.livepositiontaking < b.livepositiontaking_min and b.isauto_slivepositiontaking= 0 and b.isauto_smlivepositiontaking = 0)
+			
+			if @ErrType <>''
+			BEGIN
+				SELECT @ErrMsg_cur =	@UserName + ': '+
+									case @Language 
+										WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+									END, @ErrCode_cur = 12							
 				select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
 						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
 				return
@@ -3368,7 +4173,7 @@ BEGIN--Update Position Taking
 		@v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90<0 THEN 0 ELSE @v161slivepositiontaking_90 END
 
 	--- 20131031@Johnson: Aplly execrep when update pt on member
-	EXEC dbo.Acc_CustSetting_08
+				EXEC dbo.Acc_CustSetting_08
 		@custid = @custid,
 		@roleid = 4,
 		
@@ -3442,7 +4247,7 @@ BEGIN--Update Position Taking
 	-- number game
 	IF (@UpdateMultiple=0 OR @UpdatePositiontakingv161=1)
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_08
+								EXEC dbo.Acc_CustSetting3rd_08
 			@custid = @custid,
 			@mode = 'number',
 			@roleid = 4,
@@ -3546,7 +4351,7 @@ BEGIN--Update Position Taking
 	*/
 	
 	---apply execrep when update auto pt on member
-	EXEC dbo.Acc_CustSetting_09
+				EXEC dbo.Acc_CustSetting_09
 		@custid = @custid,
 		@roleid = 4,
 		
@@ -3657,7 +4462,7 @@ BEGIN--Update Position Taking
 		@UpdatePositiontakingv99MP = @UpdatePositiontakingv99MP,
 		@UpdatePositiontakingv154 = @UpdatePositiontakingv154
 		
-	EXEC dbo.Acc_CustSetting3rd_09
+				EXEC dbo.Acc_CustSetting3rd_09
 		@custid = @custid,
 		@roleid = 4,
 		@mode = 'number',
@@ -3820,29 +4625,35 @@ BEGIN--Update Position Taking
 				@language = @language,
 				@userid = @userid
 		*/
-
-	EXEC dbo.Acc_CustSetting_00
-		@custid = @custid, 
-		@recommend = @recommend, 
-		@mrecommend = @mrecommend, 
-		@srecommend = @srecommend,
-		@updautosuper = 0
 		
-	EXEC dbo.Acc_CustSetting3rd_00
-		@custid = @custid, 
-		@recommend = @recommend, 
-		@mrecommend = @mrecommend, 
-		@srecommend = @srecommend,
-		@mode = 'number',
-		@updautosuper = 0
-	/*			
+		--merge code sps correct pt into sps update pt
+		--no need call these sps
+		/* 
+		EXEC dbo.Acc_CustSetting_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@updautosuper = 0
+			
+		EXEC dbo.Acc_CustSetting3rd_00
+			@custid = @custid, 
+			@recommend = @recommend, 
+			@mrecommend = @mrecommend, 
+			@srecommend = @srecommend,
+			@mode = 'number',
+			@updautosuper = 0
+		*/				
+		
+	/*
 	EXEC dbo.Acc_CustomerUpdMember_MinMaxPositiontaking 
 		@custid = @custid, 
 		@recommEND = @recommEND, 
 		@mrecommEND = @mrecommEND, 
 		@srecommEND = @srecommEND,
 		@updautosuper = 0
-	*/	
+	*/
+		
 	SELECT @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 
 
