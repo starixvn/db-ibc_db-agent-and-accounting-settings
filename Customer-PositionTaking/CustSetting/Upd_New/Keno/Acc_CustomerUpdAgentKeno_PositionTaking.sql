@@ -213,6 +213,7 @@ BEGIN
 					, @recommend = @custid
 					, @roleid = 2
 					, @mode = 'Keno'
+					, @KenoBettype = @Bettype
 					, @IsAuto_KenoMPositionTaking = @IsAuto_MPositiontaking
 					, @Old_IsAuto_KenoMPositionTaking = @Old_IsAuto_MPositiontaking
 					, @Auto_KenoMPositionTaking = @Auto_MPositionTaking
@@ -221,9 +222,24 @@ BEGIN
 		END
 	END
 	
+	IF @UpdatePositiontaking = 1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @IsAuto_MPositionTaking = 0        
+	BEGIN   
+		EXEC dbo.Acc_CustSetting3rd_05_xtest 		
+			@recommend = @custid,
+			@roleid = 2,
+			@mode = 'Keno',
+			@KenoBettype = @Bettype,
+
+			@IsAuto_KenoMPositionTaking = @IsAuto_MPositionTaking, --im2
+			@Old_IsAuto_KenoMPositionTaking = @Old_IsAuto_MPositionTaking,--old_im2
+		
+			@updateautopositiontakingv202 = 0,						
+			@newmpositiontaking = @NewMPositionTaking         
+	END		
+
 	IF (@UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1)
 	BEGIN 
-		EXEC dbo.Acc_CustSetting3rd_07_xtest @recommend = @custid, @roleid = 2, @mode = 'Keno'
+		EXEC dbo.Acc_CustSetting3rd_07_xtest @recommend = @custid, @roleid = 2, @mode = 'Keno', @Sporttype = @SportType, @BetType = @Bettype
 		IF (@@ERROR <> 0)
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': '+ CASE @Language 

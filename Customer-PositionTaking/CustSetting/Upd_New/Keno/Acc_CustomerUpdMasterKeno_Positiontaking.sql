@@ -227,6 +227,24 @@ BEGIN
 			, @KenoBetType = @BetType
 	END
 
+	--apply new value position taking for super on members
+	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @IsAuto_SPositionTaking = 0
+	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_05_xtest
+			@srecommend = @srecommend,
+			@mrecommend = @custid,
+			@roleid = 3,
+			@mode = 'Keno',
+						
+			@KenoBettype = @Bettype,
+			
+			@IsAuto_KenoSPositionTaking = @IsAuto_SPositionTaking,--is3
+			@Old_IsAuto_KenoSPositionTaking = @Old_IsAuto_SPositionTaking,--is3_old
+									
+			@updateautopositiontakingv202 = 0,
+			@newspositiontaking = @NewSPositionTaking
+	END
+
 	IF @UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1
 	BEGIN
 		EXEC dbo.Acc_CustSetting3rd_07_xtest 

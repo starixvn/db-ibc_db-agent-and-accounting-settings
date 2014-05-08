@@ -373,7 +373,7 @@ BEGIN
 				FROM DBAGE.bodb02.dbo.DownlineTurnOver_Setting s WITH (NOLOCK) 
 					INNER JOIN bodb02.dbo.match m WITH (NOLOCK) ON s.matchid = m.matchid
 				WHERE SMAID = @custid AND eventstatus <> 'completed')
-		EXEC DBAGE.bodb02.dbo.NAP_SMATurnover_MaxTurnoverUpd @UpdMode = 5, @SMAID = @custid
+		EXEC DBAGE.bodb02.dbo.NAP_SMATurnover_MaxTurnoverUpd @UpdMode = 17, @SMAID = @custid
 END
 
 IF ISNULL(@maxcredit,0) != ISNULL(@OldMaxCredit,0)

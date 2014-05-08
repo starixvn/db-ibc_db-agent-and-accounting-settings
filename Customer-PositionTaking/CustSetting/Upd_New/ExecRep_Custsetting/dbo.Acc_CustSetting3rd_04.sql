@@ -2354,7 +2354,7 @@ BEGIN
 				apositiontaking = aco.minpositiontaking,
 				mpositiontaking = case when csg.mpositiontaking + aco.minpositiontaking > mcs.mpositiontaking then mcs.mpositiontaking-aco.minpositiontaking else csg.mpositiontaking end
 			from custsettingGame csg 
-				inner join custinfo as mb with (NOLOCK) on csg.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1 and mb.SyncLiveCasino = 1
+				inner join custinfo as mb with (NOLOCK) on csg.custid = mb.custid and mb.recommend=@recommend and mb.roleid=1
 				inner join custsettingGame as mcs with (NOLOCK) on mcs.custid = @mrecommend  and mcs.sporttype=csg.sporttype and mcs.bettype=csg.bettype
 				inner join custoverridegame as aco with (NOLOCK) on aco.custid = @recommend  and aco.sporttype=csg.sporttype and aco.bettype=csg.bettype
 			where csg.apositiontaking < aco.minpositiontaking
