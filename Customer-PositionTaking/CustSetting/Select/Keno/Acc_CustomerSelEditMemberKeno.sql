@@ -20,7 +20,7 @@ BEGIN
 	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @currency INT
-	SELECT @mrecommend = srecommend, @srecommend = mrecommend, @recommend = recommend, @currency = currency
+	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend, @currency = currency
 	FROM dbo.custinfo WITH (NOLOCK)
 	WHERE custid = @CustID
 
@@ -131,9 +131,9 @@ BEGIN
 
 	--select PT/Comm setting
 	SELECT cs.bettype
-		,cs.apositiontaking --a1
-		,acs.minpositiontaking AS apositiontaking_min--n2/MinPT
-		,CASE WHEN acs.apositiontaking <= m.apositiontaking THEN acs.apositiontaking ELSE m.apositiontaking END AS apositiontaking_max --l2/MaxPT
+		,cs.apositiontaking as a1
+		,acs.minpositiontaking AS a1_min 
+		,CASE WHEN acs.apositiontaking <= m.apositiontaking THEN acs.apositiontaking ELSE m.apositiontaking END AS a1_max
 		,cs.playerdiscount --commission
 		,ac.discount AS playerdiscount_max --maxcommission
 	FROM CustSettingGame cs WITH (NOLOCK)

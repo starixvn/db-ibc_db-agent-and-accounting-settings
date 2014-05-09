@@ -32,19 +32,19 @@ BEGIN
 	FROM dbo.custinfo WITH(NOLOCK) WHERE custid = @custid
 	
 	SELECT cs.bettype
-		, cs.apositiontaking AS APositionTaking --a1
-		, cs.mpositiontaking AS MPositionTaking --m1
-		, cs.spositiontaking AS SPositionTaking --s1
-		, cs.isautopositiontaking AS IsAuto_SPositionTaking_Mem --is1
-		, cs.autopositiontaking AS Auto_SPositionTaking_Mem --us1
-		, mcs.isautopositiontaking AS IsAuto_SPositionTaking --is3
-		, scs.spositiontaking AS Auto_SPositionTaking_Max  --us1_max = S4
+		, cs.apositiontaking AS a1
+		, cs.mpositiontaking AS m1
+		, cs.spositiontaking AS s1
+		, cs.isautopositiontaking AS is1
+		, cs.autopositiontaking AS us1
+		, mcs.isautopositiontaking AS is3
+		, scs.spositiontaking AS us1_max
 		, CASE WHEN scs.spositiontaking - mcs.mpositiontaking > sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking)
 				THEN scs.spositiontaking - mcs.mpositiontaking
-				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS SPositionTaking_Max -- s1_max = Max(N4-M1-A1, S4-M3)
+				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS s1_max --s1_max = Max(N4-M1-A1, S4-M3)
 		,CASE WHEN sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) < 0 
 				THEN 0
-				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS SPositionTaking_Min -- s1_min = Max(0, N4-M1-A1)
+				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS s1_min --s1_min = Max(0, N4-M1-A1)
 	FROM dbo.CustSettingGame cs WITH(NOLOCK)
 		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.bettype = cs.bettype AND mcs.sporttype = cs.sporttype
@@ -57,22 +57,15 @@ BEGIN
 
 END
 
-
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbAdminNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbDownlineNet] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbDownlineNetView] AS [dbo]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbExtAccNet] AS [dbo]
 GO
-
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [vnteam] AS [dbo]
-GO
 
 

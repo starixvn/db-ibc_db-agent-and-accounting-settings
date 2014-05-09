@@ -83,14 +83,14 @@ BEGIN
 	SELECT cs.BetType
 		, ISNULL(cs.discount, 0) AS discount
 		, ISNULL(mcs.adiscount, 0) AS discount_max
-		, cs.apositiontaking AS apositiontaking --a2
-		, cs.mpositiontaking AS mpositiontaking --m2
-		, cs.autompositiontaking AS auto_mpositiontaking --u2
-		, cs.isautompositiontaking AS isauto_mpositiontaking --i2
-		, co.minpositiontaking AS apositiontaking_min --n2
+		, cs.apositiontaking AS a2 --a2
+		, cs.mpositiontaking AS m2 --m2
+		, cs.autompositiontaking AS u2 --u2
+		, cs.isautompositiontaking AS i2 --i2
+		, co.minpositiontaking AS n2 --n2
 		
 		, mco.minpositiontaking AS n3		
-		, mcs.mpositiontaking AS mpositiontaking_max --m3
+		, mcs.mpositiontaking AS m3 --m3
 	FROM dbo.custsettingGame cs WITH(NOLOCK)
 		INNER JOIN @GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.custsettingGame mcs WITH(NOLOCK) ON mcs.CustID = @mrecommend AND cs.bettype = mcs.bettype AND cs.Sporttype = mcs.sporttype
@@ -99,7 +99,6 @@ BEGIN
 	WHERE cs.custid = @custid AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202
 
 END
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [bodbAdminNet] AS [dbo]

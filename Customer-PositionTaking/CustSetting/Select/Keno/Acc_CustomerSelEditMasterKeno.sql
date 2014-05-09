@@ -96,14 +96,13 @@ BEGIN
 
 	--PT & commission
 	SELECT	cs.Bettype,
-			cs.spositiontaking, --s3
-			cs.mpositiontaking, --m3
-			co.minpositiontaking, --n3
-			cs.isautopositiontaking, --is3
-			cs.autopositiontaking, --us3
+			cs.spositiontaking as s3, --s3
+			cs.mpositiontaking as m3, --m3
+			co.minpositiontaking as n3, --n3
+			cs.isautopositiontaking as is3, --is3
+			cs.autopositiontaking as us3, --us3
 			
-			scs.spositiontaking as spositiontaking_max, --s4
-			scs.mpositiontaking as  mpositiontaking_max, --m4
+			scs.spositiontaking as s4, --s4
 			scs.minpositiontaking as n4,  --n4
 			cs.adiscount,
 			scs.sdiscount AS discount_max

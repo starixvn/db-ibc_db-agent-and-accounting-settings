@@ -54,9 +54,9 @@ BEGIN
 
 	--PT & commission
 	SELECT	cs.Bettype,
-			cs.spositiontaking, --s4
-			co.minpositiontaking, --n4
-			gs.MaxPositiontaking, --l4
+			cs.spositiontaking as s4, --s4
+			co.minpositiontaking as n4, --n4
+			gs.MaxPositiontaking as l4, --l4
 			cs.sdiscount,
 			gs.Maxsdiscount
 	FROM dbo.CustSettingGame cs WITH (NOLOCK)

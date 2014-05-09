@@ -37,22 +37,24 @@ BEGIN
 
 	--Get master PT value
 	SELECT cs.bettype
-		, cs.apositiontaking AS APositionTaking --a1
-		, cs.mpositiontaking AS MPositionTaking --m1
-		, cs.isautompositiontaking AS IsAuto_MPositionTaking_Mem --im1
-		, cs.autompositiontaking AS Auto_MPositionTaking_Mem --um1
+		, cs.apositiontaking AS a1
+		, cs.mpositiontaking AS m1
+		, cs.isautompositiontaking AS im1
+		, cs.autompositiontaking AS um1
 
-		, csa.isautompositiontaking  AS IsAuto_MPositionTaking --im2
-		, csm.mpositiontaking AS Auto_MPositionTaking_Max --um1_max=min(m3,m4)
+		, csa.isautompositiontaking  AS im2
+		, csm.mpositiontaking AS um1_max --um1_max=min(m3,m4)
 
 		, CASE WHEN NOT (cs.isautopositiontaking = 0 AND csm.isautopositiontaking = 0)
 			THEN csm.mpositiontaking - cs.apositiontaking 
 			ELSE CASE WHEN csm.mpositiontaking - cs.apositiontaking <= css.spositiontaking - cs.spositiontaking - cs.apositiontaking 
 				THEN csm.mpositiontaking - cs.apositiontaking 
 				ELSE css.spositiontaking - cs.spositiontaking - cs.apositiontaking END 
-			END AS MPositionTaking_Max --!(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)--> m1_max
+			END AS m1_max --!(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)--> m1_max
 		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 
-			ELSE sco.minpositiontaking - cs.apositiontaking END AS MPositionTaking_Min --m1_min=um1_min=Max(0, N3-A1)
+			ELSE sco.minpositiontaking - cs.apositiontaking END AS m1_min --m1_min=um1_min=Max(0, N3-A1)
+		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 
+			ELSE sco.minpositiontaking - cs.apositiontaking END AS um1_min --m1_min=um1_min=Max(0, N3-A1)
 	FROM dbo.CustSettingGame AS cs WITH (NOLOCK)
 		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame csa WITH (NOLOCK) ON csa.custid = @recommend AND csa.bettype = cs.bettype AND csa.sporttype = cs.sporttype 
