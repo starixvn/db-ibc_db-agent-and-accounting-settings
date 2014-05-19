@@ -251,7 +251,9 @@ BEGIN
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
-			@mode = 'Keno'
+			@mode = 'Keno',
+			@Sporttype = @SportType,
+			@Bettype = @Bettype
 		
 		IF (@@ERROR <> 0)
 		BEGIN
