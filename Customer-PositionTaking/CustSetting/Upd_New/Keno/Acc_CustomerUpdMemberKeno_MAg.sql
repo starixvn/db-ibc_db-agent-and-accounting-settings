@@ -1,5 +1,4 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MAg]
-(
 	@custid INT
 	, @SportType INT = 202 
 	, @BetType INT
@@ -18,7 +17,6 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MAg]
 	, @IP VARCHAR(19) = ''
 	, @ErrCode VARCHAR(300) = '' OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
-)
 AS
 /*
 	Created: 20140318@Patrick
@@ -33,16 +31,55 @@ AS
 BEGIN
 
 	SET NOCOUNT ON 
-	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @ErrType VARCHAR(1000), @roleid TINYINT, @ErrCode_Cur INT
-		, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000), @recommend INT, @srecommend INT, @mrecommend INT, @UserName VARCHAR(50)
+	declare @startRun datetime  
+	declare @endRun datetime  
+	declare @duration int  
+	set @startRun = getdate()  
+
+	DECLARE @ErrType VARCHAR(1000), @roleid TINYINT, @ErrCode_Cur INT
+		, @ErrMsg_Cur NVARCHAR(4000), @recommend INT, @srecommend INT, @mrecommend INT, @UserName VARCHAR(50)
+
+	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney, @MaxPositionTaking smallmoney
+
+	DECLARE @tmp_cs TABLE (custid INT, sporttype INT, bettype INT, 
+				spositiontaking SMALLMONEY, mpositiontaking SMALLMONEY, apositiontaking SMALLMONEY, 
+				isautopositiontaking BIT, isautompositiontaking BIT, autopositiontaking SMALLMONEY, autompositiontaking SMALLMONEY)	
+
+	DECLARE @tmp_sag TABLE(custid INT, sporttype INT, bettype INT, spositiontaking SMALLMONEY, mpositiontaking SMALLMONEY, minpositiontaking SMALLMONEY, maxpositiontaking SMALLMONEY)
+	DECLARE @tmp_mag TABLE(custid INT, sporttype INT, bettype INT, mpositiontaking SMALLMONEY, isautopositiontaking BIT, autopositiontaking SMALLMONEY, minpositiontaking SMALLMONEY, maxpositiontaking SMALLMONEY)
+	DECLARE @tmp_ag TABLE(custid INT, sporttype INT, bettype INT, apositiontaking SMALLMONEY, isautompositiontaking BIT, autompositiontaking SMALLMONEY, minpositiontaking SMALLMONEY, maxpositiontaking SMALLMONEY)
+	
+	DECLARE @APositionTaking SMALLMONEY--a1
+		, @APositionTaking_Max SMALLMONEY--a2
+
+		, @Old_MPositionTaking SMALLMONEY--old_m1
+		, @Old_Auto_MPositionTaking_Mem SMALLMONEY--old_um1
+		, @Old_IsAuto_MPositionTaking_Mem BIT--old_im1
+		, @m1_log SMALLMONEY
+
+		, @SPositionTaking_Max SMALLMONEY--s4
+
+		, @SPositionTaking SMALLMONEY --s1
+		, @Auto_SPositionTaking_Mem SMALLMONEY--u1
+		, @IsAuto_SPositionTaking_Mem BIT--i1
+
+		, @Auto_SPositionTaking SMALLMONEY--u3
+		, @IsAuto_SPositionTaking BIT--i3
+		, @Auto_MPositionTaking SMALLMONEY--um2
+		, @IsAuto_MPositionTaking_BK bit-- backup to write log
+
+		, @MPositionTaking_Max SMALLMONEY
+		, @MPositionTaking_Min SMALLMONEY
+	
 
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = '', @startRun = GETDATE()
 
-	--Check downline belongin
-	EXEC dbo.Age_CustomerSelCheckBelonging @SessionCustID = @mrecommend
-														, @Custid = @custid
-														, @roleid = @roleid OUTPUT
-	IF @roleid = 0 RETURN
+	EXEC Age_CustomerSelCheckBelonging   
+		 @SessionCustID = @Userid,   
+		 @username = @username output,  
+		 @Custid = @custid,  
+		 @roleid = @roleid OUTPUT  
+	if (@roleid <> 1) return -- return if not member 
 
 	--Check disable user
 	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
@@ -57,8 +94,18 @@ BEGIN
 	SELECT @UserName = username, @recommend = recommend, @mrecommend = mrecommend, @srecommend = srecommend 
 	FROM dbo.customer WITH (NOLOCK) WHERE custid = @custid
 
-	IF @UpdatePositiontaking = 1 AND (@MPositionTaking < 0 OR @MPositionTaking > 1
-												OR @Auto_MPositionTaking_Mem < 0 OR @Auto_MPositionTaking_Mem > 1)
+	INSERT INTO @tmp_cs(custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, isautopositiontaking, isautompositiontaking, autopositiontaking, autompositiontaking)
+	SELECT custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, isautopositiontaking, isautompositiontaking, autopositiontaking, autompositiontaking
+	FROM CustSettingGame WITH(NOLOCK)
+	WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype 
+
+	SELECT @MaxPositionTaking = mpositiontaking, --m4
+			@SPositionTaking_Max = spositiontaking --s4
+	FROM dbo.CustSettingGame cs WITH(NOLOCK)
+	WHERE custid = @srecommend AND bettype = @BetType AND sporttype = @SportType
+
+	IF @UpdatePositiontaking = 1 AND (@MPositionTaking < 0 OR @MPositionTaking > @MaxPositionTaking
+												OR @Auto_MPositionTaking_Mem < 0 OR @Auto_MPositionTaking_Mem > @MaxPositionTaking)
 	BEGIN
 		SELECT @ErrCode_cur = 5
 		SELECT @ErrMsg_cur = @UserName + ': ' +	CASE @Language WHEN 'E' THEN 'Wrong position taking.' ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) END
@@ -66,30 +113,15 @@ BEGIN
 		RETURN
 	END
 	
-	DECLARE @APositionTaking SMALLMONEY--a1
-		, @APositionTaking_Max SMALLMONEY--a2
-		, @Old_MPositionTaking SMALLMONEY--old_m1
-		, @Old_Auto_MPositionTaking_Mem SMALLMONEY--old_um1
-		, @Old_IsAuto_MPositionTaking_Mem BIT--old_im1
-		, @SPositionTaking_Max SMALLMONEY--s4
-		, @SPositionTaking SMALLMONEY
-		, @Auto_SPositionTaking_Mem SMALLMONEY--u1
-		, @IsAuto_SPositionTaking_Mem BIT--i1
-		, @Auto_SPositionTaking SMALLMONEY--u3
-		, @IsAuto_SPositionTaking BIT--i3
-		, @Auto_MPositionTaking SMALLMONEY--um2
-		, @IsAuto_MPositionTaking_BK bit-- backup to write log
+	-- backup
+	SELECT @IsAuto_MPositionTaking_BK = @IsAuto_MPositionTaking
 
-		, @MPositionTaking_Max SMALLMONEY
-		, @MPositionTaking_Min SMALLMONEY
-	
 	--DB adjust value @IsAuto_MPositionTaking
 	SELECT @IsAuto_MPositionTaking = isautompositiontaking
 	FROM dbo.CustSettingGame WITH (NOLOCK)
 	WHERE custid = @recommend AND bettype = @BetType AND sporttype = @SportType
 
-	-- backup
-	SELECT @IsAuto_MPositionTaking_BK = @IsAuto_MPositionTaking
+	
 	--s1,a1,old_m1,u1,i1
 	IF (@UpdatePositiontaking = 1 OR @UpdateAutoPositiontaking = 1)
 	BEGIN

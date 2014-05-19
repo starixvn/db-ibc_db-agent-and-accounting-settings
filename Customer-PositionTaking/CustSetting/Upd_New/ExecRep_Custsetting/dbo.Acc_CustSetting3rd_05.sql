@@ -1029,7 +1029,7 @@ BEGIN
 			BEGIN
 				UPDATE cs 
 				SET spositiontaking = b.spositiontaking
-				FROM CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
+				FROM CustSettingGame as cs with (ROWLOCK, UPDLOCK)
 					INNER JOIN custinfo ci (nolock) on ci.custid = cs.custid and ci.mrecommend = @mrecommend and ci.roleid = 1
 					INNER JOIN 
 						(
