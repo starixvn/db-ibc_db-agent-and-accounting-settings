@@ -1,32 +1,32 @@
 ﻿
 
 ALTER PROC [dbo].[Acc_CustomerUpdUserInfo]
-	@CustID int,	
-	@firstname nvarchar(50) = NULL,
-	@lastname nvarchar(50) = NULL,
-	@address nvarchar(80) = NULL,
-	@postal nvarchar(50) = NULL,
-	@city nvarchar(50) = NULL,
-	@state nvarchar(50) = NULL,
-	@country nvarchar(50) = NULL,
-	@phone nvarchar(50) = NULL,
-	@mobilephone nvarchar(50) = NULL,
-	@fax nvarchar(50) = NULL,
-	@email nvarchar(50) = NULL,
-	@birthday smalldatetime = NULL,
-	@refcode1 nvarchar(50) = NULL,
-	@refcode2 nvarchar(50) = NULL,
-	@remark nvarchar(50) = NULL,
-	@important bit = NULL,
-	@gender bit = NULL,
-	@disCasino bit = 0,
+	@CustID         int,	
+	@firstname      nvarchar(50) = NULL,
+	@lastname       nvarchar(50) = NULL,
+	@address        nvarchar(80) = NULL,
+	@postal         nvarchar(50) = NULL,
+	@city           nvarchar(50) = NULL,
+	@state          nvarchar(50) = NULL,
+	@country        nvarchar(50) = NULL,
+	@phone          nvarchar(50) = NULL,
+	@mobilephone    nvarchar(50) = NULL,
+	@fax            nvarchar(50) = NULL,
+	@email          nvarchar(50) = NULL,
+	@birthday       smalldatetime = NULL,
+	@refcode1       nvarchar(50) = NULL,
+	@refcode2       nvarchar(50) = NULL,
+	@remark         nvarchar(300) = NULL,
+	@important      bit = NULL,
+	@gender         bit = NULL,
+	@disCasino      bit = 0,
 
-	@SubAccID int = 0, --Sub-AccountID
-	@UserID int,
-	@Language varchar(2) = 'E',
-	@ErrCode int = 0 OUTPUT,
-	@ErrMsg nvarchar(200) = '' OUTPUT,
-	@IP varchar(15)=''
+	@SubAccID       int = 0, --Sub-AccountID
+	@UserID         int,
+	@Language       varchar(2) = 'E',
+	@ErrCode        int = 0 OUTPUT,
+	@ErrMsg         nvarchar(200) = '' OUTPUT,
+	@IP             varchar(15)=''
 
 AS
 /*
@@ -50,6 +50,8 @@ Revisions:
 	- 20120731@Lukas: Check old & new value in case of NULL
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20140519@Logan:   1.Updating remarks for SAg, MAg, Ag and members
+	                    2.Code aligning
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -65,29 +67,36 @@ declare @duration int
 set @startRun = getdate()
 
 DECLARE @old_firstname nvarchar(50),
-@old_lastname nvarchar(50),
-@old_address nvarchar(80),
-@old_postal nvarchar(50),
-@old_city nvarchar(50),
-@old_state nvarchar(50),
-@old_country nvarchar(50),
-@old_phone nvarchar(50),
-@old_mobilephone nvarchar(50),
-@old_fax nvarchar(50),
-@old_email nvarchar(50),
-@old_birthday smalldatetime,
-@old_refcode1 nvarchar(50),
-@old_refcode2 nvarchar(50),
-@old_remark nvarchar(50),
-@old_important bit,
-@old_gender bit
+        @old_lastname nvarchar(50),
+        @old_address nvarchar(80),
+        @old_postal nvarchar(50),
+        @old_city nvarchar(50),
+        @old_state nvarchar(50),
+        @old_country nvarchar(50),
+        @old_phone nvarchar(50),
+        @old_mobilephone nvarchar(50),
+        @old_fax nvarchar(50),
+        @old_email nvarchar(50),
+        @old_birthday smalldatetime,
+        @old_refcode1 nvarchar(50),
+        @old_refcode2 nvarchar(50),
+        @old_remark nvarchar(300),
+        @old_important bit,
+        @old_gender bit
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @CustID, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable
+     @custid = @CustID,
+     @ErrCode=@ErrCode output,
+     @ErrMsg=@ErrMsg output
 if @ErrCode <> 0 return
 --end		
 
-IF exists(select 1 from custinfo with (nolock) where synccasino = 1 and custid = @CustID)
+IF exists(select 1 
+            from custinfo with(nolock)
+           where synccasino = 1
+             and custid = @CustID
+         )
 BEGIN
 	IF @disCasino = 1
 		BEGIN	
@@ -95,28 +104,55 @@ BEGIN
 								when 'E' then 'This USER INFO function is temporarily unavailable, please update later.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40005,@Language)
 							end	,
-				@ErrCode = 100
-				return
+				   @ErrCode = 100
+
+			return
 		END
 END
 
+declare @roleid int
+ 
 SELECT @old_firstname = firstname ,
-@old_lastname = lastname,
-@old_address= address,
-@old_postal = postal ,
-@old_city = city ,
-@old_state = state,
-@old_country = country,
-@old_phone = phone,
-@old_mobilephone = mobilephone,
-@old_fax = fax,
-@old_email = email,
-@old_birthday = birthday,
-@old_refcode1 = refcode1,
-@old_refcode2 = refcode2,
-@old_remark = remark,
-@old_important = important
-FROM customer with (nolock) where custid=@CustID
+       @old_lastname = lastname,
+       @old_address= address,
+       @old_postal = postal ,
+       @old_city = city ,
+       @old_state = state,
+       @old_country = country,
+       @old_phone = phone,
+       @old_mobilephone = mobilephone,
+       @old_fax = fax,
+       @old_email = email,
+       @old_birthday = birthday,
+       @old_refcode1 = refcode1,
+       @old_refcode2 = refcode2,
+       @old_remark = remark,
+       @old_important = important,
+       @roleid = roleid
+  FROM customer with(nolock)
+ where custid = @CustID
+ 
+if @roleid = 2
+    begin
+        select @old_remark = creationRemark
+          from CustAgent with(nolock)
+         where custid = @CustID
+    end
+
+if @roleid = 3
+    begin
+        select @old_remark = creationRemark
+          from CustMaster with(nolock)
+         where custid = @CustID
+    end
+         
+if @roleid = 4
+    begin
+        select @old_remark = creationRemark
+          from CustSuper with(nolock)
+         where custid = @CustID
+    end         
+         
 
 IF ISNULL(@old_firstname,'') <> ISNULL(@firstname,'') OR
 ISNULL(@old_lastname,'') <> ISNULL(@lastname,'') OR
@@ -136,26 +172,54 @@ ISNULL(@old_remark,'') <> ISNULL(@remark,'') OR
 ISNULL(@old_important,0) <> ISNULL(@important,0)
 
 BEGIN
-	Update customer with (ROWLOCK) set	
-		firstname = case when @firstname is null then firstname else @firstname end,
-		lastname = case when @lastname is null then lastname else @lastname end,
-		address = case when @address is null then address else @address end,
-		postal = case when @postal is null then postal else @postal end,
-		city = case when @city is null then city else @city end,
-		state = case when @state is null then state else @state end,
-		country = case when @country is null then country else @country end,
-		phone = case when @phone is null then phone else @phone end,
-		mobilephone = case when @mobilephone is null then mobilephone else @mobilephone end,
-		fax = case when @fax is null then fax else @fax end,
-		email = case when @email is null then email else @email end,
-		birthday = case when @birthday is null then birthday else @birthday end,
-		refcode1 = case when @refcode1 is null then refcode1 else @refcode1 end,
-		refcode2 = case when @refcode2 is null then refcode2 else @refcode2 end,
-		remark = case when @remark is null then remark else @remark end,
-		important = case when @important is null then important else @important end
-	where custID = @CustID
+	Update customer with (ROWLOCK)
+	   set firstname = case when @firstname is null then firstname else @firstname end,
+		   lastname = case when @lastname is null then lastname else @lastname end,
+		   address = case when @address is null then address else @address end,
+		   postal = case when @postal is null then postal else @postal end,
+		   city = case when @city is null then city else @city end,
+		   state = case when @state is null then state else @state end,
+		   country = case when @country is null then country else @country end,
+		   phone = case when @phone is null then phone else @phone end,
+		   mobilephone = case when @mobilephone is null then mobilephone else @mobilephone end,
+		   fax = case when @fax is null then fax else @fax end,
+		   email = case when @email is null then email else @email end,
+		   birthday = case when @birthday is null then birthday else @birthday end,
+		   refcode1 = case when @refcode1 is null then refcode1 else @refcode1 end,
+		   refcode2 = case when @refcode2 is null then refcode2 else @refcode2 end,
+		   --remark = case when @remark is null then remark else @remark end,
+		   important = case when @important is null then important else @important end
+	 where custID = @CustID
+	 
+    if @roleid = 1
+    begin
+        update customer with(rowlock, updlock)
+           set remark = case when @remark is null then remark else SUBSTRING(@remark, 1, 50) end
+         where custid = @CustID
+    end
 
+    if @roleid = 2
+    begin
+        update CustAgent with(rowlock, updlock)
+           set creationRemark = case when @remark is null then creationRemark else @remark end
+         where custid = @CustID
+    end
+
+    if @roleid = 3
+    begin
+        update CustMaster with(rowlock, updlock)
+           set creationRemark = case when @remark is null then creationRemark else @remark end
+         where custid = @CustID
+    end
+         
+    if @roleid = 4
+    begin
+        update CustSuper with(rowlock, updlock)
+           set creationRemark = case when @remark is null then creationRemark else @remark end
+         where custid = @CustID
+    end 
 END
+
 ELSE RETURN
 
 declare @LogSPData nvarchar(max)
