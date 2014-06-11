@@ -3,7 +3,7 @@
 	@sporttype INT = 202,
 	@bettype INT,
 	
-	@spositiontaking SMALLMONEY, --s4
+	@s4 SMALLMONEY, --s4
 		
 	@UserID INT = 0,	
 	@Language varchar(2) = 'E',
@@ -67,11 +67,11 @@ BEGIN
 	WHERE Custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 
 	--check if not change value
-	IF @old_spositiontaking = @spositiontaking
+	IF @old_spositiontaking = @s4
 		RETURN
 	
 	SELECT @MaxPT = MaxPositiontaking FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = @sporttype AND Bettype = @bettype and IsDep = 0
-	IF @MaxPT < @spositiontaking
+	IF @MaxPT < @s4
 	BEGIN
 		SELECT @ErrMsg =
 					CASE @Language 
@@ -91,8 +91,8 @@ BEGIN
 		INNER JOIN custinfo ci WITH(NOLOCK) ON ci.custid = cs.custid 
 	WHERE ci.srecommend = @custid AND ci.roleid = 3
 		AND cs.sporttype = @sporttype AND bettype = @bettype
-		AND ((cs.isautopositiontaking = 0 AND cs.spositiontaking + cs.mpositiontaking > @spositiontaking)
-			OR (cs.isautopositiontaking = 1 AND (cs.mpositiontaking > @spositiontaking OR cs.autopositiontaking > @spositiontaking)))
+		AND ((cs.isautopositiontaking = 0 AND cs.spositiontaking + cs.mpositiontaking > @s4)
+			OR (cs.isautopositiontaking = 1 AND (cs.mpositiontaking > @s4 OR cs.autopositiontaking > @s4)))
 	IF @ErrAcc<>''
 	BEGIN
 		Select @ErrMsg =
@@ -111,8 +111,8 @@ BEGIN
 		INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 	WHERE ci.srecommend = @custid AND ci.roleid = 1
 		AND cs.sporttype = @sporttype AND bettype = @bettype
-		AND (cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > @spositiontaking
-			OR (cs.isautopositiontaking = 1 AND cs.autopositiontaking > @spositiontaking))
+		AND (cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > @s4
+			OR (cs.isautopositiontaking = 1 AND cs.autopositiontaking > @s4))
 
 	IF @ErrAcc <> ''
 	BEGIN
@@ -125,7 +125,7 @@ BEGIN
 	END
 
 	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
-	SET spositiontaking = @spositiontaking
+	SET spositiontaking = @s4
 	WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 
 	IF (@@ERROR <> 0)
@@ -149,7 +149,7 @@ BEGIN
 	SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
 	'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
-	'spositiontaking="' + COALESCE(CAST(@spositiontaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+	's4="' + COALESCE(CAST(@s4 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -160,7 +160,7 @@ BEGIN
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdSuperKeno_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
 	'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
-	'spositiontaking="' + COALESCE(CAST(@old_spositiontaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+	's4="' + COALESCE(CAST(@old_spositiontaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -185,7 +185,7 @@ BEGIN
 		SELECT @LogSPData = '<Acc_CustomerUpdSuperKeno_Positiontaking Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
 		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
-		'spositiontaking="' + COALESCE(CAST(@spositiontaking AS VARCHAR(50)),SPACE(1)) + '" ' +
+		's4="' + COALESCE(CAST(@s4 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +

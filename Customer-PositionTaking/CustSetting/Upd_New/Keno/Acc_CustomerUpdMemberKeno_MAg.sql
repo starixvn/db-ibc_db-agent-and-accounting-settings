@@ -3,10 +3,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_MAg]
 	, @SportType INT = 202 
 	, @BetType INT
 
-	, @MPositionTaking SMALLMONEY --m1
-	, @Auto_MPositionTaking_Mem SMALLMONEY --um1
-	, @IsAuto_MPositionTaking_Mem BIT --im1
-	, @IsAuto_MPositionTaking BIT --im2
+	, @m1 SMALLMONEY --m1
+	, @um1 SMALLMONEY --um1
+	, @im1 BIT --im1
+	, @im2 BIT --im2
 
 	, @UpdatePositiontaking BIT = 1
 	, @UpdateAutoPositiontaking BIT = 1
@@ -108,8 +108,8 @@ BEGIN
 	FROM dbo.CustSettingGame cs WITH(NOLOCK)
 	WHERE custid = @mrecommend AND bettype = @BetType AND sporttype = @SportType
 
-	IF @UpdatePositiontaking = 1 AND (@MPositionTaking < 0 OR @MPositionTaking > @MaxPositionTaking
-												OR @Auto_MPositionTaking_Mem < 0 OR @Auto_MPositionTaking_Mem > @MaxPositionTaking)
+	IF @UpdatePositiontaking = 1 AND (@m1 < 0 OR @m1 > @MaxPositionTaking
+												OR @um1 < 0 OR @um1 > @MaxPositionTaking)
 	BEGIN
 		SELECT @ErrCode_cur = 5
 		SELECT @ErrMsg_cur = @UserName + ': ' +	CASE @Language WHEN 'E' THEN 'Wrong position taking.' ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) END
@@ -118,7 +118,7 @@ BEGIN
 	END
 	
 	-- backup
-	SELECT @IsAuto_MPositionTaking_BK = @IsAuto_MPositionTaking
+	SELECT @IsAuto_MPositionTaking_BK = @im2
 
 	----DB adjust value @IsAuto_MPositionTaking
 	--SELECT @IsAuto_MPositionTaking = isautompositiontaking
@@ -139,9 +139,9 @@ BEGIN
 
 
 	--Check if old_PT = new_PT RETURN
-	IF (@MPositionTaking = @Old_MPositionTaking
-		AND	@Auto_MPositionTaking_Mem = @Old_Auto_MPositionTaking_Mem
-		AND @IsAuto_MPositionTaking_Mem = @Old_IsAuto_MPositionTaking_Mem)
+	IF (@m1 = @Old_MPositionTaking
+		AND	@um1 = @Old_Auto_MPositionTaking_Mem
+		AND @im1 = @Old_IsAuto_MPositionTaking_Mem)
 	BEGIN	
 		SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		RETURN
@@ -177,7 +177,7 @@ BEGIN
 		 SELECT @ErrType = @ErrType + sportname + '-'+ typenamee  + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))  
 		 FROM  
 		  (  
-		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m3 AS maxmpositiontaking, @Auto_MPositionTaking_Mem AS autopositiontaking, @IsAuto_MPositionTaking_Mem AS isautopositiontaking    
+		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m3 AS maxmpositiontaking, @um1 AS autopositiontaking, @im1 AS isautopositiontaking    
 		  ) AS b   
 		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
 		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
@@ -204,7 +204,7 @@ BEGIN
 		  + '-Min: '+ CAST((case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end) AS VARCHAR(10))  
 		 FROM @tmp_mag AS co INNER JOIN  
 		  (  
-		   SELECT @sporttype AS sporttype, @bettype AS bettype, @Auto_MPositionTaking_Mem AS autopositiontaking, @IsAuto_MPositionTaking_Mem AS isautopositiontaking, @APositionTaking as  apositiontaking  
+		   SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking, @APositionTaking as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
 		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
 		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
@@ -255,12 +255,12 @@ BEGIN
 			  end ) AS VARCHAR(10))  
 		 FROM (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype ,        
-			 @SPositionTaking AS spositiontaking, @MPositionTaking AS mpositiontaking, @APositionTaking AS apositiontaking,   
+			 @SPositionTaking AS spositiontaking, @m1 AS mpositiontaking, @APositionTaking AS apositiontaking,   
 			 @m3 AS maxmpositiontaking, @SPositionTaking_Max AS maxspositiontaking  
 		 )b    
 		  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
 		  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
-		 WHERE @IsAuto_MPositionTaking_Mem = 0 and b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking           
+		 WHERE @im1 = 0 and b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking           
 		  
 		 IF @ErrType <>''  
 		 BEGIN  
@@ -283,7 +283,7 @@ BEGIN
 		  + '-Min: '+ CAST((case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end) AS VARCHAR(10))  
 		 FROM @tmp_mag AS co INNER JOIN  
 		  (  
-		   SELECT @sporttype AS sporttype, @bettype AS bettype, @MPositionTaking AS mpositiontaking, @IsAuto_MPositionTaking_Mem AS isautopositiontaking, @APositionTaking as  apositiontaking  
+		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m1 AS mpositiontaking, @im1 AS isautopositiontaking, @APositionTaking as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
 		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
 		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
@@ -305,14 +305,14 @@ BEGIN
 		   
 		 --m1=m1+a1>min(m3,m4)?min(m3,m4)-a1:m1  
 		 SELECT   
-		  @MPositionTaking = CASE WHEN @APositionTaking+@MPositionTaking>@m3 THEN @m3-@APositionTaking ELSE @MPositionTaking END    
+		  @m1 = CASE WHEN @APositionTaking+@m1>@m3 THEN @m3-@APositionTaking ELSE @m1 END    
 		  
 		 --m1=m1+a1<n3?n3-a1:m1  
 		 SELECT   
-		  @MPositionTaking = CASE WHEN @APositionTaking+@MPositionTaking<@n3 THEN @n3-@APositionTaking ELSE @MPositionTaking END    
+		  @m1 = CASE WHEN @APositionTaking+@m1<@n3 THEN @n3-@APositionTaking ELSE @m1 END    
 		  
 		 SELECT   
-		  @MPositionTaking = CASE WHEN @MPositionTaking<0 THEN 0 ELSE @MPositionTaking END  
+		  @m1 = CASE WHEN @m1<0 THEN 0 ELSE @m1 END  
 		    
 		  
 		 --Must include code for auto master  
@@ -324,14 +324,14 @@ BEGIN
 		  
 		 --um=im1>0?um1:um2  
 		 SELECT   
-		  @Auto_MPositionTaking = CASE WHEN @IsAuto_MPositionTaking_Mem>0 THEN @Auto_MPositionTaking_Mem ELSE @Auto_MPositionTaking END,   
+		  @Auto_MPositionTaking = CASE WHEN @im1>0 THEN @um1 ELSE @Auto_MPositionTaking END,   
 		  --im=im1>0?im1:im31  
-		  @IsAuto_MPositionTaking = CASE WHEN @IsAuto_MPositionTaking_Mem>0 THEN @IsAuto_MPositionTaking_Mem ELSE @IsAuto_MPositionTaking END  
+		  @im2 = CASE WHEN @im1>0 THEN @im1 ELSE @im2 END  
 		 ---------------------------------------------------------------------------------------------------------------------------------------------  
 		  
 		 ----------------***Use Auto Position Taking***----------------------------------  
 		 --m1=im>0?min(um,m3-a1):m1  
-		 SELECT @MPositionTaking = CASE WHEN ISNULL(@IsAuto_MPositionTaking, 0)<=0 THEN @MPositionTaking ELSE CASE WHEN @Auto_MPositionTaking < @m3 - @APositionTaking THEN @Auto_MPositionTaking ELSE @m3 - @APositionTaking END END  
+		 SELECT @m1 = CASE WHEN ISNULL(@im2, 0)<=0 THEN @m1 ELSE CASE WHEN @Auto_MPositionTaking < @m3 - @APositionTaking THEN @Auto_MPositionTaking ELSE @m3 - @APositionTaking END END  
 		   
 		 ---------------------------------------------------------------------------------------------------------------------------------------------  
 		 --CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in master account)  
@@ -340,7 +340,7 @@ BEGIN
 		  @i3 = CASE WHEN @IsAuto_SPositionTaking_Mem>0 THEN @IsAuto_SPositionTaking_Mem ELSE @IsAuto_SPositionTaking END  
 				    
 		 ----------------***Use Auto Position Taking***----------------------------------  
-		 SELECT @SPositionTaking = CASE WHEN ISNULL(@i3, 0)<=0 THEN @SPositionTaking ELSE CASE WHEN @u3 < @SPositionTaking_Max - @MPositionTaking - @APositionTaking THEN @u3 ELSE @SPositionTaking_Max - @MPositionTaking - @APositionTaking END END  
+		 SELECT @SPositionTaking = CASE WHEN ISNULL(@i3, 0)<=0 THEN @SPositionTaking ELSE CASE WHEN @u3 < @SPositionTaking_Max - @m1 - @APositionTaking THEN @u3 ELSE @SPositionTaking_Max - @m1 - @APositionTaking END END  
 		   
 		 -------------------------------------------------------------------------------  
 		 --maxs1=isauto?s4:s4-m2  
@@ -352,7 +352,7 @@ BEGIN
 			  
 	--don't update m1,s1 for member under agent was set im2=1  
 	UPDATE cs
-	SET mpositiontaking = @MPositionTaking ,  
+	SET mpositiontaking = @m1 ,  
 		spositiontaking = @SPositionTaking  
 	FROM @tmp_cs cs 
 		INNER JOIN @tmp_ag acs ON cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype   
@@ -367,10 +367,10 @@ BEGIN
 		isautompositiontaking = b.isautompositiontaking    
 	FROM @tmp_cs cs inner join   
 	  (  
-	   select @bettype as bettype, @sporttype as sporttype, @Auto_MPositionTaking_Mem as autompositiontaking, @IsAuto_MPositionTaking_Mem as isautompositiontaking   
+	   select @bettype as bettype, @sporttype as sporttype, @um1 as autompositiontaking, @im1 as isautompositiontaking   
 	  ) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype  
 	 
-	if @IsAuto_MPositionTaking >0  
+	if @im2 >0  
 	BEGIN  
 		 update cs  
 		 set mpositiontaking = case when @MaxPositionTaking - apositiontaking>@Auto_MPositionTaking then @Auto_MPositionTaking else @MaxPositionTaking - apositiontaking end  
@@ -531,7 +531,7 @@ BEGIN
 	END   
 	  
 	-- get latest m1 to write log after correcting PT for auto  
-	IF (@UpdateAutoPositiontaking=1 AND @IsAuto_MPositionTaking=1 and @IsAuto_MPositionTaking_Mem=0)  
+	IF (@UpdateAutoPositiontaking=1 AND @im2=1 and @im1=0)  
 	BEGIN  
 		 select @m1_log = mpositiontaking     
 		 from CustSettingGame with (NOLOCK)   
@@ -542,10 +542,10 @@ BEGIN
 	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MAg CustId="'+ COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'MPositionTaking="' + COALESCE(CAST(@m1_log AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'm1="' + COALESCE(CAST(@m1_log AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'IsAuto_MPositionTaking_BK="' + COALESCE(CAST(@IsAuto_MPositionTaking_BK AS VARCHAR(50)),SPACE(1))
-		+ '" ' + 'IsAuto_MPositionTaking_Mem="' + COALESCE(CAST(@IsAuto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'Auto_MPositionTaking_Mem="' + COALESCE(CAST(@Auto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'im1="' + COALESCE(CAST(@im1 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'um1="' + COALESCE(CAST(@um1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdatePositionTaking="' + COALESCE(CAST(@UpdatePositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1))
@@ -558,10 +558,10 @@ BEGIN
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_MAg CustId="'+ COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'MPositionTaking="' + COALESCE(CAST(@Old_MPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'm1="' + COALESCE(CAST(@Old_MPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'IsAuto_MPositionTaking_BK="' + COALESCE(CAST(@IsAuto_MPositionTaking_BK AS VARCHAR(50)),SPACE(1))
-		+ '" ' + 'IsAuto_MPositionTaking_Mem="' + COALESCE(CAST(@Old_IsAuto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'Auto_MPositionTaking_Mem="' + COALESCE(CAST(@Old_Auto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'im1="' + COALESCE(CAST(@Old_IsAuto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'um1="' + COALESCE(CAST(@Old_Auto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdatePositionTaking="' + COALESCE(CAST(@UpdatePositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1))
@@ -587,10 +587,10 @@ BEGIN
 		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MAg CustId="'+ COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'MPositionTaking="' + COALESCE(CAST(@m1_log AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'm1="' + COALESCE(CAST(@m1_log AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'IsAuto_MPositionTaking_BK="' + COALESCE(CAST(@IsAuto_MPositionTaking_BK AS VARCHAR(50)),SPACE(1))
-		+ '" ' + 'IsAuto_MPositionTaking_Mem="' + COALESCE(CAST(@IsAuto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'Auto_MPositionTaking_Mem="' + COALESCE(CAST(@Auto_MPositionTaking_Mem AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'im1="' + COALESCE(CAST(@im1 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'um1="' + COALESCE(CAST(@um1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdatePositionTaking="' + COALESCE(CAST(@UpdatePositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(10)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1))

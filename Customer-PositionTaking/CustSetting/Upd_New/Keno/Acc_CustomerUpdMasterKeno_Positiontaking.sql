@@ -4,11 +4,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]
 	, @SportType INT = 202
 	, @BetType INT
 
-	, @SPositionTaking SMALLMONEY --s3
-	, @Auto_SPositionTaking SMALLMONEY --us3
-	, @IsAuto_SPositionTaking BIT = 0 --is3
-	, @MPositionTaking SMALLMONEY --m3
-	, @MPositiontaking_Min SMALLMONEY --n3
+	, @s3 SMALLMONEY --s3
+	, @us3 SMALLMONEY --us3
+	, @is3 BIT = 0 --is3
+	, @m3 SMALLMONEY --m3
+	, @n3 SMALLMONEY --n3
 	
 	, @UpdateAllMembers	BIT = 0
 	, @NewSPositionTaking SMALLMONEY = 0 --s1
@@ -71,15 +71,15 @@ BEGIN
 	WHERE custid = @custid
 
 	--check if not change value
-	IF(@Old_SPositionTaking = @SPositionTaking
-		AND @Old_MPositionTaking = @MPositionTaking
-		AND @Old_IsAuto_SPositionTaking = @IsAuto_SPositionTaking
-		AND @Old_Auto_SPositionTaking = @Auto_SPositionTaking)
+	IF(@Old_SPositionTaking = @s3
+		AND @Old_MPositionTaking = @m3
+		AND @Old_IsAuto_SPositionTaking = @is3
+		AND @Old_Auto_SPositionTaking = @us3)
 		RETURN
 
-	IF (@SPositionTaking < 0 OR @MPositionTaking < 0
-		OR @SPositionTaking + @MPositionTaking > 1
-		OR @Auto_SPositionTaking < 0 OR @Auto_SPositionTaking > 1)
+	IF (@s3 < 0 OR @m3 < 0
+		OR @s3 + @m3 > 1
+		OR @us3 < 0 OR @us3 > 1)
 	BEGIN
 		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Wrong position taking.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) END
@@ -96,13 +96,13 @@ BEGIN
 	WHERE cs.custid = @srecommend 
 		AND cs.bettype = @BetType
 		AND cs.sporttype = @SportType
-		AND ((@IsAuto_SPositionTaking > 0 
-				AND (@MPositionTaking + @Auto_SPositionTaking < co.minpositiontaking 
-					OR @MPositionTaking > cs.spositiontaking))
-			OR (@IsAuto_SPositionTaking = 0 
-				AND (@SPositionTaking + @MPositionTaking < co.minpositiontaking 
-					OR @SPositionTaking + @MPositionTaking > cs.spositiontaking 
-					OR @SPositionTaking > cs.spositiontaking)))
+		AND ((@is3 > 0 
+				AND (@m3 + @us3 < co.minpositiontaking 
+					OR @m3 > cs.spositiontaking))
+			OR (@is3 = 0 
+				AND (@s3 + @m3 < co.minpositiontaking 
+					OR @s3 + @m3 > cs.spositiontaking 
+					OR @s3 > cs.spositiontaking)))
 
 	IF @ErrType <> ''
 	BEGIN	
@@ -119,7 +119,7 @@ BEGIN
 		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
 	WHERE ci.mrecommend = @custid AND ci.roleid = 2
 		 AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.mpositiontaking + cs.apositiontaking > @MPositionTaking
+		AND cs.mpositiontaking + cs.apositiontaking > @m3
 
 	IF @ErrAcc <> ''
 	BEGIN		
@@ -136,7 +136,7 @@ BEGIN
 		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
 	WHERE ci.mrecommend = @custid AND ci.roleid = 1
 		AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.mpositiontaking + cs.apositiontaking > @MPositionTaking 
+		AND cs.mpositiontaking + cs.apositiontaking > @m3 
 
 	IF @ErrAcc <> ''
 	BEGIN	
@@ -153,7 +153,7 @@ BEGIN
 		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
 	WHERE ci.mrecommend = @custid AND ci.roleid = 2
 		AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @MPositionTaking
+		AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @m3
 
 	IF @ErrAcc <> ''
 	BEGIN		
@@ -169,7 +169,7 @@ BEGIN
 	FROM dbo.CustSettingGame cs WITH(NOLOCK)		
 	WHERE custid = @srecommend
 		AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND @Auto_SPositionTaking > spositiontaking 
+		AND @us3 > spositiontaking 
 
 	IF @ErrType <> ''	
 	BEGIN
@@ -183,7 +183,7 @@ BEGIN
 	IF @UpdatePositionTaking = 1
 	BEGIN
 		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
-		SET spositiontaking = @SPositionTaking, mpositiontaking = @MPositionTaking
+		SET spositiontaking = @s3, mpositiontaking = @m3
 		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 
 		IF (@@ERROR <> 0)
@@ -200,7 +200,7 @@ BEGIN
 	BEGIN
 		--Update Master Agent account (autopositiontaking field)
 		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
-		SET autopositiontaking = @Auto_SPositionTaking, isautopositiontaking = @IsAuto_SPositionTaking
+		SET autopositiontaking = @us3, isautopositiontaking = @is3
 		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 	
 		IF @@ERROR <> 0
@@ -218,9 +218,9 @@ BEGIN
 			, @roleid = 3
 			, @mode = 'Keno'
 
-			, @IsAuto_KenoSPositionTaking = @IsAuto_SPositionTaking
+			, @IsAuto_KenoSPositionTaking = @is3
 			, @Old_IsAuto_KenoSPositionTaking = @Old_IsAuto_SPositionTaking
-			, @Auto_KenoSPositionTaking = @Auto_SPositionTaking
+			, @Auto_KenoSPositionTaking = @us3
 		
 			, @Updateallmembers = @Updateallmembers
 			, @newspositiontaking = @NewSPositionTaking
@@ -228,7 +228,7 @@ BEGIN
 	END
 
 	--apply new value position taking for super on members
-	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @IsAuto_SPositionTaking = 0
+	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @is3 = 0
 	BEGIN
 		EXEC dbo.Acc_CustSetting3rd_05_xtest
 			@srecommend = @srecommend,
@@ -238,7 +238,7 @@ BEGIN
 						
 			@KenoBettype = @Bettype,
 			
-			@IsAuto_KenoSPositionTaking = @IsAuto_SPositionTaking,--is3
+			@IsAuto_KenoSPositionTaking = @is3,--is3
 			@Old_IsAuto_KenoSPositionTaking = @Old_IsAuto_SPositionTaking,--is3_old
 									
 			@updateautopositiontakingv202 = 0,
@@ -269,10 +269,10 @@ BEGIN
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'SPositionTaking="' + COALESCE(CAST(@SPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'MPositionTaking="' + COALESCE(CAST(@MPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'IsAuto_SPositionTaking="' + COALESCE(CAST(@IsAuto_SPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'Auto_SPositionTaking="' + COALESCE(CAST(@Auto_SPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 's3="' + COALESCE(CAST(@s3 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'm3="' + COALESCE(CAST(@m3 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'is3="' + COALESCE(CAST(@is3 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'us3="' + COALESCE(CAST(@us3 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdatePositionTaking="' + COALESCE(CAST(@UpdatePositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdateAllMembers="' + COALESCE(CAST (@UpdateAllMembers AS VARCHAR(3)), SPACE(1))
@@ -285,10 +285,10 @@ BEGIN
 		+ '" ' + 'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
 
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'SPositionTaking="' + COALESCE(CAST(@Old_SPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'MPositionTaking="' + COALESCE(CAST(@Old_MPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'IsAuto_SPositionTaking="' + COALESCE(CAST(@Old_IsAuto_SPositionTaking AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'Auto_SPositionTaking="' + COALESCE(CAST(@Old_Auto_SPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 's3="' + COALESCE(CAST(@Old_SPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'm3="' + COALESCE(CAST(@Old_MPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'is3="' + COALESCE(CAST(@Old_IsAuto_SPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'us3="' + COALESCE(CAST(@Old_Auto_SPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdatePositionTaking="' + COALESCE(CAST(@UpdatePositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'UpdateAllMembers="' + COALESCE(CAST (@UpdateAllMembers AS VARCHAR(3)), SPACE(1))

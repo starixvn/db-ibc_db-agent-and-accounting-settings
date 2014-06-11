@@ -3,7 +3,7 @@
 	@sporttype INT = 202,
 	@bettype INT,
 
-	@apositiontaking SMALLMONEY,
+	@a1 SMALLMONEY,
 	
 	@SubAccID	INT = 0,
 	@IP			VARCHAR(50)='',	
@@ -75,7 +75,7 @@ DECLARE @startRun	DATETIME,
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid
 		
-	IF @apositiontaking < 0 OR @apositiontaking > 0.85
+	IF @a1 < 0 OR @a1 > 0.85
 	BEGIN
 		SELECT @ErrMsg = 
 						CASE @Language 
@@ -91,7 +91,7 @@ DECLARE @startRun	DATETIME,
 		+ '-Min: '+ cast((co.minpositiontaking) as varchar(10)) + '<br>'
 	FROM CustOverrideGame as co with (NOLOCK) inner join
 		(
-			select @bettype as bettype, @sporttype as sporttype, @apositiontaking as apositiontaking 			
+			select @bettype as bettype, @sporttype as sporttype, @a1 as apositiontaking 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
 		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
 		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
@@ -113,7 +113,7 @@ DECLARE @startRun	DATETIME,
 	SELECT @ErrType = 'Max: ' + CAST(apositiontaking AS VARCHAR(10))
 	FROM CustSettingGame WITH(NOLOCK)
 	WHERE custid = @recommend AND sporttype = @sporttype AND bettype = @bettype
-		AND @apositiontaking > apositiontaking
+		AND @a1 > apositiontaking
 	
 	IF @ErrType <> ''
 	BEGIN
@@ -167,12 +167,12 @@ DECLARE @startRun	DATETIME,
 			@isauto_mpositiontaking = CASE WHEN @isauto_mpositiontaking_mem > 0 THEN @isauto_mpositiontaking_mem ELSE @isauto_mpositiontaking END
 	
 	--a1=min(a1,m3)
-	SELECT @apositiontaking = CASE WHEN @apositiontaking > @mpositiontaking_max THEN @mpositiontaking_max ELSE @apositiontaking END	
+	SELECT @a1 = CASE WHEN @a1 > @mpositiontaking_max THEN @mpositiontaking_max ELSE @a1 END	
 	
 	--if im2 = 0 ,check m1 + a1_new < m3
 	SELECT @ErrType = ''
 	
-	SELECT @ErrType = 'Max: ' + CAST((@mpositiontaking_max - @mpositiontaking) AS VARCHAR(50)) WHERE @isauto_mpositiontaking = 0 AND @mpositiontaking + @apositiontaking > @mpositiontaking_max
+	SELECT @ErrType = 'Max: ' + CAST((@mpositiontaking_max - @mpositiontaking) AS VARCHAR(50)) WHERE @isauto_mpositiontaking = 0 AND @mpositiontaking + @a1 > @mpositiontaking_max
 
 	IF @ErrType <> ''
 	BEGIN
@@ -193,7 +193,7 @@ DECLARE @startRun	DATETIME,
 	--		else m1 = m3 - a1
 
 	--m1=iif(im,min(m3-a1,um),m1)
-	SELECT @mpositiontaking = CASE WHEN @isauto_mpositiontaking > 0 THEN CASE WHEN @mpositiontaking_max - @apositiontaking > @auto_mpositiontaking THEN @auto_mpositiontaking ELSE @mpositiontaking_max - @apositiontaking END
+	SELECT @mpositiontaking = CASE WHEN @isauto_mpositiontaking > 0 THEN CASE WHEN @mpositiontaking_max - @a1 > @auto_mpositiontaking THEN @auto_mpositiontaking ELSE @mpositiontaking_max - @a1 END
 					ELSE @mpositiontaking END
 	
 	---------------------------------------------------------------------------------------------------------------------------------------------
@@ -203,11 +203,11 @@ DECLARE @startRun	DATETIME,
 	--else	if @auto_spt < @max_spt - @mpt - @apt then @spt = @auto_spt
 	--		else @spt = @max_spt - @mpt - @apt
 	SELECT @spositiontaking = CASE WHEN ISNULL(@isauto_spositiontaking,0) <= 0 THEN @spositiontaking ELSE
-					CASE WHEN @spositiontaking_max - @mpositiontaking -@apositiontaking > @auto_spositiontaking THEN @auto_spositiontaking ELSE @spositiontaking_max - @mpositiontaking - @apositiontaking END END
+					CASE WHEN @spositiontaking_max - @mpositiontaking -@a1 > @auto_spositiontaking THEN @auto_spositiontaking ELSE @spositiontaking_max - @mpositiontaking - @a1 END END
 	
 	
 	--max_spositiontaking = if(i1||i3)s4:s4-m1-a1
-	SELECT @spositiontaking_max = CASE WHEN @isauto_spositiontaking > 0 THEN @spositiontaking_max ELSE @spositiontaking_max - @mpositiontaking - @apositiontaking END
+	SELECT @spositiontaking_max = CASE WHEN @isauto_spositiontaking > 0 THEN @spositiontaking_max ELSE @spositiontaking_max - @mpositiontaking - @a1 END
 	
 	--//REPLACING CHECK MAX SUPER PT ON MEMBER
 	--s1=min(s1,max_spositiontaking)
@@ -216,7 +216,7 @@ DECLARE @startRun	DATETIME,
 	UPDATE custsettingGame WITH(UPDLOCK, ROWLOCK)
 	SET  spositiontaking = @spositiontaking,
 		mpositiontaking = @mpositiontaking,
-		apositiontaking = @apositiontaking
+		apositiontaking = @a1
 	WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 	
 	IF (@@error <> 0)
@@ -252,7 +252,7 @@ DECLARE @startRun	DATETIME,
 	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_Positiontaking  custid="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) + '" ' +
 		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
-		'apositiontaking="' + COALESCE(CAST(@apositiontaking AS VARCHAR(50)), SPACE(1)) + '" ' + 
+		'a1="' + COALESCE(CAST(@a1 AS VARCHAR(50)), SPACE(1)) + '" ' + 
 		'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
 		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -263,7 +263,7 @@ DECLARE @startRun	DATETIME,
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_Positiontaking  custid="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) + '" ' +
 		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' +
-		'apositiontaking="' + COALESCE(CAST(@apositiontaking_old AS VARCHAR(50)), SPACE(1)) + '" ' + 
+		'a1="' + COALESCE(CAST(@apositiontaking_old AS VARCHAR(50)), SPACE(1)) + '" ' + 
 		'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
 		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -287,7 +287,7 @@ DECLARE @startRun	DATETIME,
 		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_Positiontaking  custid="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) + '" ' +
 		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
-		'apositiontaking="' + COALESCE(CAST(@apositiontaking AS VARCHAR(50)), SPACE(1)) + '" ' + 
+		'a1="' + COALESCE(CAST(@a1 AS VARCHAR(50)), SPACE(1)) + '" ' + 
 		'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)),SPACE(1)) + '" ' +
 		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
@@ -302,7 +302,7 @@ DECLARE @startRun	DATETIME,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration	
-	END CATCH				
+	END CATCH								
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [bodbadminNet] AS [dbo]

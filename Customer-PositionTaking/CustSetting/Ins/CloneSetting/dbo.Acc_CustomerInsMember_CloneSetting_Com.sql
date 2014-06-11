@@ -29,6 +29,7 @@ AS
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
 	- 20140304@Patrick	: Add more sport: 202 for Keno
 	- 20140402@Dom	: Add more sport: 183,185 for Virtual sport
+	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -59,10 +60,10 @@ BEGIN
 	END	
 
 	-- Check role of existing super
-	DECLARE @existingUsername varchar(30),@roleid tinyint
+	DECLARE @existingUsername varchar(30),@roleid tinyint, @Enabled BIT
 	
-	SELECT @existingUsername =  ISNULL(username,''), @roleid = ISNULL(roleid,0)
-	FROM dbo.customer WITH(NOLOCK) 
+	SELECT @existingUsername =  ISNULL(username,''), @roleid = ISNULL(roleid,0), @Enabled = ISNULL(Enabled, 0)
+	FROM dbo.CustInfo WITH(NOLOCK) 
 	WHERE custid = @ExistingCustid
 	
 	IF @roleid <> 4
@@ -72,10 +73,18 @@ BEGIN
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40002,@Language) + ' (' + @existingUsername + ')!'
 								END, 
 						@ErrCode = 202
-		return		
-
+		RETURN		
 	END		 		
 	
+	IF @Enabled = 0
+	BEGIN		
+		 SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'This account was disabled!' + ' (' + @existingUsername + ')'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](60020,@Language) + ' (' + @existingUsername + ')'
+								END, 
+						@ErrCode = 203
+		RETURN		
+	END		 
 	SELECT @startRun = getdate()
 	
 	BEGIN TRY
@@ -398,6 +407,7 @@ BEGIN
 		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID					
 		RETURN	
 	END CATCH
 	

@@ -3,8 +3,8 @@
 	@sporttype INT = 202,
 	@bettype INT,
 	
-	@spositiontaking SMALLMONEY, --s4
-	@Min_Positiontaking SMALLMONEY, --n4
+	@s4 SMALLMONEY, --s4
+	@n4 SMALLMONEY, --n4
 	@Discount DECIMAL(9,8)=0,
 			
 	@UpdatePositiontaking	BIT = 0,
@@ -56,7 +56,7 @@ BEGIN
 	--end
 
 	--check n4<=s4
-	IF @spositiontaking < @Min_Positiontaking
+	IF @s4 < @n4
 	BEGIN 
 		Select @ErrMsg = 
 					case @Language 
@@ -83,7 +83,7 @@ BEGIN
 
 	IF @UpdatePositiontaking = 1
 	BEGIN
-		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @spositiontaking = @spositiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @s4 = @s4, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur <> 0
 		BEGIN
@@ -99,7 +99,7 @@ BEGIN
 
 	IF @UpdateMinPositiontaking = 1
 	BEGIN
-		EXEC Acc_CustOverrideUpdKeno @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @Min_Positiontaking = @Min_Positiontaking, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+		EXEC Acc_CustOverrideUpdKeno @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @Min_Positiontaking = @n4, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur <> 0
 		BEGIN

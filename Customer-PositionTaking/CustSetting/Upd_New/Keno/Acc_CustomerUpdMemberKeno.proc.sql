@@ -4,7 +4,7 @@
 	,@bettype			INT
 	
 	,@UpdatePT			BIT = 0
-	,@apositiontaking	BIT = NULL
+	,@a1				SMALLMONEY = NULL
 
 	--Update Commission
 	,@UpdateComm		BIT = 0
@@ -72,7 +72,7 @@ BEGIN
 			,@sporttype = @sporttype
 			,@Bettype = @bettype
 
-			,@apositiontaking = @apositiontaking
+			,@apositiontaking = @a1
 
 			,@SubAccID = @SubAccID
 			,@UserID = @UserID

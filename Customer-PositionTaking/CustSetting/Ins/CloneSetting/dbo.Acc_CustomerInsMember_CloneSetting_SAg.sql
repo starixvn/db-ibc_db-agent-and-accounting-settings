@@ -44,7 +44,8 @@ AS
 	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
 	- 20140303@Patrick: Add more sport:202 for Keno
-	- 20140402@Dom	: Add more sport: 183,185 for Virtual sport
+	- 20140402@Dom: Add more sport: 183,185 for Virtual sport
+	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -78,10 +79,10 @@ BEGIN
 
 
 	-- Check role and master of existing agent
-	DECLARE @existingUsername varchar(30),@roleid tinyint, @existingSrecommend int
+	DECLARE @existingUsername varchar(30),@roleid tinyint, @existingSrecommend int, @Enabled BIT
 	
-	SELECT @existingUsername =  ISNULL(username,''), @roleid = ISNULL(roleid,0), @existingSrecommend = ISNULL(srecommend,0)
-	FROM dbo.customer WITH(NOLOCK) 
+	SELECT @existingUsername =  ISNULL(username,''), @roleid = ISNULL(roleid,0), @existingSrecommend = ISNULL(srecommend,0), @Enabled = ISNULL(Enabled, 0)
+	FROM dbo.custInfo WITH(NOLOCK) 
 	WHERE custid = @ExistingCustid
 	
 	IF ( NOT (@roleid = 3 AND @existingSrecommend = @srecommend))
@@ -94,6 +95,16 @@ BEGIN
 		return		
 
 	END	
+
+	IF @Enabled = 0
+	BEGIN		
+		 SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'This account was disabled!' + ' (' + @existingUsername + ')'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](60020,@Language) + ' (' + @existingUsername + ')'
+								END, 
+						@ErrCode = 203
+		RETURN		
+	END		
 
 	--NOT allow agent under KH, KR, KAR, KBR, KCR, LDR, KM, KAM to create downlines (Requested by wan 04-Dec-2008)  
 	--20081218_By_AhWan: KER - 1238537  
@@ -483,6 +494,8 @@ BEGIN
 			@ErrCode = 115
 			
 		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustGameType WITH (ROWLOCK) WHERE CustID =@CustID					
+		DELETE FROM dbo.Custoverridegame WITH (ROWLOCK) WHERE CustID =@CustID					
 		DELETE FROM custsettingGame with (ROWLOCK) where custid =  @custid
 		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID
@@ -493,7 +506,7 @@ BEGIN
 		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID  	    
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
-		DELETE FROM dbo.Custoverridegame WITH (ROWLOCK) WHERE CustID =@CustID					
+		
 		RETURN	
 	END
 	
@@ -537,6 +550,7 @@ BEGIN
 		'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as varchar(100)),space(1))) + '" ' +
 		'creator="'+ coalesce(cast(@creator as varchar(50)),space(1)) + '" ' +
 		'username="'+ coalesce(cast(@username as varchar(30)),space(1)) + '" ' +
+
 		'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as varchar(100)),space(1))) + '" ' +
 		'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as varchar(100)),space(1))) + '" ' +
 		'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as varchar(100)),space(1))) + '" ' +
@@ -562,9 +576,6 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
-
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_SAg] TO [bodbDownlineNet] AS [dbo]

@@ -4,11 +4,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno]
 	, @SportType INT = 202
 	, @BetType INT
 	
-	, @SPositionTaking SMALLMONEY --s3
-	, @Auto_SPositionTaking SMALLMONEY --us3
-	, @IsAuto_SPositionTaking BIT = 0 --is3
-	, @MPositionTaking SMALLMONEY --m3
-	, @MPositiontaking_Min SMALLMONEY --n3
+	, @s3 SMALLMONEY --s3
+	, @us3 SMALLMONEY --us3
+	, @is3 BIT = 0 --is3
+	, @m3 SMALLMONEY --m3
+	, @n3 SMALLMONEY --n3
 
 	, @UpdateAllMembers	BIT = 0
 	, @NewSPositionTaking SMALLMONEY = 0
@@ -85,7 +85,7 @@ BEGIN
 	END
 
 	-- check n3<= m3
-	IF @MPositionTaking < @MPositiontaking_Min
+	IF @m3 < @n3
 	BEGIN
 		SELECT @ErrMsg_Cur = CASE @Language WHEN 'E' THEN 'Wrong position taking .<br>'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001, @Language) + '<br>' END
@@ -99,7 +99,7 @@ BEGIN
 		EXEC dbo.Acc_CustOverrideUpdKeno @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
-			, @Min_Positiontaking = @MPositiontaking_Min
+			, @Min_Positiontaking = @n3
 			, @UplineID = @srecommend
 			, @IP = @IP
 			, @UserID = @userid
@@ -121,11 +121,11 @@ BEGIN
 		EXEC dbo.Acc_CustomerUpdMasterKeno_Positiontaking @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
-			, @SPositionTaking =  @SPositionTaking--s3
-			, @Auto_SPositionTaking = @Auto_SPositionTaking --us3
-			, @IsAuto_SPositionTaking = @IsAuto_SPositionTaking --is3
-			, @MPositionTaking = @MPositionTaking --m3
-			, @MPositiontaking_Min = @MPositiontaking_Min --n3
+			, @s3 =  @s3--s3
+			, @us3 = @us3 --us3
+			, @is3 = @is3 --is3
+			, @m3 = @m3 --m3
+			, @n3 = @n3 --n3
 	
 			, @UpdateAllMembers	= @UpdateAllMembers
 			, @NewSPositionTaking = @NewSPositionTaking
@@ -150,8 +150,6 @@ BEGIN
 		END
 	END
 END
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno] TO [bodbAdminNet] AS [dbo]
