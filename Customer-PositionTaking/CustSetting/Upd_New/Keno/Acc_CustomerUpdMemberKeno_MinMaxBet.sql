@@ -135,9 +135,9 @@ BEGIN
 	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet CustId="' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MinBet="' + COALESCE(CAST(@MinBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxBet="' + COALESCE(CAST(@MaxBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxPerMatch="' + COALESCE(CAST(@MaxPerMatch AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MinB="' + COALESCE(CAST(@MinBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MaxB="' + COALESCE(CAST(@MaxBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MPM="' + COALESCE(CAST(@MaxPerMatch AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
@@ -148,9 +148,9 @@ BEGIN
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_MinMaxBet CustId="' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MinBet="' + COALESCE(CAST(@Old_MinBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxBet="' + COALESCE(CAST(@Old_MaxBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxPerMatch="' + COALESCE(CAST(@Old_MaxPerGame AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MinB="' + COALESCE(CAST(@Old_MinBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MaxB="' + COALESCE(CAST(@Old_MaxBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MPM="' + COALESCE(CAST(@Old_MaxPerGame AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
@@ -164,7 +164,7 @@ BEGIN
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			,@CustID = @CustID
-			,@ActionID = 379
+			,@ActionID = 382
 			,@TrackingValue = @LogSPData
 			,@TrackingValue2 = @TrackingValueDB
 			,@duration = @duration
@@ -174,9 +174,9 @@ BEGIN
 		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_MinMaxBet CustId="' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MinBet="' + COALESCE(CAST(@MinBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxBet="' + COALESCE(CAST(@MaxBet AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + 'MaxPerMatch="' + COALESCE(CAST(@MaxPerMatch AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MinB="' + COALESCE(CAST(@MinBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MaxB="' + COALESCE(CAST(@MaxBet AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'MPM="' + COALESCE(CAST(@MaxPerMatch AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
 		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
@@ -186,7 +186,7 @@ BEGIN
 
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
 			,@CustID = @CustID
-			,@ActionID = 379
+			,@ActionID = 382
 			,@TrackingValue = @LogSPData
 			,@TrackingValue2 = @TrackingValueDB
 			,@duration = @duration

@@ -134,6 +134,7 @@ BEGIN
 		, @Old_MPositionTaking = mpositiontaking
 		, @Old_Auto_MPositionTaking_Mem = autompositiontaking
 		, @Old_IsAuto_MPositionTaking_Mem = isautompositiontaking
+		, @m1_log = @m1  
 	FROM @tmp_cs
 	WHERE bettype = @BetType AND sporttype = @SportType
 

@@ -152,6 +152,16 @@ BEGIN
 		END
 	END
 
+	--Check Old_PT <> New_PT  
+	select @APositionTaking = apositiontaking,   
+	  @MPositionTaking = mpositiontaking,   
+	  @Old_SPositionTaking = spositiontaking,      
+	  @Old_Auto_SPositionTaking = autopositiontaking,   
+	  @Old_IsAuto_SPositionTaking = isautopositiontaking, 
+	  @log_s1 = @s1   
+	from @tmp_cs
+	where custid = @custid and bettype=@bettype and sporttype=@sporttype  
+	  
 	IF @s1 = @Old_SPositionTaking AND  
 	 @us1 = @Old_Auto_SPositionTaking AND  
 	 @is1 = @Old_IsAuto_SPositionTaking    
@@ -486,7 +496,7 @@ BEGIN
 	SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_SAg CustId = "' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'SPositionTaking = "' + COALESCE(CAST(@log_s1 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 's1 = "' + COALESCE(CAST(@log_s1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is1 = "' + COALESCE(CAST(@is1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'us1 ="' + COALESCE(CAST(@us1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is3 = "' + COALESCE(CAST(@is3 AS VARCHAR(50)), SPACE(1))
@@ -502,7 +512,7 @@ BEGIN
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMemberKeno_SAg CustId = "' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'SPositionTaking = "' + COALESCE(CAST(@Old_SPositionTaking AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 's1 = "' + COALESCE(CAST(@Old_SPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is1 = "' + COALESCE(CAST(@Old_IsAuto_SPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'us1 ="' + COALESCE(CAST(@Old_Auto_SPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is3 = "' + COALESCE(CAST(@is3 AS VARCHAR(50)), SPACE(1))
@@ -532,7 +542,7 @@ BEGIN
 		SELECT @LogSPData = '<Acc_CustomerUpdMemberKeno_SAg CustId = "' + COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'sporttype="'+ coalesce(cast(@sporttype as varchar(50)),space(1))
 		+ '" ' + 'bettype="'+ coalesce(cast(@bettype as varchar(50)),space(1))
-		+ '" ' + 'SPositionTaking = "' + COALESCE(CAST(@log_s1 AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 's1 = "' + COALESCE(CAST(@log_s1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is1 = "' + COALESCE(CAST(@is1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'us1 ="' + COALESCE(CAST(@us1 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is3 = "' + COALESCE(CAST(@is3 AS VARCHAR(50)), SPACE(1))
