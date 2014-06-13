@@ -23,7 +23,6 @@ Original:
 
 Revisions:
 	- 20131023@Hannah: offer Live Casino commission
-	- 20140612@Victor: fix VARCHAR(4000) issue
    
 Param's Explanation:
 • @ErrCode:
@@ -45,7 +44,7 @@ SELECT @splitter = ',', @string = @IDs
 IF SUBSTRING (@string, LEN (@string), 1) <> @splitter
 	  SET @string= @string+@splitter
 
-DECLARE @START INT, @word VARCHAR(MAX), @CHARINDEX INT, @i INT
+DECLARE @START INT, @word VARCHAR(4000), @CHARINDEX INT, @i INT
 SET @i=1
 SET @START=1
 SET @CHARINDEX= CHARINDEX( @splitter, @string, @START)
@@ -87,4 +86,3 @@ BEGIN
 		AND playerdiscount <> @LCComm
 		AND sporttype = 162  	
 END
-
