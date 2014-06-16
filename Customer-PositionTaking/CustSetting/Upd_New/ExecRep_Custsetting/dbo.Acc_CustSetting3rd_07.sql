@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_07_xtest] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_07] 
 	@srecommend INT= 0,
 	@mrecommend iNT = 0,
 	@recommend INT = 0,

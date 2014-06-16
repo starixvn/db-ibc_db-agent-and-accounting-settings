@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom_xtest]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing bit = NULL,
@@ -32,7 +32,8 @@ AS
 		- 20120927@Johnson: - get double comm losing status and upline double comm losing status
 							- output total records affect 
 		- 20131018@Kathy: Add HR Fixed Odds (154)[Redmine:#6505]
-		- 20140116@Elodie: Hot fix to get information of disabled customer
+		- 20140116@Elodie:	Hot fix to get information of disabled customer
+							Output total records affect
 		- 20140407@Elodie: Add Keno product [Redmine:#13156]
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -100,7 +101,7 @@ Select * From
 		ci.DoubleCommLosing,
 
 		ci.HideKeno,
-		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509) then cg.IsDisabled else 1 end) as DisableKeno,
+		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
 
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
@@ -109,7 +110,7 @@ Select * From
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
 		LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
 		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509)						
+		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)						
 		INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
 		INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 	WHERE m.SRecommend < 100 and m.roleid=3

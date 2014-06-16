@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05_xtest] @srecommend INT = 0,
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05] @srecommend INT = 0,
 	@mrecommend INT =0,
 	@recommend INT = 0,
 	@roleid INT,
@@ -292,8 +292,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05_xtest] @srecommend INT = 0,
 	@Old_IsAuto_KenoSPositionTaking BIT = 0,
 	@Auto_KenoSPositionTaking SMALLMONEY = 0,
 	@KenoBetType INT = 0,
-	@updateautopositiontakingv202 bit = 1,	
-
+	
 	@updateallmembers bit = 0,
 	@updatemultiple bit = 0,
 	@newspositiontaking smallmoney =0 ,
@@ -984,59 +983,43 @@ BEGIN
 			END		
 		ELSE IF @mode = 'Keno'
 		BEGIN
-			IF @updateautopositiontakingv202 = 1
+			IF @IsAuto_KenoSPositionTaking > 0 --auto PT is used
 			BEGIN
-				IF @IsAuto_KenoSPositionTaking > 0 --auto PT is used
-				BEGIN
-					--Update use Auto_SPT at master for all members only when:
-					--++(autoSPT at master changes AND isauto at master = 1 OR isauto at master changes from 0 to 1)
-					--++AND isauto at member = 0
-					SELECT @maxpos = spositiontaking 
-					FROM dbo.CustSettingGame WITH (NOLOCK) 
-					WHERE custid = @srecommend AND bettype = @KenoBetType AND sporttype = 202
+				--Update use Auto_SPT at master for all members only when:
+				--++(autoSPT at master changes AND isauto at master = 1 OR isauto at master changes from 0 to 1)
+				--++AND isauto at member = 0
+				SELECT @maxpos = spositiontaking 
+				FROM dbo.CustSettingGame WITH (NOLOCK) 
+				WHERE custid = @srecommend AND bettype = @KenoBetType AND sporttype = 202
 				
+				UPDATE cs
+				SET cs.spositiontaking = CASE WHEN @maxpos - cs.mpositiontaking - cs.apositiontaking > @Auto_KenoSPositiontaking
+											THEN @Auto_KenoSPositiontaking ELSE @maxpos - cs.mpositiontaking - cs.apositiontaking END
+				FROM dbo.CustSettingGame cs WITH (ROWLOCK, UPDLOCK) 
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1
+					AND cs.bettype = @KenoBetType AND cs.sporttype = 202
+					AND cs.isautopositiontaking = 0 -- only update members without AutoSPT at member
+			END
+			ELSE IF @IsAuto_KenoSPositionTaking <> @Old_IsAuto_KenoSPositionTaking  --auto PT is NOT used
+			BEGIN
+				IF @Updateallmembers = 1
+				BEGIN
+					--Update a specific SPT for all members only when:
+					--++ @updateallmembers = 1
+					--++ isauto at master = 0
+					--++ AND isauto at master change from 1 to 0
+					--++ AND isauto at member = 0
 					UPDATE cs
-					SET cs.spositiontaking = CASE WHEN @maxpos - cs.mpositiontaking - cs.apositiontaking > @Auto_KenoSPositiontaking
-												THEN @Auto_KenoSPositiontaking ELSE @maxpos - cs.mpositiontaking - cs.apositiontaking END
+					SET cs.spositiontaking = CASE WHEN mcs.spositiontaking < @newspositiontaking THEN mcs.spositiontaking ELSE @newspositiontaking END
 					FROM dbo.CustSettingGame cs WITH (ROWLOCK, UPDLOCK) 
-						INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+						INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+						INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) 
+							ON mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
 					WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1
 						AND cs.bettype = @KenoBetType AND cs.sporttype = 202
-						AND cs.isautopositiontaking = 0 -- only update members without AutoSPT at member
+						AND cs.isautopositiontaking = 0
 				END
-				ELSE IF @IsAuto_KenoSPositionTaking <> @Old_IsAuto_KenoSPositionTaking  --auto PT is NOT used
-				BEGIN
-					IF @Updateallmembers = 1
-					BEGIN
-						--Update a specific SPT for all members only when:
-						--++ @updateallmembers = 1
-						--++ isauto at master = 0
-						--++ AND isauto at master change from 1 to 0
-						--++ AND isauto at member = 0
-						UPDATE cs
-						SET cs.spositiontaking = CASE WHEN mcs.spositiontaking < @newspositiontaking THEN mcs.spositiontaking ELSE @newspositiontaking END
-						FROM dbo.CustSettingGame cs WITH (ROWLOCK, UPDLOCK) 
-							INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-							INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) 
-								ON mcs.custid = @mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype
-						WHERE ci.mrecommend = @mrecommend AND ci.roleid = 1
-							AND cs.bettype = @KenoBetType AND cs.sporttype = 202
-							AND cs.isautopositiontaking = 0
-					END
-				END
-			END
-			ELSE
-			BEGIN
-				UPDATE cs 
-				SET spositiontaking = b.spositiontaking
-				FROM CustSettingGame as cs with (ROWLOCK, UPDLOCK)
-					INNER JOIN custinfo ci (nolock) on ci.custid = cs.custid and ci.mrecommend = @mrecommend and ci.roleid = 1
-					INNER JOIN 
-						(
-							select 202 as sporttype, @KenoBetType as bettype, @IsAuto_KenoSPositionTaking as isautopositiontaking, @Old_IsAuto_KenoSPositionTaking as oldisautopositiontaking, @newspositiontaking as spositiontaking
-						) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
-				WHERE b.isautopositiontaking = 0 --and b.oldisautopositiontaking = 0 
-					and cs.isautopositiontaking = 0
 			END
 		END	
 	END
@@ -1653,57 +1636,41 @@ BEGIN
 
 		ELSE IF @mode = 'Keno'
 		BEGIN
-			IF @updateautopositiontakingv202 = 1
+			IF @IsAuto_KenoMPositionTaking > 0 --Use AUTO MPT
 			BEGIN
-				IF @IsAuto_KenoMPositionTaking > 0 --Use AUTO MPT
-				BEGIN
-					--m1=min(m3-a1,u2)
-					SELECT @maxpos = mpositiontaking 
-					FROM dbo.CustSettingGame WITH (NOLOCK) 
-					WHERE custid = @mrecommend AND bettype = @KenoBetType AND sporttype = 202
+				--m1=min(m3-a1,u2)
+				SELECT @maxpos = mpositiontaking 
+				FROM dbo.CustSettingGame WITH (NOLOCK) 
+				WHERE custid = @mrecommend AND bettype = @KenoBetType AND sporttype = 202
 					
+				UPDATE cs 
+					SET mpositiontaking = CASE WHEN @maxpos - apositiontaking > @Auto_KenoMPositionTaking
+											THEN @Auto_KenoMPositionTaking ELSE @maxpos - apositiontaking END
+				FROM dbo.CustSettingGame AS cs WITH (ROWLOCK, UPDLOCK) 
+					INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
+				WHERE ci.recommend = @recommend AND ci.roleid = 1
+					AND cs.bettype = @KenoBetType AND cs.sporttype = 202
+			END
+			ELSE IF @IsAuto_KenoMPositionTaking <> @Old_IsAuto_KenoMPositionTaking --Not use AUTO MPT
+			BEGIN
+				IF @updateallmembers = 1 --all member
+				BEGIN
+					--m1=min(m2,@newmpositiontaking)
 					UPDATE cs 
-						SET mpositiontaking = CASE WHEN @maxpos - apositiontaking > @Auto_KenoMPositionTaking
-												THEN @Auto_KenoMPositionTaking ELSE @maxpos - apositiontaking END
+						SET mpositiontaking = CASE WHEN acs.mpositiontaking < @newmpositiontaking
+												THEN acs.mpositiontaking else @newmpositiontaking END
 					FROM dbo.CustSettingGame AS cs WITH (ROWLOCK, UPDLOCK) 
-						INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cs.custid = ci.custid
-					WHERE ci.recommend = @recommend AND ci.roleid = 1
+					INNER JOIN dbo.custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
+					INNER JOIN dbo.CustSettingGame AS acs with (NOLOCK) 
+						ON acs.custid = @recommend AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype
+					WHERE c.recommend = @recommend AND c.roleid = 1
 						AND cs.bettype = @KenoBetType AND cs.sporttype = 202
 				END
-				ELSE IF @IsAuto_KenoMPositionTaking <> @Old_IsAuto_KenoMPositionTaking --Not use AUTO MPT
-				BEGIN
-					IF @updateallmembers = 1 --all member
-					BEGIN
-						--m1=min(m2,@newmpositiontaking)
-						UPDATE cs 
-							SET mpositiontaking = CASE WHEN acs.mpositiontaking < @newmpositiontaking
-													THEN acs.mpositiontaking else @newmpositiontaking END
-						FROM dbo.CustSettingGame AS cs WITH (ROWLOCK, UPDLOCK) 
-						INNER JOIN dbo.custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
-						INNER JOIN dbo.CustSettingGame AS acs with (NOLOCK) 
-							ON acs.custid = @recommend AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype
-						WHERE c.recommend = @recommend AND c.roleid = 1
-							AND cs.bettype = @KenoBetType AND cs.sporttype = 202
-					END
-				END
-			END
-			ELSE
-			BEGIN
-				UPDATE cs        
-				SET mpositiontaking = b.mpositiontaking        
-				FROM CustSettingGame as cs with (ROWLOCK, UPDLOCK)        
-					INNER JOIN custinfo ci(nolock) on cs.custid = ci.custid and ci.recommend = @recommend and ci.roleid = 1        
-					INNER JOIN         
-					(        
-					select 202 as sporttype, @KenoBettype as bettype, @IsAuto_KenoMPositionTaking as isautopositiontaking, @Old_IsAuto_KenoMPositionTaking as oldisautopositiontaking, @newmpositiontaking as mpositiontaking        
-					) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype        
-				WHERE b.isautopositiontaking = 0 -- and b.oldisautopositiontaking = 0          
-				AND cs.isautompositiontaking = 0 
 			END
 		END
 	END
 END
-GO
+
 
 GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_05_xtest] TO [bodbadminNet] AS [dbo]
 GO

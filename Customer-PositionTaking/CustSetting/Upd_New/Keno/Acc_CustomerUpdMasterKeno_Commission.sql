@@ -48,7 +48,7 @@ BEGIN
 	WHERE custid = @srecommend AND bettype = @BetType AND sporttype = @SportType
 
 	-- apply exec rep
-	EXEC Acc_CustSetting3rd_06_xtest @CustId = @custid
+	EXEC Acc_CustSetting3rd_06 @CustId = @custid
 		, @RoleId = @roleid
 		, @discount = @discount
 		, @mode = 'Keno'
@@ -96,12 +96,10 @@ BEGIN
 			,@duration = @duration
 	END CATCH
 END
-GO
 
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [vnteam]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [bodbAdminNet]
 GO
-
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [bodbDownlineNet]

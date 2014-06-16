@@ -141,7 +141,7 @@ BEGIN
 
 	--u = (i3 or i1)?(u3 or u1)
 	--s1 = min(s4-m1-a1, u)
-	EXEC dbo.Acc_CustSetting3rd_07_xtest @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
+	EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)

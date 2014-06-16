@@ -52,7 +52,7 @@ BEGIN
 	END
 	
 	-- Apply exec rep
-	EXEC Acc_CustSetting3rd_06_xtest
+	EXEC Acc_CustSetting3rd_06
 		@CustId = @CustID,
 		@RoleId = 4,
 		@mode = 'Keno',

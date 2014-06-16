@@ -212,7 +212,7 @@ BEGIN
 			RETURN
 		END
 	
-		EXEC dbo.Acc_CustSetting3rd_05_xtest
+		EXEC dbo.Acc_CustSetting3rd_05
 			@srecommend = @srecommend
 			, @mrecommend = @custid
 			, @roleid = 3
@@ -230,7 +230,7 @@ BEGIN
 	--apply new value position taking for super on members
 	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @is3 = 0
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_05_xtest
+		EXEC dbo.Acc_CustSetting3rd_05
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
@@ -247,7 +247,7 @@ BEGIN
 
 	IF @UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07_xtest 
+		EXEC dbo.Acc_CustSetting3rd_07 
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,

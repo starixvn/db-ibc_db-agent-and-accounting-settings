@@ -209,7 +209,7 @@ BEGIN
 		--Call execrep
 		IF (@um2 <> @Old_Auto_MPositionTaking OR @im2 <> @Old_IsAuto_MPositionTaking)
 		BEGIN
-			EXEC dbo.Acc_CustSetting3rd_05_xtest @mrecommend = @mrecommend
+			EXEC dbo.Acc_CustSetting3rd_05 @mrecommend = @mrecommend
 					, @recommend = @custid
 					, @roleid = 2
 					, @mode = 'Keno'
@@ -224,7 +224,7 @@ BEGIN
 	
 	IF @UpdatePositiontaking = 1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @im2 = 0        
 	BEGIN   
-		EXEC dbo.Acc_CustSetting3rd_05_xtest 		
+		EXEC dbo.Acc_CustSetting3rd_05 		
 			@recommend = @custid,
 			@roleid = 2,
 			@mode = 'Keno',
@@ -239,7 +239,7 @@ BEGIN
 
 	IF (@UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1)
 	BEGIN 
-		EXEC dbo.Acc_CustSetting3rd_07_xtest @recommend = @custid, @roleid = 2, @mode = 'Keno', @Sporttype = @SportType, @BetType = @Bettype
+		EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'Keno', @Sporttype = @SportType, @BetType = @Bettype
 		IF (@@ERROR <> 0)
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': '+ CASE @Language 
