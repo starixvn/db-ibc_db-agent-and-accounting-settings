@@ -269,6 +269,8 @@ BEGIN
 
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 	SELECT @LogSPData = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) 
+		+ '" ' + 'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) 
 		+ '" ' + 's3="' + COALESCE(CAST(@s3 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'm3="' + COALESCE(CAST(@m3 AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is3="' + COALESCE(CAST(@is3 AS VARCHAR(50)), SPACE(1))
@@ -285,6 +287,8 @@ BEGIN
 		+ '" ' + 'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
 
 	SELECT @TrackingValueDB = '<Acc_CustomerUpdMasterKeno_Positiontaking CustId ="' + COALESCE(CAST(@CustId AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) 
+		+ '" ' + 'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) 
 		+ '" ' + 's3="' + COALESCE(CAST(@Old_SPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'm3="' + COALESCE(CAST(@Old_MPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'is3="' + COALESCE(CAST(@Old_IsAuto_SPositionTaking AS VARCHAR(50)), SPACE(1))

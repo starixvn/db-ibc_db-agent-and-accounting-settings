@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg_xtest]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing BIT = NULL,
@@ -253,6 +253,8 @@ BEGIN
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbAdminNet] AS [dbo]

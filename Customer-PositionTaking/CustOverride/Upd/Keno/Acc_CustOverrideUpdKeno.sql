@@ -78,6 +78,8 @@ BEGIN
 			@TrackingValueDB VARCHAR(4000)
 			
 	SELECT @LogSPData = '<Acc_CustOverrideUpdKeno custid="' + COALESCE(CAST(@CustID AS VARCHAR(30)), SPACE(1)) + '" ' +
+		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'Min_Positiontaking="' + COALESCE(CAST(@Min_Positiontaking AS VARCHAR(30)), SPACE(1)) + '" ' + 
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 		'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -87,6 +89,8 @@ BEGIN
 		'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
 
 	SELECT @TrackingValueDB = '<Acc_CustOverrideUpdKeno custid="' + COALESCE(CAST(@CustID AS VARCHAR(30)), SPACE(1)) + '" ' +
+		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'Min_Positiontaking="' + COALESCE(CAST(@Old_Min_Positiontaking AS VARCHAR(30)), SPACE(1)) + '" ' + 
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 		'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -110,6 +114,8 @@ BEGIN
 	END TRY
 	BEGIN CATCH
 		SELECT @LogSPData = '<Acc_CustOverrideUpdKeno custid="' + COALESCE(CAST(@CustID AS VARCHAR(30)), SPACE(1)) + '" ' +
+		'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) + '" ' + 
+		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		'Min_Positiontaking="' + COALESCE(CAST(@Min_Positiontaking AS VARCHAR(30)), SPACE(1)) + '" ' + 
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 		'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
@@ -127,6 +133,16 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdKeno] TO [vnteam] AS [dbo]
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet] AS [dbo]

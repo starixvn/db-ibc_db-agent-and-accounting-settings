@@ -110,11 +110,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	--@v201spositiontaking_3 smallmoney = 0,
 
 	@v202spositiontaking_1501 smallmoney = 0,
-	@v202spositiontaking_1502 smallmoney = 0,
+	@v202spositiontaking_1511 smallmoney = 0,
 	@v202spositiontaking_1503 smallmoney = 0,
 	@v202spositiontaking_1504 smallmoney = 0,
 	@v202spositiontaking_1505 smallmoney = 0,
-	@v202spositiontaking_1506 smallmoney = 0,
+	@v202spositiontaking_1513 smallmoney = 0,
 	@v202spositiontaking_1507 smallmoney = 0,
 	@v202spositiontaking_1508 smallmoney = 0,
 	@v202spositiontaking_1509 smallmoney = 0,
@@ -360,11 +360,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	--@v201mpositiontaking_3 smallmoney = 0,
 
 	@v202mpositiontaking_1501 smallmoney = 0,
-	@v202mpositiontaking_1502 smallmoney = 0,
+	@v202mpositiontaking_1511 smallmoney = 0,
 	@v202mpositiontaking_1503 smallmoney = 0,
 	@v202mpositiontaking_1504 smallmoney = 0,
 	@v202mpositiontaking_1505 smallmoney = 0,
-	@v202mpositiontaking_1506 smallmoney = 0,
+	@v202mpositiontaking_1513 smallmoney = 0,
 	@v202mpositiontaking_1507 smallmoney = 0,
 	@v202mpositiontaking_1508 smallmoney = 0,
 	@v202mpositiontaking_1509 smallmoney = 0,
@@ -595,11 +595,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v186apositiontaking_1220 smallmoney = 0,
 	
 	@v202apositiontaking_1501 smallmoney = 0,
-	@v202apositiontaking_1502 smallmoney = 0,
+	@v202apositiontaking_1511 smallmoney = 0,
 	@v202apositiontaking_1503 smallmoney = 0,
 	@v202apositiontaking_1504 smallmoney = 0,
 	@v202apositiontaking_1505 smallmoney = 0,
-	@v202apositiontaking_1506 smallmoney = 0,
+	@v202apositiontaking_1513 smallmoney = 0,
 	@v202apositiontaking_1507 smallmoney = 0,
 	@v202apositiontaking_1508 smallmoney = 0,
 	@v202apositiontaking_1509 smallmoney = 0,
@@ -711,29 +711,29 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	
 	--v202
 	@v202discount_1501 decimal(9,8) = 0,
-	@v202discount_1502 decimal(9,8) = 0,
+	@v202discount_1511 decimal(9,8) = 0,
 	@v202discount_1503 decimal(9,8) = 0,
 	@v202discount_1504 decimal(9,8) = 0,
 	@v202discount_1505 decimal(9,8) = 0,
-	@v202discount_1506 decimal(9,8) = 0,
+	@v202discount_1513 decimal(9,8) = 0,
 	@v202discount_1507 decimal(9,8) = 0,
 	@v202discount_1508 decimal(9,8) = 0,
 	@v202discount_1509 decimal(9,8) = 0,
 	@v202adiscount_1501 decimal(9,8) = 0,
-	@v202adiscount_1502 decimal(9,8) = 0,
+	@v202adiscount_1511 decimal(9,8) = 0,
 	@v202adiscount_1503 decimal(9,8) = 0,
 	@v202adiscount_1504 decimal(9,8) = 0,
 	@v202adiscount_1505 decimal(9,8) = 0,
-	@v202adiscount_1506 decimal(9,8) = 0,
+	@v202adiscount_1513 decimal(9,8) = 0,
 	@v202adiscount_1507 decimal(9,8) = 0,
 	@v202adiscount_1508 decimal(9,8) = 0,
 	@v202adiscount_1509 decimal(9,8) = 0,
 	@v202sdiscount_1501 decimal(9,8) = 0,
-	@v202sdiscount_1502 decimal(9,8) = 0,
+	@v202sdiscount_1511 decimal(9,8) = 0,
 	@v202sdiscount_1503 decimal(9,8) = 0,
 	@v202sdiscount_1504 decimal(9,8) = 0,
 	@v202sdiscount_1505 decimal(9,8) = 0,
-	@v202sdiscount_1506 decimal(9,8) = 0,
+	@v202sdiscount_1513 decimal(9,8) = 0,
 	@v202sdiscount_1507 decimal(9,8) = 0,
 	@v202sdiscount_1508 decimal(9,8) = 0,
 	@v202sdiscount_1509 decimal(9,8) = 0,
@@ -1077,15 +1077,7 @@ SET NOCOUNT ON
 				   ,[autompositiontaking]
 				   ,[isautompositiontaking])
 		SELECT @custid , 1101, 162, 0, 0, 0.9, 0, 0, 0, 0, 0, 0 ,0 ,0		
-		UNION ALL SELECT @custid , 1501, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1501
-		UNION ALL SELECT @custid , 1502, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1502
-		UNION ALL SELECT @custid , 1503, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1503
-		UNION ALL SELECT @custid , 1504, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1504
-		UNION ALL SELECT @custid , 1505, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1505
-		UNION ALL SELECT @custid , 1506, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1506
-		UNION ALL SELECT @custid , 1507, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1507
-		UNION ALL SELECT @custid , 1508, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1508
-		UNION ALL SELECT @custid , 1509, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1509
+		UNION ALL SELECT @CustID, Bettype, Sporttype, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype BETWEEN 1501 AND 1599 AND IsDep = 0		
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1111,11 +1103,11 @@ SET NOCOUNT ON
 				   ,[minpositiontaking])
 		SELECT @custid, 1101, 162, 0	
 		UNION ALL SELECT @custid, 1501, 202, 0
-		UNION ALL SELECT @custid, 1502, 202, 0
+		UNION ALL SELECT @custid, 1511, 202, 0
 		UNION ALL SELECT @custid, 1503, 202, 0
 		UNION ALL SELECT @custid, 1504, 202, 0
 		UNION ALL SELECT @custid, 1505, 202, 0
-		UNION ALL SELECT @custid, 1506, 202, 0
+		UNION ALL SELECT @custid, 1513, 202, 0
 		UNION ALL SELECT @custid, 1507, 202, 0
 		UNION ALL SELECT @custid, 1508, 202, 0
 		UNION ALL SELECT @custid, 1509, 202, 0
@@ -1142,7 +1134,7 @@ SET NOCOUNT ON
 		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
 		SELECT	GameTypeID, @Custid, 0, 0, 0, 1
 		FROM	bodb02.dbo.GameType WITH(NOLOCK)
-		WHERE	IBCBetTypeID BETWEEN 1501 AND 1509
+		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -2321,7 +2313,7 @@ SET NOCOUNT ON
 		UNION ALL
 		SELECT @custid, 1501, 202, ISNULL(@v202apositiontaking_1501,0), ISNULL(@v202mpositiontaking_1501,0), ISNULL(@v202spositiontaking_1501,0), 0, ISNULL(@v202discount_1501,0), ISNULL(@v202adiscount_1501,0), ISNULL(@v202sdiscount_1501,0), 0, 0, 0, 0
 		UNION ALL
-		SELECT @custid, 1502, 202, ISNULL(@v202apositiontaking_1502,0), ISNULL(@v202mpositiontaking_1502,0), ISNULL(@v202spositiontaking_1502,0), 0, ISNULL(@v202discount_1502,0), ISNULL(@v202adiscount_1502,0), ISNULL(@v202sdiscount_1502,0), 0, 0, 0, 0
+		SELECT @custid, 1511, 202, ISNULL(@v202apositiontaking_1511,0), ISNULL(@v202mpositiontaking_1511,0), ISNULL(@v202spositiontaking_1511,0), 0, ISNULL(@v202discount_1511,0), ISNULL(@v202adiscount_1511,0), ISNULL(@v202sdiscount_1511,0), 0, 0, 0, 0
 		UNION ALL
 		SELECT @custid, 1503, 202, ISNULL(@v202apositiontaking_1503,0), ISNULL(@v202mpositiontaking_1503,0), ISNULL(@v202spositiontaking_1503,0), 0, ISNULL(@v202discount_1503,0), ISNULL(@v202adiscount_1503,0), ISNULL(@v202sdiscount_1503,0), 0, 0, 0, 0
 		UNION ALL
@@ -2329,7 +2321,7 @@ SET NOCOUNT ON
 		UNION ALL
 		SELECT @custid, 1505, 202, ISNULL(@v202apositiontaking_1505,0), ISNULL(@v202mpositiontaking_1505,0), ISNULL(@v202spositiontaking_1505,0), 0, ISNULL(@v202discount_1505,0), ISNULL(@v202adiscount_1505,0), ISNULL(@v202sdiscount_1505,0), 0, 0, 0, 0
 		UNION ALL
-		SELECT @custid, 1506, 202, ISNULL(@v202apositiontaking_1506,0), ISNULL(@v202mpositiontaking_1506,0), ISNULL(@v202spositiontaking_1506,0), 0, ISNULL(@v202discount_1506,0), ISNULL(@v202adiscount_1506,0), ISNULL(@v202sdiscount_1506,0), 0, 0, 0, 0
+		SELECT @custid, 1513, 202, ISNULL(@v202apositiontaking_1513,0), ISNULL(@v202mpositiontaking_1513,0), ISNULL(@v202spositiontaking_1513,0), 0, ISNULL(@v202discount_1513,0), ISNULL(@v202adiscount_1513,0), ISNULL(@v202sdiscount_1513,0), 0, 0, 0, 0
 		UNION ALL
 		SELECT @custid, 1507, 202, ISNULL(@v202apositiontaking_1507,0), ISNULL(@v202mpositiontaking_1507,0), ISNULL(@v202spositiontaking_1507,0), 0, ISNULL(@v202discount_1507,0), ISNULL(@v202adiscount_1507,0), ISNULL(@v202sdiscount_1507,0), 0, 0, 0, 0
 		UNION ALL
@@ -2359,7 +2351,7 @@ SET NOCOUNT ON
 		SELECT cg.GameTypeID, @Custid, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
 		FROM dbo.CustGameType cg WITH(NOLOCK) 
 			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1509
+		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
 
 		IF @@error <> 0
 		BEGIN

@@ -253,6 +253,8 @@ BEGIN
 	DECLARE @LogSPData VARCHAR(MAX), @TrackingValueDB VARCHAR(4000)
 
 	SELECT @LogSPData ='<Acc_CustomerUpdAgentKeno_PositionTaking CustID="' + COALESCE(CAST(@custid AS VARCHAR(30)), SPACE(1))
+		+ '" ' + 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) 
+		+ '" ' + 'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) 
 		+ '" ' + 'UpdateAllMembers="' + COALESCE(CAST(@UpdateAllMembers AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'NewMPositionTaking="' + COALESCE(CAST(@NewMPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'a2="' + COALESCE(CAST(@a2 AS VARCHAR(50)), SPACE(1))
@@ -269,6 +271,8 @@ BEGIN
 		+ '" ' + 'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(5000)), SPACE(1)) + '" />'
 
 	SELECT @TrackingValueDB ='<Acc_CustomerUpdAgentKeno_PositionTaking CustID="' + COALESCE(CAST(@custid AS VARCHAR(30)), SPACE(1))
+		+ '" ' + 'sporttype="'+ COALESCE(CAST(@sporttype AS VARCHAR(10)),SPACE(1)) 
+		+ '" ' + 'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) 
 		+ '" ' + 'UpdateAllMembers="' + COALESCE(CAST(@UpdateAllMembers AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'NewMPositionTaking="' + COALESCE(CAST(@NewMPositionTaking AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'a2="' + COALESCE(CAST(@Old_APositiontaking AS VARCHAR(50)), SPACE(1))
