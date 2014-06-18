@@ -136,6 +136,8 @@ DECLARE @startRun	DATETIME,
 	FROM custsettingGame WITH(NOLOCK)
 	WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 	
+	IF @apositiontaking_old = @a1 RETURN
+
 	--Auto Master PT
 	------------------------------------------------------------------------------------------------------------------------------
 	--u2,i2		
