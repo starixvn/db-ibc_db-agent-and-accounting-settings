@@ -38,7 +38,7 @@ BEGIN
 	DECLARE @ErrCode_cur INT, @ErrMsg_cur NVARCHAR(4000)
 	DECLARE @mrecommend INT, @recommend INT, @srecommend INT, @ErrType VARCHAR(1000), @roleid TINYINT, @Username VARCHAR(50)
 		, @SPositionTaking_Max SMALLMONEY, @MPositionTaking SMALLMONEY, @APositionTaking SMALLMONEY
-		, @Old_SPositionTaking SMALLMONEY, @Old_IsAuto_SPositionTaking SMALLMONEY, @Old_Auto_SPositionTaking SMALLMONEY 
+		, @Old_SPositionTaking SMALLMONEY, @Old_IsAuto_SPositionTaking BIT, @Old_Auto_SPositionTaking SMALLMONEY 
 	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney, @log_s1 smallmoney
 
 	SELECT @ErrCode_cur = 0, @ErrMsg_cur = '', @ErrCode = '', @ErrMsg = ''
