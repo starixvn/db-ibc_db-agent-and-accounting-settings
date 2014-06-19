@@ -46,7 +46,7 @@ AS
 	- 20140303@Patrick: Add more sport:202 for Keno
 	- 20140402@Dom: Add more sport: 183,185 for Virtual sport
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
-	
+	- 20140619@Johnson: check IP valid to create downlines [RedmineID: #17746]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -57,6 +57,25 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
+	
+--20140619@Johnson: Check IP to create downline-----------------
+	Declare @isValidIP bit
+	
+	EXEC Acc_CustomerInsMember_CheckIP 
+			@IP = @IP,
+			@isValid = @isValidIP OUTPUT
+	
+	IF @isValidIP = 0
+	BEGIN
+		Select	@ErrMsg = case @Language 
+						when 'E' then 'Your account is not allowed to create more customer. Please contact your upline or CSD for further information.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](40032,@Language)
+					end,
+				@ErrCode = 1001	
+		return
+	END
+--End check IP--------------------------------------------------
+
 	DECLARE @startRun datetime
 		,@endRun datetime
 		,@duration int
