@@ -1,5 +1,4 @@
 ﻿
-
 ALTER PROCEDURE  [dbo].[Acc_CustomerSelHREditMember_MAg]
 	@CustID int
 AS
@@ -20,6 +19,7 @@ AS
 		- 20110122@Lukas: Add more partner ( AU Horse racing) & racing game (Harness, Greyhound) setting
 		- 20110314@Johnson: remove @AgentID 
 		- 20120504@Johnson: correct m1 max
+		- 20140307@Johnson: fix bug m1_max =  m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
 */
 SET NOCOUNT ON
 
@@ -47,7 +47,7 @@ Declare
 	@v152sp_52 smallmoney,
 	@v153sp_51 smallmoney,
 	@v153sp_52 smallmoney,
-
+/*
 	@max_v151mp_31 smallmoney,
 	@max_v151mp_32 smallmoney,
 	@max_v151mp_41 smallmoney,
@@ -60,6 +60,7 @@ Declare
 	@max_v152mp_52 smallmoney,
 	@max_v153mp_51 smallmoney,
 	@max_v153mp_52 smallmoney,
+*/
 	--im2
 	@isauto_v151mpositiontaking_31 bit ,
 	@isauto_v151mpositiontaking_32 bit ,
@@ -175,7 +176,7 @@ Where cs.CustID = @MasterID --in (Select mRecommend from custinfo with (NOLOCK) 
 			AND cs.sporttype BETWEEN 151 AND 153
 
 
-
+/*
 Select
 	--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
 	@max_v151mp_31 = max(case when cs.bettype = 31 and cs.sporttype = 151 then case when not (cs.isautopositiontaking=0 and mcs.isautopositiontaking=0) then mcs.mpositiontaking-cs.apositiontaking else case when mcs.mpositiontaking-cs.apositiontaking<=@v151sp_31-cs.spositiontaking-cs.apositiontaking then  mcs.mpositiontaking-cs.apositiontaking else @v151sp_31-cs.spositiontaking-cs.apositiontaking end end else 0 end),
@@ -194,7 +195,7 @@ From CustSetting3rd as cs with (NOLOCK)
 	inner join custinfo as c with (nolock) on cs.custid = c.custid
 	inner join CustSetting3rd as mcs with (nolock) on mcs.custid = c.mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype =cs.bettype
 where cs.custid = @custid and cs.sporttype BETWEEN 151 AND 153
-
+*/
 
 SELECT
 	isnull(c.fax,'') as fax, 
@@ -271,6 +272,7 @@ SELECT
 	max(case when cs.bettype = 51 and cs.sporttype = 153 then cs.mpositiontaking else 0 end) as v153mpositiontaking_51,
 	max(case when cs.bettype = 52 and cs.sporttype = 153 then cs.mpositiontaking else 0 end) as v153mpositiontaking_52,
 	
+	/*
 	--maxpos_1=min[@max_mp,min(m3,l3)-a1]
 	--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
 	case when isnull(@max_v151mp_31, 0)  < @v151mapositiontaking_31_max - max(case when cs.bettype = 31 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  then isnull(@max_v151mp_31, 0)  else @v151mapositiontaking_31_max - max(case when cs.bettype = 31 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  end as v151pos_31_max,
@@ -285,6 +287,21 @@ SELECT
 	case when isnull(@max_v152mp_52, 0)  < @v152mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 152 then cs.apositiontaking else 0 end)  then isnull(@max_v152mp_52, 0)  else @v152mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 152  then cs.apositiontaking else 0 end)  end as v152pos_52_max,
 	case when isnull(@max_v153mp_51, 0)  < @v153mapositiontaking_51_max - max(case when cs.bettype = 51 and cs.sporttype = 153 then cs.apositiontaking else 0 end)  then isnull(@max_v153mp_51, 0)  else @v153mapositiontaking_51_max - max(case when cs.bettype = 51 and cs.sporttype = 153 then cs.apositiontaking else 0 end)  end as v153pos_51_max,
 	case when isnull(@max_v153mp_52, 0)  < @v153mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 153 then cs.apositiontaking else 0 end)  then isnull(@max_v153mp_52, 0)  else @v153mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 153  then cs.apositiontaking else 0 end)  end as v153pos_52_max,
+	*/
+	
+	--m1_max = (m3-a1)
+	@v151mapositiontaking_31_max - max(case when cs.bettype = 31 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  as v151pos_31_max,
+	@v151mapositiontaking_32_max - max(case when cs.bettype = 32 and cs.sporttype = 151  then cs.apositiontaking else 0 end) as v151pos_32_max,
+	@v151mapositiontaking_41_max - max(case when cs.bettype = 41 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  as v151pos_41_max,
+	@v151mapositiontaking_42_max - max(case when cs.bettype = 42 and cs.sporttype = 151  then cs.apositiontaking else 0 end) as v151pos_42_max,
+	@v151mapositiontaking_51_max - max(case when cs.bettype = 51 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  as v151pos_51_max,
+	@v151mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 151  then cs.apositiontaking else 0 end) as v151pos_52_max,
+	@v152mapositiontaking_41_max - max(case when cs.bettype = 41 and cs.sporttype = 152 then cs.apositiontaking else 0 end)  as v152pos_41_max,
+	@v152mapositiontaking_42_max - max(case when cs.bettype = 42 and cs.sporttype = 152  then cs.apositiontaking else 0 end) as v152pos_42_max,
+	@v152mapositiontaking_51_max - max(case when cs.bettype = 51 and cs.sporttype = 152 then cs.apositiontaking else 0 end)  as v152pos_51_max,
+	@v152mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 152  then cs.apositiontaking else 0 end) as v152pos_52_max,
+	@v153mapositiontaking_51_max - max(case when cs.bettype = 51 and cs.sporttype = 153 then cs.apositiontaking else 0 end)  as v153pos_51_max,
+	@v153mapositiontaking_52_max - max(case when cs.bettype = 52 and cs.sporttype = 153  then cs.apositiontaking else 0 end) as v153pos_52_max,
 	------------------------------------------------------------------------------------------------------------------------------------
 	case when @v151mapositiontaking_31_min - max(case when cs.bettype = 31 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  <0 then 0 else @v151mapositiontaking_31_min - max(case when cs.bettype = 31 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  end as v151pos_31_min,
 	case when @v151mapositiontaking_32_min - max(case when cs.bettype = 32 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  <0 then 0 else @v151mapositiontaking_32_min - max(case when cs.bettype = 32 and cs.sporttype = 151 then cs.apositiontaking else 0 end)  end as v151pos_32_min,
@@ -380,7 +397,9 @@ group by
 	ci.disable153_au
 
 
-	
+
+
+
 
 GO 
  GRANT EXECUTE ON [dbo].[Acc_CustomerSelHREditMember_MAg] TO [bodbAdminNet]

@@ -35,7 +35,8 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130410@Elodie: Only update 'closed' status if values are different
 	- 20130709@Jamie: Apply ExecRep 
-	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
+	- 20140618@Thien: Prevent robot from opening back the closed accounts
 	
 Param's Explanation:
 • @custid: custid that need to be viewed.   
@@ -53,6 +54,24 @@ set @startRun = getdate()
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
+
+-----***20140618@Thien***-----
+-----***START: PREVENT ROBOT OPENED BACK***-----
+IF @CustID IN (14105547, --SUPERTEST1IY for testing
+				15046519, --TVA9661
+				15046495, --TVA9660
+				11799369 --ECJACR
+				) AND @Closed = 0
+BEGIN
+	Select @ErrMsg = case @Language 
+						when 'E' then 'This function is temporarily unavailable, please update later.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](60004,@Language)
+					end	,
+		@ErrCode = 106
+		return
+		
+END
+-----***END: PREVENT ROBOT OPENED BACK***-----
 
 IF exists(select 1 from custinfo with (nolock) where synccasino = 1 and custid = @CustID)
 BEGIN
@@ -205,6 +224,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	,
 		@duration = @duration
 END CATCH
+
+
 
 
 

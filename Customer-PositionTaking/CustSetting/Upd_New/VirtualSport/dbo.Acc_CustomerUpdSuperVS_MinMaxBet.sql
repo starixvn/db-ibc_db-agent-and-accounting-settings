@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperVS_MinMaxBet]
+﻿ALTER PROCEDURE [Acc_CustomerUpdSuperVS_MinMaxBet]
 	@custid			INT,
 	@sporttype tinyint,
 	@bettype int,
@@ -14,7 +14,7 @@ AS
 /*
 Created: 20120801@Dan.Nguyen
 Task : Update super's minbet, maxbet, max per match for Virtual Soccer
-DB: DBTXN/bodb02
+DB: DBTXN/custDB
 
 Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
@@ -22,7 +22,8 @@ Revisions:
 	- 20130220@Johnson: - add virtual horse racing (sporttype : 181)
 						- change linked server DB053 to DBAGE
 						- write log on DBTXN if DBLOG failure
-	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)	
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 							
 Param's Explanation:
 * @ErrCode:
@@ -97,7 +98,9 @@ WHERE custid = @custid and sporttype = @sporttype AND bettype = @bettype
 SELECT @maxpermatch_old = CASE	WHEN @sporttype = 180 THEN maxpermatch180 
 								WHEN @sporttype = 181 THEN maxpermatch181
 								WHEN @sporttype = 182 THEN maxpermatch182
+								WHEN @sporttype = 183 THEN maxpermatch183
 								WHEN @sporttype = 184 THEN maxpermatch184
+								WHEN @sporttype = 185 THEN maxpermatch185
 								WHEN @sporttype = 186 THEN maxpermatch186 END --20121130@Scott
 FROM custinfo WITH(NOLOCK) 
 WHERE custid = @custid
@@ -134,7 +137,7 @@ IF @MaxPerMatch <> @maxpermatch_old
 BEGIN
 	IF (@sporttype = 180)
 	BEGIN
-		EXEC Acc_CustomerUpdMaxPerMatchVS180_1201
+				EXEC Acc_CustomerUpdMaxPerMatchVS180_1201
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -144,7 +147,7 @@ BEGIN
 	
 	IF (@sporttype = 181)
 	BEGIN
-		EXEC Acc_CustomerUpdMaxPerMatchVS181_1231
+				EXEC Acc_CustomerUpdMaxPerMatchVS181_1231
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -154,16 +157,37 @@ BEGIN
 	
 	IF (@sporttype = 182)
 	BEGIN
-								EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
+				EXEC Acc_CustomerUpdMaxPerMatchVS182_1231
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
 			@ErrCode = @ErrCode_Cur OUTPUT,
 			@ErrMsg = @ErrMsg_Cur OUTPUT
 	END
+
+	IF (@sporttype = 183)
+	BEGIN
+				EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+
 	IF (@sporttype = 184)
 	BEGIN
-								EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
+				EXEC Acc_CustomerUpdMaxPerMatchVS184_1231
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+
+	IF (@sporttype = 185)
+	BEGIN
+				EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -173,7 +197,7 @@ BEGIN
 	
 	IF (@sporttype = 186) --20121130@Scott
 	BEGIN
-		EXEC Acc_CustomerUpdMaxPerMatchVS186_1220
+				EXEC Acc_CustomerUpdMaxPerMatchVS186_1220
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,

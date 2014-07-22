@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_MinMaxBet]  
+﻿ALTER PROCEDURE [Acc_CustomerUpdVS_MinMaxBet]  
 	@custid   INT,  
 	@sporttype SMALLINT,
 	@bettype SMALLINT, 
@@ -23,7 +23,8 @@ AS
 						 - change linked server DB053 to DBAGE
 						 - write log on DBTXN if DBLOG failure
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
-											 
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+												 
   Parameters Explanation:  
  */   
 SET NOCOUNT ON   
@@ -81,7 +82,9 @@ BEGIN
 	SELECT @MaxMaxPerMatch = (case	when @sporttype = 180 then maxpermatch180  
 									when @sporttype = 181 then maxpermatch181   
 									when @sporttype = 182 then maxpermatch182   
+									when @sporttype = 183 then maxpermatch183   
 									when @sporttype = 184 then maxpermatch184
+									when @sporttype = 185 then maxpermatch185
 									when @sporttype = 186 then maxpermatch186 else 0 end )
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid = @srecommend  
@@ -98,7 +101,9 @@ BEGIN
 	SELECT @MaxMaxPerMatch = MIN(CASE	WHEN @sporttype = 180 then maxpermatch180
 										WHEN @sporttype = 181 then maxpermatch181
 										WHEN @sporttype = 182 then maxpermatch182   
+										when @sporttype = 183 then maxpermatch183   
 										WHEN @sporttype = 184 then maxpermatch184
+										when @sporttype = 185 then maxpermatch185
 										WHEN @sporttype = 186 then maxpermatch186 else 0 end)  
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid IN (@srecommend,@mrecommend)  
@@ -115,7 +120,9 @@ BEGIN
 	SELECT @MaxMaxPerMatch = MIN(CASE	WHEN @sporttype = 180 then maxpermatch180
 										WHEN @sporttype = 181 then maxpermatch181
 										WHEN @sporttype = 182 then maxpermatch182   
+										when @sporttype = 183 then maxpermatch183  
 										WHEN @sporttype = 184 then maxpermatch184
+										when @sporttype = 185 then maxpermatch185
 										WHEN @sporttype = 186 then maxpermatch186 else 0 end)
 	FROM custinfo WITH(NOLOCK)  
 	WHERE custid IN (@srecommend,@mrecommend,@recommend)  
@@ -170,7 +177,9 @@ WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 SELECT @MaxPerMatch_Old = (CASE WHEN @sporttype = 180 then MaxPerMatch180 
 								WHEN @sporttype = 181 then MaxPerMatch181
 								WHEN @sporttype = 182 then maxpermatch182   
+								when @sporttype = 183 then maxpermatch183   
 								WHEN @sporttype = 184 then maxpermatch184
+								when @sporttype = 185 then maxpermatch185
 								WHEN @sporttype = 186 then MaxPermatch186 Else 0 End)
 FROM custinfo WITH(NOLOCK)  
 WHERE custid = @custid  
@@ -197,10 +206,24 @@ BEGIN
 	WHERE custid = @custid  
 END	
 
+IF @sporttype =  183
+BEGIN
+	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+		SET maxpermatch183 = @maxpermatch			
+	WHERE custid = @custid  
+END	
+
 IF @sporttype =  184
 BEGIN
 	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
 		SET maxpermatch184 = @maxpermatch			
+	WHERE custid = @custid  
+END	
+
+IF @sporttype =  185
+BEGIN
+	UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+		SET maxpermatch185 = @maxpermatch			
 	WHERE custid = @custid  
 END	
 
@@ -235,7 +258,7 @@ END
 IF @UpdDownlinesVS = 1 
 BEGIN  
 
-	EXEC Acc_CustSetting3rd_03  
+				EXEC Acc_CustSetting3rd_03  
 		@custid    = @custid,  
 		@roleid    = @roleid,  
 		@sporttype = @sporttype,

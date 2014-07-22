@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerSelEditSuperVS]
+ALTER PROCEDURE [Acc_CustomerSelEditSuperVS]
 	@custid		INT
 AS
 	/*
@@ -11,6 +11,7 @@ AS
 			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
 			- 20130220@Johnson: get virtual horse racing setting (sporttype : 181, bettype: 1231)
 			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]	
+			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 										
 		Parameters Explanations:
 			
@@ -31,7 +32,11 @@ DECLARE
 	@maxpermatch182_min		MONEY,
 	@MaxPerMatch182			MONEY,
 	@maxpermatch184_min		MONEY,
-	@MaxPerMatch184			MONEY
+	@MaxPerMatch184			MONEY,
+	@maxpermatch183_min		MONEY,
+	@MaxPerMatch183			MONEY,
+	@maxpermatch185_min		MONEY,
+	@MaxPerMatch185			MONEY
 
 SELECT @downlines = CASE WHEN EXISTS(SELECT top 1 1 FROM custinfo WITH(NOLOCK) WHERE srecommend = @custid and roleid = 3) THEN 1 ELSE 0 END
 
@@ -44,7 +49,9 @@ Select 	@MaxPerMatch180_Min = 0,
 		@MaxPerMatch181_Min = 0, 
 		@maxpermatch186_min = 0,
 		@MaxPerMatch182_Min = 0, 
-		@maxpermatch184_min = 0
+		@maxpermatch184_min = 0,
+		@maxpermatch183_min = 0,
+		@maxpermatch185_min = 0
 
 SELECT @DisableVirtualSports	= ISNULL(DisableVirtualSports,0),
 		@HideVirtualSports		= ISNULL(HideVirtualSports,0) ,
@@ -52,7 +59,9 @@ SELECT @DisableVirtualSports	= ISNULL(DisableVirtualSports,0),
 		@MaxPerMatch181			= MaxPerMatch181,
 		@MaxPerMatch186			= MaxPerMatch186,
 		@MaxPerMatch182			= MaxPerMatch182,
-		@MaxPerMatch184			= MaxPerMatch184
+		@MaxPerMatch184			= MaxPerMatch184,
+		@MaxPerMatch183			= MaxPerMatch183,
+		@MaxPerMatch185			= MaxPerMatch185
 FROM custinfo WITH(NOLOCK)
 WHERE custid = @custid
 
@@ -83,12 +92,16 @@ SELECT
 							WHEN 186 then @MaxPerMatch186 
 							WHEN 182 then @MaxPerMatch182
 							WHEN 184 then @MaxPerMatch184 
+							WHEN 183 then @MaxPerMatch183 
+							WHEN 185 then @MaxPerMatch185
 						  END AS MaxPerMatch,
 		CASE cs.sporttype WHEN 180 then @MaxPerMatch180_Min 
 							WHEN 181 then @MaxPerMatch181_Min 
 							WHEN 186 then @MaxPerMatch186_Min 
 							WHEN 182 then @MaxPerMatch182_Min 
 							WHEN 184 then @MaxPerMatch184_Min
+							WHEN 183 then @MaxPerMatch183_Min
+							WHEN 185 then @MaxPerMatch185_Min
 						 END AS MaxPerMatch_Min,
 		
 		cs.spositiontaking as s4,
@@ -98,8 +111,7 @@ SELECT
 		--0.9 as s4_max		
 FROM dbo.CustSetting3rd AS cs WITH (NOLOCK) 
 	JOIN dbo.custOverride3rd AS co WITH (NOLOCK) ON cs.custid = co.custid AND cs.sporttype = co.sporttype AND cs.bettype = co.bettype
-WHERE cs.custid = @custId AND cs.sporttype in (180,181,182,184,186) AND cs.bettype in (1201 , 1231, 1220)
-
+WHERE cs.custid = @custId AND cs.sporttype in (180,181,182,183,184,185,186) AND cs.bettype in (1201 , 1231, 1220)
 
 
 GO

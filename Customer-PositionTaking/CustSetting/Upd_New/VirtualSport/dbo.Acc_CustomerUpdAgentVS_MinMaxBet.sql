@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet]
+﻿ALTER PROCEDURE [Acc_CustomerUpdAgentVS_MinMaxBet]
 	@custid int,-- agentID
 	@sporttype tinyint,
 	@bettype int,	
@@ -15,7 +15,7 @@ as
 /*
 Created: 20120816@Dan
 Task : Update agent's minbet, maxbet, max per match for VS
-DB: DBTXN/bodb02
+DB: DBTXN/custDB
 Original: 
 
 Revisions:
@@ -24,7 +24,8 @@ Revisions:
 	- 20130221@Johnson: - add virtual horse racing setting (sporttype : 181)
 						- change linked server DB053 to DBAGE, DB03 to DBONUSER
 						- write log on DBTXN if DBLOG failure
-	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]				
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -97,7 +98,9 @@ Select
 	@MaxMaxperMatch = case	when @sporttype = 180 then isnull(Min(case when cs.MaxPerMatch180 = 0 then NULL else cs.MaxPerMatch180 end),0)
 							when @sporttype = 181 then isnull(Min(case when cs.MaxPerMatch181 = 0 then NULL else cs.MaxPerMatch181 end),0)
 							when @sporttype = 182 then isnull(Min(case when cs.MaxPerMatch182 = 0 then NULL else cs.MaxPerMatch182 end),0)
+							when @sporttype = 183 then isnull(Min(case when cs.MaxPerMatch183 = 0 then NULL else cs.MaxPerMatch183 end),0)
 							when @sporttype = 184 then isnull(Min(case when cs.MaxPerMatch184 = 0 then NULL else cs.MaxPerMatch184 end),0)
+							when @sporttype = 185 then isnull(Min(case when cs.MaxPerMatch185 = 0 then NULL else cs.MaxPerMatch185 end),0)
 							when @sporttype = 186 then isnull(Min(case when cs.MaxPerMatch186 = 0 then NULL else cs.MaxPerMatch186 end),0) end
 from 
 	custinfo as cs WITH (NOLOCK) 
@@ -216,7 +219,9 @@ DECLARE @old_maxpermatch money
 SELECT @old_maxpermatch = case	when @sporttype = 180 then maxpermatch180
 								when @sporttype = 181 then maxpermatch181
 								when @sporttype = 182 then maxpermatch182
+								when @sporttype = 183 then maxpermatch183
 								when @sporttype = 184 then maxpermatch184
+								when @sporttype = 185 then maxpermatch185
 								when @sporttype = 186 then maxpermatch186 end
 FROM custinfo WITH(NOLOCK)
 WHERE custid = @custid
@@ -227,7 +232,7 @@ BEGIN
 	IF (@sporttype = 180)
 	BEGIN
 	
-		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS180_1201 
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS180_1201 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -238,7 +243,7 @@ BEGIN
 	IF (@sporttype = 181)
 	BEGIN
 	
-		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS181_1231 
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS181_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -249,18 +254,41 @@ BEGIN
 	IF (@sporttype = 182)
 	BEGIN
 	
-								EXEC dbo.Acc_CustomerUpdMaxPerMatchVS182_1231 
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS182_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
 			@ErrCode = @ErrCode_Cur OUTPUT,
 			@ErrMsg = @ErrMsg_Cur OUTPUT
 	END
+
+	IF (@sporttype = 183)
+	BEGIN
+	
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS183_1231 
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+
 	
 	IF (@sporttype = 184)
 	BEGIN
 	
-								EXEC dbo.Acc_CustomerUpdMaxPerMatchVS184_1231 
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS184_1231 
+			@custid = @custid,
+			@MaxPerMatch = @MaxPerMatch,
+			@Language = @Language,
+			@ErrCode = @ErrCode_Cur OUTPUT,
+			@ErrMsg = @ErrMsg_Cur OUTPUT
+	END
+
+	IF (@sporttype = 185)
+	BEGIN
+	
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS185_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -270,7 +298,7 @@ BEGIN
 	
 	IF (@sporttype = 186)
 	BEGIN
-		EXEC dbo.Acc_CustomerUpdMaxPerMatchVS186_1220
+				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS186_1220
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -360,6 +388,7 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 ---------------------------------------------------------
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet] TO [bodbadminNet] AS [dbo]

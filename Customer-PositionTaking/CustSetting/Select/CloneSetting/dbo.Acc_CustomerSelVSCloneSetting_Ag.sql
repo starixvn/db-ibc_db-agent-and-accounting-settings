@@ -21,6 +21,14 @@ SET NOCOUNT ON
 		MAX( CASE WHEN cs.sporttype = 181 AND cs.bettype = 1231 THEN cs.minbet ELSE 0 END) as v181minbet_1231,
 		MAX( CASE WHEN cs.sporttype = 181 AND cs.bettype = 1231 THEN cs.maxbet ELSE 0 END) as v181maxbet_1231,
 		ci.MaxPerMatch181 as v181MaxPerMatch_1231,	
+
+		MAX( CASE WHEN cs.sporttype = 183 AND cs.bettype = 1231 THEN cs.minbet ELSE 0 END) as v183minbet_1231,
+		MAX( CASE WHEN cs.sporttype = 183 AND cs.bettype = 1231 THEN cs.maxbet ELSE 0 END) as v183maxbet_1231,
+		ci.MaxPerMatch183 as v183MaxPerMatch_1231,	
+
+		MAX( CASE WHEN cs.sporttype = 185 AND cs.bettype = 1231 THEN cs.minbet ELSE 0 END) as v185minbet_1231,
+		MAX( CASE WHEN cs.sporttype = 185 AND cs.bettype = 1231 THEN cs.maxbet ELSE 0 END) as v185maxbet_1231,
+		ci.MaxPerMatch185 as v185MaxPerMatch_1231,
 		
 		MAX( CASE WHEN cs.sporttype = 186 AND cs.bettype = 1220 THEN cs.minbet ELSE 0 END) as v186minbet_1220,
 		MAX( CASE WHEN cs.sporttype = 186 AND cs.bettype = 1220 THEN cs.maxbet ELSE 0 END) as v186maxbet_1220,
@@ -28,10 +36,12 @@ SET NOCOUNT ON
 		-- a1	
 		MAX( CASE WHEN cs.sporttype = 180 AND cs.bettype = 1201 THEN cs.apositiontaking ELSE 0 END) as v180apositiontaking_1201,
 		MAX( CASE WHEN cs.sporttype = 181 AND cs.bettype = 1231 THEN cs.apositiontaking ELSE 0 END) as v181apositiontaking_1231,
+		MAX( CASE WHEN cs.sporttype = 183 AND cs.bettype = 1231 THEN cs.apositiontaking ELSE 0 END) as v183apositiontaking_1231,
+		MAX( CASE WHEN cs.sporttype = 185 AND cs.bettype = 1231 THEN cs.apositiontaking ELSE 0 END) as v185apositiontaking_1231,
 		MAX( CASE WHEN cs.sporttype = 186 AND cs.bettype = 1220 THEN cs.apositiontaking ELSE 0 END) as v186apositiontaking_1220
 	FROM CustInfo ci WITH(NOLOCK)
 		INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON ci.custid = @custid AND roleid = 1 AND cs.custid = ci.custid		
-	GROUP BY ci.MaxPerMatch180, ci.MaxPerMatch181, MaxPerMatch186
+	GROUP BY ci.MaxPerMatch180, ci.MaxPerMatch181,ci.MaxPerMatch183,ci.MaxPerMatch185, MaxPerMatch186
 	
 
 GO

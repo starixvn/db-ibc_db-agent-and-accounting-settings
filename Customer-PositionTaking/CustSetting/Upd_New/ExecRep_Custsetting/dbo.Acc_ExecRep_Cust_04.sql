@@ -19,7 +19,7 @@ AS
 /*
 Created: 20121126@Thien
 Task : Update customer/custinfo settings
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 
 Revisions:
 	- 20121126@Thien: implement the 'VirtualMultiplier' update
@@ -27,6 +27,8 @@ Revisions:
 	- 20130926@Kathy: Apply Exec Rep for Live Casino, Virtual sport status, Number Game, Bingo status
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
+	- 20140228@Bobby: Update Keno status [Redmine:#12474]
+	- 20140320@Bobby: remove Keno disable
 	
 Param's Explanation:
 	@Action: 
@@ -43,6 +45,7 @@ Param's Explanation:
 		+ 'AutoSuspend': Auto suspend all: Soccer and Other Sports [@AutoSuspendSoccer, @AutoSuspendOtherSports]
 		+ 'AutoSuspendSoccer': Auto suspend for Soccer[@AutoSuspendSoccer]
 		+ 'AutoSuspendOther': Auto suspend for Other Sports [@AutoSuspendOtherSports]
+		+ 'UpdKeno-Hide' : Hide Keno gaming
    
 */
 SET NOCOUNT ON 
@@ -310,6 +313,37 @@ begin
 		WHERE recommend = @custID 
 	END
 end
+/**20140228@Bobby: Update Keno status [Redmine:#12474]**/
+else if @Action = 'UpdKeno-Hide'
+begin
+	IF (@roleID = 4)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND SRecommend = @CustID
+	END
+
+	IF (@roleID = 3)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND MRecommend = @CustID
+	END
+
+	IF (@roleID = 2)
+	BEGIN
+		UPDATE cust
+		SET HideKeno = 0
+		FROM dbo.CustInfo cust WITH (ROWLOCK, UPDLOCK) 
+		WHERE CustID <> @CustID
+			AND Recommend = @CustID
+	END
+end
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO

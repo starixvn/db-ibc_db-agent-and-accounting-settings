@@ -103,7 +103,9 @@ Revisions:
 	- 20131106@Johnson: Apply execrep when update pt on member
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)	
 	- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
-	
+	- 20140307@Johnson: apply new m1_max is m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
+	- 20140313@Johnson: check constraint min um1, m1 with max(n3-a1,0)
+						merge code correct pt into sp execrep Acc_CustSetting3rd_08/Acc_CustSetting3rd_09[redmine:#11562]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -448,7 +450,21 @@ DECLARE
 	@max_v152mp_51 smallmoney,
 	@max_v152mp_52 smallmoney,
 	@max_v153mp_51 smallmoney,
-	@max_v153mp_52 smallmoney
+	@max_v153mp_52 smallmoney,
+	
+	--min_m1 = n3 -a1
+	@min_v151mp_31 smallmoney,
+	@min_v151mp_32 smallmoney,
+	@min_v151mp_41 smallmoney,
+	@min_v151mp_42 smallmoney,
+	@min_v151mp_51 smallmoney,
+	@min_v151mp_52 smallmoney,
+	@min_v152mp_41 smallmoney,
+	@min_v152mp_42 smallmoney,
+	@min_v152mp_51 smallmoney,
+	@min_v152mp_52 smallmoney,
+	@min_v153mp_51 smallmoney,
+	@min_v153mp_52 smallmoney
 
 
 
@@ -538,199 +554,6 @@ BEGIN
 	Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
 	RETURN 
 END
-
-if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
-	BEGIN --@UpdatePositiontakingv151
-		--Check um1<=l3
-			SELECT @ErrType = ''
-			SELECT @ErrType = @ErrType + sportname + '-'+
-			case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-			 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10))
-			FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
-				(
-									SELECT 151 AS sporttype, 31 AS bettype, @auto_v151mpositiontaking_mem_31 AS autopositiontaking, @isauto_v151mpositiontaking_mem_31 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-					UNION ALL		SELECT 151 AS sporttype, 32 AS bettype, @auto_v151mpositiontaking_mem_32 AS autopositiontaking, @isauto_v151mpositiontaking_mem_32 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-					UNION ALL		SELECT 151 AS sporttype, 41 AS bettype, @auto_v151mpositiontaking_mem_41 AS autopositiontaking, @isauto_v151mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-					UNION ALL		SELECT 151 AS sporttype, 42 AS bettype, @auto_v151mpositiontaking_mem_42 AS autopositiontaking, @isauto_v151mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-					UNION ALL		SELECT 151 AS sporttype, 51 AS bettype, @auto_v151mpositiontaking_mem_51 AS autopositiontaking, @isauto_v151mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
-					UNION ALL		SELECT 151 AS sporttype, 52 AS bettype, @auto_v151mpositiontaking_mem_52 AS autopositiontaking, @isauto_v151mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
-				) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
-			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-
-			WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
-
-			IF @ErrType <>''
-			BEGIN
-				SELECT @ErrCode_cur = 6,
-					   @ErrMsg_cur = CASE @Language 
-											WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
-											ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
-									END
-				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-									
-				RETURN
-			END	
-
-			--Check um1<=m3
-			SELECT @ErrType = ''
-			SELECT @ErrType = @ErrType + sportname + '-'+
-			case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-			+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
-			FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
-				(
-									SELECT 151 AS sporttype, 31 AS bettype, @auto_v151mpositiontaking_mem_31 AS autopositiontaking, @isauto_v151mpositiontaking_mem_31 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-					UNION ALL		SELECT 151 AS sporttype, 32 AS bettype, @auto_v151mpositiontaking_mem_32 AS autopositiontaking, @isauto_v151mpositiontaking_mem_32 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-					UNION ALL		SELECT 151 AS sporttype, 41 AS bettype, @auto_v151mpositiontaking_mem_41 AS autopositiontaking, @isauto_v151mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-					UNION ALL		SELECT 151 AS sporttype, 42 AS bettype, @auto_v151mpositiontaking_mem_42 AS autopositiontaking, @isauto_v151mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-					UNION ALL		SELECT 151 AS sporttype, 51 AS bettype, @auto_v151mpositiontaking_mem_51 AS autopositiontaking, @isauto_v151mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
-					UNION ALL		SELECT 151 AS sporttype, 52 AS bettype, @auto_v151mpositiontaking_mem_52 AS autopositiontaking, @isauto_v151mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
-				) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
-			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-			WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
-
-			IF @ErrType <>''
-			BEGIN
-				SELECT @ErrCode_cur = 7,
-					   @ErrMsg_cur = @UserName + ': '+
-									CASE @Language 
-										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
-										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
-									END							
-				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-				
-				RETURN
-			END
-	END--@UpdatePositiontakingv151
-	
-	
-if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositiontakingv152_51 = 1)
-	BEGIN --@UpdatePositiontakingv152
-		--Check um1<=l3
-		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-'+
-		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10))
-		FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
-			(
-								SELECT 152 AS sporttype, 41 AS bettype, @auto_v152mpositiontaking_mem_41 AS autopositiontaking, @isauto_v152mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				UNION ALL		SELECT 152 AS sporttype, 42 AS bettype, @auto_v152mpositiontaking_mem_42 AS autopositiontaking, @isauto_v152mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				UNION ALL		SELECT 152 AS sporttype, 51 AS bettype, @auto_v152mpositiontaking_mem_51 AS autopositiontaking, @isauto_v152mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-				UNION ALL		SELECT 152 AS sporttype, 52 AS bettype, @auto_v152mpositiontaking_mem_52 AS autopositiontaking, @isauto_v152mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-
-			) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-
-		WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
-
-		IF @ErrType <>''
-		BEGIN
-			SELECT @ErrCode_cur = 6,
-				   @ErrMsg_cur = CASE @Language 
-										WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
-										ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
-								END
-			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-								
-			RETURN
-		END	
-
-		--Check um1<=m3
-		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-'+
-		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
-		FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
-			(
-								SELECT 152 AS sporttype, 41 AS bettype, @auto_v152mpositiontaking_mem_41 AS autopositiontaking, @isauto_v152mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				UNION ALL		SELECT 152 AS sporttype, 42 AS bettype, @auto_v152mpositiontaking_mem_42 AS autopositiontaking, @isauto_v152mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				UNION ALL		SELECT 152 AS sporttype, 51 AS bettype, @auto_v152mpositiontaking_mem_51 AS autopositiontaking, @isauto_v152mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-				UNION ALL		SELECT 152 AS sporttype, 52 AS bettype, @auto_v152mpositiontaking_mem_52 AS autopositiontaking, @isauto_v152mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-
-			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-		WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
-
-		IF @ErrType <>''
-		BEGIN
-			SELECT @ErrCode_cur = 7,
-				   @ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
-									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
-								END							
-			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-			
-			RETURN
-		END
-	END--@UpdatePositiontakingv152
-	
-if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
-	BEGIN --@UpdatePositiontakingv153
-		--Check um1<=l3
-		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-'+
-		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10))
-		FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
-			(
-								SELECT 153 AS sporttype, 51 AS bettype, @auto_v153mpositiontaking_mem_51 AS autopositiontaking, @isauto_v153mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-				UNION ALL		SELECT 153 AS sporttype, 52 AS bettype, @auto_v153mpositiontaking_mem_52 AS autopositiontaking, @isauto_v153mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-			) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-
-		WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
-
-		IF @ErrType <>''
-		BEGIN
-			SELECT @ErrCode_cur = 6,
-				   @ErrMsg_cur = CASE @Language 
-										WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
-										ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
-								END
-			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-								
-			RETURN
-		END	
-
-		--Check um1<=m3
-		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-'+
-		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
-		FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
-			(
-								SELECT 153 AS sporttype, 51 AS bettype, @auto_v153mpositiontaking_mem_51 AS autopositiontaking, @isauto_v153mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-				UNION ALL		SELECT 153 AS sporttype, 52 AS bettype, @auto_v153mpositiontaking_mem_52 AS autopositiontaking, @isauto_v153mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-		WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
-
-		IF @ErrType <>''
-		BEGIN
-			SELECT @ErrCode_cur = 7,
-				   @ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
-									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
-								END							
-			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-			
-			RETURN
-		END
-		
-	END--@UpdatePositiontakingv153
 			
 --m3,u3,i3
 IF ( @UpdatePositiontakingv151_31 = 1 )
@@ -825,7 +648,8 @@ IF ( @UpdatePositiontakingv153_51 = 1 )
 		SELECT @max_v153spositiontaking_51 = spositiontaking FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=51 AND sporttype=153
 		SELECT @max_v153spositiontaking_52 = spositiontaking FROM CustSetting3rd WITH (NOLOCK) WHERE custid = @srecommend AND bettype=52 AND sporttype=153
 	END
-
+	
+	/*
 	--calculate m1_max = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
 	Select
 	--@max_mp = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
@@ -861,6 +685,38 @@ IF ( @UpdatePositiontakingv153_51 = 1 )
 	
 	select @max_v153mp_51 = CASE WHEN @max_v153mp_51 < @max_v153mapositiontaking_51 - @v153apositiontaking_51 THEN @max_v153mp_51 ELSE @max_v153mapositiontaking_51 - @v153apositiontaking_51 END
 	select @max_v153mp_52 = CASE WHEN @max_v153mp_52 < @max_v153mapositiontaking_52 - @v153apositiontaking_52 THEN @max_v153mp_52 ELSE @max_v153mapositiontaking_52 - @v153apositiontaking_52 END
+*/
+	--m1_max = m3- a1
+	select @max_v151mp_31 = @max_v151mapositiontaking_31 - @v151apositiontaking_31
+	select @max_v151mp_32 = @max_v151mapositiontaking_32 - @v151apositiontaking_32
+	select @max_v151mp_41 = @max_v151mapositiontaking_41 - @v151apositiontaking_41
+	select @max_v151mp_42 = @max_v151mapositiontaking_42 - @v151apositiontaking_42
+	select @max_v151mp_51 = @max_v151mapositiontaking_51 - @v151apositiontaking_51
+	select @max_v151mp_52 = @max_v151mapositiontaking_52 - @v151apositiontaking_52
+	
+	select @max_v152mp_41 = @max_v152mapositiontaking_41 - @v152apositiontaking_41
+	select @max_v152mp_42 = @max_v152mapositiontaking_42 - @v152apositiontaking_42
+	select @max_v152mp_51 = @max_v152mapositiontaking_51 - @v152apositiontaking_51
+	select @max_v152mp_52 = @max_v152mapositiontaking_52 - @v152apositiontaking_52
+	
+	select @max_v153mp_51 = @max_v153mapositiontaking_51 - @v153apositiontaking_51
+	select @max_v153mp_52 = @max_v153mapositiontaking_52 - @v153apositiontaking_52
+	
+	--m1_min = max(n3- a1,0)
+	select @min_v151mp_31 = case when @min_v151mapositiontaking_31 - @v151apositiontaking_31 > 0 THEN @min_v151mapositiontaking_31 - @v151apositiontaking_31 ELSE 0 END
+	select @min_v151mp_32 = case when @min_v151mapositiontaking_32 - @v151apositiontaking_32 > 0 THEN @min_v151mapositiontaking_32 - @v151apositiontaking_32 ELSE 0 END
+	select @min_v151mp_41 = case when @min_v151mapositiontaking_41 - @v151apositiontaking_41 > 0 THEN @min_v151mapositiontaking_41 - @v151apositiontaking_41 ELSE 0 END
+	select @min_v151mp_42 = case when @min_v151mapositiontaking_42 - @v151apositiontaking_42 > 0 THEN @min_v151mapositiontaking_42 - @v151apositiontaking_42 ELSE 0 END
+	select @min_v151mp_51 = case when @min_v151mapositiontaking_51 - @v151apositiontaking_51 > 0 THEN @min_v151mapositiontaking_51 - @v151apositiontaking_51 ELSE 0 END
+	select @min_v151mp_52 = case when @min_v151mapositiontaking_52 - @v151apositiontaking_52 > 0 THEN @min_v151mapositiontaking_52 - @v151apositiontaking_52 ELSE 0 END
+	
+	select @min_v152mp_41 = case when @min_v152mapositiontaking_41 - @v152apositiontaking_41 > 0 THEN @min_v152mapositiontaking_41 - @v152apositiontaking_41 ELSE 0 END
+	select @min_v152mp_42 = case when @min_v152mapositiontaking_42 - @v152apositiontaking_42 > 0 THEN @min_v152mapositiontaking_42 - @v152apositiontaking_42 ELSE 0 END
+	select @min_v152mp_51 = case when @min_v152mapositiontaking_51 - @v152apositiontaking_51 > 0 THEN @min_v152mapositiontaking_51 - @v152apositiontaking_51 ELSE 0 END
+	select @min_v152mp_52 = case when @min_v152mapositiontaking_52 - @v152apositiontaking_52 > 0 THEN @min_v152mapositiontaking_52 - @v152apositiontaking_52 ELSE 0 END
+	
+	select @min_v153mp_51 = case when @min_v153mapositiontaking_51 - @v153apositiontaking_51 > 0 THEN @min_v153mapositiontaking_51 - @v153apositiontaking_51 ELSE 0 END
+	select @min_v153mp_52 = case when @min_v153mapositiontaking_52 - @v153apositiontaking_52 > 0 THEN @min_v153mapositiontaking_52 - @v153apositiontaking_52 ELSE 0 END
 	
 --um2,im2
 SELECT 
@@ -923,6 +779,288 @@ WHERE acs.custid = @recommend
 	@isauto_v153mpositiontaking_agent_51 = @isauto_v153mpositiontaking_51,
 	@isauto_v153mpositiontaking_agent_52 = @isauto_v153mpositiontaking_52
 
+if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
+	BEGIN --@UpdatePositiontakingv151
+		--Check um1<=l3
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+
+			case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+			 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
+				(
+									SELECT 151 AS sporttype, 31 AS bettype, @auto_v151mpositiontaking_mem_31 AS autopositiontaking, @isauto_v151mpositiontaking_mem_31 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 32 AS bettype, @auto_v151mpositiontaking_mem_32 AS autopositiontaking, @isauto_v151mpositiontaking_mem_32 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 41 AS bettype, @auto_v151mpositiontaking_mem_41 AS autopositiontaking, @isauto_v151mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 42 AS bettype, @auto_v151mpositiontaking_mem_42 AS autopositiontaking, @isauto_v151mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 51 AS bettype, @auto_v151mpositiontaking_mem_51 AS autopositiontaking, @isauto_v151mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+					UNION ALL		SELECT 151 AS sporttype, 52 AS bettype, @auto_v151mpositiontaking_mem_52 AS autopositiontaking, @isauto_v151mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+				) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+
+			WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 6,
+					   @ErrMsg_cur = CASE @Language 
+											WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
+											ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
+									END
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+									
+				RETURN
+			END	
+
+			--Check um1<=m3
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+
+			case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+			+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
+				(
+									SELECT 151 AS sporttype, 31 AS bettype, @auto_v151mpositiontaking_mem_31 AS autopositiontaking, @isauto_v151mpositiontaking_mem_31 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 32 AS bettype, @auto_v151mpositiontaking_mem_32 AS autopositiontaking, @isauto_v151mpositiontaking_mem_32 AS isautopositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 41 AS bettype, @auto_v151mpositiontaking_mem_41 AS autopositiontaking, @isauto_v151mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 42 AS bettype, @auto_v151mpositiontaking_mem_42 AS autopositiontaking, @isauto_v151mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 51 AS bettype, @auto_v151mpositiontaking_mem_51 AS autopositiontaking, @isauto_v151mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+					UNION ALL		SELECT 151 AS sporttype, 52 AS bettype, @auto_v151mpositiontaking_mem_52 AS autopositiontaking, @isauto_v151mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+				) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 7,
+					   @ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				
+				RETURN
+			END
+			
+			--Check um1>=um1_min (=m1_min)
+			SELECT @ErrType = ''
+			SELECT @ErrType = @ErrType + sportname + '-'+
+			case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+			+ '-Min: '+ CAST((b.minpositiontaking) AS VARCHAR(10)) + '<br>'
+			FROM 
+				(
+									SELECT 151 AS sporttype, 31 AS bettype, @auto_v151mpositiontaking_mem_31 AS autopositiontaking, @isauto_v151mpositiontaking_mem_31 AS isautopositiontaking, @min_v151mp_31 as minpositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 32 AS bettype, @auto_v151mpositiontaking_mem_32 AS autopositiontaking, @isauto_v151mpositiontaking_mem_32 AS isautopositiontaking, @min_v151mp_32 as minpositiontaking WHERE @UpdatePositiontakingv151_31 = 1
+					UNION ALL		SELECT 151 AS sporttype, 41 AS bettype, @auto_v151mpositiontaking_mem_41 AS autopositiontaking, @isauto_v151mpositiontaking_mem_41 AS isautopositiontaking, @min_v151mp_41 as minpositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 42 AS bettype, @auto_v151mpositiontaking_mem_42 AS autopositiontaking, @isauto_v151mpositiontaking_mem_42 AS isautopositiontaking, @min_v151mp_42 as minpositiontaking WHERE @UpdatePositiontakingv151_41 = 1
+					UNION ALL		SELECT 151 AS sporttype, 51 AS bettype, @auto_v151mpositiontaking_mem_51 AS autopositiontaking, @isauto_v151mpositiontaking_mem_51 AS isautopositiontaking, @min_v151mp_51 as minpositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+					UNION ALL		SELECT 151 AS sporttype, 52 AS bettype, @auto_v151mpositiontaking_mem_52 AS autopositiontaking, @isauto_v151mpositiontaking_mem_52 AS isautopositiontaking, @min_v151mp_52 as minpositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+				) AS b 
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			WHERE (b.isautopositiontaking>0 AND b.autopositiontaking<b.minpositiontaking) 
+
+			IF @ErrType <>''
+			BEGIN
+				SELECT @ErrCode_cur = 11,
+					   @ErrMsg_cur = @UserName + ': '+
+									CASE @Language 
+										WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+									END							
+				SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+						@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+				
+				RETURN
+			END
+	END--@UpdatePositiontakingv151
+	
+	
+if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositiontakingv152_51 = 1)
+	BEGIN --@UpdatePositiontakingv152
+		--Check um1<=l3
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
+			(
+								SELECT 152 AS sporttype, 41 AS bettype, @auto_v152mpositiontaking_mem_41 AS autopositiontaking, @isauto_v152mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 42 AS bettype, @auto_v152mpositiontaking_mem_42 AS autopositiontaking, @isauto_v152mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 51 AS bettype, @auto_v152mpositiontaking_mem_51 AS autopositiontaking, @isauto_v152mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+				UNION ALL		SELECT 152 AS sporttype, 52 AS bettype, @auto_v152mpositiontaking_mem_52 AS autopositiontaking, @isauto_v152mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+
+			) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+
+		WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 6,
+				   @ErrMsg_cur = CASE @Language 
+										WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
+								END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+								
+			RETURN
+		END	
+
+		--Check um1<=m3
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
+			(
+								SELECT 152 AS sporttype, 41 AS bettype, @auto_v152mpositiontaking_mem_41 AS autopositiontaking, @isauto_v152mpositiontaking_mem_41 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 42 AS bettype, @auto_v152mpositiontaking_mem_42 AS autopositiontaking, @isauto_v152mpositiontaking_mem_42 AS isautopositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 51 AS bettype, @auto_v152mpositiontaking_mem_51 AS autopositiontaking, @isauto_v152mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+				UNION ALL		SELECT 152 AS sporttype, 52 AS bettype, @auto_v152mpositiontaking_mem_52 AS autopositiontaking, @isauto_v152mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+
+			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 7,
+				   @ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			
+			RETURN
+		END
+		
+		--Check um1>=um1_min (=m1_min)
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Min: '+ CAST((b.minpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM 
+			(
+								SELECT 152 AS sporttype, 41 AS bettype, @auto_v152mpositiontaking_mem_41 AS autopositiontaking, @isauto_v152mpositiontaking_mem_41 AS isautopositiontaking, @min_v152mp_41 as minpositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 42 AS bettype, @auto_v152mpositiontaking_mem_42 AS autopositiontaking, @isauto_v152mpositiontaking_mem_42 AS isautopositiontaking, @min_v152mp_42 as minpositiontaking WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL		SELECT 152 AS sporttype, 51 AS bettype, @auto_v152mpositiontaking_mem_51 AS autopositiontaking, @isauto_v152mpositiontaking_mem_51 AS isautopositiontaking, @min_v152mp_51 as minpositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+				UNION ALL		SELECT 152 AS sporttype, 52 AS bettype, @auto_v152mpositiontaking_mem_52 AS autopositiontaking, @isauto_v152mpositiontaking_mem_52 AS isautopositiontaking, @min_v152mp_52 as minpositiontaking WHERE @UpdatePositiontakingv152_51 = 1
+
+			) AS b 
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE b.isautopositiontaking>0 AND b.autopositiontaking < b.minpositiontaking
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 11,
+				   @ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			
+			RETURN
+		END
+	END--@UpdatePositiontakingv152
+	
+if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
+	BEGIN --@UpdatePositiontakingv153
+		--Check um1<=l3
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		 + '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
+			(
+								SELECT 153 AS sporttype, 51 AS bettype, @auto_v153mpositiontaking_mem_51 AS autopositiontaking, @isauto_v153mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+				UNION ALL		SELECT 153 AS sporttype, 52 AS bettype, @auto_v153mpositiontaking_mem_52 AS autopositiontaking, @isauto_v153mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+			) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+
+		WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 6,
+				   @ErrMsg_cur = CASE @Language 
+										WHEN 'E' THEN 'Wrong position taking (min/max set by company) ('+@ErrType+').'
+										ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + ' ('+@ErrType+').'
+								END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+								
+			RETURN
+		END	
+
+		--Check um1<=m3
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM CustSetting3rd AS mcs WITH (NOLOCK) INNER JOIN
+			(
+								SELECT 153 AS sporttype, 51 AS bettype, @auto_v153mpositiontaking_mem_51 AS autopositiontaking, @isauto_v153mpositiontaking_mem_51 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+				UNION ALL		SELECT 153 AS sporttype, 52 AS bettype, @auto_v153mpositiontaking_mem_52 AS autopositiontaking, @isauto_v153mpositiontaking_mem_52 AS isautopositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE mcs.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 7,
+				   @ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			
+			RETURN
+		END
+		
+		--Check um1>=um1_min (=m1_min)
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Min: '+ CAST((b.minpositiontaking) AS VARCHAR(10)) + '<br>'
+		FROM 
+			(
+								SELECT 153 AS sporttype, 51 AS bettype, @auto_v153mpositiontaking_mem_51 AS autopositiontaking, @isauto_v153mpositiontaking_mem_51 AS isautopositiontaking, @min_v153mp_51 as minpositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+				UNION ALL		SELECT 153 AS sporttype, 52 AS bettype, @auto_v153mpositiontaking_mem_52 AS autopositiontaking, @isauto_v153mpositiontaking_mem_52 AS isautopositiontaking, @min_v153mp_51 as minpositiontaking WHERE @UpdatePositiontakingv153_51 = 1
+			) AS b
+		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE b.isautopositiontaking>0 AND b.autopositiontaking<b.minpositiontaking
+
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 11,
+				   @ErrMsg_cur = @UserName + ': '+
+								CASE @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			
+			RETURN
+		END
+	END--@UpdatePositiontakingv153
 
 if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositiontakingv151_41 = 1 or @UpdatePositiontakingv151_51 = 1)
 	BEGIN --@UpdatePositiontakingv151
@@ -930,7 +1068,7 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + sportname + '-'+
 		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		 + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10))
+		 + '-Max: '+ CAST((b.maxmpositiontaking) AS VARCHAR(10)) + '<br>'
 		FROM (
 								SELECT 151 AS sporttype	,	 31 AS bettype	,	 @v151mpositiontaking_31 AS mpositiontaking	,	 @max_v151mapositiontaking_31 AS maxmpositiontaking	WHERE @UpdatePositiontakingv151_31 = 1
 				UNION ALL		SELECT 151 AS sporttype	,	 32 AS bettype	,	 @v151mpositiontaking_32 AS mpositiontaking	,	 @max_v151mapositiontaking_32 AS maxmpositiontaking	WHERE @UpdatePositiontakingv151_31 = 1
@@ -960,7 +1098,7 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + sportname + '-'+
 		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
-		+ '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10))
+		+ '-Max: '+ CAST((co.maxpositiontaking) AS VARCHAR(10)) + '<br>'
 			FROM CustOverride3rd AS co WITH (NOLOCK) INNER JOIN
 				(
 									SELECT 151 AS sporttype	,	 31 AS bettype	,	 @v151mpositiontaking_31 AS mpositiontaking	WHERE @UpdatePositiontakingv151_31 = 1
@@ -1007,6 +1145,37 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv151_31 = 1 or @UpdatePositionta
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 10,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking. <br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
+		--check m1 >= m1_min
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Min: '+ CAST((b.mpositiontaking_min) AS VARCHAR(10)) + '<br>'
+		FROM 
+			(
+				SELECT 151 as sporttype, 31 as bettype, @isauto_v151mpositiontaking_31 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_31 as isautompositiontaking_mem, @v151mpositiontaking_31 as mpositiontaking, @min_v151mp_31 as mpositiontaking_min WHERE @UpdatePositiontakingv151_31 = 1
+				UNION ALL SELECT 151 as sporttype, 32 as bettype, @isauto_v151mpositiontaking_32 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_32 as isautompositiontaking_mem, @v151mpositiontaking_32 as mpositiontaking, @min_v151mp_32 as mpositiontaking_min WHERE @UpdatePositiontakingv151_31 = 1
+				UNION ALL SELECT 151 as sporttype, 41 as bettype, @isauto_v151mpositiontaking_41 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_41 as isautompositiontaking_mem, @v151mpositiontaking_41 as mpositiontaking, @min_v151mp_41 as mpositiontaking_min WHERE @UpdatePositiontakingv151_41 = 1
+				UNION ALL SELECT 151 as sporttype, 42 as bettype, @isauto_v151mpositiontaking_42 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_42 as isautompositiontaking_mem, @v151mpositiontaking_42 as mpositiontaking, @min_v151mp_42 as mpositiontaking_min WHERE @UpdatePositiontakingv151_41 = 1
+				UNION ALL SELECT 151 as sporttype, 51 as bettype, @isauto_v151mpositiontaking_51 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_51 as isautompositiontaking_mem, @v151mpositiontaking_51 as mpositiontaking, @min_v151mp_51 as mpositiontaking_min WHERE @UpdatePositiontakingv151_51 = 1
+				UNION ALL SELECT 151 as sporttype, 52 as bettype, @isauto_v151mpositiontaking_52 as isautomapositiontaking, @old_isauto_v151mpositiontaking_mem_52 as isautompositiontaking_mem, @v151mpositiontaking_52 as mpositiontaking, @min_v151mp_52 as mpositiontaking_min WHERE @UpdatePositiontakingv151_51 = 1
+			) b
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE b.mpositiontaking < b.mpositiontaking_min and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 12,
   					@ErrMsg_cur = @UserName + ': '+
 						 CASE @Language 
 								WHEN 'E' THEN 'Wrong position taking. <br>'+@ErrType
@@ -1227,6 +1396,35 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv152_41 = 1 or @UpdatePositionta
 			RETURN
 		END
 		
+		--check m1 >= m1_min
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Min: '+ CAST((b.mpositiontaking_min) AS VARCHAR(10)) + '<br>'
+		FROM 
+			(
+				SELECT 152 as sporttype, 41 as bettype, @isauto_v152mpositiontaking_41 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_41 as isautompositiontaking_mem, @v152mpositiontaking_41 as mpositiontaking, @min_v152mp_41 as mpositiontaking_min WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL SELECT 152 as sporttype, 42 as bettype, @isauto_v152mpositiontaking_42 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_42 as isautompositiontaking_mem, @v152mpositiontaking_42 as mpositiontaking, @min_v152mp_42 as mpositiontaking_min WHERE @UpdatePositiontakingv152_41 = 1
+				UNION ALL SELECT 152 as sporttype, 51 as bettype, @isauto_v152mpositiontaking_51 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_51 as isautompositiontaking_mem, @v152mpositiontaking_51 as mpositiontaking, @min_v152mp_51 as mpositiontaking_min WHERE @UpdatePositiontakingv152_51 = 1
+				UNION ALL SELECT 152 as sporttype, 52 as bettype, @isauto_v152mpositiontaking_52 as isautomapositiontaking, @old_isauto_v152mpositiontaking_mem_52 as isautompositiontaking_mem, @v152mpositiontaking_52 as mpositiontaking, @min_v152mp_52 as mpositiontaking_min WHERE @UpdatePositiontakingv152_51 = 1
+			) b
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE b.mpositiontaking < b.mpositiontaking_min and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 12,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT 
 			@v152mpositiontaking_41 = CASE WHEN @v152apositiontaking_41+@v152mpositiontaking_41>@max_v152mapositiontaking_41 THEN @max_v152mapositiontaking_41-@v152apositiontaking_41 ELSE @v152mpositiontaking_41 END,
@@ -1379,6 +1577,33 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 10,
+  					@ErrMsg_cur = @UserName + ': '+
+						 CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking.<br>'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'+@ErrType
+						END
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			RETURN
+		END
+		
+		--check m1 >= m1_min
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+
+		case when b.bettype = 51 then 'Win.Aust Tote' when b.bettype = 52 then 'Place.Aust Tote' else typenamee end
+		+ '-Min: '+ CAST((b.mpositiontaking_min) AS VARCHAR(10)) + '<br>'
+		FROM 
+			(
+				SELECT 153 as sporttype, 51 as bettype, @isauto_v153mpositiontaking_51 as isautomapositiontaking, @old_isauto_v153mpositiontaking_mem_51 as isautompositiontaking_mem, @v153mpositiontaking_51 as mpositiontaking, @min_v153mp_51 as mpositiontaking_min WHERE @UpdatePositiontakingv153_51 = 1
+				UNION ALL SELECT 153 as sporttype, 52 as bettype, @isauto_v153mpositiontaking_52 as isautomapositiontaking, @old_isauto_v153mpositiontaking_mem_52 as isautompositiontaking_mem, @v153mpositiontaking_52 as mpositiontaking, @min_v153mp_52 as mpositiontaking_min WHERE @UpdatePositiontakingv153_51 = 1
+			) b
+			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+		WHERE b.mpositiontaking < b.mpositiontaking_min and b.isautomapositiontaking = 0 and b.isautompositiontaking_mem = 0 	
+		
+		IF @ErrType <>''
+		BEGIN
+			SELECT @ErrCode_cur = 12,
   					@ErrMsg_cur = @UserName + ': '+
 						 CASE @Language 
 								WHEN 'E' THEN 'Wrong position taking.<br>'+@ErrType
@@ -1892,14 +2117,19 @@ if (@UpdateMultiple = 0 or @UpdatePositiontakingv153_51 = 1)
 END--@UpdatePositiontakingv153
 */
 
+--merge code correct pt into sp execrep Acc_CustSetting3rd_08/Acc_CustSetting3rd_09
+/*
 EXEC dbo.Acc_CustSetting3rd_00
 			@custid = @custid, 
 			@recommend = @recommend, 
 			@mrecommend = @mrecommend, 
 			@srecommend = @srecommend,
 			@mode = 'horse'
-			
+*/
 ---EXEC dbo.Acc_CustomerUpdMemberHR_MinMaxPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
+
+
+
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 DECLARE @LogSPData VARCHAR(MAX),
@@ -2135,8 +2365,6 @@ END CATCH
 
 
 Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberHR_MAg] TO [bodbAdminNet] AS [dbo]

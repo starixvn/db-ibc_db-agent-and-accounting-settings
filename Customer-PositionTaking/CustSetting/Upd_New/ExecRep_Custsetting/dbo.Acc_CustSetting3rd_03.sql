@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_03]  
+﻿ALTER PROCEDURE [Acc_CustSetting3rd_03]  
 	@custid    INT,  
 	@roleid    TINYINT,
 	@sporttype smallint,
@@ -20,7 +20,8 @@ Revisions:
 	- 20121203@Scott : update status and bet setting for virtual tennis by setting's virtual soccer  
 	- 20121211@Scott : don't update status virtual sport
 	- 20120221@Johnson: add virtual horse racing setting (sporttype :181)
-	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
+	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)	
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]					
 	
 Parameter's Explanation:  
 
@@ -57,6 +58,15 @@ BEGIN
 		WHERE srecommend = @custid  
 		
 	END 
+
+	IF @sporttype = 183
+	BEGIN 
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
+			SET MaxPerMatch183 = @maxpermatch	
+		WHERE srecommend = @custid  
+		
+	END 
 	
 	IF @sporttype = 184
 	BEGIN 
@@ -67,6 +77,15 @@ BEGIN
 		
 	END 
 	
+	IF @sporttype = 185
+	BEGIN 
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
+			SET MaxPerMatch185 = @maxpermatch	
+		WHERE srecommend = @custid  
+		
+	END 
+
 	IF @sporttype = 186 
 	BEGIN 
 	
@@ -126,11 +145,27 @@ BEGIN
 		WHERE mrecommend = @custid  
 		
 	END 
+	IF @sporttype = 183
+	BEGIN
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+			SET MaxPerMatch183 = @maxpermatch
+		WHERE mrecommend = @custid  
+		
+	END 
 	IF @sporttype = 184
 	BEGIN
 	
 		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
 			SET MaxPerMatch184 = @maxpermatch
+		WHERE mrecommend = @custid  
+		
+	END 
+	IF @sporttype = 185
+	BEGIN
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+			SET MaxPerMatch185 = @maxpermatch
 		WHERE mrecommend = @custid  
 		
 	END 
@@ -192,11 +227,27 @@ BEGIN
 		WHERE recommend = @custid  
 		
 	END
+	IF @sporttype = 183
+	BEGIN
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+			SET MaxPerMatch183 = @maxpermatch  
+		WHERE recommend = @custid  
+		
+	END
 	IF @sporttype = 184
 	BEGIN
 	
 		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
 			SET MaxPerMatch184 = @maxpermatch  
+		WHERE recommend = @custid  
+		
+	END
+	IF @sporttype = 185
+	BEGIN
+	
+		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
+			SET MaxPerMatch185 = @maxpermatch  
 		WHERE recommend = @custid  
 		
 	END
@@ -231,8 +282,6 @@ BEGIN
 		RETURN  
 	END  
 END  
-
-GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet]
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_03] TO [bodbAdminNet] AS [dbo]

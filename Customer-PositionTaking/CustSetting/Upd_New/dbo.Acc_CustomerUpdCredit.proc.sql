@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_CustomerUpdCredit]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdCredit]
 	@custid int,
 	@NewCredit money,
 	@maxcredit money = null, -- max credit agent give member 	
@@ -33,6 +33,7 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_CustomerSelMaxExposure_Ag by link database)
 	- 20140224@Lukas: remove maxExposure
 	- 20140306@Dom: add outstanding from translog
+	- 20140423@Elodie: Implement SMA Turnover [Redmine:#14426]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -367,6 +368,12 @@ BEGIN
 	update	custinfo WITH (ROWLOCK, updlock) 
 	set		credit = @NewCredit
 	where	custid = @custid
+
+	IF EXISTS (	SELECT 1 
+				FROM DBAGE.bodb02.dbo.DownlineTurnOver_Setting s WITH (NOLOCK) 
+					INNER JOIN bodb02.dbo.match m WITH (NOLOCK) ON s.matchid = m.matchid
+				WHERE SMAID = @custid AND eventstatus <> 'completed')
+		EXEC DBAGE.bodb02.dbo.NAP_SMATurnover_MaxTurnoverUpd @UpdMode = 17, @SMAID = @custid
 END
 
 IF ISNULL(@maxcredit,0) != ISNULL(@OldMaxCredit,0)
@@ -412,9 +419,6 @@ BEGIN CATCH
 		@IP = @IP,
 		@ActionID = 1200		
 END CATCH
-
-		
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdCredit] TO [bodbadminNet] AS [dbo]

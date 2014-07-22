@@ -3,7 +3,7 @@
 	@custid int = NULL,
 	@transid bigint = NULL,
 	@username varchar(30) = '' OUTPUT,
-	@roleid tinyint OUTPUT --0: not belonged to
+	@roleid tinyint = 0 OUTPUT --0: not belonged to
 AS
 /*
 Created:
@@ -14,7 +14,7 @@ Original:
 Revisions:
 	- 20130121@Dan: change linked server DB06 to DBARC
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettrans, bettrans14 by link database in DBTXN)
-   
+    - 20140303@Johnson: fix bug check session's roleid 
 */
 SET NOCOUNT ON
 Declare @SessionRoleID tinyint
@@ -44,6 +44,8 @@ select @SessionRoleID = roleid
 from custinfo with(nolock)
 where custID = @SessionCustID
 
+IF ISNULL(@sessionRoleid ,0) = 0 RETURN
+
 select @roleid = roleid, @username = username
 from custinfo c with (nolock)
 where c.custid = @custid
@@ -55,14 +57,13 @@ where c.custid = @custid
 select @roleid = isnull(@roleid, 0)
 
 
-
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbExtAccNet]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNetView] AS [dbo]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging] TO [bodbDownlineNetView]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Age_CustomerSelCheckBelonging] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Age_CustomerSelCheckBelonging] TO [vnteam]

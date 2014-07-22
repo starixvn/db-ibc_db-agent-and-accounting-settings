@@ -17,6 +17,8 @@ Revisions:
 	- 20130716@Elodie: retrieve bet setting for Virtual Soccer
 	- 20131211@Elodie: retrieve bet setting for Virtual Racing(181), Greyhounds(182), Motor Racing(184), Tennis(186)
 	- 20140123@Elodie: retrieve bet setting for HR Fixed Odds(154) [Redmine:#10922]
+	- 20140305@Elodie: retrieve bet setting for Keno(202) [Redmine:#11658]
+	- 20140424@Elodie: Fix bug for case not existsed data in CustGameType
 									
 Param's Explanation:
 */
@@ -67,11 +69,18 @@ DECLARE
 	@MaxPerMatchv154_Min MONEY, 
 	@MaxPerMatchv154_Max MONEY,
 
+	--v201
 	@MinBetv201_Min MONEY, 
 	@MaxBetv201_Max MONEY, 
 	@MaxPerMatchv201_Min MONEY, 
 	@MaxPerMatchv201_Max MONEY,   
 	
+	--v202
+	@MinBetv202_1501_Min MONEY, 
+	@MaxBetv202_1501_Max MONEY, 
+	@MaxPerMatchv202_1501_Min MONEY, 
+	@MaxPerMatchv202_1501_Max MONEY,  
+
 	@MinBetv151_Min MONEY, 
 	@MaxBetv151_Max MONEY, 
 	@MaxPerMatchv151_Min MONEY, 
@@ -348,6 +357,18 @@ FROM
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.custid = ci.recommend OR cs.custid = ci.mrecommend OR cs.custid = ci.srecommend)
 	AND cs.sporttype = 186 AND cs.bettype = 1220
 WHERE ci.custid = @custid
+
+--Keno
+SELECT 
+	@MinBetv202_1501_Min = MAX(CASE WHEN cg.MinBet = 0 THEN NULL ELSE cg.MinBet END),
+	@MaxBetv202_1501_Max = MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END),
+	@MaxPerMatchv202_1501_Min = 0,
+	@MaxPerMatchv202_1501_Max = MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END)
+FROM
+	CustGameType AS cg WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cg.custid = ci.recommend OR cg.custid = ci.mrecommend OR cg.custid = ci.srecommend)
+	INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID	
+WHERE ci.custid = @custid AND gt.IBCBetTypeID = 1501
     
 SELECT     
 	@MaxPerMatch_Min = 0,     
@@ -519,6 +540,10 @@ SELECT
 	
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 186 THEN cs3rd.minbet ELSE 0 END),0) AS MinBetv186,
 	ISNULL(MAX(CASE WHEN cs3rd.sporttype = 186 THEN cs3rd.maxbet ELSE 0 END),0) AS MaxBetv186,
+
+	ISNULL(MAX(CASE WHEN gt.IBCBetTypeID = 1501 THEN cg.MinBet ELSE 0 END),0) AS MinBetv202_1501,
+	ISNULL(MAX(CASE WHEN gt.IBCBetTypeID = 1501 THEN cg.Maxbet ELSE 0 END),0) AS MaxBetv202_1501,
+	ISNULL(MAX(CASE WHEN gt.IBCBetTypeID = 1501 THEN cg.MaxPerGameType ELSE 0 END),0) AS MaxPerMatchv202_1501,
 	
 	ISNULL(@MinBet_Min, 0) AS MinBet_Min,    
 	ISNULL(@MaxBet_Max, 0) AS MaxBet_Max,    
@@ -574,6 +599,11 @@ SELECT
 	ISNULL(@MaxBetv201_Max, 0) AS MaxBetv201_Max,     
 	ISNULL(@MaxPerMatchv201_Min, 0) AS MaxPerMatchv201_Min,     
 	ISNULL(@MaxPerMatchv201_Max, 0) AS MaxPerMatchv201_Max,    
+
+	ISNULL(@MinBetv202_1501_Min, 0) AS MinBetv202_1501_Min,     
+	ISNULL(@MaxBetv202_1501_Max, 0) AS MaxBetv205_1501_Max,     
+	ISNULL(@MaxPerMatchv202_1501_Min, 0) AS MaxPerMatchv202_1501_Min,     
+	ISNULL(@MaxPerMatchv202_1501_Max, 0) AS MaxPerMatchv202_1501_Max,  
 
 	ISNULL(@MinBetv151_Min, 0) AS MinBetv151_Min,     
 	ISNULL(@MaxBetv151_Max, 0) AS MaxBetv151_Max,     
@@ -636,6 +666,8 @@ FROM
 	CustInfo ci WITH (NOLOCK)  
 	INNER JOIN Dep_CustSetting cs WITH (NOLOCK) ON ci.custid = cs.custid    
 	INNER JOIN Dep_CustSetting3rd cs3rd WITH (NOLOCK) ON ci.custid = cs3rd.custid    
+	LEFT JOIN CustGameType cg WITH (NOLOCK) ON ci.custid = cg.custid  
+	LEFT JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
 WHERE ci.custid=@CustID   
 GROUP BY    
 	ci.username, 
@@ -664,7 +696,7 @@ GROUP BY
 	ci.maxpermatch182,
 	ci.maxpermatch184,
 	ci.maxpermatch186
-
+	
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerSelMemBetSetting_Cust] TO [Dot_Admin] AS [dbo]
 GO

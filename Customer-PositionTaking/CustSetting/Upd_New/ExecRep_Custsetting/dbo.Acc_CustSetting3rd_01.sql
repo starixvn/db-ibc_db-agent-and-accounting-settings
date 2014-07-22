@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_01]
+﻿ALTER PROCEDURE [Acc_CustSetting3rd_01]
 	@srecommend int,
 	@mode varchar(20) = 'horse' --'horse' or 'number' or 'finance' or 'virtual-sports'
 AS
@@ -28,6 +28,7 @@ Revisions for Acc_CustomerUpdSuper_MaxPositiontaking:
 	- 20121203@Scott: add virtual tennis sport type
 	- 20130222@Johnson: add virtual horse racing setting (sporttype: 181)
 	- 20131126@Kathy: Add Virtual Greyhounds/Motor Racing (182, 184) [Redmine:#7234]
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 Param's Explanation: 
 
 * @mode:
@@ -248,7 +249,7 @@ BEGIN
 	    inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
     where cs.isautopositiontaking=0 
 	    and mcs.isautopositiontaking=0 and scs.spositiontaking - mcs.mpositiontaking<cs.spositiontaking
-	    and cs.sporttype in(180, 181, 182, 184, 186) --between 180 and 186
+	    and cs.sporttype in(180, 181, 182, 183, 184, 185, 186) --between 180 and 186
     ----------------------------------------------------------------------------
 
     --update s1,m1,a1 in case s1+m1+a1>s4
@@ -278,10 +279,11 @@ BEGIN
 	    inner join CustOverride3rd as mco with (NOLOCK) on mco.custid = mb.mrecommend  and mco.sporttype=cs.sporttype and mco.bettype=cs.bettype
 	    inner join CustOverride3rd as aco with (NOLOCK) on aco.custid = mb.recommend  and aco.sporttype=cs.sporttype and aco.bettype=cs.bettype
     where cs.spositiontaking+cs.apositiontaking+cs.mpositiontaking>scs.spositiontaking
-	    and cs.sporttype in(180, 181, 182, 184, 186) --between 180 and 186
+	    and cs.sporttype in(180, 181, 182, 183, 184, 185, 186) --between 180 and 186
 	    
     RETURN
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting3rd_01] TO [bodbAdminNet] AS [dbo]

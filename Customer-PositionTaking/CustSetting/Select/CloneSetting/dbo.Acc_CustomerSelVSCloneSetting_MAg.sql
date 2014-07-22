@@ -12,6 +12,7 @@ AS
  History:  
 	- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
 	- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+	- 20140402@Dom: Get Virtual Speedway/ Cycling setting (sporttype: 183|185, bettype: 1231)
  Explanation's Param:  	
 */
 /*
@@ -30,6 +31,14 @@ BEGIN
 		,v181minbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=181 THEN cs3rd.minbet ELSE 0 END)
 		,v181maxbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=181 THEN cs3rd.maxbet ELSE 0 END)
 		,v181maxpermatch_1231=ci.MaxPerMatch181
+
+		,v183minbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 THEN cs3rd.minbet ELSE 0 END)
+		,v183maxbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 THEN cs3rd.maxbet ELSE 0 END)
+		,v183maxpermatch_1231=ci.MaxPerMatch183
+
+		,v185minbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 THEN cs3rd.minbet ELSE 0 END)
+		,v185maxbet_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 THEN cs3rd.maxbet ELSE 0 END)
+		,v185maxpermatch_1231=ci.MaxPerMatch185
 		
 		,v186minbet_1220=MAX(CASE WHEN cs3rd.bettype=1220 AND cs3rd.sporttype=186 THEN cs3rd.minbet ELSE 0 END)
 		,v186maxbet_1220=MAX(CASE WHEN cs3rd.bettype=1220 AND cs3rd.sporttype=186 THEN cs3rd.maxbet ELSE 0 END)
@@ -46,6 +55,16 @@ BEGIN
 		,v181mpositiontaking_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=181 THEN cs3rd.mpositiontaking END)		
 		,v181isAutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=181 AND cs3rd.isautompositiontaking = 1 THEN 1 ELSE 0 END)
 		,v181AutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=181 THEN cs3rd.autompositiontaking END)
+
+		,v183apositiontaking_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 THEN cs3rd.apositiontaking END)		
+		,v183mpositiontaking_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 THEN cs3rd.mpositiontaking END)		
+		,v183isAutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 AND cs3rd.isautompositiontaking = 1 THEN 1 ELSE 0 END)
+		,v183AutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=183 THEN cs3rd.autompositiontaking END)
+
+		,v185apositiontaking_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 THEN cs3rd.apositiontaking END)		
+		,v185mpositiontaking_1231=MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 THEN cs3rd.mpositiontaking END)		
+		,v185isAutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 AND cs3rd.isautompositiontaking = 1 THEN 1 ELSE 0 END)
+		,v185AutomPT_1231 = MAX(CASE WHEN cs3rd.bettype=1231 AND cs3rd.sporttype=185 THEN cs3rd.autompositiontaking END)
 		
 		,v186apositiontaking_1220=MAX(CASE WHEN cs3rd.bettype=1220 AND cs3rd.sporttype=186 THEN cs3rd.apositiontaking END)		
 		,v186mpositiontaking_1220=MAX(CASE WHEN cs3rd.bettype=1220 AND cs3rd.sporttype=186 THEN cs3rd.mpositiontaking END)		
@@ -55,6 +74,8 @@ BEGIN
 	---------- min position taking section---------------------------------------------------------------------------------------
 		,v180MinPT_1201 = MAX(CASE WHEN csOv3rd.bettype=1201 AND csOv3rd.sporttype=180 THEN csOv3rd.minpositiontaking END)
 		,v181MinPT_1231 = MAX(CASE WHEN csOv3rd.bettype=1231 AND csOv3rd.sporttype=181 THEN csOv3rd.minpositiontaking END)
+		,v183MinPT_1231 = MAX(CASE WHEN csOv3rd.bettype=1231 AND csOv3rd.sporttype=183 THEN csOv3rd.minpositiontaking END)
+		,v185MinPT_1231 = MAX(CASE WHEN csOv3rd.bettype=1231 AND csOv3rd.sporttype=185 THEN csOv3rd.minpositiontaking END)
 		,v186MinPT_1220 = MAX(CASE WHEN csOv3rd.bettype=1220 AND csOv3rd.sporttype=186 THEN csOv3rd.minpositiontaking END)
 
 	FROM dbo.CustInfo AS ci WITH(NOLOCK)		
@@ -62,7 +83,7 @@ BEGIN
 			AND ci.custid=@custid
 			AND ci.roleid=2
 		LEFT JOIN dbo.custoverride3rd AS csOv3rd WITH (NOLOCK) ON csOv3rd.custid = cs3rd.custid AND csOv3rd.sporttype = cs3rd.sporttype AND csOv3rd.bettype = cs3rd.bettype
-	GROUP BY maxpermatch180, maxpermatch181, MaxPerMatch186
+	GROUP BY maxpermatch180, maxpermatch181, maxpermatch183, maxpermatch185, MaxPerMatch186
 			
 	SET NOCOUNT OFF
 END
