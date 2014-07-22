@@ -1,10 +1,6 @@
 # Microsoft Developer Studio Project File - Database Project
 Begin DataProject = "AgentPT"
    MSDTVersion = "80"
-   SccProjectName = "SAK"
-   SccLocalPath = "SAK"
-   SccAuxPath = "SAK"
-   SccProvider = "SAK"
    Script = "Age_CustomerSelCheckPermission.sql"
    Begin Folder = "BK"
       Begin Folder = "Customer-PositionTaking"
