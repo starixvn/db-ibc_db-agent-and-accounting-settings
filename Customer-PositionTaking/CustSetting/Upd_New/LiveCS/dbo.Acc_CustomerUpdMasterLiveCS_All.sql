@@ -183,10 +183,16 @@ BEGIN
 		@auto_v162spositiontaking_1101	= @auto_v162spositiontaking_1101,
 		
 		@Language	= @Language,	
-		@ErrCode	= @ErrCode OUTPUT,
-		@ErrMsg		= @ErrMsg OUTPUT
+		@ErrCode	= @ErrCode_cur OUTPUT,
+		@ErrMsg		= @ErrMsg_Cur OUTPUT
 	
-	IF @ErrCode >0 RETURN	
+	IF @ErrCode_cur >0 
+	BEGIN
+		SELECT @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7),
+				@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7)
+			
+		RETURN	
+	END
 END
 		
 IF @v162UpdateMinPositiontaking_1101 = 1
