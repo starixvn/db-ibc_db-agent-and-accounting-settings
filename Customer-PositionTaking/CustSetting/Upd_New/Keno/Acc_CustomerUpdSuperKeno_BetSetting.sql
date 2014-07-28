@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_BetSetting]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_BetSetting]
 	@CustId INT,
 	@Sporttype INT = 202,
 	@Bettype INT,
@@ -91,8 +91,10 @@ BEGIN
 	IF @UpdateMinMaxBet = 1
 	BEGIN
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
+
 		DECLARE @VarErrorCode VARCHAR(200) = ''
-		EXEC Acc_CustomerUpdSuperKeno_MinMaxBet
+
+    	EXEC Acc_CustomerUpdSuperKeno_MinMaxBet
 			@CustID = @CustID,
 			@Sporttype = @Sporttype,
 			@Bettype = @Bettype,
@@ -101,6 +103,7 @@ BEGIN
 			@MaxBet = @MaxBet,
 			@MaxPerMatch = @MaxPerMatch,
 
+            @SubAccID = @SubAccID,
 			@UserID = @UserID,
 			@Language = @Language,
 			@IP = @IP,
@@ -119,8 +122,7 @@ BEGIN
 		END
 	END
 		
-END 
-
+END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_BetSetting] TO [bodbadminNet] AS [dbo]
