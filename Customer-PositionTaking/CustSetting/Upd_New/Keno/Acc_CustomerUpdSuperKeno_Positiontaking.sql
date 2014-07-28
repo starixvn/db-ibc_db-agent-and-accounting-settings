@@ -1,10 +1,11 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]
 	@custid INT,-- superid	
 	@sporttype INT = 202,
 	@bettype INT,
 	
 	@s4 SMALLMONEY, --s4
-		
+
+    @SubAccID INT = 0, --Sub-AccountID		
 	@UserID INT = 0,	
 	@Language varchar(2) = 'E',
 	@IP VARCHAR(15)='',
@@ -18,11 +19,11 @@ AS
 	Revisions:
 				
 	Param's Explanation:
-	â€¢ @ErrCode is:
+	• @ErrCode is:
 			= 0: Transaction recorded successfully.
 			> 0: Specific Error.
 	  
-	â€¢ @ErrMsg: Error description.
+	• @ErrMsg: Error description.
 */
 BEGIN
 	SET NOCOUNT ON
@@ -141,7 +142,7 @@ BEGIN
 
 	--u = (i3 or i1)?(u3 or u1)
 	--s1 = min(s4-m1-a1, u)
-	EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
+		EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)
@@ -151,6 +152,7 @@ BEGIN
 	'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	's4="' + COALESCE(CAST(@s4 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -162,6 +164,7 @@ BEGIN
 	'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 	's4="' + COALESCE(CAST(@old_spositiontaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -187,6 +190,7 @@ BEGIN
 		'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 		's4="' + COALESCE(CAST(@s4 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 		'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
 		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
