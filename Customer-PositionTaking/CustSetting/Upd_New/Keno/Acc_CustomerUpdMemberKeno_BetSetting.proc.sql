@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] 
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] 
 	@custid				INT
 	,@sporttype			INT = 202
 	,@bettype			INT
@@ -98,14 +98,14 @@ BEGIN
 	--update min/max/maxpermatch
 	IF(@UpdateMinMaxBet = 1)
 	BEGIN
-		EXEC [Acc_CustomerUpdMemberKeno_MinMaxBet] 
+				EXEC [Acc_CustomerUpdMemberKeno_MinMaxBet] 
 			@custid = @custid
 			,@bettype = @bettype
 
 			,@MinBet	= @MinBet
 			,@MaxBet	= @MaxBet
 			,@MaxPerMatch = @MaxPerMatch
-
+            ,@SubAccID = @SubAccID
 			,@UserID = @UserID
 			,@IP = @IP
 			,@Language = @Language
@@ -122,8 +122,9 @@ BEGIN
 		ELSE
 			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
-END
 
+	RETURN
+END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbAdminNet] AS [dbo]
@@ -133,4 +134,3 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_BetSetting] TO [vnteam] AS [dbo]
-GO
