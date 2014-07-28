@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_MinMaxBet]
 	@CustID			INT,
 	@Sporttype		INT = 202,
 	@Bettype		INT,
@@ -7,6 +7,7 @@
 	@MaxBet			MONEY,
 	@MaxPerMatch	MONEY,
 
+    @SubAccID       INT = 0,
 	@UserID			INT = 0,	
 	@Language		VARCHAR(2) = 'E',
 	@IP				VARCHAR(15)='',
@@ -103,6 +104,7 @@ BEGIN
 	'MaxB="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
 	'MPM="'+ coalesce(cast(@MaxPerMatch as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
+	'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +
 	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(300)),space(1)) + '" ' +
@@ -115,6 +117,7 @@ BEGIN
 	'MaxB="'+ coalesce(cast(@MaxBet_old as varchar(50)),space(1)) + '" ' +
 	'MPM="'+ coalesce(cast(@MaxPerMatch_old as varchar(50)),space(1)) + '" ' +
 	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
+	'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +
 	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(300)),space(1)) + '" ' +
@@ -140,6 +143,7 @@ BEGIN
 		'MaxB="'+ coalesce(cast(@MaxBet as varchar(50)),space(1)) + '" ' +
 		'MPM="'+ coalesce(cast(@MaxPerMatch as varchar(50)),space(1)) + '" ' +
 		'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
+		'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
 		'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +
 		'ErrCode="'+ coalesce(cast(@ErrCode as varchar(300)),space(1)) + '" ' +
