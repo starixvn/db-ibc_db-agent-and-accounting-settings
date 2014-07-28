@@ -1,4 +1,4 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno]
 	@custid INT,-- superid	
 	@sporttype INT = 202,
 	@bettype INT,
@@ -11,6 +11,7 @@
 	@UpdateMinPositiontaking	BIT = 0,
 	@UpdateCommission BIT = 0,
 	
+	@SubAccID INT = 0, --Sub-AccountID
 	@UserID INT = 0,	
 	@Language varchar(2) = 'E',
 	@IP VARCHAR(15)='',
@@ -24,12 +25,12 @@ AS
 	Revisions:
 				
 	Param's Explanation:
-	â€¢ @ErrCode is:
+	• @ErrCode is:
 			-101 update success commission
 			-102 update success min PT
 			-103 update success PT
 	  
-	â€¢ @ErrMsg: Error description.
+	• @ErrMsg: Error description.
 */
 BEGIN
 	SET NOCOUNT ON
@@ -68,7 +69,17 @@ BEGIN
 
 	IF @UpdateCommission = 1
 	BEGIN		
-		EXEC Acc_CustomerUpdSuperKeno_Commission @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @discount = @discount, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+	    EXEC Acc_CustomerUpdSuperKeno_Commission
+	        @custid = @custid,
+	        @sporttype = @sporttype,
+	        @bettype = @bettype,
+	        @discount = @discount,
+	        @IP = @IP,
+	        @SubAccID = @SubAccID,
+	        @UserID = @userid,
+	        @Language = @Language,
+	        @ErrCode = @ErrCode_Cur OUTPUT,
+	        @ErrMsg = @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur <> 0
 		BEGIN
@@ -83,7 +94,17 @@ BEGIN
 
 	IF @UpdatePositiontaking = 1
 	BEGIN
-		EXEC Acc_CustomerUpdSuperKeno_Positiontaking @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @s4 = @s4, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+	    EXEC Acc_CustomerUpdSuperKeno_Positiontaking
+	        @custid = @custid,
+	        @sporttype = @sporttype,
+	        @bettype = @bettype,
+	        @s4 = @s4,
+	        @IP = @IP,
+	        @SubAccID = @SubAccID,
+	        @UserID = @userid,
+	        @Language = @Language,
+	        @ErrCode = @ErrCode_Cur OUTPUT,
+	        @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur <> 0
 		BEGIN
@@ -99,7 +120,17 @@ BEGIN
 
 	IF @UpdateMinPositiontaking = 1
 	BEGIN
-		EXEC Acc_CustOverrideUpdKeno @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @Min_Positiontaking = @n4, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	= @ErrMsg_Cur OUTPUT
+	    EXEC Acc_CustOverrideUpdKeno
+	        @custid = @custid,
+	        @sporttype = @sporttype,
+	        @bettype = @bettype,
+	        @Min_Positiontaking = @n4,
+	        @IP = @IP,
+	        @SubAccID = @SubAccID,
+	        @UserID = @userid,
+	        @Language = @Language,
+	        @ErrCode = @ErrCode_Cur OUTPUT,
+	        @ErrMsg	= @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur <> 0
 		BEGIN
