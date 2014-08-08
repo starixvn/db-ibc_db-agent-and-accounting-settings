@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
+﻿CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre]
 	@custid		INT,	
 	
 	@sporttype	INT,
@@ -28,7 +28,7 @@
 		Created: Johnson
 		Date: 2012-08-14
 		Task: Update setting virtual sports for master
-		DB: DBTXN/BODB02
+		DB: DBTXN/CustDB
 		
 		Revisons:
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
@@ -36,7 +36,9 @@
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131101@Johnson: apply execrep when update min pt, auto pt 
 							and check total downlines before UPDATEs 
-			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)										
+			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
+            - 20140728@Logan: 1.Exclude disabled agents while updating master's settings
+                              2.Code aligning			
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -219,25 +221,29 @@ SET NOCOUNT ON
 		--m2+a2<=m3
 		SELECT @ErrAcc = ''
 		
-		SELECT top 100 @ErrAcc = @ErrAcc + username +', '
-		FROM custinfo as ci WITH (NOLOCK) 
-			INNER JOIN CustSetting3rd as cs with (NOLOCK) on ci.custid = cs.custid AND cs.sporttype = @sporttype AND cs.bettype = @bettype
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2
-			AND cs.mpositiontaking + cs.apositiontaking >@m3
-		GROUP BY username
+		SELECT top 100 @ErrAcc = @ErrAcc + username + ', '
+		  FROM custinfo ci WITH(NOLOCK) 
+    INNER JOIN CustSetting3rd cs with(NOLOCK) on ci.custid = cs.custid AND cs.sporttype = @sporttype AND cs.bettype = @bettype
+		 WHERE ci.mrecommend = @custid
+		   AND ci.roleid     = 2
+		   AND ci.Enabled    = 1
+		   AND cs.mpositiontaking + cs.apositiontaking > @m3
+	  GROUP BY username
 		
-		IF @ErrAcc<>''
+		IF @ErrAcc <> ''
 		BEGIN			
 			SELECT @ErrMsg_cur = CASE @Language 
-									WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+').'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-							END, @ErrCode_Cur = 103
-			
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-					
+								   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
+								   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+							     END
+                 , @ErrCode_Cur = 103
+
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			     , @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
 			RETURN	
 		END
+
 		--m1+a1<=m3
 		SELECT @ErrAcc = ''
 		
@@ -284,23 +290,27 @@ SET NOCOUNT ON
 		--m3>=u2
 		SELECT @ErrAcc = ''
 		
-		SELECT top 100 @ErrAcc = @ErrAcc + username +', '
-		FROM custinfo AS ci WITH (NOLOCK) 
-			INNER JOIN CustSetting3rd AS CS WITH (NOLOCK) ON ci.custid = cs.custid AND cs.sporttype = @sporttype AND cs.bettype = @bettype
-		WHERE ci.mrecommend = @custid AND ci.roleid = 2 
-			AND cs.autompositiontaking > @m3 and cs.isautompositiontaking = 1
-		GROUP BY username
-		
-		IF @ErrAcc<>''
+		SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
+		  FROM custinfo ci WITH(NOLOCK)
+    INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON ci.custid = cs.custid AND cs.sporttype = @sporttype AND cs.bettype = @bettype
+		 WHERE ci.mrecommend = @custid
+		   AND ci.roleid     = 2
+		   AND ci.Enabled    = 1
+		   AND cs.autompositiontaking > @m3
+		   and cs.isautompositiontaking = 1
+	  GROUP BY username
+
+		IF @ErrAcc <> ''
 		BEGIN		
 			SELECT @ErrMsg_Cur = CASE @Language 
-									WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+').'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-						END,@ErrCode_Cur = 106
-							
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-					
+								   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
+								   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+						         END
+                 , @ErrCode_Cur = 106
+
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			     , @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
 			RETURN	
 		END
 		
@@ -738,10 +748,10 @@ SET NOCOUNT ON
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre] TO [vnteam] AS [dbo]

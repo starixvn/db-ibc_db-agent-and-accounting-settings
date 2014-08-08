@@ -1,4 +1,14 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_CheckParam]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterLiveCS_CheckParam]    Script Date: 07/29/2014 10:17:59 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_CheckParam_xpre]
 	@custid		INT,
 	@v162spositiontaking_1101	SMALLMONEY,
 	@v162mpositiontaking_1101	SMALLMONEY,	
@@ -16,6 +26,8 @@
 		DB: DBTXN/CustDB
 		
 		Revisions:
+		    - 20140729@Logan: 1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
+			                  2.Code aligning on modified parts
 		
 		Paramter's Explanation:		
 	*/
@@ -68,21 +80,25 @@ BEGIN
 	SELECT @ErrAcc = ''
 
 	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-	FROM CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-	WHERE ci.mrecommend = @custid AND ci.roleid = 2
-		AND cs.sporttype = 162 AND cs.bettype = 1101
-		AND cs.mpositiontaking + cs.apositiontaking > @v162mpositiontaking_1101 
+	  FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	 WHERE ci.mrecommend = @custid
+	   AND ci.roleid     = 2
+	   AND ci.Enabled    = 1
+	   AND cs.sporttype  = 162
+	   AND cs.bettype    = 1101
+	   AND cs.mpositiontaking + cs.apositiontaking > @v162mpositiontaking_1101
 
-	IF @ErrAcc<>''
+	IF @ErrAcc <> ''
 	BEGIN		
 		SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+') .'							
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-					END, @ErrCode = 102
+						   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+					     END
+			 , @ErrCode = 102
 		RETURN
 	END
-			
+
 	--a1+m1<=m3
 	SELECT @ErrAcc = ''
 
@@ -106,18 +122,23 @@ BEGIN
 	SELECT @ErrAcc = ''
 
 	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-	FROM CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-	WHERE ci.mrecommend = @custid AND ci.roleid = 2
-		AND cs.sporttype = 162 AND cs.bettype = 1101
-		AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @v162mpositiontaking_1101
+	  FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	 WHERE ci.mrecommend = @custid
+	   AND ci.roleid     = 2
+	   AND ci.Enabled    = 1
+	   AND cs.sporttype  = 162
+	   AND cs.bettype    = 1101
+	   AND cs.isautompositiontaking = 1
+	   AND cs.autompositiontaking > @v162mpositiontaking_1101
 
-	IF @ErrAcc<>''
+	IF @ErrAcc <> ''
 	BEGIN		
 		SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-					END, @ErrCode = 104
+						   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+					     END
+			 , @ErrCode = 104
 		RETURN
 	END	
 
@@ -140,3 +161,6 @@ BEGIN
 	END
 
 END
+GO
+
+

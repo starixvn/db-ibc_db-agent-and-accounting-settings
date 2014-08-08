@@ -1,4 +1,16 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMaster_CommissionHR]    Script Date: 07/29/2014 08:56:58 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_CommissionHR    Script Date: 12/5/2013 5:35:47 PM ******/
+
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR_xpre]
 	@custid INT,-- masterId
 	@v151discount_31 DECIMAL(9,8),--commission for tote.
 	@v151discount_41 DECIMAL(9,8),--commission for OT.
@@ -45,11 +57,11 @@ Revisions:
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
 	- 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Transaction recorded successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 
 SET NOCOUNT ON
@@ -241,7 +253,7 @@ BEGIN
 		SELECT @v153discount_51 = @db_v153discount_51	
 
 	-- Apply exec rep
-	exec dbo.Acc_CustSetting3rd_06
+	exec dbo.Acc_CustSetting3rd_06_xpre
 			@CustId = @custid,
 			@RoleId = @RoleId ,
 			@v151discount_31 = @v151discount_31,
@@ -355,14 +367,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH	
-
-
-
+END CATCH
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_CommissionHR] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_CommissionHR] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_CommissionHR] TO [vnteam] AS [dbo]
+
+

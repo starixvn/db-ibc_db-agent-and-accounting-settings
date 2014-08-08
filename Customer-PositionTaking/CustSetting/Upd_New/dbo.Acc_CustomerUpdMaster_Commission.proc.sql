@@ -1,4 +1,13 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission]
+USE [CustDB]
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission_xpre]
 	@custid INT,-- masterId
 	
 	@groupa DECIMAL(9,8),
@@ -47,11 +56,11 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Update agent's commission successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 
 SET NOCOUNT ON
@@ -158,7 +167,7 @@ BEGIN
 	
 	
 	-- Apply exec rep
-	exec Acc_CustSetting_06
+	exec Acc_CustSetting_06_xpre
 		@CustId = @custid,
 		@RoleId = @RoleId,
 		@groupa = @groupa,
@@ -169,7 +178,7 @@ BEGIN
 		@discountHRFixedOdds = @discountHRFixedOdds,
 		@discount1x2 = @discount1x2
 
-	exec Acc_CustSetting3rd_06
+	exec Acc_CustSetting3rd_06_xpre
 		@CustId = @custid,
 		@RoleId = @RoleId,
 		@discountNumber = @discountnumber,
@@ -268,13 +277,13 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration	
 END CATCH
-	
-
-
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission_xpre] TO bodbAdminNet
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission_xpre] TO bodbExtAccNet
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [vnteam] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMaster_Commission_xpre] TO bodbDownlineNet
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_Commission_xpre] TO vnteam
+

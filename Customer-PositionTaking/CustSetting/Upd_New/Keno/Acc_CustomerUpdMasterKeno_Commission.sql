@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Commission] 
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Commission_xpre] 
 (
 	@CustId INT --Master
 	, @Discount DECIMAL(9,8) = 0 --adiscount
@@ -49,7 +49,7 @@ BEGIN
 	WHERE custid = @srecommend AND bettype = @BetType AND sporttype = @SportType
 
 	-- apply exec rep
-	EXEC Acc_CustSetting3rd_06 @CustId = @custid
+	EXEC Acc_CustSetting3rd_06_xpre @CustId = @custid
 		, @RoleId = @roleid
 		, @discount = @discount
 		, @mode = 'Keno'
@@ -101,8 +101,8 @@ BEGIN
 END
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_Commission_xpre] TO [vnteam]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission_xpre] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Commission_xpre] TO [bodbDownlineNet]

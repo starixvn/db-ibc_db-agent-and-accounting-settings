@@ -1,4 +1,16 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdKeno] 
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdKeno]    Script Date: 07/30/2014 14:27:01 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdKeno_xtest    Script Date: 6/19/2014 10:30:06 AM ******/
+CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdKeno_xpre] 
 	@CustID INT,
 	@UplineID INT = 0,
 	@Sporttype INT = 202,
@@ -21,11 +33,11 @@ AS
 	Revisions:
 
 	Param's Explanation:
-	â€¢ @ErrCode:
+	• @ErrCode:
 		= 0: Update successfully.
 		> 0: Specific Error.
 	  
-	â€¢ @ErrMsg: Error description.
+	• @ErrMsg: Error description.
 */
 BEGIN
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT
@@ -61,17 +73,17 @@ BEGIN
 	WHERE custid = @CustID AND sporttype = @Sporttype AND bettype = @Bettype
 	IF @roleid = 4
 	BEGIN		
-		EXEC Acc_CustSetting3rd_04 @srecommend = @CustID, @roleid = 4, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+				EXEC Acc_CustSetting3rd_04_xtest @srecommend = @CustID, @roleid = 4, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
 	END
 
 	IF @roleid = 3
 	BEGIN
-		EXEC Acc_CustSetting3rd_04 @custid = @CustID, @srecommend = @UplineID, @roleid = 3, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+				EXEC Acc_CustSetting3rd_04_xpre @custid = @CustID, @srecommend = @UplineID, @roleid = 3, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
 	END
 
 	IF @roleid = 2
 	BEGIN		
-		EXEC Acc_CustSetting3rd_04 @custid = @CustID, @mrecommend = @UplineID, @roleid = 2, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+				EXEC Acc_CustSetting3rd_04_xtest @custid = @CustID, @mrecommend = @UplineID, @roleid = 2, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
 	END
 
 	DECLARE @LogSPData VARCHAR(MAX),
@@ -135,10 +147,5 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdKeno] TO [vnteam] AS [dbo]
+
+

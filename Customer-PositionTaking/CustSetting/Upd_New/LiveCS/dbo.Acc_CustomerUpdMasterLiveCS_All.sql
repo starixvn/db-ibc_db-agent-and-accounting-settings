@@ -1,4 +1,14 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_All]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterLiveCS_All]    Script Date: 07/29/2014 10:14:17 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_All_xpre]
 	@custid		INT,
 	@srecommend INT,
 	@v162spositiontaking_1101	SMALLMONEY,
@@ -73,7 +83,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN
-				EXEC Acc_CustomerUpdMasterLiveCS_Commission 
+				EXEC Acc_CustomerUpdMasterLiveCS_Commission_xpre
 		@custid				= @custid, 
 		@v162discount_1101	= @v162discount_1101, 
 		@SubAccID			= @SubAccID, 
@@ -175,7 +185,7 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_Tracking
 
 IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdMasterLiveCS_CheckParam 
+	EXEC Acc_CustomerUpdMasterLiveCS_CheckParam_xpre
 		@custid		= @custid,
 		@v162spositiontaking_1101	= @v162spositiontaking_1101,
 		@v162mpositiontaking_1101	= @v162mpositiontaking_1101,	
@@ -220,7 +230,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 BEGIN
-				EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking 
+				EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking_xpre 
 		@custid		= @custid, 
 		
 		@v162spositiontaking_1101		= @v162spositiontaking_1101, 
@@ -250,11 +260,7 @@ BEGIN
 
 END
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [vnteam] AS [dbo]
+
+

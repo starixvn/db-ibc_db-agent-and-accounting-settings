@@ -1,4 +1,15 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] 
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_Commission]    Script Date: 07/30/2014 17:14:36 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Commission    Script Date: 12/5/2013 5:35:49 PM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Commission_xpre] 
 	@custid		INT,
 	@v162discount_1101		DECIMAL(9,8),
 	@IP			VARCHAR(50)='',	
@@ -48,6 +59,18 @@ BEGIN
 END
 --end
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=4,-- @roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+		
 DECLARE @db_v162discount_1101 DECIMAL(9,8)
 
 SELECT @db_v162discount_1101 = sdiscount 
@@ -68,7 +91,7 @@ BEGIN
 END
 
 -- Apply exec rep
-	EXEC Acc_CustSetting3rd_06
+	EXEC Acc_CustSetting3rd_06_xpre
 	@CustId = @custid,
 	@RoleId = @roleid,
 	@v162discount_1101 = @v162discount_1101,
@@ -124,11 +147,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH				
+END CATCH
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission]  TO [vnteam]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission]  TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission]  TO [bodbDownlineNet]
+
+

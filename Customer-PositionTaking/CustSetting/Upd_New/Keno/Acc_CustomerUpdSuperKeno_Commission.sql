@@ -1,4 +1,16 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperKeno_Commission]    Script Date: 07/21/2014 10:55:54 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER OFF
+GO
+
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_Commission_xtest    Script Date: 6/19/2014 10:30:06 AM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission_xpre]
 	@CustID INT,
 	@Sporttype INT = 202,
 	@Bettype INT,
@@ -53,7 +65,7 @@ BEGIN
 	END
 	
 	-- Apply exec rep
-		EXEC Acc_CustSetting3rd_06
+		EXEC Acc_CustSetting3rd_06_xpre
 		@CustId = @CustID,
 		@RoleId = 4,
 		@mode = 'Keno',
@@ -122,8 +134,5 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [bodbDownlineNet]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Commission]  TO [vnteam]
+
+

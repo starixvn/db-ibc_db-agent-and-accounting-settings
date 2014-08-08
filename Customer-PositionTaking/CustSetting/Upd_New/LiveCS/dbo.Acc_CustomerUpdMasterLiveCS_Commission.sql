@@ -1,4 +1,15 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Commission]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterLiveCS_Commission]    Script Date: 07/29/2014 10:16:56 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Commission    Script Date: 12/5/2013 5:35:48 PM ******/
+ CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Commission_xpre]
 	@custid		INT,
 	@v162discount_1101		DECIMAL(9,8),
 	
@@ -73,12 +84,24 @@ SELECT @srecommend = srecommend , @username = username, @roleid = roleid
 FROM CustInfo WITH(NOLOCK)
 WHERE custid = @custid
 
+--Check Allowed downlines	
+EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+			@roleid=@roleid,
+			@isExecRep=1,
+			@isUpdatePT = 1,
+			@Sporttype = 1,
+			@Language='E',
+			@ErrMsg=@ErrMsg output,
+			@ErrCode=@ErrCode output
+IF	@ErrCode <> 0 
+	RETURN 
+		
 SELECT @v162discount_1101 = CASE WHEN @v162discount_1101 > sdiscount THEN sdiscount ELSE @v162discount_1101 END
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @srecommend AND sporttype = 162 AND bettype = 1101
 
 -- Apply exec rep
-	EXEC Acc_CustSetting3rd_06
+	EXEC Acc_CustSetting3rd_06_xpre
 	@CustId = @custid,
 	@RoleId = @roleid,
 	@v162discount_1101 = @v162discount_1101,
@@ -137,12 +160,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH			
-			
-	
+END CATCH
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_Commission] TO [vnteam]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Commission] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Commission] TO [bodbDownlineNet]
+
+

@@ -1,4 +1,18 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_All]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterHR_All]    Script Date: 07/29/2014 08:56:23 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 12/5/2013 5:35:47 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 10/10/2013 2:53:23 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 7/23/2013 6:12:52 PM ******/
+
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_All_xpre]
 	@custid int,
 	@UserID int = 0,
 	
@@ -188,11 +202,11 @@ Revisions:
 								@UpdatePositiontakingv152_41 => _51
 	- 20130226@Johnson: change linked server DB053 to DBAGE				
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Transaction recorded successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 
 SET NOCOUNT ON
@@ -220,7 +234,7 @@ END
 IF @UpdateDisable151_31	= 1
 BEGIN	
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''							
-		EXEC dbo.Acc_CustomerUpdDisable151_31	-- Acc_CustomerUpdDisableHR -> Acc_CustomerUpdDisable151_31
+				EXEC dbo.Acc_CustomerUpdDisable151_31	-- Acc_CustomerUpdDisableHR -> Acc_CustomerUpdDisable151_31
 		@custid=@custid, 
 		@Disable151_31=@Disable151_31, 
 		@DisableDownlines151_31=@DisableDownlines151_31,
@@ -247,7 +261,7 @@ END
 IF @UpdateDisable151_41	= 1
 BEGIN	
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''							
-		EXEC dbo.Acc_CustomerUpdDisable151_41 -- Acc_CustomerUpdDisableOpenTote -> Acc_CustomerUpdDisable151_41
+				EXEC dbo.Acc_CustomerUpdDisable151_41 -- Acc_CustomerUpdDisableOpenTote -> Acc_CustomerUpdDisable151_41
 		@custid=@custid, 
 		@Disable151_41=@Disable151_41,
 		@DisableDownlines151_41=@DisableDownlines151_41,
@@ -274,7 +288,7 @@ END
 	IF @UpdateDisable151_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_51	
+								EXEC dbo.Acc_CustomerUpdDisable151_51	
 			@custid=@custid, 
 			@Disable151_51=@Disable151_51, 
 			@DisableDownlines151_51=@DisableDownlines151_51,
@@ -300,7 +314,7 @@ END
 	IF @UpdateDisable152_41 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_41
+								EXEC dbo.Acc_CustomerUpdDisable152_41
 			@custid=@custid, 
 			@Disable152_41=@Disable152_41, 
 			@DisableDownlines152_41=@DisableDownlines152_41,
@@ -326,7 +340,7 @@ END
 	IF @UpdateDisable152_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_51
+								EXEC dbo.Acc_CustomerUpdDisable152_51
 			@custid=@custid, 
 			@Disable152_51=@Disable152_51, 
 			@DisableDownlines152_51=@DisableDownlines152_51,
@@ -352,7 +366,7 @@ END
 	IF @UpdateDisable153_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable153_51
+								EXEC dbo.Acc_CustomerUpdDisable153_51
 			@custid=@custid, 
 			@Disable153_51=@Disable153_51, 
 			@DisableDownlines153_51=@DisableDownlines153_51,
@@ -381,7 +395,7 @@ END
 IF @UpdateCommission = 1 
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdMaster_CommissionHR	
+				EXEC dbo.Acc_CustomerUpdMaster_CommissionHR_xpre
 		@custid=@custid, 
 		@v151discount_31=@v151discount_31, 
 		@v151discount_41=@v151discount_41, 
@@ -418,7 +432,7 @@ END
 --Update bet setting
 IF @UpdateMinMaxBet151_31 = 1
 BEGIN
-		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_31	-- Acc_CustomerUpdMaster_MinMaxBetHR -> Acc_CustomerUpdMaster_MinMaxBet151_31
+				EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_31	-- Acc_CustomerUpdMaster_MinMaxBetHR -> Acc_CustomerUpdMaster_MinMaxBet151_31
 		@custid=@custid, 
 		@minbet=@v151minbet_31, 
 		@maxbet=@v151maxbet_31, 
@@ -446,7 +460,7 @@ END
 --Update OpenTote bet setting
 IF @UpdateMinMaxBet151_41 = 1
 BEGIN
-		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_41 -- Acc_CustomerUpdMaster_MinMaxBetOpenTote -> Acc_CustomerUpdMaster_MinMaxBet151_41
+				EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_41 -- Acc_CustomerUpdMaster_MinMaxBetOpenTote -> Acc_CustomerUpdMaster_MinMaxBet151_41
 		@custid=@custid, 
 		@minbet=@v151minbet_41, 
 		@maxbet=@v151maxbet_41, 
@@ -474,7 +488,7 @@ END
 IF @UpdateMinMaxBet151_51 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_51
+				EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet151_51
 		@custid=@custid, 
 		@minbet=@v151minbet_51, 
 		@maxbet=@v151maxbet_51, 
@@ -502,7 +516,7 @@ END
 IF @UpdateMinMaxBet152_41 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet152_41
+				EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet152_41
 		@custid=@custid, 
 		@minbet=@v152minbet_41, 
 		@maxbet=@v152maxbet_41, 
@@ -530,7 +544,7 @@ END
 IF @UpdateMinMaxBet152_51 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet152_51
+				EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet152_51
 		@custid=@custid, 
 		@minbet=@v152minbet_51, 
 		@maxbet=@v152maxbet_51, 
@@ -558,7 +572,7 @@ END
 IF @UpdateMinMaxBet153_51 = 1
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-	EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet153_51
+		EXEC dbo.Acc_CustomerUpdMaster_MinMaxBet153_51
 		@custid=@custid, 
 		@minbet=@v153minbet_51, 
 		@maxbet=@v153maxbet_51, 
@@ -590,7 +604,7 @@ IF @newspositiontaking <> 0
 IF @UpdatePositiontaking = 1
 BEGIN 
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdMasterHR_Positiontaking 
+								EXEC dbo.Acc_CustomerUpdMasterHR_Positiontaking_xpre
 		@custid = @custid,
 		@v151spositiontaking_31 = @v151spositiontaking_31,
 		@v151spositiontaking_32 = @v151spositiontaking_32,
@@ -677,10 +691,5 @@ END
 Return
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterHR_All] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterHR_All] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterHR_All] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterHR_All] TO [vnteam] AS [dbo]
+
+

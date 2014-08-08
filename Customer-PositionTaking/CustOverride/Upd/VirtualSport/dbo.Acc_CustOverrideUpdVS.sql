@@ -1,4 +1,15 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdVS]    Script Date: 07/29/2014 12:40:26 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdVS    Script Date: 12/5/2013 5:35:45 PM ******/
+CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdVS_xpre] 
 	@custid int,
 	@sporttype tinyint,
 	@bettype int,
@@ -30,11 +41,11 @@ AS
 		- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
 		- 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_04 for super
 	Param's Explanation:
-	â€¢ @ErrCode:
+	• @ErrCode:
 		= 0: Update successfully.
 		> 0: Specific Error.
 	  
-	â€¢ @ErrMsg: Error description.
+	• @ErrMsg: Error description.
 */
 SET NOCOUNT ON
 
@@ -179,7 +190,7 @@ BEGIN
 END
 ELSE IF @roleid = 3
 BEGIN	
-	EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 3
+	EXEC dbo.Acc_CustSetting3rd_04_xpre @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 3
 
 END
 ELSE IF @roleid= 4 and @UpdateMinPos = 1 
@@ -270,13 +281,6 @@ BEGIN
 
 END
 
+GO
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdVS] TO [vnteam] AS [dbo]

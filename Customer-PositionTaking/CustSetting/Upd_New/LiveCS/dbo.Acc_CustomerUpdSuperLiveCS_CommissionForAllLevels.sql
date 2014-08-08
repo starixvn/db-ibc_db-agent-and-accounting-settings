@@ -1,4 +1,15 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]    Script Date: 07/30/2014 17:14:51 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels    Script Date: 12/5/2013 5:35:49 PM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels_xpre]
 	@custid		INT,
 	@v162discount_1101		DECIMAL(9,8),
 	@IP			VARCHAR(50)='',	
@@ -76,7 +87,7 @@ FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 	-- exec rep
-EXEC Acc_CustSetting3rd_06
+EXEC Acc_CustSetting3rd_06_xpre
 	@CustId = @custid,
 	@RoleId = @roleid,
 	@v162discount_1101 = @v162discount_1101,-- Live Casino
@@ -140,7 +151,6 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [vnteam] AS [dbo]
+

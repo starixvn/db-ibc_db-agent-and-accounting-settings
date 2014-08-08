@@ -1,4 +1,14 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]    Script Date: 07/21/2014 12:53:52 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking_xpre]
 (
 	@CustId INT
 	, @SportType INT = 202
@@ -31,6 +41,8 @@ AS
 	DB: DBTXN/CustDB
 		
 	Revisions:
+	    - 20140729@Logan: 1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
+			              2.Code aligning on modified parts
 
 	Parameters Explanation:
 		@ErrCode is 0 update successful
@@ -114,18 +126,24 @@ BEGIN
 
 	--a2+m2<=m3
 	SELECT @ErrAcc = ''
+
 	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-	FROM dbo.CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-	WHERE ci.mrecommend = @custid AND ci.roleid = 2
-		 AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.mpositiontaking + cs.apositiontaking > @m3
+	  FROM dbo.CustSettingGame cs WITH(NOLOCK)
+INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+	 WHERE ci.mrecommend = @custid
+	   AND ci.roleid     = 2
+	   AND ci.Enabled    = 1
+	   AND cs.bettype = @BetType
+	   AND cs.sporttype = @SportType
+	   AND cs.mpositiontaking + cs.apositiontaking > @m3
 
 	IF @ErrAcc <> ''
 	BEGIN		
-		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').' END
-			, @ErrCode = 102
+		SELECT @ErrMsg = CASE @Language
+		                   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+						 END
+			 , @ErrCode = 102
 		RETURN
 	END
 
@@ -148,18 +166,25 @@ BEGIN
 
 	--m3>=u2
 	SELECT @ErrAcc = ''
+
 	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-	FROM dbo.CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-	WHERE ci.mrecommend = @custid AND ci.roleid = 2
-		AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @m3
+	  FROM dbo.CustSettingGame cs WITH(NOLOCK)
+INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+	 WHERE ci.mrecommend = @custid
+	   AND ci.roleid     = 2
+	   AND ci.Enabled    = 1
+	   AND cs.bettype    = @BetType
+	   AND cs.sporttype  = @SportType
+	   AND cs.isautompositiontaking = 1
+	   AND cs.autompositiontaking > @m3
 
 	IF @ErrAcc <> ''
 	BEGIN		
-		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' (' + @ErrAcc + ').' END
-			, @ErrCode = 104
+		SELECT @ErrMsg = CASE @Language
+		                   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' (' + @ErrAcc + ').'
+						 END
+			 , @ErrCode = 104
 		RETURN
 	END	
 
@@ -327,11 +352,8 @@ BEGIN
 
 END
 
+
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking] TO [vnteam] AS [dbo]
+
+

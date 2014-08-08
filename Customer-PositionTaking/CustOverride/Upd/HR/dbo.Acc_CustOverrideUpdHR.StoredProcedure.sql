@@ -1,4 +1,15 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdHR]    Script Date: 07/29/2014 14:39:43 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 12/5/2013 5:35:45 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR_xpre] 
 	@custid int,
 
 	@v151positiontaking_31_min smallmoney = 0,-- @minv151positiontaking_31 -> @v151positiontaking_31_min
@@ -64,11 +75,11 @@ Revisions:
 	- 20131029@Lukas: apply execRep
 	- 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 SET NOCOUNT ON
 
@@ -335,36 +346,78 @@ BEGIN
 	BEGIN
 		--check all (n2)<=l3
 		select @ErrAcc = ''
-		select top 100 @ErrAcc = @ErrAcc + username +', '
-		from 
-			customer as c with (NOLOCK) 
-			inner join CustOverride3rd as aco with (NOLOCK) on c.custid = aco.custid
-			inner join (
-								select 	151 as sporttype, 31 as bettype, @v151positiontaking_31_max as maxpositiontaking
-					union all select 	151 as sporttype, 32 as bettype, @v151positiontaking_32_max as maxpositiontaking
-					union all select 	151 as sporttype, 41 as bettype, @v151positiontaking_41_max as maxpositiontaking
-					union all select 	151 as sporttype, 42 as bettype, @v151positiontaking_42_max as maxpositiontaking
-					union all select 	151 as sporttype, 51 as bettype, @v151positiontaking_51_max as maxpositiontaking
-					union all select 	151 as sporttype, 52 as bettype, @v151positiontaking_52_max as maxpositiontaking
-					union all select 	152 as sporttype, 41 as bettype, @v152positiontaking_41_max as maxpositiontaking
-					union all select 	152 as sporttype, 42 as bettype, @v152positiontaking_42_max as maxpositiontaking
-					union all select 	152 as sporttype, 51 as bettype, @v152positiontaking_51_max as maxpositiontaking
-					union all select 	152 as sporttype, 52 as bettype, @v152positiontaking_52_max as maxpositiontaking
-					union all select 	153 as sporttype, 51 as bettype, @v153positiontaking_51_max as maxpositiontaking
-					union all select 	153 as sporttype, 52 as bettype, @v153positiontaking_52_max as maxpositiontaking
-				) as b on aco.sporttype=b.sporttype and aco.bettype = b.bettype
-		where c.mrecommend = @custid and c.roleid = 2 and (aco.minpositiontaking>b.maxpositiontaking )
-		group by username
-		if @ErrAcc<>''
+
+		select top 100 @ErrAcc = @ErrAcc + username + ', '
+		  from custInfo c with(NOLOCK) 
+    inner join CustOverride3rd aco with(NOLOCK) on c.custid = aco.custid
+	inner join (select 151 as sporttype
+	                 , 31 as bettype
+	                 , @v151positiontaking_31_max as maxpositiontaking
+
+      union all select 151 as sporttype
+                     , 32 as bettype
+                     , @v151positiontaking_32_max as maxpositiontaking
+
+      union all select 151 as sporttype
+                     , 41 as bettype
+                     , @v151positiontaking_41_max as maxpositiontaking
+
+      union all select 151 as sporttype
+                     , 42 as bettype
+                     , @v151positiontaking_42_max as maxpositiontaking
+
+      union all select 151 as sporttype
+                     , 51 as bettype
+                     , @v151positiontaking_51_max as maxpositiontaking
+
+      union all select 151 as sporttype
+                     , 52 as bettype
+                     , @v151positiontaking_52_max as maxpositiontaking
+
+      union all select 152 as sporttype
+                     , 41 as bettype
+                     , @v152positiontaking_41_max as maxpositiontaking
+
+      union all select 152 as sporttype
+                     , 42 as bettype
+                     , @v152positiontaking_42_max as maxpositiontaking
+
+      union all select 152 as sporttype
+                     , 51 as bettype
+                     , @v152positiontaking_51_max as maxpositiontaking
+
+      union all select 152 as sporttype
+                     , 52 as bettype
+                     , @v152positiontaking_52_max as maxpositiontaking
+
+      union all select 153 as sporttype
+                     , 51 as bettype
+                     , @v153positiontaking_51_max as maxpositiontaking
+
+      union all select 153 as sporttype
+                     , 52 as bettype
+                     , @v153positiontaking_52_max as maxpositiontaking
+
+               ) b on aco.sporttype = b.sporttype and aco.bettype = b.bettype
+		 where c.mrecommend = @custid
+		   and c.roleid     = 2
+		   AND c.Enabled    = 1
+		   and aco.minpositiontaking > b.maxpositiontaking
+	  group by username
+
+		if @ErrAcc <> ''
 		BEGIN
-			select @isvalid = 0, @ErrCode = 301
-			Select @ErrMsg = 	case @Language 
-								when 'E' then 'Existing agents (minimum position taking) exceeded new maximum position taking' + ' ('+@ErrAcc+').'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](30005,@Language) + ' ('+@ErrAcc+').'
-						end
+			select @isvalid = 0
+			     , @ErrCode = 301
+
+			Select @ErrMsg = case @Language 
+							   when 'E' then 'Existing agents (minimum position taking) exceeded new maximum position taking' + ' (' + @ErrAcc + ').'
+							   ELSE [dbo].[f_Get_MsgNamebyMsgID](30005, @Language) + ' (' + @ErrAcc + ').'
+    						 end
 			return
 		END
 	END
+
 	if @UpdateMinPos = 1
 	BEGIN
 		--check m3>=n3
@@ -537,7 +590,7 @@ END
 else if @roleid = 3
 BEGIN
 	--EXEC dbo.Acc_CustomerUpdMasterHR_MinMaxPositiontaking @mrecommend = @mrecommend, @srecommend = @srecommend
-	EXEC dbo.[Acc_CustSetting3rd_04] @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'horse'
+	EXEC dbo.[Acc_CustSetting3rd_04_xpre] @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'horse'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMinPos = 1
 BEGIN
@@ -693,11 +746,7 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdHR] TO [vnteam] AS [dbo]
+
+

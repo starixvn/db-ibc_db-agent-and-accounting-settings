@@ -1,4 +1,15 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking]    Script Date: 07/29/2014 10:40:24 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Positiontaking    Script Date: 12/5/2013 5:35:49 PM ******/
+ CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking_xpre]
 	@custid		INT,
 	@v162spositiontaking_1101	SMALLMONEY,
 	@v162mpositiontaking_1101	SMALLMONEY,
@@ -32,7 +43,10 @@ AS
 			- 20130301@Amy: change limitation of max super PT to 100% instead of 90%
 			- 20130320@Johnson: Write log on DBTXN if DBLOG failure
 			- 20131104@Johnson: Apply execrep when recalculate pt on members 
-					and Check total downlines before UPDATEs 
+					and Check total downlines before UPDATEs
+		    - 20140729@Logan: 1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
+			                  2.Code aligning on modified parts
+			                  
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -143,18 +157,21 @@ END
 SELECT @ErrAcc = ''
 
 SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-FROM CustSettingGame cs WITH(NOLOCK)
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-WHERE ci.mrecommend = @custid AND ci.roleid = 2
-	AND cs.sporttype = 162 AND cs.bettype = 1101
-	AND cs.mpositiontaking + cs.apositiontaking > @v162mpositiontaking_1101 
+  FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+ WHERE ci.mrecommend = @custid
+   AND ci.roleid     = 2
+   AND ci.Enabled    = 1
+   AND cs.sporttype = 162 AND cs.bettype = 1101
+   AND cs.mpositiontaking + cs.apositiontaking > @v162mpositiontaking_1101
 
-IF @ErrAcc<>''
+IF @ErrAcc <> ''
 BEGIN		
 	SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+') .'							
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-				END, @ErrCode = 102
+					   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+				     END
+         , @ErrCode = 102
 	RETURN
 END
 
@@ -181,20 +198,24 @@ END
 SELECT @ErrAcc = ''
 
 SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-FROM CustSettingGame cs WITH(NOLOCK)
-	INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-WHERE ci.mrecommend = @custid AND ci.roleid = 2
-	AND cs.sporttype = 162 AND cs.bettype = 1101
-	AND cs.isautompositiontaking = 1 AND cs.autompositiontaking > @v162mpositiontaking_1101
+  FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+ WHERE ci.mrecommend = @custid
+   AND ci.roleid     = 2
+   AND ci.Enabled    = 1
+   AND cs.sporttype = 162 AND cs.bettype = 1101
+   AND cs.isautompositiontaking = 1
+   AND cs.autompositiontaking > @v162mpositiontaking_1101
 
-IF @ErrAcc<>''
+IF @ErrAcc <> ''
 BEGIN		
-	SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'Existing agents exceeded new master position taking ('+@ErrAcc+').'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](20011,@Language) + ' ('+@ErrAcc+').'
-				END, @ErrCode = 104
+	SELECT @ErrMsg = CASE @Language
+				       WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ').'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+				     END
+         , @ErrCode = 104
 	RETURN
-END	
+END
 
 --check u3<=s4
 SELECT @ErrType = ''
@@ -339,7 +360,7 @@ BEGIN
 		@mode = 'LiveCasino'
 		
 /*
-	EXEC dbo.Acc_CustomerUpdMasterLiveCS_MaxPositiontaking @srecommend = @srecommend , @mrecommend = @custid
+		EXEC dbo.Acc_CustomerUpdMasterLiveCS_MaxPositiontaking @srecommend = @srecommend , @mrecommend = @custid
 */	
 	IF (@@error <> 0)
 	BEGIN		
@@ -432,13 +453,6 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+GO
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking] TO [vnteam] AS [dbo]

@@ -1,4 +1,15 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_Commission]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuper_Commission]    Script Date: 07/30/2014 14:48:08 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_Commission    Script Date: 12/5/2013 5:35:52 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_Commission_xpre]
 	@custid INT,-- superid
 	
 	@groupa DECIMAL(9,8),
@@ -40,11 +51,11 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 
 SET NOCOUNT ON
@@ -118,7 +129,7 @@ BEGIN
 		
 
 	-- Apply exec rep: 
-	exec Acc_CustSetting_06
+	exec Acc_CustSetting_06_xpre
 		@CustId = @custid,
 		@RoleId = @RoleId,
 		@groupa = @groupa,
@@ -129,7 +140,7 @@ BEGIN
 		@discountHRFixedOdds = @discountHRFixedOdds,		
 		@discount1x2 = @discount1x2
 
-	exec Acc_CustSetting3rd_06
+	exec Acc_CustSetting3rd_06_xpre
 		@CustId = @custid,
 		@RoleId = @RoleId,
 		@discountNumber = @discountnumber,
@@ -223,11 +234,7 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration	
 END CATCH
-	
-
-
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [vnteam] AS [dbo]
+
+

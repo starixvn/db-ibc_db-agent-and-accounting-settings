@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno]
+CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_xpre]
 (
 	@CustId INT --Master
 	, @SportType INT = 202
@@ -121,7 +121,7 @@ BEGIN
 
 	IF(@UpdatePositiontaking = 1 OR @UpdateAutoPositionTaking = 1)
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMasterKeno_Positiontaking @custid = @custid
+				EXEC dbo.Acc_CustomerUpdMasterKeno_Positiontaking_xpre @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
 			, @s3 =  @s3--s3

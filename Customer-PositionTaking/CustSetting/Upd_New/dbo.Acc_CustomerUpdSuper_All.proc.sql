@@ -1,4 +1,14 @@
-ï»¿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_All]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuper_All]    Script Date: 07/29/2014 13:20:29 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_All_xpre]
 	@custid int,-- superid
 	@firstname nvarchar(50),
 	@lastname nvarchar(50),
@@ -71,6 +81,7 @@
 	@spositiontaking_8 smallmoney,
 	@spositiontaking_9 smallmoney,
 	@spositiontaking_10 smallmoney,
+	@spositiontaking_9999 smallmoney = 0.9,
 	
 	@slivepositiontaking_1 smallmoney,
 	@slivepositiontaking_3 smallmoney,
@@ -94,6 +105,7 @@
 	@v5spositiontaking_2 smallmoney,
 	@v5spositiontaking_3 smallmoney,
 	@v5spositiontaking_20 smallmoney,
+	@v5spositiontaking_9999 smallmoney = 0,
 
 	@v8spositiontaking_1 smallmoney,
 	@v8spositiontaking_3 smallmoney,
@@ -138,6 +150,7 @@
 	@mpositiontaking_8 smallmoney = 0.7,
 	@mpositiontaking_9 smallmoney = 0.7,
 	@mpositiontaking_10 smallmoney = 0.7,
+	@mpositiontaking_9999 smallmoney = 0.7,
 	
 	@mlivepositiontaking_1 smallmoney = 0.7,
 	@mlivepositiontaking_3 smallmoney = 0.7,
@@ -161,6 +174,7 @@
 	@v5mpositiontaking_2 smallmoney = 0.7,
 	@v5mpositiontaking_3 smallmoney = 0.7,
 	@v5mpositiontaking_20 smallmoney = 0.7,
+	@v5mpositiontaking_9999 smallmoney = 0,
 
 	@v8mpositiontaking_1 smallmoney = 0.7,
 	@v8mpositiontaking_3 smallmoney = 0.7,
@@ -206,6 +220,7 @@
 	@apositiontaking_8 smallmoney = 0.7,
 	@apositiontaking_9 smallmoney = 0.7,
 	@apositiontaking_10 smallmoney = 0.7,
+	@apositiontaking_9999 smallmoney = 0.7,
 	
 	@alivepositiontaking_1 smallmoney = 0.7,
 	@alivepositiontaking_3 smallmoney = 0.7,
@@ -229,6 +244,7 @@
 	@v5apositiontaking_2 smallmoney = 0.7,
 	@v5apositiontaking_3 smallmoney = 0.7,
 	@v5apositiontaking_20 smallmoney = 0.7,
+	@v5apositiontaking_9999 smallmoney = 0,
 
 	@v8apositiontaking_1 smallmoney = 0.7,
 	@v8apositiontaking_3 smallmoney = 0.7,
@@ -302,12 +318,13 @@ Revisions:
 	- 20110709@Johnson: Change to use new server BD053 instead DB052
 	- 20130218@Dan: Change linked server DB053 to DBAGE
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	- 20140616@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
 Param's Explanation:
-â€¢ @ErrCode:
+• @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
   
-â€¢ @ErrMsg: Error description.
+• @ErrMsg: Error description.
 */
 
 SET NOCOUNT ON
@@ -470,7 +487,7 @@ else
 if @updatecomm_old <> 0
 begin
 	
-	EXEC dbo.Acc_CustomerUpdSuper_Commission 
+	EXEC dbo.Acc_CustomerUpdSuper_Commission_xpre
 		@custid = @custid,
 		@groupa = @groupa,
 		@groupb = @groupb,
@@ -573,6 +590,7 @@ Declare
 	@spositiontaking_8_old smallmoney,
 	@spositiontaking_9_old smallmoney,
 	@spositiontaking_10_old smallmoney,
+	@spositiontaking_9999_old smallmoney,
 	@slivepositiontaking_1_old smallmoney,
 	@slivepositiontaking_3_old smallmoney,
 	@slivepositiontaking_7_old smallmoney,
@@ -592,6 +610,7 @@ Declare
 	@v5spositiontaking_2_old smallmoney,
 	@v5spositiontaking_3_old smallmoney,
 	@v5spositiontaking_20_old smallmoney,
+	@v5spositiontaking_9999_old smallmoney,
 	@v8spositiontaking_1_old smallmoney,
 	@v8spositiontaking_3_old smallmoney,
 	@v8spositiontaking_20_old smallmoney,
@@ -633,6 +652,7 @@ Declare
 	@mpositiontaking_8_old smallmoney,
 	@mpositiontaking_9_old smallmoney,
 	@mpositiontaking_10_old smallmoney,
+	@mpositiontaking_9999_old smallmoney,
 	@mlivepositiontaking_1_old smallmoney,
 	@mlivepositiontaking_3_old smallmoney,
 	@mlivepositiontaking_7_old smallmoney,
@@ -652,6 +672,7 @@ Declare
 	@v5mpositiontaking_2_old smallmoney,
 	@v5mpositiontaking_3_old smallmoney,
 	@v5mpositiontaking_20_old smallmoney,
+	@v5mpositiontaking_9999_old smallmoney,
 	@v8mpositiontaking_1_old smallmoney,
 	@v8mpositiontaking_3_old smallmoney,
 	@v8mpositiontaking_20_old smallmoney,
@@ -694,6 +715,7 @@ Declare
 	@apositiontaking_8_old smallmoney,
 	@apositiontaking_9_old smallmoney,
 	@apositiontaking_10_old smallmoney,
+	@apositiontaking_9999_old smallmoney,
 	@alivepositiontaking_1_old smallmoney,
 	@alivepositiontaking_3_old smallmoney,
 	@alivepositiontaking_7_old smallmoney,
@@ -713,6 +735,7 @@ Declare
 	@v5apositiontaking_2_old smallmoney,
 	@v5apositiontaking_3_old smallmoney,
 	@v5apositiontaking_20_old smallmoney,
+	@v5apositiontaking_9999_old smallmoney,
 	@v8apositiontaking_1_old smallmoney,
 	@v8apositiontaking_3_old smallmoney,
 	@v8apositiontaking_20_old smallmoney,
@@ -756,6 +779,7 @@ select @spositiontaking_5_old = spositiontaking, @mpositiontaking_5_old = mposit
 select @spositiontaking_6_old = spositiontaking, @mpositiontaking_6_old = mpositiontaking, @apositiontaking_6_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=6 and sporttype=1
 select @spositiontaking_9_old = spositiontaking, @mpositiontaking_9_old = mpositiontaking, @apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=1
 select @spositiontaking_10_old = spositiontaking, @mpositiontaking_10_old = mpositiontaking, @apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=1
+select @spositiontaking_9999_old = spositiontaking, @mpositiontaking_9999_old = mpositiontaking, @apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=1
 
 select @v2spositiontaking_1_old = spositiontaking, @v2mpositiontaking_1_old = mpositiontaking, @v2apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=2
 select @v2spositiontaking_2_old = spositiontaking, @v2mpositiontaking_2_old = mpositiontaking, @v2apositiontaking_2_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=2
@@ -774,6 +798,7 @@ select @v5spositiontaking_1_old = spositiontaking, @v5mpositiontaking_1_old = mp
 select @v5spositiontaking_2_old = spositiontaking, @v5mpositiontaking_2_old = mpositiontaking, @v5apositiontaking_2_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=5
 select @v5spositiontaking_3_old = spositiontaking, @v5mpositiontaking_3_old = mpositiontaking, @v5apositiontaking_3_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=5
 select @v5spositiontaking_20_old = spositiontaking, @v5mpositiontaking_20_old = mpositiontaking, @v5apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=5
+select @v5spositiontaking_9999_old = spositiontaking, @v5mpositiontaking_9999_old = mpositiontaking, @v5apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=5
 
 select @v8spositiontaking_1_old = spositiontaking, @v8mpositiontaking_1_old = mpositiontaking, @v8apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=8
 select @v8spositiontaking_3_old = spositiontaking, @v8mpositiontaking_3_old = mpositiontaking, @v8apositiontaking_3_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=8
@@ -817,6 +842,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@spositiontaking_8 <> @spositiontaking_8_old or
 	@spositiontaking_9 <> @spositiontaking_9_old or
 	@spositiontaking_10 <> @spositiontaking_10_old or
+	@spositiontaking_9999 <> @spositiontaking_9999_old or
 	@slivepositiontaking_1 <> @slivepositiontaking_1_old or
 	@slivepositiontaking_3 <> @slivepositiontaking_3_old or
 	@slivepositiontaking_7 <> @slivepositiontaking_7_old or
@@ -836,6 +862,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v5spositiontaking_2 <> @v5spositiontaking_2_old or
 	@v5spositiontaking_3 <> @v5spositiontaking_3_old or
 	@v5spositiontaking_20 <> @v5spositiontaking_20_old or
+	@v5spositiontaking_9999 <> @v5spositiontaking_9999_old or
 	@v8spositiontaking_1 <> @v8spositiontaking_1_old or
 	@v8spositiontaking_3 <> @v8spositiontaking_3_old or
 	@v8spositiontaking_20 <> @v8spositiontaking_20_old or
@@ -877,6 +904,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@mpositiontaking_8 <> @mpositiontaking_8_old or
 	@mpositiontaking_9 <> @mpositiontaking_9_old or
 	@mpositiontaking_10 <> @mpositiontaking_10_old or
+	@mpositiontaking_9999 <> @mpositiontaking_9999_old or
 	@mlivepositiontaking_1 <> @mlivepositiontaking_1_old or
 	@mlivepositiontaking_3 <> @mlivepositiontaking_3_old or
 	@mlivepositiontaking_7 <> @mlivepositiontaking_7_old or
@@ -896,6 +924,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v5mpositiontaking_2 <> @v5mpositiontaking_2_old or
 	@v5mpositiontaking_3 <> @v5mpositiontaking_3_old or
 	@v5mpositiontaking_20 <> @v5mpositiontaking_20_old or
+	@v5mpositiontaking_9999 <> @v5mpositiontaking_9999_old or
 	@v8mpositiontaking_1 <> @v8mpositiontaking_1_old or
 	@v8mpositiontaking_3 <> @v8mpositiontaking_3_old or
 	@v8mpositiontaking_20 <> @v8mpositiontaking_20_old or
@@ -938,6 +967,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@apositiontaking_8 <> @apositiontaking_8_old or
 	@apositiontaking_9 <> @apositiontaking_9_old or
 	@apositiontaking_10 <> @apositiontaking_10_old or
+	@apositiontaking_9999 <> @apositiontaking_9999_old or
 	@alivepositiontaking_1 <> @alivepositiontaking_1_old or
 	@alivepositiontaking_3 <> @alivepositiontaking_3_old or
 	@alivepositiontaking_7 <> @alivepositiontaking_7_old or
@@ -957,6 +987,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	@v5apositiontaking_2 <> @v5apositiontaking_2_old or
 	@v5apositiontaking_3 <> @v5apositiontaking_3_old or
 	@v5apositiontaking_20 <> @v5apositiontaking_20_old or
+	@v5apositiontaking_9999 <> @v5apositiontaking_9999_old or
 	@v8apositiontaking_1 <> @v8apositiontaking_1_old or
 	@v8apositiontaking_3 <> @v8apositiontaking_3_old or
 	@v8apositiontaking_20 <> @v8apositiontaking_20_old or
@@ -990,7 +1021,7 @@ IF 	@spositiontaking_1 <> @spositiontaking_1_old or
 	
 BEGIN
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-	EXEC dbo.Acc_CustomerUpdSuper_PositionTaking 
+	EXEC dbo.Acc_CustomerUpdSuper_PositionTaking_xpre
 		@custid = @custid,
 		@spositiontaking_1 = @spositiontaking_1,
 		@spositiontaking_2 = @spositiontaking_2,
@@ -1002,6 +1033,7 @@ BEGIN
 		@spositiontaking_8 = @spositiontaking_8,
 		@spositiontaking_9 = @spositiontaking_9,
 		@spositiontaking_10 = @spositiontaking_10,
+		@spositiontaking_9999 = @spositiontaking_9999,
 		@slivepositiontaking_1 = @slivepositiontaking_1,
 		@slivepositiontaking_3 = @slivepositiontaking_3,
 		@slivepositiontaking_7 = @slivepositiontaking_7,
@@ -1021,6 +1053,7 @@ BEGIN
 		@v5spositiontaking_2 = @v5spositiontaking_2,
 		@v5spositiontaking_3 = @v5spositiontaking_3,
 		@v5spositiontaking_20 = @v5spositiontaking_20,
+		@v5spositiontaking_9999 = @v5spositiontaking_9999,
 		@v8spositiontaking_1 = @v8spositiontaking_1,
 		@v8spositiontaking_3 = @v8spositiontaking_3,
 		@v8spositiontaking_20 = @v8spositiontaking_20,
@@ -1061,6 +1094,7 @@ BEGIN
 		@mpositiontaking_8 = @mpositiontaking_8,
 		@mpositiontaking_9 = @mpositiontaking_9,
 		@mpositiontaking_10 = @mpositiontaking_10,
+		@mpositiontaking_9999 = @mpositiontaking_9999,
 		@mlivepositiontaking_1 = @mlivepositiontaking_1,
 		@mlivepositiontaking_3 = @mlivepositiontaking_3,
 		@mlivepositiontaking_7 = @mlivepositiontaking_7,
@@ -1080,6 +1114,7 @@ BEGIN
 		@v5mpositiontaking_2 = @v5mpositiontaking_2,
 		@v5mpositiontaking_3 = @v5mpositiontaking_3,
 		@v5mpositiontaking_20 = @v5mpositiontaking_20,
+		@v5mpositiontaking_9999 = @v5mpositiontaking_9999,
 		@v8mpositiontaking_1 = @v8mpositiontaking_1,
 		@v8mpositiontaking_3 = @v8mpositiontaking_3,
 		@v8mpositiontaking_20 = @v8mpositiontaking_20,
@@ -1120,6 +1155,7 @@ BEGIN
 		@apositiontaking_8 = @apositiontaking_8,
 		@apositiontaking_9 = @apositiontaking_9,
 		@apositiontaking_10 = @apositiontaking_10,
+		@apositiontaking_9999 = @apositiontaking_9999,
 		@alivepositiontaking_1 = @alivepositiontaking_1,
 		@alivepositiontaking_3 = @alivepositiontaking_3,
 		@alivepositiontaking_7 = @alivepositiontaking_7,
@@ -1139,6 +1175,7 @@ BEGIN
 		@v5apositiontaking_2 = @v5apositiontaking_2,
 		@v5apositiontaking_3 = @v5apositiontaking_3,
 		@v5apositiontaking_20 = @v5apositiontaking_20,
+		@v5apositiontaking_9999 = @v5apositiontaking_9999,
 		@v8apositiontaking_1 = @v8apositiontaking_1,
 		@v8apositiontaking_3 = @v8apositiontaking_3,
 		@v8apositiontaking_20 = @v8apositiontaking_20,
@@ -1186,9 +1223,7 @@ BEGIN
 END
 
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_All] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_All] TO [vnteam] AS [dbo]
+
+

@@ -1,4 +1,15 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
+USE [CustDB]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdLiveCS]    Script Date: 07/29/2014 09:37:23 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdLiveCS    Script Date: 12/5/2013 5:35:45 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS_xpre]
 	@custid		INT,
 	@UplineID	INT = 0,
 	@min_v162positiontaking_1101	SMALLMONEY,
@@ -87,7 +98,7 @@ SET NOCOUNT ON
 	IF @roleid = 3
 	BEGIN
 		--EXEC Acc_CustomerUpdMasterLiveCS_MinPositiontaking @custid = @custid, @srecommend = @UplineID
-		EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'LiveCasino'
+		EXEC [Acc_CustSetting3rd_04_xpre] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'LiveCasino'
 	END
 
 	IF @roleid = 2
@@ -148,9 +159,7 @@ SET NOCOUNT ON
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END CATCH
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [vnteam] AS [dbo]
+
+
