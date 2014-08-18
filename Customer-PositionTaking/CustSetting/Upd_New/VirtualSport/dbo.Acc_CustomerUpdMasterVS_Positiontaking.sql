@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking_xpre]
 	@custid		INT,	
 	
 	@sporttype	INT,
@@ -247,23 +247,29 @@ SET NOCOUNT ON
 		--m1+a1<=m3
 		SELECT @ErrAcc = ''
 		
-		SELECT top 100 @ErrAcc = @ErrAcc + username +', '
-		FROM custinfo as ci WITH (NOLOCK) 
-			INNER JOIN CustSetting3rd as cs with (NOLOCK) on ci.custid = cs.custid AND cs.sporttype = @sporttype AND cs.bettype = @bettype
-		WHERE ci.mrecommend = @custid AND ci.roleid = 1
-			AND cs.mpositiontaking + cs.apositiontaking >@m3
-		GROUP BY username
-		
-		IF @ErrAcc<>''
+		SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
+		  FROM custinfo ci WITH(NOLOCK) 
+    INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON ci.custid = cs.custid
+                                             AND cs.sporttype = @sporttype
+                                             AND cs.bettype = @bettype
+		 WHERE ci.mrecommend = @custid
+		   AND ci.roleid     = 1
+		   AND ci.Enabled    = 1
+		   AND cs.mpositiontaking + cs.apositiontaking > @m3
+	  GROUP BY username
+
+		IF @ErrAcc <> ''
 		BEGIN			
-			SELECT @ErrMsg_Cur = CASE @Language 
-									WHEN 'E' THEN 'Existing members exceeded new master position taking ('+@ErrAcc+') .'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+').'
-							END, @ErrCode_Cur = 104
-							
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-					
+			SELECT @ErrMsg_Cur =
+			         CASE @Language 
+					   WHEN 'E' THEN 'Existing members exceeded new master position taking (' + @ErrAcc + ') .'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](20012, @Language) + ' (' + @ErrAcc + ').'
+					 END
+				 , @ErrCode_Cur = 104
+
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			     , @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
 			RETURN	
 		END
 		
@@ -475,7 +481,7 @@ SET NOCOUNT ON
 		END		
 		
 		--20131101@Johnson: apply execrep when update auto pt
-		EXEC dbo.Acc_CustSetting3rd_05
+		EXEC dbo.Acc_CustSetting3rd_05_xpre
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
@@ -570,7 +576,7 @@ SET NOCOUNT ON
 	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND
 		@Updateallmembers = 1 AND @is3=0
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_05
+		EXEC dbo.Acc_CustSetting3rd_05_xpre
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
@@ -612,7 +618,7 @@ SET NOCOUNT ON
 	
 	IF @UpdateAutoPositiontaking = 1 OR @UpdatePositiontaking = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07
+		EXEC dbo.Acc_CustSetting3rd_07_xpre
 			@srecommend = @srecommend , 
 			@mrecommend = @custid,
 			@roleid = 3,

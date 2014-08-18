@@ -1,15 +1,4 @@
-USE [CustDB]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterHR_Positiontaking]    Script Date: 07/29/2014 08:57:32 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_Positiontaking    Script Date: 12/5/2013 5:35:47 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_Positiontaking_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_Positiontaking_xpre]
 	@custid int,-- masterid	
 	@v151spositiontaking_31 smallmoney,
 	@v151spositiontaking_32 smallmoney,
@@ -333,31 +322,59 @@ inner join (select 151 as sporttype
 	END
 
 	--m1+a1<=m3
-	select @ErrAcc = ''
-	select top 100 @ErrAcc = @ErrAcc + username +', '
-	from 
-		custinfo as c with (NOLOCK) 
-		inner join CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
-		inner join (
-							select 	151 as sporttype, 31 as bettype, @v151mpositiontaking_31 as maxpositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-				union all	select 	151 as sporttype, 32 as bettype, @v151mpositiontaking_32 as maxpositiontaking WHERE @UpdatePositiontakingv151_31 = 1
-				union all	select 	151 as sporttype, 41 as bettype, @v151mpositiontaking_41 as maxpositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-				union all	select 	151 as sporttype, 42 as bettype, @v151mpositiontaking_42 as maxpositiontaking WHERE @UpdatePositiontakingv151_41 = 1
-				union all	select 	151 as sporttype, 51 as bettype, @v151mpositiontaking_51 as maxpositiontaking WHERE @UpdatePositiontakingv151_51 = 1
-				union all	select 	151 as sporttype, 52 as bettype, @v151mpositiontaking_52 as maxpositiontaking WHERE @UpdatePositiontakingv151_51 = 1
+	SELECT @ErrAcc = ''
 
-			) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	where c.mrecommend = @custid and c.roleid = 1 and (cs.apositiontaking+cs.mpositiontaking>b.maxpositiontaking )
-	group by username
-	if @ErrAcc<>''
+	SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
+	  FROM custinfo c WITH(NOLOCK) 
+INNER JOIN CustSetting3rd cs WITH(NOLOCK) on c.custid = cs.custid
+INNER JOIN (SELECT 151 AS sporttype
+                 , 31 AS bettype
+                 , @v151mpositiontaking_31 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_31 = 1
+
+  UNION ALL	SELECT 151 AS sporttype
+                 , 32 AS bettype
+                 , @v151mpositiontaking_32 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_31 = 1
+
+  UNION ALL	SELECT 151 AS sporttype
+                 , 41 AS bettype
+                 , @v151mpositiontaking_41 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_41 = 1
+
+  UNION ALL	SELECT 151 AS sporttype
+                 , 42 AS bettype
+                 , @v151mpositiontaking_42 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_41 = 1
+
+  UNION ALL	SELECT 151 AS sporttype
+                 , 51 AS bettype
+                 , @v151mpositiontaking_51 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_51 = 1
+
+  UNION ALL	SELECT 151 AS sporttype
+                 , 52 AS bettype
+                 , @v151mpositiontaking_52 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv151_51 = 1
+
+		   ) b ON cs.sporttype = b.sporttype
+		      AND cs.bettype = b.bettype
+	 WHERE c.mrecommend = @custid
+	   AND c.roleid     = 1
+	   AND c.Enabled    = 1
+	   AND cs.apositiontaking + cs.mpositiontaking > b.maxpositiontaking
+  GROUP BY username
+
+	IF @ErrAcc <> ''
 	BEGIN
-		select @ErrCode = 15
-		Select @ErrMsg = @UserName + ': ' + 
-					case @Language 
-							when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+').'
-					end
-		return
+		SELECT @ErrCode = 15
+
+		SELECT @ErrMsg = @UserName + ': '
+		               + CASE @Language 
+						   WHEN 'E' THEN 'Existing members exceeded new master position taking (' + @ErrAcc + ').'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20012, @Language) + ' (' + @ErrAcc + ').'
+    					 END
+		RETURN
 	END
 
 	--check m3<=m4
@@ -654,28 +671,48 @@ inner join (select 152 as sporttype
 	END
 
 	--m1+a1<=m3
-	select @ErrAcc = ''
-	select top 100 @ErrAcc = @ErrAcc + username +', '
-	from 
-		custinfo as c with (NOLOCK) 
-		inner join CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
-		inner join (
-							select 	152 as sporttype, 41 as bettype, @v152mpositiontaking_41 as maxpositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				union all	select 	152 as sporttype, 42 as bettype, @v152mpositiontaking_42 as maxpositiontaking WHERE @UpdatePositiontakingv152_41 = 1
-				union all	select 	152 as sporttype, 51 as bettype, @v152mpositiontaking_51 as maxpositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-				union all	select 	152 as sporttype, 52 as bettype, @v152mpositiontaking_52 as maxpositiontaking WHERE @UpdatePositiontakingv152_51 = 1
-			) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	where c.mrecommend = @custid and c.roleid = 1 and (cs.apositiontaking+cs.mpositiontaking>b.maxpositiontaking )
-	group by username
-	if @ErrAcc<>''
+	SELECT @ErrAcc = ''
+
+	SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
+	  FROM custinfo c WITH(NOLOCK) 
+INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON c.custid = cs.custid
+INNER JOIN (SELECT 152 AS sporttype
+                 , 41 AS bettype
+                 , @v152mpositiontaking_41 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv152_41 = 1
+
+  UNION ALL	SELECT 152 AS sporttype
+                 , 42 AS bettype
+                 , @v152mpositiontaking_42 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv152_41 = 1
+
+  UNION ALL	SELECT 152 AS sporttype
+                 , 51 AS bettype
+                 , @v152mpositiontaking_51 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv152_51 = 1
+
+  UNION ALL	SELECT 152 AS sporttype
+                 , 52 AS bettype
+                 , @v152mpositiontaking_52 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv152_51 = 1
+		   ) b ON cs.sporttype = b.sporttype
+		      AND cs.bettype = b.bettype
+	 WHERE c.mrecommend = @custid
+	   AND c.roleid     = 1
+	   AND c.Enabled    = 1
+	   AND cs.apositiontaking + cs.mpositiontaking > b.maxpositiontaking
+  GROUP BY username
+
+	IF @ErrAcc <> ''
 	BEGIN
-		select @ErrCode = 15
-		Select @ErrMsg = @UserName + ': ' + 
-					case @Language 
-							when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+ N') .'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20012,@Language) + ' ('+@ErrAcc+').'
-					end
-		return
+		SELECT @ErrCode = 15
+
+		SELECT @ErrMsg = @UserName + ': '
+		               + CASE @Language 
+						   WHEN 'E' THEN 'Existing members exceeded new master position taking (' + @ErrAcc + N') .'
+						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20012, @Language) + ' (' + @ErrAcc + ').'
+					     END
+		RETURN
 	END
 
 	--check m3<=m4
@@ -936,20 +973,32 @@ inner join (select 153 as sporttype
 	END
 
 	--m1+a1<=m3
-	select @ErrAcc = ''
-	select top 100 @ErrAcc = @ErrAcc + username +', '
-	from 
-		custinfo as c with (NOLOCK) 
-		inner join CustSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
-		inner join (
-							select 	153 as sporttype, 51 as bettype, @v153mpositiontaking_51 as maxpositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-				union all	select 	153 as sporttype, 52 as bettype, @v153mpositiontaking_52 as maxpositiontaking WHERE @UpdatePositiontakingv153_51 = 1
-			) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	where c.mrecommend = @custid and c.roleid = 1 and (cs.apositiontaking+cs.mpositiontaking>b.maxpositiontaking )
-	group by username
-	if @ErrAcc<>''
+	SELECT @ErrAcc = ''
+
+	SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
+	  from custinfo c WITH(NOLOCK) 
+INNER JOIN CustSetting3rd cs WITH(NOLOCK) ON c.custid = cs.custid
+INNER JOIN (SELECT 153 AS sporttype
+                 , 51 AS bettype
+                 , @v153mpositiontaking_51 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv153_51 = 1
+
+  UNION ALL	SELECT 153 AS sporttype
+                 , 52 AS bettype
+                 , @v153mpositiontaking_52 AS maxpositiontaking
+             WHERE @UpdatePositiontakingv153_51 = 1
+		   ) b ON cs.sporttype = b.sporttype
+		      AND cs.bettype = b.bettype
+	 WHERE c.mrecommend = @custid
+	   AND c.roleid     = 1
+	   AND c.Enabled    = 1
+	   AND cs.apositiontaking + cs.mpositiontaking > b.maxpositiontaking
+  GROUP BY username
+
+	IF @ErrAcc <> ''
 	BEGIN
-		select @ErrCode = 15
+		SELECT @ErrCode = 15
+
 		Select @ErrMsg = @UserName + ': ' + 
 					case @Language 
 							when 'E' then 'Existing members exceeded new master position taking ('+@ErrAcc+') .'
@@ -1333,7 +1382,7 @@ BEGIN
 END
 
 ---20131105@Johnson: Apply execrep when update pt on members
-EXEC dbo.Acc_CustSetting3rd_05 
+EXEC dbo.Acc_CustSetting3rd_05_xpre
 	@srecommend = @srecommend,
 	@mrecommend = @custid,
 	@roleid = 3,
@@ -2105,7 +2154,7 @@ BEGIN --@UpdatePositiontakingv153
 END--@UpdatePositiontakingv153
 */
 
-EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @srecommend, @mrecommend = @custid, @roleid = 3, @mode = 'horse'
+EXEC dbo.Acc_CustSetting3rd_07_xpre @srecommend = @srecommend, @mrecommend = @custid, @roleid = 3, @mode = 'horse'
 /*
 EXEC dbo.Acc_CustomerUpdMasterHR_MaxPositiontaking @mrecommend = @custid
 

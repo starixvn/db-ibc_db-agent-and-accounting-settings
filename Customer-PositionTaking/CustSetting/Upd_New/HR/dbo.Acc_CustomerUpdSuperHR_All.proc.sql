@@ -1,17 +1,4 @@
-USE [CustDB]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperHR_All]    Script Date: 07/29/2014 08:39:07 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperHR_All    Script Date: 12/5/2013 5:35:48 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperHR_All    Script Date: 7/23/2013 6:12:54 PM ******/
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_All_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_All_xpre]
 	@custid int,-- superid
 	@UserID int = 0,
 	
@@ -564,7 +551,7 @@ END
 IF @UpdatePositiontaking = 1
 BEGIN 
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdSuperHR_Positiontaking 
+				EXEC dbo.Acc_CustomerUpdSuperHR_Positiontaking_xpre
 		@custid = @custid,
 		@v151spositiontaking_31 = @v151spositiontaking_31,
 		@v151spositiontaking_32 = @v151spositiontaking_32,
@@ -631,5 +618,3 @@ END
 RETURN
 
 GO
-
-

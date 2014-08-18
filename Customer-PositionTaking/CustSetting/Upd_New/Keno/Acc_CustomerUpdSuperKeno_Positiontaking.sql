@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking_xpre]
 	@custid INT,-- superid	
 	@sporttype INT = 202,
 	@bettype INT,
@@ -17,7 +17,9 @@ AS
 	Task : Update Keno's Super PT 
 	DB: DBTXN/CustDB
 	Revisions:
-				
+
+	    - 20140818@Logan:   Exclude disabled members while checking constraints for Super [Redmine: #19631]
+
 	Param's Explanation:
 	• @ErrCode is:
 			= 0: Transaction recorded successfully.
@@ -64,8 +66,8 @@ BEGIN
 	DECLARE @old_spositiontaking SMALLMONEY
 
 	SELECT @old_spositiontaking = spositiontaking 
-	FROM CustSettingGame WITH(NOLOCK)
-	WHERE Custid = @custid AND sporttype = @sporttype AND bettype = @bettype
+      FROM CustSettingGame WITH(NOLOCK)
+     WHERE Custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 
 	--check if not change value
 	IF @old_spositiontaking = @s4
@@ -88,9 +90,9 @@ BEGIN
 	SELECT @ErrAcc = ''
 
 	SELECT TOP 100 @ErrAcc = @ErrAcc + ci.username + ', '
-	FROM CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN custinfo ci WITH(NOLOCK) ON ci.custid = cs.custid 
-	WHERE ci.srecommend = @custid AND ci.roleid = 3
+      FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN custinfo ci WITH(NOLOCK) ON ci.custid = cs.custid 
+     WHERE ci.srecommend = @custid AND ci.roleid = 3
 		AND cs.sporttype = @sporttype AND bettype = @bettype
 		AND ((cs.isautopositiontaking = 0 AND cs.spositiontaking + cs.mpositiontaking > @s4)
 			OR (cs.isautopositiontaking = 1 AND (cs.mpositiontaking > @s4 OR cs.autopositiontaking > @s4)))
@@ -98,8 +100,8 @@ BEGIN
 	BEGIN
 		Select @ErrMsg =
 					case @Language 
-							when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+').'
+							when 'E' then 'Existing masters exceeded new super position taking (' + @ErrAcc + ').'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' (' + @ErrAcc + ').'
 					end, @ErrCode = 103
 		return
 	END
@@ -107,27 +109,36 @@ BEGIN
 	--check all s1+m1+a1 <= s4
 	--check all u1<=s4 if i1=1
 	SELECT @ErrAcc = ''
+
 	SELECT @ErrAcc = @ErrAcc + ci.username + ', '	
-	FROM CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-	WHERE ci.srecommend = @custid AND ci.roleid = 1
-		AND cs.sporttype = @sporttype AND bettype = @bettype
-		AND (cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > @s4
-			OR (cs.isautopositiontaking = 1 AND cs.autopositiontaking > @s4))
+      FROM CustSettingGame cs WITH(NOLOCK)
+INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+     WHERE ci.srecommend = @custid
+       AND ci.roleid     = 1
+       AND ci.Enabled    = 1
+	   AND cs.sporttype  = @sporttype
+	   AND cs.Bettype    = @bettype
+	   AND (cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > @s4
+			OR (cs.isautopositiontaking = 1
+			    AND cs.autopositiontaking > @s4
+			   )
+		   )
 
 	IF @ErrAcc <> ''
 	BEGIN
 		SELECT @ErrMsg =
-					CASE @Language 
-							WHEN 'E' THEN 'Existing members exceeded new super position taking ('+@ErrAcc+').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20014,@Language) + ' ('+@ErrAcc+').'
-					end, @ErrCode = 104
+				 CASE @Language 
+				   WHEN 'E' THEN 'Existing members exceeded new super position taking (' + @ErrAcc + ').'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](20014, @Language) + ' (' + @ErrAcc + ').'
+				 END
+			 , @ErrCode = 104
 		RETURN
 	END
 
+
 	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
 	SET spositiontaking = @s4
-	WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
+     WHERE custid = @custid AND sporttype = @sporttype AND bettype = @bettype
 
 	IF (@@ERROR <> 0)
 	BEGIN
@@ -142,7 +153,7 @@ BEGIN
 
 	--u = (i3 or i1)?(u3 or u1)
 	--s1 = min(s4-m1-a1, u)
-		EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
+		EXEC dbo.Acc_CustSetting3rd_07_xpre @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
 	
 	Declare @LogSPData varchar(MAX),
 			@TrackingValueDB varchar(4000)
@@ -207,8 +218,8 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking_xpre] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]  TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking_xpre]  TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking_xpre] TO [vnteam] AS [dbo]

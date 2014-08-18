@@ -1,23 +1,13 @@
-USE [CustDB]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustSetting_06]    Script Date: 07/25/2014 15:19:24 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [dbo].[Acc_CustSetting_06_xpre]
-	@CustId int,
-	@RoleId int,
-	@groupa decimal(9,8)= 0,
-	@groupb decimal(9,8)= 0,
-	@groupc DECIMAL(9,8) = 0,
-	@groupd DECIMAL(9,8) = 0,
-	@discountcs DECIMAL(9,8) = 0,
-	@discountHRFixedOdds DECIMAL(9,8) = 0,	 
-	@discount1x2 DECIMAL(9,8) = 0
+ALTER PROCEDURE [dbo].[Acc_CustSetting_06_xpre]
+	@CustId              INT
+  , @RoleId              INT
+  , @groupa              DECIMAL(9, 8) = 0
+  , @groupb              DECIMAL(9, 8) = 0
+  , @groupc              DECIMAL(9, 8) = 0
+  , @groupd              DECIMAL(9, 8) = 0
+  , @discountcs          DECIMAL(9, 8) = 0
+  , @discountHRFixedOdds DECIMAL(9, 8) = 0
+  ,	@discount1x2         DECIMAL(9, 8) = 0
 
 AS
 	/*
@@ -120,48 +110,60 @@ BEGIN
 		   AND groupd > @groupd
 
 		--Update g4 to Member level
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			sdiscount = CASE WHEN c.ugroup IN ('a','hka','dea') THEN @groupa 
-							 WHEN c.ugroup IN ('b','hkb','deb') THEN @groupb 
-							 WHEN c.ugroup IN ('c','hkc','dec') THEN @groupc 
-							 WHEN c.ugroup IN ('d','hkd','ded') THEN @groupd ELSE @groupa END 
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND custsetting.bettype IN(1,2,3,7,8) 
+		UPDATE cs WITH (ROWLOCK, UPDLOCK) 
+		   SET sdiscount =
+		         CASE
+		           WHEN c.ugroup IN ('a', 'hka', 'dea') THEN @groupa 
+                   WHEN c.ugroup IN ('b', 'hkb', 'deb') THEN @groupb 
+				   WHEN c.ugroup IN ('c', 'hkc', 'dec') THEN @groupc 
+				   WHEN c.ugroup IN ('d', 'hkd', 'ded') THEN @groupd
+				   ELSE @groupa
+				 END 
+		  FROM custsetting cs
+    INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+    INNER JOIN Customer c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid 
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND ci.Enabled = 1
+		   AND cs.bettype IN (1, 2, 3, 7, 8) 
 
 	
 		--Update s4 to member level
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			sdiscount =  @discountcs 
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND bettype IN(4,6,9,10,20,21,22,9999) and sporttype <> 154
-	
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET sdiscount = @discountcs 
+		  FROM custsetting cs
+    INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.bettype IN (4, 6, 9, 10, 20, 21, 22, 9999)
+		   AND cs.sporttype <> 154
+
+
 		--Update s4 to member level --1x2
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			sdiscount =  @discount1x2 
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET sdiscount = @discount1x2 
+		  FROM custsetting cs
+    INNER JOIN custinfo c WITH (NOLOCK) ON cs.custid = c.custid
 		WHERE c.srecommend = @custid
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND bettype = 5
+		  AND c.recommend <> 52466
+		  AND c.roleid = 1
+		  AND c.Enabled = 1
+		  AND cs.bettype = 5
 		
 		--Update s4 to member level --HRFixedOdds
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			sdiscount =  @discountHRFixedOdds
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND bettype = 20  and sporttype = 154
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET sdiscount = @discountHRFixedOdds
+		  FROM custsetting cs
+    INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.bettype = 20
+		   AND cs.sporttype = 154
 	
 		--Update m3=s4 if m3>s4
 		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
@@ -229,31 +231,36 @@ BEGIN
 		   AND discount      > @discountHRFixedOdds
 
 		--At member level, update adiscount = sdiscount  if adiscount > sdiscount
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			adiscount = sdiscount
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid 
-			AND c.roleid = 1 
-			AND custsetting.adiscount>custsetting.sdiscount
-	
+		UPDATE cs WITH (ROWLOCK, UPDLOCK) 
+		   SET adiscount = sdiscount
+		  FROM custsetting cs
+    INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+	       AND cs.adiscount > cs.sdiscount
+
+
 		--At member level, update discount = adiscount  if discount > adiscount
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			discount = adiscount
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid 
-			AND c.roleid = 1 
-			AND custsetting.discount>custsetting.adiscount
-	
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET discount = adiscount
+		  FROM custsetting cs
+    INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid 
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.discount > cs.adiscount
+
+
 		--At member level, update playerdiscount = discount  if playerdiscount > discount
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			playerdiscount = discount
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.srecommend = @custid 
-			AND c.roleid = 1 
-			AND custsetting.playerdiscount>custsetting.discount	
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET playerdiscount = discount
+		  FROM custsetting cs
+    INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.srecommend = @custid
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.playerdiscount > cs.discount	
 	END
 	
 	IF @RoleId = 3
@@ -335,65 +342,81 @@ BEGIN
 		   and sporttype     = 154
 
 		--Update g3 @ member level
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			adiscount = CASE WHEN c.ugroup IN ('a','hka','dea') THEN @groupa 
-							 WHEN c.ugroup IN ('b','hkb','deb') THEN @groupb 
-							 WHEN c.ugroup IN ('c','hkc','dec') THEN @groupc 
-							 WHEN c.ugroup IN ('d','hkd','ded') THEN @groupd ELSE @groupa END 
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND custsetting.bettype IN (1,2,3,7,8) 
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET adiscount =
+		         CASE
+		           WHEN c.ugroup IN ('a', 'hka', 'dea') THEN @groupa 
+				   WHEN c.ugroup IN ('b', 'hkb', 'deb') THEN @groupb 
+				   WHEN c.ugroup IN ('c', 'hkc', 'dec') THEN @groupc 
+				   WHEN c.ugroup IN ('d', 'hkd', 'ded') THEN @groupd
+				   ELSE @groupa
+				 END
+		  FROM custsetting cs
+    INNER JOIN customer c WITH(NOLOCK) ON cs.custid = c.custid
+    INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+		 WHERE c.mrecommend = @custid
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND ci.Enabled = 1
+		   AND cs.bettype IN (1, 2, 3, 7, 8) 
+
 
 		--Update m3 @ member level
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			adiscount = @discountcs
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND custsetting.bettype IN (4,6,9,10,20,21,22,9999) and sporttype <> 154
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET adiscount = @discountcs
+		  FROM custsetting cs
+    INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.mrecommend = @custid
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.bettype IN (4, 6, 9, 10, 20, 21, 22, 9999)
+		   AND cs.sporttype <> 154
 
 		--Update m3 @ member level --1x2 
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			adiscount = @discount1x2
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND custsetting.bettype = 5
+		UPDATE cs WITH (ROWLOCK, UPDLOCK) 
+		   SET adiscount = @discount1x2
+		  FROM custsetting cs
+    INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.mrecommend = @custid
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.bettype = 5
 
 		--Update m3 @ member level --HRFixedOdds
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			adiscount = @discountHRFixedOdds
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.recommend <> 52466
-			AND c.roleid = 1 
-			AND custsetting.bettype = 20 and sporttype = 154
-			
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET adiscount = @discountHRFixedOdds
+		  FROM custsetting cs
+    INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.mrecommend = @custid 
+		   AND c.recommend <> 52466
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.bettype = 20
+		   AND cs.sporttype = 154
+
+
 		--At member level, update discount = adiscount  if discount > adiscount
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			discount = adiscount
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.roleid = 1 
-			AND custsetting.discount>custsetting.adiscount 
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET discount = adiscount
+		  FROM custsetting cs
+    INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.mrecommend = @custid
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.discount > cs.adiscount
 
 		--At member level, update playerdiscount = discount if playerdiscount > discount
-		UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
-		SET 	
-			playerdiscount = discount
-		FROM custsetting INNER JOIN customer AS c WITH (NOLOCK) ON custsetting.custid = c.custid
-		WHERE c.mrecommend = @custid 
-			AND c.roleid = 1 
-			AND custsetting.playerdiscount>custsetting.discount 
+		UPDATE cs WITH(ROWLOCK, UPDLOCK) 
+		   SET playerdiscount = discount
+		  FROM custsetting cs
+    INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid
+		 WHERE c.mrecommend = @custid
+		   AND c.roleid = 1
+		   AND c.Enabled = 1
+		   AND cs.playerdiscount > cs.discount
+
 	END
 	IF @RoleId = 2
 	BEGIN

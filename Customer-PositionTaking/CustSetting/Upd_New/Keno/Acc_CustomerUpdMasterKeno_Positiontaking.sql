@@ -1,14 +1,4 @@
-USE [CustDB]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]    Script Date: 07/21/2014 12:53:52 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking_xpre]
 (
 	@CustId INT
 	, @SportType INT = 202
@@ -41,7 +31,7 @@ AS
 	DB: DBTXN/CustDB
 		
 	Revisions:
-	    - 20140729@Logan: 1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
+	    - 20140729@Logan: 1.Exclude disabled agents, members while updating master setting [Redmine: #19631]
 			              2.Code aligning on modified parts
 
 	Parameters Explanation:
@@ -75,12 +65,12 @@ BEGIN
 		, @Old_MPositionTaking = mpositiontaking
 		, @Old_IsAuto_SPositionTaking = isautopositiontaking
 		, @Old_Auto_SPositionTaking = autopositiontaking
-	FROM dbo.CustSettingGame WITH(NOLOCK)
-	WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType
+      FROM dbo.CustSettingGame WITH(NOLOCK)
+     WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType
 
 	SELECT @username = username , @srecommend = srecommend
-	FROM dbo.CustInfo WITH(NOLOCK)
-	WHERE custid = @custid
+      FROM dbo.CustInfo WITH(NOLOCK)
+     WHERE custid = @custid
 
 	--check if not change value
 	IF(@Old_SPositionTaking = @s3
@@ -99,13 +89,14 @@ BEGIN
 		RETURN
 	END
 
+
 	SELECT @ErrType = ''
 	--check n4<=s3+m3<=s4, s3<=s4 if i3 = 0, 
 	--m3<=s4 and u3+m3>=n4 if i3 = 1
 	SELECT @ErrType = @ErrType + 'Min: ' + CAST(co.minpositiontaking AS VARCHAR(10)) + ' -Max: ' + CAST(cs.spositiontaking AS VARCHAR(10)) + '<br>'
-	FROM dbo.CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN dbo.CustOverrideGame co WITH(NOLOCK) ON cs.custid = co.custid AND cs.bettype = co.bettype AND cs.sporttype = co.sporttype 
-	WHERE cs.custid = @srecommend 
+      FROM dbo.CustSettingGame cs WITH(NOLOCK)
+INNER JOIN dbo.CustOverrideGame co WITH(NOLOCK) ON cs.custid = co.custid AND cs.bettype = co.bettype AND cs.sporttype = co.sporttype 
+     WHERE cs.custid = @srecommend 
 		AND cs.bettype = @BetType
 		AND cs.sporttype = @SportType
 		AND ((@is3 > 0 
@@ -124,6 +115,7 @@ BEGIN
 		RETURN
 	END
 
+
 	--a2+m2<=m3
 	SELECT @ErrAcc = ''
 
@@ -133,36 +125,44 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 	 WHERE ci.mrecommend = @custid
 	   AND ci.roleid     = 2
 	   AND ci.Enabled    = 1
-	   AND cs.bettype = @BetType
-	   AND cs.sporttype = @SportType
+	   AND cs.bettype    = @BetType
+	   AND cs.sporttype  = @SportType
 	   AND cs.mpositiontaking + cs.apositiontaking > @m3
 
 	IF @ErrAcc <> ''
 	BEGIN		
-		SELECT @ErrMsg = CASE @Language
-		                   WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
-						   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
-						 END
+		SELECT @ErrMsg =
+		         CASE @Language
+		           WHEN 'E' THEN 'Existing agents exceeded new master position taking (' + @ErrAcc + ') .'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](20011, @Language) + ' (' + @ErrAcc + ').'
+				 END
 			 , @ErrCode = 102
 		RETURN
 	END
 
 	--a1+m1<=m3
 	SELECT @ErrAcc = ''
+
 	SELECT TOP 100 @ErrAcc = @ErrAcc + Username + ', '
-	FROM dbo.CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-	WHERE ci.mrecommend = @custid AND ci.roleid = 1
-		AND cs.bettype = @BetType AND cs.sporttype = @SportType
-		AND cs.mpositiontaking + cs.apositiontaking > @m3 
+      FROM dbo.CustSettingGame cs WITH(NOLOCK)
+INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+     WHERE ci.mrecommend = @custid
+       AND ci.roleid     = 1
+       AND ci.Enabled    = 1
+	   AND cs.bettype    = @BetType
+	   AND cs.sporttype  = @SportType
+	   AND cs.mpositiontaking + cs.apositiontaking > @m3 
 
 	IF @ErrAcc <> ''
 	BEGIN	
-		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Existing members exceeded new master position taking (' + @ErrAcc + ').'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20012, @Language) + ' ('+@ErrAcc+').' END
+		SELECT @ErrMsg =
+		         CASE @Language
+		           WHEN 'E' THEN 'Existing members exceeded new master position taking (' + @ErrAcc + ').'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](20012, @Language) + ' (' + @ErrAcc + ').' END
 			, @ErrCode = 103
 		RETURN
 	END
+
 
 	--m3>=u2
 	SELECT @ErrAcc = ''
@@ -191,8 +191,8 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 	--check u3<=s4
 	SELECT @ErrType = ''
 	SELECT @ErrType = @ErrType + 'Max: ' + CAST (cs.spositiontaking AS VARCHAR(10)) + '<br>'
-	FROM dbo.CustSettingGame cs WITH(NOLOCK)		
-	WHERE custid = @srecommend
+      FROM dbo.CustSettingGame cs WITH(NOLOCK)		
+     WHERE custid = @srecommend
 		AND cs.bettype = @BetType AND cs.sporttype = @SportType
 		AND @us3 > spositiontaking 
 
@@ -209,7 +209,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 	BEGIN
 		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
 		SET spositiontaking = @s3, mpositiontaking = @m3
-		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
+	     WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 
 		IF (@@ERROR <> 0)
 		BEGIN
@@ -226,7 +226,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 		--Update Master Agent account (autopositiontaking field)
 		UPDATE dbo.CustSettingGame WITH(UPDLOCK, ROWLOCK)
 		SET autopositiontaking = @us3, isautopositiontaking = @is3
-		WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
+	     WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType 
 	
 		IF @@ERROR <> 0
 		BEGIN
@@ -237,7 +237,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 			RETURN
 		END
 	
-		EXEC dbo.Acc_CustSetting3rd_05
+		EXEC dbo.Acc_CustSetting3rd_05_xpre
 			@srecommend = @srecommend
 			, @mrecommend = @custid
 			, @roleid = 3
@@ -255,7 +255,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 	--apply new value position taking for super on members
 	IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @is3 = 0
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_05
+		EXEC dbo.Acc_CustSetting3rd_05_xpre
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
@@ -272,7 +272,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 
 	IF @UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07 
+		EXEC dbo.Acc_CustSetting3rd_07_xpre
 			@srecommend = @srecommend,
 			@mrecommend = @custid,
 			@roleid = 3,
