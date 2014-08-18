@@ -1,16 +1,4 @@
-USE [CustDB]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperKeno]    Script Date: 07/21/2014 10:57:19 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_xtest    Script Date: 6/19/2014 10:30:06 AM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_xpre]
 	@custid INT,-- superid	
 	@sporttype INT = 202,
 	@bettype INT,
@@ -106,18 +94,18 @@ BEGIN
 
 	IF @UpdatePositiontaking = 1
 	BEGIN
-	    EXEC Acc_CustomerUpdSuperKeno_Positiontaking
-	        @custid = @custid,
-	        @sporttype = @sporttype,
-	        @bettype = @bettype,
-	        @s4 = @s4,
-	        @IP = @IP,
-	        @SubAccID = @SubAccID,
-	        @UserID = @userid,
-	        @Language = @Language,
-	        @ErrCode = @ErrCode_Cur OUTPUT,
-	        @ErrMsg	= @ErrMsg_Cur OUTPUT
-	
+	    EXEC Acc_CustomerUpdSuperKeno_Positiontaking_xpre
+	        @custid = @custid
+	      , @sporttype = @sporttype
+	      , @bettype = @bettype
+	      , @s4 = @s4
+	      , @IP = @IP
+	      , @SubAccID = @SubAccID
+	      , @UserID = @userid
+	      , @Language = @Language
+	      , @ErrCode = @ErrCode_Cur OUTPUT
+	      , @ErrMsg	= @ErrMsg_Cur OUTPUT
+
 		IF @ErrCode_Cur <> 0
 		BEGIN
 			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7), @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
@@ -132,7 +120,7 @@ BEGIN
 
 	IF @UpdateMinPositiontaking = 1
 	BEGIN
-	    EXEC Acc_CustOverrideUpdKeno
+	    EXEC Acc_CustOverrideUpdKeno_xpre
 	        @custid = @custid,
 	        @sporttype = @sporttype,
 	        @bettype = @bettype,
@@ -154,7 +142,4 @@ BEGIN
 			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 	END
 END
-
 GO
-
-
