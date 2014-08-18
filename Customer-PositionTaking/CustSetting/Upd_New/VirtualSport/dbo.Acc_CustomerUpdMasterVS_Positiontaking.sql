@@ -409,7 +409,7 @@ SET NOCOUNT ON
 	-- update min PT
 	IF @UpdateMinPositiontaking = 1
 	BEGIN				
-		EXEC Acc_CustOverrideUpdVS 
+		EXEC Acc_CustOverrideUpdVS_xpre
 			@custid		= @custid, 
 			@sporttype	= @sporttype,
 			@bettype	= @bettype,
