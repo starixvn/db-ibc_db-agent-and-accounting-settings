@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_xpre]
 (
 	@CustId INT --Master
 	, @SportType INT = 202
@@ -64,7 +64,7 @@ BEGIN
 
 	IF @UpdateCommission = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMasterKeno_Commission @custid = @custid
+				EXEC dbo.Acc_CustomerUpdMasterKeno_Commission_xpre @custid = @custid
 			, @Discount	= @Discount
 			, @BetType = @BetType
 			, @SportType = @SportType
@@ -98,7 +98,7 @@ BEGIN
 
 	IF @UpdateMinPositiontaking = 1
 	BEGIN
-				EXEC dbo.Acc_CustOverrideUpdKeno @custid = @custid
+				EXEC dbo.Acc_CustOverrideUpdKeno_xpre @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
 			, @Min_Positiontaking = @n3
