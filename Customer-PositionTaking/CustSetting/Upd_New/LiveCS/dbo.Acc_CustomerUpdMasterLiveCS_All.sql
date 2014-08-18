@@ -207,7 +207,7 @@ END
 		
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
-				EXEC Acc_CustOverrideUpdLiveCS 
+				EXEC Acc_CustOverrideUpdLiveCS_xpre
 		@custid		= @custid, 
 		@UplineID	=  @srecommend ,
 		@min_v162positiontaking_1101 = @v162mpositiontaking_1101_min, 
