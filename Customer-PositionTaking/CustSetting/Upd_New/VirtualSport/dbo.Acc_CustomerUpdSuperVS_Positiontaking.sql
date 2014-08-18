@@ -419,7 +419,7 @@ INNER JOIN (SELECT @sporttype AS sporttype
 	*/
 	
 	--Update l4=s4
-		EXEC Acc_CustOverrideUpdVS @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_max = @s4, @UpdateMinPos=0, @UpdateMaxPos = 1, @IP = @IP ,@UserID = @userid, @WriteLog = 0, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
+		EXEC Acc_CustOverrideUpdVS_xpre @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_max = @s4, @UpdateMinPos=0, @UpdateMaxPos = 1, @IP = @IP ,@UserID = @userid, @WriteLog = 0, @Language = @Language, @ErrCode	= @ErrCode_Cur OUTPUT, @ErrMsg	=@ErrMsg_Cur OUTPUT
 
 	if (@@error <> 0)
 	begin
