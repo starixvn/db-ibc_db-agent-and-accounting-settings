@@ -2777,7 +2777,7 @@ INNER JOIN (SELECT 161 AS sporttype
     */
 
     --Update l4=s4
-    EXEC dbo.Acc_CustoverrideUpd
+    EXEC dbo.Acc_CustOverrideUpd_xpre
 		    @custid = @custid,
 		    @minpositiontaking_1 = 0,
 		    @minpositiontaking_2 = 0,
