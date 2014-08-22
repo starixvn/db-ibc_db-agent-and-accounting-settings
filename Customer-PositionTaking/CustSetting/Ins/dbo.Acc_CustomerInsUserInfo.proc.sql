@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [Acc_CustomerInsUserInfo]
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerInsUserInfo    Script Date: 8/19/2014 12:42:20 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerInsUserInfo_xpre    Script Date: 7/31/2014 4:46:43 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerInsUserInfo]
 	@custid INT OUTPUT,
 	@firstname NVARCHAR(50),
 	@lastname NVARCHAR(50),
@@ -154,6 +161,7 @@ Revisions:
 	- 20131120@Johnson: Add virtual greyhounds, virtual motor racing
 	- 20140303@Patrick: Add more field HideKeno
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20140709@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
 	
 
 Param's Explanation:
@@ -192,28 +200,47 @@ BEGIN
 	RETURN
 END
 
-DECLARE	@UplineSecurityCode				VARCHAR(50)
-		,@isForcedChangeSecurityCode	BIT
+DECLARE	@UplineSecurityCode			 VARCHAR(50)
+	  , @isForcedChangeSecurityCode BIT
 
-SELECT	 @UplineSecurityCode			= NULL
-		,@isForcedChangeSecurityCode	= 0
+SELECT @UplineSecurityCode		 = NULL
+	 , @isForcedChangeSecurityCode = 0
 
 IF @roleid = 4
 BEGIN
+    SELECT @isForcedChangeSecurityCode = CASE
+                                           WHEN site LIKE '789y%' THEN 0
+                                           ELSE 1
+                                         END
+      FROM Customer WITH(NOLOCK)
+     WHERE custid = @custid
 
-	SET @srecommend = @custid 
-	UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET srecommend = @custid WHERE custId = @CustID
+	SET @srecommend = @custid
+	UPDATE Customer WITH(ROWLOCK, UPDLOCK)
+	   SET srecommend = @custid
+	 WHERE custId = @CustID
 
-	INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption) 
-	VALUES(@CustID,0,0,0,0,0,0, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END)
+	INSERT INTO CustSuper
+	(
+	    custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU,
+	    AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption
+	)
+	VALUES
+	(
+	    @CustID, 0, 0, 0,
+	    0, 0, 0, @IsInternal, CASE
+	                            WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0)
+	                            ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0))
+	                          END
+    )
 	
 END
 ELSE IF @roleid = 3
 BEGIN
-
-	SELECT	@UplineSecurityCode = SecurityCode
-	FROM	dbo.CustLoginInfo WITH (NOLOCK)
-	WHERE	CustID = @srecommend
+	SELECT @UplineSecurityCode = SecurityCode,
+	       @isForcedChangeSecurityCode = isForcedChangeSecurityCode
+	  FROM dbo.CustLoginInfo WITH(NOLOCK)
+	 WHERE CustID = @srecommend
 
 	SET @mrecommend = @custid 
 	UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET mrecommend = @custid WHERE custId = @CustID
@@ -224,9 +251,10 @@ END
 ELSE IF @roleid = 2
 BEGIN
 
-	SELECT	@UplineSecurityCode = SecurityCode
-	FROM	dbo.CustLoginInfo WITH (NOLOCK)
-	WHERE	CustID = @mrecommend
+	SELECT @UplineSecurityCode = SecurityCode,
+	       @isForcedChangeSecurityCode = isForcedChangeSecurityCode
+	  FROM dbo.CustLoginInfo WITH(NOLOCK)
+	 WHERE CustID = @mrecommend
 
 	SET @recommend = @custid
 	UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET recommend = @custid WHERE custId = @CustID
@@ -238,11 +266,11 @@ END
 IF @@ERROR <> 0
 BEGIN
 	SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN 'Create customer failed. Please try again.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-						END,
-		@ErrCode = 112
-		
+					   WHEN 'E' THEN 'Create customer failed. Please try again.'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+					 END
+		 , @ErrCode = 112
+
 	-- ROLLBACK MANUALLY
 	IF @RoleID = 4
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
@@ -250,45 +278,48 @@ BEGIN
 		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
 	ELSE IF @RoleID = 2
 		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
-		
+
 	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
-			
+
 	RETURN
 END
 
 IF @roleid BETWEEN 2 AND 4 
 BEGIN
-	IF	@UplineSecurityCode IS NOT NULL 
-		SELECT	@isForcedChangeSecurityCode = 1 
+	IF @UplineSecurityCode IS NOT NULL OR @isForcedChangeSecurityCode = 1
+		SELECT @isForcedChangeSecurityCode = 1
 
-	INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
-		,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
+	INSERT INTO dbo.CustLoginInfo
+	(
+	    CustID, OldUserPwd, LastChangedPwdDate, isFirstLogin, SecurityCodeCount,
+	    SecurityCode, isForcedChangeSecurityCode, LastChangedSecurityCodeDate
 	)
-	VALUES(@custid,NULL,GETDATE(),1
-		,0,NULL,@isForcedChangeSecurityCode,NULL
+	VALUES
+	(
+	    @custid, NULL, GETDATE(), 1, 0,
+	    NULL, @isForcedChangeSecurityCode, NULL
 	)
-	
+
 	IF @@ERROR <> 0
-	BEGIN 
-		SELECT	@ErrMsg = CASE @Language 
+	BEGIN
+		SELECT	@ErrMsg = CASE @Language
 								WHEN 'E' THEN 'Create customer failed. Please try again.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
 							END
 				,@ErrCode = 115
+
 		IF @RoleID = 4
 			DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
 		ELSE IF @RoleID = 3
 			DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
 		ELSE IF @RoleID = 2
 			DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
-			
+
 		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
 
-		RETURN		
-		
-	END 
+		RETURN
+	END
 END
-
 
 INSERT INTO [dbo].[custinfo](
 	[custId], [currency], [maxpermatch], [maxpermatch2], [maxpermatch3], [maxpermatch5], [maxpermatch8], [maxpermatch10], [maxpermatch11], [maxpermatch201],[maxpermatch151],[maxpermatch151_OT], MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, [maxpermatch99]
@@ -306,17 +337,17 @@ VALUES(
 IF @@ERROR <> 0
 BEGIN 
 --	DELETE customer with (ROWLOCK) where custid =  @custid
-	SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN 'Create customer failed. Please try again.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-						END,
-				@ErrCode = 113
-				
+	SELECT @ErrMsg = CASE @Language
+					   WHEN 'E' THEN 'Create customer failed. Please try again.'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+					 END,
+		   @ErrCode = 113
+
 	-- ROLLBACK MANUALLY
 	IF @RoleID = 4
 	BEGIN
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
-		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
+		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID
 	END
 	ELSE IF @RoleID = 3
 	BEGIN
@@ -327,18 +358,22 @@ BEGIN
 	BEGIN
 		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
 		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
-
 	END
-		
+
 	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
 
 	RETURN
 END
-
-
-
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet] AS [dbo]
+
+SET QUOTED_IDENTIFIER OFF 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsUserInfo] TO [vnteam] AS [dbo]
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsUserInfo] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsUserInfo] TO [bodbAdminNet]
+GO 
