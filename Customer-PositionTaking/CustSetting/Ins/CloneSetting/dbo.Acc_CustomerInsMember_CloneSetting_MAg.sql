@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_MAg]
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_MAg    Script Date: 8/19/2014 12:42:20 PM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_MAg]
 	@Custid int output
 	,@UserName varchar(30)
 	,@Userpwd varchar(40)
@@ -49,6 +56,7 @@ AS
 	- 20140402@Dom: Add more sport: 183,185 for Virtual sport
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
 	- 20140619@Johnson: check IP valid to create downlines [RedmineID: #17746]
+	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -495,24 +503,29 @@ BEGIN
 		RETURN
 	END
 	
-	DECLARE	 @UplineSecurityCode			VARCHAR(50)
-			,@isForcedChangeSecurityCode	BIT
-			
-	SELECT	@UplineSecurityCode				= NULL
-			,@isForcedChangeSecurityCode	= 0
+	DECLARE	@UplineSecurityCode			VARCHAR(50)
+		  , @isForcedChangeSecurityCode	BIT
 
-	SELECT	@UplineSecurityCode	= SecurityCode
-	FROM	dbo.CustLoginInfo WITH (NOLOCK)
-	WHERE	CustID = @MRecommend 
-	
-	IF	@UplineSecurityCode IS NOT NULL 
-		SELECT	@isForcedChangeSecurityCode = 1  -- Force Set Security Code when login
+	SELECT @UplineSecurityCode				= NULL
+		 , @isForcedChangeSecurityCode	= 0
 
-	INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
-		,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
+	SELECT @UplineSecurityCode = SecurityCode
+	     , @isForcedChangeSecurityCode = isForcedChangeSecurityCode
+      FROM dbo.CustLoginInfo WITH(NOLOCK)
+	 WHERE CustID = @MRecommend
+
+	IF @UplineSecurityCode IS NOT NULL OR @isForcedChangeSecurityCode = 1
+		SELECT @isForcedChangeSecurityCode = 1  -- Force Set Security Code when login
+
+	INSERT INTO dbo.CustLoginInfo
+	(
+	    CustID, OldUserPwd, LastChangedPwdDate, isFirstLogin, SecurityCodeCount,
+	    SecurityCode, isForcedChangeSecurityCode, LastChangedSecurityCodeDate
 	)
-	VALUES(@custid,NULL,GETDATE(),1
-		,0,NULL,@isForcedChangeSecurityCode,NULL
+	VALUES
+	(
+	    @custid, NULL, GETDATE(), 1, 0,
+	    NULL, @isForcedChangeSecurityCode, NULL
 	)
 	
 	IF @@ERROR<>0
@@ -615,7 +628,19 @@ BEGIN
 	SET NOCOUNT OFF
 END
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbDownlineNet] AS [dbo]
+
+SET QUOTED_IDENTIFIER OFF 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [vnteam] AS [dbo]
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [bodbExtAccNet]
+GO 

@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_Com    Script Date: 8/19/2014 12:42:20 PM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
 	@Custid int output
 	,@UserName varchar(30)
 	,@Userpwd varchar(40)
@@ -30,6 +37,7 @@ AS
 	- 20140304@Patrick	: Add more sport: 202 for Keno
 	- 20140402@Dom	: Add more sport: 183,185 for Virtual sport
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
+	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -380,13 +388,24 @@ BEGIN
 		
 		RETURN
 	END CATCH
-	
+
+    DECLARE @isForcedChangeSecurityCode BIT = 0
+
+	SELECT @isForcedChangeSecurityCode = CASE
+                                           WHEN @Site LIKE '789y%' THEN 0
+                                           ELSE 1
+                                         END
+
 	BEGIN TRY
-		INSERT INTO dbo.CustLoginInfo(CustID,OldUserPwd,LastChangedPwdDate,isFirstLogin
-			,SecurityCodeCount,SecurityCode,isForcedChangeSecurityCode,LastChangedSecurityCodeDate
+		INSERT INTO dbo.CustLoginInfo
+		(
+		    CustID, OldUserPwd, LastChangedPwdDate, isFirstLogin, SecurityCodeCount,
+		    SecurityCode, isForcedChangeSecurityCode, LastChangedSecurityCodeDate
 		)
-		VALUES(@custid,NULL,GETDATE(),1
-			,0,NULL,0,NULL)
+		VALUES
+		(   @custid, NULL, GETDATE(), 1, 0,
+		    NULL, @isForcedChangeSecurityCode, NULL
+		)
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrMsg = case @Language 
@@ -477,7 +496,17 @@ BEGIN
 	SET NOCOUNT OFF
 END
 
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbadminNet] AS [dbo]
+
+SET QUOTED_IDENTIFIER OFF 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet]
+GO 
