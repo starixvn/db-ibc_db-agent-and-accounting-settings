@@ -36,6 +36,9 @@ AS
 			- 20120329@Johnson: Check s3,n3 if not synchronized
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server DB053 to DBAGE
+			- 20140724@Johnson: write log all parameters for tracking pt issue 
+			- 20140725@Johnson:- comment code write log paramters
+								- call sp to check parameters before update pt
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -135,6 +138,63 @@ BEGIN
 	END
 END
 
+--20140724@Johnson: tracking pt issue
+--@20140725@Johnson: comment this code
+/*
+Declare	@TrackingValue varchar(4000)
+	 
+SELECT @TrackingValue = '<Acc_CustomerUpdMasterLiveCS_All Custid="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' + 
+'srecommend=' + COALESCE(CAST(@srecommend AS VARCHAR(50)),SPACE(1)) + '" ' + 
+
+'v162spositiontaking_1101="' + COALESCE(CAST(@v162spositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v162mpositiontaking_1101="' + COALESCE(CAST(@v162mpositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'isauto_v162spositiontaking_1101="' + COALESCE(CAST(@isauto_v162spositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'auto_v162spositiontaking_1101="' + COALESCE(CAST(@auto_v162spositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v162mpositiontaking_1101_min="' + COALESCE(CAST(@v162mpositiontaking_1101_min AS VARCHAR(50)),SPACE(1)) + '" ' + 
+
+'v162UpdatePositiontaking_1101="' + COALESCE(CAST(@V162UpdatePositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v162UpdateAutoPositiontaking_1101="' + COALESCE(CAST(@V162UpdateAutoPositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v162UpdateMinPositiontaking_1101="' + COALESCE(CAST(@v162UpdateMinPositiontaking_1101 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'updateallmembers="' + COALESCE(CAST (@updateallmembers AS VARCHAR(3)), SPACE(1)) + '" ' +
+'newspositiontaking="' + COALESCE(CAST (@newspositiontaking AS VARCHAR(30)), SPACE(1)) + '" ' +
+'SyncLiveCasino="' + COALESCE(CAST (@SyncLiveCasino AS VARCHAR(30)), SPACE(1)) + '" ' +
+
+'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +
+'SubAccID="'+ COALESCE(CAST(@SubAccID AS VARCHAR(30)),SPACE(1)) + '" ' +
+'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" />'
+
+
+EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_Tracking
+		@UserID = @UserID,
+		@CustID = @CustID,		
+		@TrackingValue = @TrackingValue
+--End tracking		
+*/
+
+IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
+BEGIN
+	EXEC Acc_CustomerUpdMasterLiveCS_CheckParam 
+		@custid		= @custid,
+		@v162spositiontaking_1101	= @v162spositiontaking_1101,
+		@v162mpositiontaking_1101	= @v162mpositiontaking_1101,	
+		@isauto_v162spositiontaking_1101 = @isauto_v162spositiontaking_1101,
+		@auto_v162spositiontaking_1101	= @auto_v162spositiontaking_1101,
+		
+		@Language	= @Language,	
+		@ErrCode	= @ErrCode_cur OUTPUT,
+		@ErrMsg		= @ErrMsg_Cur OUTPUT
+	
+	IF @ErrCode_cur >0 
+	BEGIN
+		SELECT @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7),
+				@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7)
+			
+		RETURN	
+	END
+END
+		
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
 				EXEC Acc_CustOverrideUpdLiveCS 

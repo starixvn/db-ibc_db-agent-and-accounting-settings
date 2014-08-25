@@ -13,6 +13,7 @@ AS
 	Revisions:
 		- 20140320@Bobby: Add output @HasDownline
 		- 20140605@Elodie: Expand bettype for Keno
+		- 20140806@Johnson: put WITH(NOLOCK) for missing SELECT commands
 */
 BEGIN
 	SET NOCOUNT ON
@@ -126,7 +127,7 @@ BEGIN
 			CROSS APPLY (	SELECT t.GameTypeID, isnull(g1.isdisabled, 0) isdisabled
 							FROM @kenoGameType t
 								LEFT JOIN (	SELECT GameTypeID, isdisabled
-											FROM dbo.CustGameType
+											FROM dbo.CustGameType WITH(NOLOCK)
 											WHERE custid = c.custid
 											) g1 ON t.gametypeid = g1.GameTypeID
 						) g
@@ -139,11 +140,11 @@ BEGIN
 	AS (
 		SELECT UserName, 202 AS SportType, g.GameTypeID, gt.IBCBetTypeID, 
 				IsDisabled = CASE WHEN c.HideKeno = 0 AND g.IsDisabled = 0 THEN 0 ELSE 1 END
-		FROM [dbo].[custInfo] c
+		FROM [dbo].[custInfo] c WITH(NOLOCK)
 			CROSS JOIN (SELECT t.GameTypeID, isnull(g1.isdisabled, 1) isdisabled
 						FROM @kenoGameType t
 							LEFT JOIN (	SELECT GameTypeID, isdisabled
-										FROM dbo.CustGameType
+										FROM dbo.CustGameType WITH(NOLOCK)
 										WHERE custid = @custid
 										) g1 ON t.gametypeid = g1.GameTypeID
 						) g

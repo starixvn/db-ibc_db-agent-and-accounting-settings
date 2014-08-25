@@ -82,12 +82,13 @@ BEGIN
 	IF @UpdateMinMaxBet = 1
 	BEGIN
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdMasterKeno_MinMaxBet @CustID = @CustID
+				EXEC dbo.Acc_CustomerUpdMasterKeno_MinMaxBet @CustID = @CustID
 			, @SportType = @Sporttype
 			, @BetType = @Bettype
 			, @MinBet = @MinBet
 			, @MaxBet = @MaxBet
 			, @MaxPerMatch = @MaxPerMatch
+			, @SubAccID = @SubAccID
 			, @UserID = @UserID
 			, @Language = @Language
 			, @IP = @IP
@@ -104,7 +105,7 @@ BEGIN
 		END
 	END
 		
-END 
+END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [bodbadminNet] AS [dbo]
@@ -114,4 +115,3 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_BetSetting] TO [vnteam] AS [dbo]
-

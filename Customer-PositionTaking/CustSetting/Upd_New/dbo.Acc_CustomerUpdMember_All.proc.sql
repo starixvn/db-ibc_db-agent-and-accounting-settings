@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMember_All]    Script Date: 7/21/2014 4:56:22 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
 	@custid INT,--memberid  
 
 	@firstname NVARCHAR(50),  
@@ -96,7 +103,8 @@
 	@apositiontaking_7 SMALLMONEY,  
 	@apositiontaking_8 SMALLMONEY,  
 	@apositiontaking_9 SMALLMONEY,  
-	@apositiontaking_10 SMALLMONEY,  
+	@apositiontaking_10 SMALLMONEY, 
+	@apositiontaking_9999 SMALLMONEY = 0,   
 
 	@alivepositiontaking_1 SMALLMONEY,  
 	@alivepositiontaking_3 SMALLMONEY,  
@@ -119,7 +127,8 @@
 	@v5apositiontaking_1 SMALLMONEY,  
 	@v5apositiontaking_2 SMALLMONEY,  
 	@v5apositiontaking_3 SMALLMONEY,  
-	@v5apositiontaking_20 SMALLMONEY,  
+	@v5apositiontaking_20 SMALLMONEY,
+	@v5apositiontaking_9999 SMALLMONEY = 0,  
 
 	@v8apositiontaking_1 SMALLMONEY,  
 	@v8apositiontaking_3 SMALLMONEY,  
@@ -206,7 +215,7 @@ Revisions:
  - 20120704@Johnson: Remove setting hard code of number group
  - 20130218@Dan: Change linked server DB053 to DBAGE
  - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
- 
+ - 20140627@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -427,7 +436,7 @@ if  @UpdateMinMaxBet  = 1 or
 	@UpdateMinMaxBetv11  = 1 or  
 	@UpdateMinMaxBetv99  = 1 or  
 	@UpdateMinMaxBetv99MP = 1 or  
-	@UpdateMinMaxBetv11  = 1 or  
+	@UpdateMinMaxBetv154  = 1 or  
 	@UpdateMinMaxBetv161 = 1  
 BEGIN  
  Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''  
@@ -510,6 +519,7 @@ if @UpdatePositiontaking   = 1  or
  @UpdatePositiontakingv11   = 1  or  
  @UpdatePositiontakingv99   = 1  or  
  @UpdatePositiontakingv99MP  = 1 or  
+ @UpdatePositiontakingv154   = 1  or  
  @UpdatePositiontakingv161  = 1  
 BEGIN  
  Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''  
@@ -524,7 +534,8 @@ BEGIN
   @apositiontaking_7_old SMALLMONEY,  
   @apositiontaking_8_old SMALLMONEY,  
   @apositiontaking_9_old SMALLMONEY,  
-  @apositiontaking_10_old SMALLMONEY,  
+  @apositiontaking_10_old SMALLMONEY,
+  @apositiontaking_9999_old SMALLMONEY,   
     
   @alivepositiontaking_1_old SMALLMONEY,  
   @alivepositiontaking_3_old SMALLMONEY,  
@@ -547,7 +558,8 @@ BEGIN
   @v5apositiontaking_1_old SMALLMONEY,  
   @v5apositiontaking_2_old SMALLMONEY,  
   @v5apositiontaking_3_old SMALLMONEY,  
-  @v5apositiontaking_20_old SMALLMONEY,  
+  @v5apositiontaking_20_old SMALLMONEY, 
+  @v5apositiontaking_9999_old SMALLMONEY,   
   
   @v8apositiontaking_1_old SMALLMONEY,  
   @v8apositiontaking_3_old SMALLMONEY,  
@@ -592,6 +604,7 @@ BEGIN
  select @apositiontaking_6_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=6 and sporttype=1  
  select @apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=1  
  select @apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=1  
+ select @apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=1  
   
  select @v2apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=2  
  select @v2apositiontaking_2_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=2  
@@ -610,6 +623,7 @@ BEGIN
  select @v5apositiontaking_2_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=5  
  select @v5apositiontaking_3_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=5  
  select @v5apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=5  
+ select @v5apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=5  
   
  select @v8apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=8  
  select @v8apositiontaking_3_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=8  
@@ -652,6 +666,7 @@ BEGIN
    @apositiontaking_8 <> @apositiontaking_8_old or  
    @apositiontaking_9 <> @apositiontaking_9_old or  
    @apositiontaking_10 <> @apositiontaking_10_old or  
+   @apositiontaking_9999 <> @apositiontaking_9999_old or  
    @alivepositiontaking_1 <> @alivepositiontaking_1_old or  
    @alivepositiontaking_3 <> @alivepositiontaking_3_old or  
    @alivepositiontaking_7 <> @alivepositiontaking_7_old or  
@@ -671,6 +686,7 @@ BEGIN
    @v5apositiontaking_2 <> @v5apositiontaking_2_old or  
    @v5apositiontaking_3 <> @v5apositiontaking_3_old or  
    @v5apositiontaking_20 <> @v5apositiontaking_20_old or  
+   @v5apositiontaking_9999 <> @v5apositiontaking_9999_old or  
    @v8apositiontaking_1 <> @v8apositiontaking_1_old or  
    @v8apositiontaking_3 <> @v8apositiontaking_3_old or  
    @v8apositiontaking_20 <> @v8apositiontaking_20_old or  
@@ -713,6 +729,7 @@ BEGIN
    @apositiontaking_8 = @apositiontaking_8,  
    @apositiontaking_9 = @apositiontaking_9,  
    @apositiontaking_10 = @apositiontaking_10,  
+   @apositiontaking_9999 = @apositiontaking_9999, 
    @alivepositiontaking_1 = @alivepositiontaking_1,  
    @alivepositiontaking_3 = @alivepositiontaking_3,  
    @alivepositiontaking_7 = @alivepositiontaking_7,  
@@ -732,6 +749,7 @@ BEGIN
    @v5apositiontaking_2 = @v5apositiontaking_2,  
    @v5apositiontaking_3 = @v5apositiontaking_3,  
    @v5apositiontaking_20 = @v5apositiontaking_20,  
+   @v5apositiontaking_9999 = @v5apositiontaking_9999,
    @v8apositiontaking_1 = @v8apositiontaking_1,  
    @v8apositiontaking_3 = @v8apositiontaking_3,  
    @v8apositiontaking_20 = @v8apositiontaking_20,  
@@ -794,11 +812,12 @@ BEGIN
 END  
 
 
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_All] TO [vnteam] AS [dbo]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_All] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbExtAccNet]
+GO 

@@ -4,6 +4,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentKeno_Commission]
 	, @Discount DECIMAL(9,8) = 0
 	, @SportType INT = 202
 	, @BetType INT
+	, @SubAccID INT = 0 --Sub-AccountID
 	, @UserID INT
 	, @Language VARCHAR(10) = 'E'
 	, @IP VARCHAR(21) = ''
@@ -57,7 +58,7 @@ BEGIN
 	WHERE custid = @mrecommend AND bettype = @BetType AND sporttype = @SportType
 
 	-- apply exec rep
-	EXEC Acc_CustSetting3rd_06 @CustId = @custid
+		EXEC Acc_CustSetting3rd_06_xtest @CustId = @custid
 		, @RoleId = @roleid
 		, @discount = @discount
 		, @mode = 'Keno'
@@ -71,7 +72,8 @@ BEGIN
 		+ '" ' + 'Discount="' + COALESCE(CAST(@Discount AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(15)), SPACE(1)) 
 		+ '" ' + 'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) 
@@ -81,7 +83,8 @@ BEGIN
 		+ '" ' + 'Discount="' + COALESCE(CAST(@Old_Discount AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1))
 		+ '" ' + 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1))
-		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1))
+		+ '" ' + 'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
 		+ '" ' + 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(15)), SPACE(1)) 
 		+ '" ' + 'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) 
@@ -112,3 +115,4 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_Commission] TO [bodbAdminNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_Commission] TO [bodbDownlineNet]
+

@@ -20,6 +20,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno]
 	, @UpdateAutoPositionTaking	BIT = 0
 	, @UpdateCommission BIT = 0
 	
+	, @SubAccID INT = 0 --Sub-AccountID
 	, @UserID INT = 0
 	, @Language varchar(2) = 'E'
 	, @IP VARCHAR(15) = ''
@@ -63,11 +64,12 @@ BEGIN
 
 	IF @UpdateCommission = 1
 	BEGIN
-		EXEC dbo.Acc_CustomerUpdMasterKeno_Commission @custid = @custid
+				EXEC dbo.Acc_CustomerUpdMasterKeno_Commission @custid = @custid
 			, @Discount	= @Discount
 			, @BetType = @BetType
 			, @SportType = @SportType
 			, @IP = @IP
+			, @SubAccID = @SubAccID
 			, @UserID = @UserID
 			, @Language	= @Language
 			, @ErrCode = @ErrCode_Cur OUTPUT
@@ -96,12 +98,13 @@ BEGIN
 
 	IF @UpdateMinPositiontaking = 1
 	BEGIN
-		EXEC dbo.Acc_CustOverrideUpdKeno @custid = @custid
+				EXEC dbo.Acc_CustOverrideUpdKeno @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
 			, @Min_Positiontaking = @n3
 			, @UplineID = @srecommend
 			, @IP = @IP
+			, @SubAccID = @SubAccID
 			, @UserID = @userid
 			, @Language = @Language
 			, @ErrCode	= @ErrCode_Cur OUTPUT
@@ -118,7 +121,7 @@ BEGIN
 
 	IF(@UpdatePositiontaking = 1 OR @UpdateAutoPositionTaking = 1)
 	BEGIN
-		EXEC dbo.Acc_CustomerUpdMasterKeno_Positiontaking @custid = @custid
+				EXEC dbo.Acc_CustomerUpdMasterKeno_Positiontaking @custid = @custid
 			, @sporttype = @sporttype
 			, @bettype = @bettype
 			, @s3 =  @s3--s3
@@ -134,6 +137,7 @@ BEGIN
 			, @UpdateAutoPositionTaking = @UpdateAutoPositionTaking
 
 			, @IP = @IP
+			, @SubAccID = @SubAccID
 			, @UserID = @userid
 			, @Language = @Language
 			, @ErrCode = @ErrCode_Cur OUTPUT

@@ -73,6 +73,7 @@
 	@spositiontaking_8 smallmoney,
 	@spositiontaking_9 smallmoney,
 	@spositiontaking_10 smallmoney,
+	@spositiontaking_9999 smallmoney = 0,
 	@slivepositiontaking_1 smallmoney,
 	@slivepositiontaking_3 smallmoney,
 	@slivepositiontaking_7 smallmoney,
@@ -95,6 +96,7 @@
 	@v5spositiontaking_2 smallmoney,
 	@v5spositiontaking_3 smallmoney,	
 	@v5spositiontaking_20 smallmoney,
+	@v5spositiontaking_9999 smallmoney = 0,	
 	
 	@v8spositiontaking_1 smallmoney,
 	@v8spositiontaking_3 smallmoney,	
@@ -183,6 +185,7 @@
 	@auto_spositiontaking_8 smallmoney = 0,
 	@auto_spositiontaking_9 smallmoney = 0,
 	@auto_spositiontaking_10 smallmoney = 0,
+	@auto_spositiontaking_9999 smallmoney = 0,
 	@auto_slivepositiontaking_1 smallmoney = 0,
 	@auto_slivepositiontaking_3 smallmoney = 0,
 	@auto_slivepositiontaking_7 smallmoney = 0,
@@ -205,6 +208,7 @@
 	@auto_v5spositiontaking_2 smallmoney = 0,
 	@auto_v5spositiontaking_3 smallmoney = 0,
 	@auto_v5spositiontaking_20 smallmoney = 0,
+	@auto_v5spositiontaking_9999 smallmoney = 0,
 	
 	@auto_v8spositiontaking_1 smallmoney = 0,
 	@auto_v8spositiontaking_3 smallmoney = 0,
@@ -254,6 +258,7 @@
 	@isauto_spositiontaking_8 bit = 0,
 	@isauto_spositiontaking_9 bit = 0,
 	@isauto_spositiontaking_10 bit = 0,
+	@isauto_spositiontaking_9999 bit = 0,
 	@isauto_slivepositiontaking_1 bit = 0,
 	@isauto_slivepositiontaking_3 bit = 0,
 	@isauto_slivepositiontaking_7 bit = 0,
@@ -276,6 +281,7 @@
 	@isauto_v5spositiontaking_2 bit = 0,
 	@isauto_v5spositiontaking_3 bit = 0,
 	@isauto_v5spositiontaking_20 bit = 0,
+	@isauto_v5spositiontaking_9999 bit = 0,
 	
 	@isauto_v8spositiontaking_1 bit = 0,
 	@isauto_v8spositiontaking_3 bit = 0,
@@ -323,6 +329,7 @@
 	@mpositiontaking_8 smallmoney = 0.7,
 	@mpositiontaking_9 smallmoney = 0.7,
 	@mpositiontaking_10 smallmoney = 0.7,
+	@mpositiontaking_9999 smallmoney = 0,
 	@mlivepositiontaking_1 smallmoney = 0.7,
 	@mlivepositiontaking_3 smallmoney = 0.7,
 	@mlivepositiontaking_7 smallmoney = 0.7,
@@ -345,6 +352,7 @@
 	@v5mpositiontaking_2 smallmoney = 0.7,
 	@v5mpositiontaking_3 smallmoney = 0.7,
 	@v5mpositiontaking_20 smallmoney = 0.7,
+	@v5mpositiontaking_9999 smallmoney = 0,
 	
 	@v8mpositiontaking_1 smallmoney = 0.7,
 	@v8mpositiontaking_3 smallmoney = 0.7,
@@ -416,7 +424,7 @@ Revisions:
 	- 20120704@Johnson: Remove setting hard code of number group
 	- 20130218@Dan: Change linked server DB053 to DBAGE
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
-	
+	- 20140623@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -751,6 +759,7 @@ BEGIN
 		@spositiontaking_8_old smallmoney,
 		@spositiontaking_9_old smallmoney,
 		@spositiontaking_10_old smallmoney,
+		@spositiontaking_9999_old smallmoney,
 		@slivepositiontaking_1_old smallmoney,
 		@slivepositiontaking_3_old smallmoney,
 		@slivepositiontaking_7_old smallmoney,
@@ -773,6 +782,7 @@ BEGIN
 		@v5spositiontaking_2_old smallmoney,
 		@v5spositiontaking_3_old smallmoney,	
 		@v5spositiontaking_20_old smallmoney,
+		@v5spositiontaking_9999_old smallmoney,	
 		
 		@v8spositiontaking_1_old smallmoney,
 		@v8spositiontaking_3_old smallmoney,	
@@ -816,6 +826,7 @@ BEGIN
 		@auto_spositiontaking_8_old smallmoney ,
 		@auto_spositiontaking_9_old smallmoney ,
 		@auto_spositiontaking_10_old smallmoney ,
+		@auto_spositiontaking_9999_old smallmoney ,
 		@auto_slivepositiontaking_1_old smallmoney ,
 		@auto_slivepositiontaking_3_old smallmoney ,
 		@auto_slivepositiontaking_7_old smallmoney ,
@@ -838,6 +849,7 @@ BEGIN
 		@auto_v5spositiontaking_2_old smallmoney ,
 		@auto_v5spositiontaking_3_old smallmoney ,
 		@auto_v5spositiontaking_20_old smallmoney ,
+		@auto_v5spositiontaking_9999_old smallmoney ,
 		
 		@auto_v8spositiontaking_1_old smallmoney ,
 		@auto_v8spositiontaking_3_old smallmoney ,
@@ -882,6 +894,7 @@ BEGIN
 		@isauto_spositiontaking_8_old bit ,
 		@isauto_spositiontaking_9_old bit ,
 		@isauto_spositiontaking_10_old bit ,
+		@isauto_spositiontaking_9999_old bit ,
 		@isauto_slivepositiontaking_1_old bit ,
 		@isauto_slivepositiontaking_3_old bit ,
 		@isauto_slivepositiontaking_7_old bit ,
@@ -904,6 +917,7 @@ BEGIN
 		@isauto_v5spositiontaking_2_old bit ,
 		@isauto_v5spositiontaking_3_old bit ,
 		@isauto_v5spositiontaking_20_old bit ,
+		@isauto_v5spositiontaking_9999_old bit ,
 		
 		@isauto_v8spositiontaking_1_old bit ,
 		@isauto_v8spositiontaking_3_old bit ,
@@ -948,6 +962,7 @@ BEGIN
 		@mpositiontaking_8_old smallmoney ,
 		@mpositiontaking_9_old smallmoney ,
 		@mpositiontaking_10_old smallmoney ,
+		@mpositiontaking_9999_old smallmoney ,
 		@mlivepositiontaking_1_old smallmoney ,
 		@mlivepositiontaking_3_old smallmoney ,
 		@mlivepositiontaking_7_old smallmoney ,
@@ -970,6 +985,7 @@ BEGIN
 		@v5mpositiontaking_2_old smallmoney ,
 		@v5mpositiontaking_3_old smallmoney ,
 		@v5mpositiontaking_20_old smallmoney ,
+		@v5mpositiontaking_9999_old smallmoney ,
 		
 		@v8mpositiontaking_1_old smallmoney ,
 		@v8mpositiontaking_3_old smallmoney ,
@@ -1016,7 +1032,8 @@ BEGIN
 	select @spositiontaking_6_old = spositiontaking, @mpositiontaking_6_old = mpositiontaking, @auto_spositiontaking_6_old = autopositiontaking, @isauto_spositiontaking_6_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=6 and sporttype=1
 	select @spositiontaking_9_old = spositiontaking, @mpositiontaking_9_old = mpositiontaking, @auto_spositiontaking_9_old = autopositiontaking, @isauto_spositiontaking_9_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=1
 	select @spositiontaking_10_old = spositiontaking, @mpositiontaking_10_old = mpositiontaking, @auto_spositiontaking_10_old = autopositiontaking, @isauto_spositiontaking_10_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=1
-
+	select @spositiontaking_9999_old = spositiontaking, @mpositiontaking_9999_old = mpositiontaking, @auto_spositiontaking_9999_old = autopositiontaking, @isauto_spositiontaking_9999_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=1
+	
 	select @v2spositiontaking_1_old = spositiontaking, @v2mpositiontaking_1_old = mpositiontaking, @auto_v2spositiontaking_1_old = autopositiontaking, @isauto_v2spositiontaking_1_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=2
 	select @v2spositiontaking_2_old = spositiontaking, @v2mpositiontaking_2_old = mpositiontaking, @auto_v2spositiontaking_2_old = autopositiontaking, @isauto_v2spositiontaking_2_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=2
 	select @v2spositiontaking_3_old = spositiontaking, @v2mpositiontaking_3_old = mpositiontaking, @auto_v2spositiontaking_3_old = autopositiontaking, @isauto_v2spositiontaking_3_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=2
@@ -1034,6 +1051,7 @@ BEGIN
 	select @v5spositiontaking_2_old = spositiontaking, @v5mpositiontaking_2_old = mpositiontaking, @auto_v5spositiontaking_2_old = autopositiontaking, @isauto_v5spositiontaking_2_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=2 and sporttype=5
 	select @v5spositiontaking_3_old = spositiontaking, @v5mpositiontaking_3_old = mpositiontaking, @auto_v5spositiontaking_3_old = autopositiontaking, @isauto_v5spositiontaking_3_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=5
 	select @v5spositiontaking_20_old = spositiontaking, @v5mpositiontaking_20_old = mpositiontaking, @auto_v5spositiontaking_20_old = autopositiontaking, @isauto_v5spositiontaking_20_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=5
+	select @v5spositiontaking_9999_old = spositiontaking, @v5mpositiontaking_9999_old = mpositiontaking, @auto_v5spositiontaking_9999_old = autopositiontaking, @isauto_v5spositiontaking_9999_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=5
 
 	select @v8spositiontaking_1_old = spositiontaking, @v8mpositiontaking_1_old = mpositiontaking, @auto_v8spositiontaking_1_old = autopositiontaking, @isauto_v8spositiontaking_1_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=8
 	select @v8spositiontaking_3_old = spositiontaking, @v8mpositiontaking_3_old = mpositiontaking, @auto_v8spositiontaking_3_old = autopositiontaking, @isauto_v8spositiontaking_3_old = isautopositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=8
@@ -1078,6 +1096,7 @@ BEGIN
 		@spositiontaking_8 <> @spositiontaking_8_old or
 		@spositiontaking_9 <> @spositiontaking_9_old or
 		@spositiontaking_10 <> @spositiontaking_10_old or
+		@spositiontaking_9999 <> @spositiontaking_9999_old or
 		@slivepositiontaking_1 <> @slivepositiontaking_1_old or
 		@slivepositiontaking_3 <> @slivepositiontaking_3_old or
 		@slivepositiontaking_7 <> @slivepositiontaking_7_old or
@@ -1100,6 +1119,7 @@ BEGIN
 		@v5spositiontaking_2 <> @v5spositiontaking_2_old or
 		@v5spositiontaking_3 <> @v5spositiontaking_3_old or
 		@v5spositiontaking_20 <> @v5spositiontaking_20_old or
+		@v5spositiontaking_9999 <> @v5spositiontaking_9999_old or
 		
 		@v8spositiontaking_1 <> @v8spositiontaking_1_old or
 		@v8spositiontaking_3 <> @v8spositiontaking_3_old or
@@ -1143,6 +1163,7 @@ BEGIN
 		@auto_spositiontaking_8 <> @auto_spositiontaking_8_old or
 		@auto_spositiontaking_9 <> @auto_spositiontaking_9_old or
 		@auto_spositiontaking_10 <> @auto_spositiontaking_10_old or
+		@auto_spositiontaking_9999 <> @auto_spositiontaking_9999_old or
 		@auto_slivepositiontaking_1 <> @auto_slivepositiontaking_1_old or
 		@auto_slivepositiontaking_3 <> @auto_slivepositiontaking_3_old or
 		@auto_slivepositiontaking_7 <> @auto_slivepositiontaking_7_old or
@@ -1165,6 +1186,7 @@ BEGIN
 		@auto_v5spositiontaking_2 <> @auto_v5spositiontaking_2_old or
 		@auto_v5spositiontaking_3 <> @auto_v5spositiontaking_3_old or
 		@auto_v5spositiontaking_20 <> @auto_v5spositiontaking_20_old or
+		@auto_v5spositiontaking_9999 <> @auto_v5spositiontaking_9999_old or
 		
 		@auto_v8spositiontaking_1 <> @auto_v8spositiontaking_1_old or
 		@auto_v8spositiontaking_3 <> @auto_v8spositiontaking_3_old or
@@ -1209,6 +1231,7 @@ BEGIN
 		@isauto_spositiontaking_8 <> @isauto_spositiontaking_8_old or
 		@isauto_spositiontaking_9 <> @isauto_spositiontaking_9_old or
 		@isauto_spositiontaking_10 <> @isauto_spositiontaking_10_old or
+		@isauto_spositiontaking_9999 <> @isauto_spositiontaking_9999_old or
 		@isauto_slivepositiontaking_1 <> @isauto_slivepositiontaking_1_old or
 		@isauto_slivepositiontaking_3 <> @isauto_slivepositiontaking_3_old or
 		@isauto_slivepositiontaking_7 <> @isauto_slivepositiontaking_7_old or
@@ -1231,6 +1254,7 @@ BEGIN
 		@isauto_v5spositiontaking_2 <> @isauto_v5spositiontaking_2_old or
 		@isauto_v5spositiontaking_3 <> @isauto_v5spositiontaking_3_old or
 		@isauto_v5spositiontaking_20 <> @isauto_v5spositiontaking_20_old or
+		@isauto_v5spositiontaking_9999 <> @isauto_v5spositiontaking_9999_old or
 
 		@isauto_v8spositiontaking_1 <> @isauto_v8spositiontaking_1_old or
 		@isauto_v8spositiontaking_3 <> @isauto_v8spositiontaking_3_old or
@@ -1275,6 +1299,7 @@ BEGIN
 		@mpositiontaking_8 <> @mpositiontaking_8_old or
 		@mpositiontaking_9 <> @mpositiontaking_9_old or
 		@mpositiontaking_10 <> @mpositiontaking_10_old or
+		@mpositiontaking_9999 <> @mpositiontaking_9999_old or
 		@mlivepositiontaking_1 <> @mlivepositiontaking_1_old or
 		@mlivepositiontaking_3 <> @mlivepositiontaking_3_old or
 		@mlivepositiontaking_7 <> @mlivepositiontaking_7_old or
@@ -1297,6 +1322,7 @@ BEGIN
 		@v5mpositiontaking_2 <> @v5mpositiontaking_2_old or
 		@v5mpositiontaking_3 <> @v5mpositiontaking_3_old or
 		@v5mpositiontaking_20 <> @v5mpositiontaking_20_old or
+		@v5mpositiontaking_9999 <> @v5mpositiontaking_9999_old or
 
 		@v8mpositiontaking_1 <> @v8mpositiontaking_1_old or
 		@v8mpositiontaking_3 <> @v8mpositiontaking_3_old or
@@ -1344,6 +1370,7 @@ BEGIN
 			@spositiontaking_8 = @spositiontaking_8,
 			@spositiontaking_9 = @spositiontaking_9,
 			@spositiontaking_10 = @spositiontaking_10,
+			@spositiontaking_9999 = @spositiontaking_9999,
 			@slivepositiontaking_1 = @slivepositiontaking_1,
 			@slivepositiontaking_3 = @slivepositiontaking_3,
 			@slivepositiontaking_7 = @slivepositiontaking_7,
@@ -1363,6 +1390,7 @@ BEGIN
 			@v5spositiontaking_2 = @v5spositiontaking_2,
 			@v5spositiontaking_3 = @v5spositiontaking_3,
 			@v5spositiontaking_20 = @v5spositiontaking_20,
+			@v5spositiontaking_9999 = @v5spositiontaking_9999,
 			@v8spositiontaking_1 = @v8spositiontaking_1,
 			@v8spositiontaking_3 = @v8spositiontaking_3,
 			@v8spositiontaking_20 = @v8spositiontaking_20,
@@ -1421,6 +1449,7 @@ BEGIN
 			@auto_spositiontaking_8 = @auto_spositiontaking_8,
 			@auto_spositiontaking_9 = @auto_spositiontaking_9,
 			@auto_spositiontaking_10 = @auto_spositiontaking_10,
+			@auto_spositiontaking_9999 = @auto_spositiontaking_9999,
 			@auto_slivepositiontaking_1 = @auto_slivepositiontaking_1,
 			@auto_slivepositiontaking_3 = @auto_slivepositiontaking_3,
 			@auto_slivepositiontaking_7 = @auto_slivepositiontaking_7,
@@ -1440,6 +1469,7 @@ BEGIN
 			@auto_v5spositiontaking_2 = @auto_v5spositiontaking_2,
 			@auto_v5spositiontaking_3 = @auto_v5spositiontaking_3,
 			@auto_v5spositiontaking_20 = @auto_v5spositiontaking_20,
+			@auto_v5spositiontaking_9999 = @auto_v5spositiontaking_9999,
 			@auto_v8spositiontaking_1 = @auto_v8spositiontaking_1,
 			@auto_v8spositiontaking_3 = @auto_v8spositiontaking_3,
 			@auto_v8spositiontaking_20 = @auto_v8spositiontaking_20,
@@ -1482,6 +1512,7 @@ BEGIN
 			@isauto_spositiontaking_8 = @isauto_spositiontaking_8,
 			@isauto_spositiontaking_9 = @isauto_spositiontaking_9,
 			@isauto_spositiontaking_10 = @isauto_spositiontaking_10,
+			@isauto_spositiontaking_9999 = @isauto_spositiontaking_9999,
 			@isauto_slivepositiontaking_1 = @isauto_slivepositiontaking_1,
 			@isauto_slivepositiontaking_3 = @isauto_slivepositiontaking_3,
 			@isauto_slivepositiontaking_7 = @isauto_slivepositiontaking_7,
@@ -1501,6 +1532,7 @@ BEGIN
 			@isauto_v5spositiontaking_2 = @isauto_v5spositiontaking_2,
 			@isauto_v5spositiontaking_3 = @isauto_v5spositiontaking_3,
 			@isauto_v5spositiontaking_20 = @isauto_v5spositiontaking_20,
+			@isauto_v5spositiontaking_9999 = @isauto_v5spositiontaking_9999,
 			@isauto_v8spositiontaking_1 = @isauto_v8spositiontaking_1,
 			@isauto_v8spositiontaking_3 = @isauto_v8spositiontaking_3,
 			@isauto_v8spositiontaking_20 = @isauto_v8spositiontaking_20,
@@ -1541,6 +1573,7 @@ BEGIN
 			@mpositiontaking_8 = @mpositiontaking_8,
 			@mpositiontaking_9 = @mpositiontaking_9,
 			@mpositiontaking_10 = @mpositiontaking_10,
+			@mpositiontaking_9999 = @mpositiontaking_9999,
 			@mlivepositiontaking_1 = @mlivepositiontaking_1,
 			@mlivepositiontaking_3 = @mlivepositiontaking_3,
 			@mlivepositiontaking_7 = @mlivepositiontaking_7,
@@ -1560,6 +1593,7 @@ BEGIN
 			@v5mpositiontaking_2 = @v5mpositiontaking_2,
 			@v5mpositiontaking_3 = @v5mpositiontaking_3,
 			@v5mpositiontaking_20 = @v5mpositiontaking_20,
+			@v5mpositiontaking_9999 = @v5mpositiontaking_9999,
 			@v8mpositiontaking_1 = @v8mpositiontaking_1,
 			@v8mpositiontaking_3 = @v8mpositiontaking_3,
 			@v8mpositiontaking_20 = @v8mpositiontaking_20,

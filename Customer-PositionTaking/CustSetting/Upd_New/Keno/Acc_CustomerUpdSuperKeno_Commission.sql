@@ -1,10 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission]
 	@CustID INT,
 	@Sporttype INT = 202,
 	@Bettype INT,
 	@discount DECIMAL(9,8),
 
 	@IP VARCHAR(50) = '',
+	@SubAccID INT = 0, --Sub-AccountID
 	@UserID INT = 0,
 	@Language VARCHAR(20) = 'E',
 	@ErrCode INT = 0 OUTPUT,
@@ -52,7 +53,7 @@ BEGIN
 	END
 	
 	-- Apply exec rep
-	EXEC Acc_CustSetting3rd_06
+		EXEC Acc_CustSetting3rd_06
 		@CustId = @CustID,
 		@RoleId = 4,
 		@mode = 'Keno',
@@ -68,6 +69,7 @@ BEGIN
 			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 			'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
 			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
@@ -78,6 +80,7 @@ BEGIN
 			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 			'discount="' + COALESCE(CAST(@Old_discount AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
 			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
@@ -102,6 +105,7 @@ BEGIN
 			'bettype="'+ COALESCE(CAST(@bettype AS VARCHAR(10)),SPACE(1)) + '" ' + 
 			'discount="' + COALESCE(CAST(@discount AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'Userid="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) + '" ' +
+			'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' +
 			'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' +
 			'IP="' + COALESCE(CAST(@Ip AS VARCHAR(50)), SPACE(1)) + '" ' +
 			'ErrCode="' + COALESCE(CAST(@ErrCode AS VARCHAR(50)), SPACE(1)) + '" ' +
