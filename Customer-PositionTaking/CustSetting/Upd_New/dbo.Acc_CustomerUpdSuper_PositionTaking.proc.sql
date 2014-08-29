@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_PositionTaking    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_PositionTaking    Script Date: 8/21/2014 2:58:05 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuper_PositionTaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_PositionTaking]
     @custid int,-- superid    
     
     @spositiontaking_1 smallmoney,
@@ -1642,7 +1642,7 @@ INNER JOIN (SELECT 161 AS sporttype
               AND cs.bettype = b.bettype
      WHERE c.srecommend = @custid
        AND c.roleid = 1
-       AND c.Enabled = 0
+       AND c.Enabled = 1
        AND (cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > b.maxpositiontaking
             OR (b.sporttype = 161
                 AND b.bettype IN (85, 86, 87, 89, 90)
