@@ -868,6 +868,9 @@ Begin DataProject = "AgentPT"
          End
       End
    End
+   Begin Folder = "CustSettingReference"
+      Script = "Acc_CustomerSelRefSport_Bettype.sql"
+   End
    Begin DBRefFolder = "Database References"
       Begin DBRefNode = "dwdbg1s.bodb02.dbo"
          ConnectStr = "Data Source=10.20.20.214;Initial Catalog=bodb02;User ID=sa"
