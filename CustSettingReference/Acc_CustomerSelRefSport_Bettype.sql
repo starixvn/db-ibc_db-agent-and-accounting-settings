@@ -33,7 +33,7 @@ BEGIN
 			WHERE	ci.CustID = @CustID
 
 			SELECT	@DisableKeno = MIN(CAST(cg.IsDisabled AS INT))
-			FROM	dbo.CustGameType cg WITH (NOLOCK) 
+			FROM	CustDB.dbo.CustGameType cg WITH (NOLOCK) 
 					LEFT JOIN dbo.GameType g WITH (NOLOCK) ON cg.GameTypeID = g.GameTypeID 
 			WHERE	cg.CustID = @CustID
 					AND g.IBCBetTypeID IN (1501,1503,1504,1505,1507,1508,1509,1511,1513)	--Keno Bettype 
@@ -41,10 +41,11 @@ BEGIN
 	
 	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef
 	FROM	dbo.CustSettingRef_Sport_Bettype WITH (NOLOCK)
-	WHERE	Sporttype <> (CASE	WHEN @DisableHRFixedOdds = 1 THEN 154 
-								WHEN @DisableNumber = 1 THEN 161 
-								WHEN @HideKeno = 1 OR @DisableKeno = 1 THEN 202 
-								ELSE 0 END)
+	WHERE	Sporttype NOT IN (
+				 CASE WHEN @DisableHRFixedOdds = 1 THEN 154 ELSE 0 END				--HR Fixed Odds
+				,CASE WHEN @DisableNumber = 1 THEN 161 ELSE 0 END					--Number Game
+				,CASE WHEN  @HideKeno = 1 OR @DisableKeno = 1 THEN 202 ELSE 0 END	--Keno 
+			)
 	ORDER BY Sporttype, Bettype
 
 END
