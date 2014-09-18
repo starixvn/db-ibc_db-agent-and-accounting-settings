@@ -1,6 +1,7 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelRefSport_Bettype]
 	 @CustID		INT = NULL
 	,@RoleID		INT = 0 
+	,@isShowAll		BIT = 1 
 AS 
 /*
 	Created by: Jamie
@@ -12,6 +13,7 @@ AS
 
 	Param's Explanation: 
 		@CustID (Login account): =NULL: Admin ; =NOT NULL: SMA 
+		@isShowAll: 0: Show Active Bettype, 1: Show ALL 
 
 	Sample: 
 		EXEC [Acc_CustomerSelRefSport_Bettype] @CustID = 8 , @RoleID = 5 
@@ -46,6 +48,8 @@ BEGIN
 				,CASE WHEN @DisableNumber = 1 THEN 161 ELSE 0 END					--Number Game
 				,CASE WHEN @HideKeno = 1 OR @DisableKeno = 1 THEN 202 ELSE 0 END	--Keno 
 			)
+			AND isLicensee = 0 
+			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END 
 	ORDER BY Sporttype, Bettype, SporttypeRef, BettypeRef
 
 END
