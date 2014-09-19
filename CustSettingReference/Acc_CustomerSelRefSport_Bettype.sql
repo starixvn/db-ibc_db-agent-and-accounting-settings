@@ -42,7 +42,7 @@ BEGIN
 	END
 	
 	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef
-	FROM	dbo.CustSettingRef_Sport_Bettype WITH (NOLOCK)
+	FROM	dbo.Sport_Bettype_Reference WITH (NOLOCK)
 	WHERE	Sporttype NOT IN (
 				 CASE WHEN @DisableHRFixedOdds = 1 THEN 154 ELSE 0 END				--HR Fixed Odds
 				,CASE WHEN @DisableNumber = 1 THEN 161 ELSE 0 END					--Number Game
