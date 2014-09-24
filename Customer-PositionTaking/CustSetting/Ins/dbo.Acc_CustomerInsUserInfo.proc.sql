@@ -1,10 +1,3 @@
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsUserInfo    Script Date: 8/19/2014 12:42:20 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsUserInfo_xpre    Script Date: 7/31/2014 4:46:43 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerInsUserInfo]
 	@custid INT OUTPUT,
 	@firstname NVARCHAR(50),
@@ -108,6 +101,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsUserInfo]
 	@MaxWinLiveCasino SMALLMONEY = 0,
 	@DisableCasinoBonus BIT = 0,
 	@DisableHRFixedOdds BIT = 0,
+	@DisableEsports BIT = 0,
 
 	--Keno
 	@HideKeno BIT = 0,
@@ -162,6 +156,7 @@ Revisions:
 	- 20140303@Patrick: Add more field HideKeno
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 	- 20140709@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
+	- 20140822@Logan: Add Esport status [Redmine: #20531]
 	
 
 Param's Explanation:
@@ -171,199 +166,213 @@ Param's Explanation:
   
 • @ErrMsg: Error description.
 */
-
-SET NOCOUNT ON 
-
-INSERT INTO Customer   			
-			(username, firstname, lastname, phone, mobilephone, fax, email, address,
-			city, state, country, postal, userpwd, roleid, srecommend, mrecommend, recommend, 
-			currency, pwdexpiry, creator, Site, creatdate, ugroup
-			) 
- 		 VALUES (@username, @firstname, @lastname, @phone, @mobilephone, @fax, @email, @address, 
-			@city, @state, @country, @postal, @userpwd, @roleid, @srecommend, @mrecommend, @recommend, 
-			@currency, @pwdexpiry, @creator, @site, GETDATE(), @ugroup
-			)
-
-SELECT @custid=@@IDENTITY
-
-IF @@ERROR <> 0
 BEGIN
-	SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN 'Create customer failed. Please try again.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-						END,
-		@ErrCode = 111
-		
-	-- ROLLBACK MANUALLY
-	DELETE FROM Customer WITH (ROWLOCK) WHERE custId = @CustID
-		
-	RETURN
-END
+    SET NOCOUNT ON 
 
-DECLARE	@UplineSecurityCode			 VARCHAR(50)
-	  , @isForcedChangeSecurityCode BIT
+    INSERT INTO Customer   			
+			    (username, firstname, lastname, phone, mobilephone, fax, email, address,
+			    city, state, country, postal, userpwd, roleid, srecommend, mrecommend, recommend, 
+			    currency, pwdexpiry, creator, Site, creatdate, ugroup
+			    ) 
+ 		     VALUES (@username, @firstname, @lastname, @phone, @mobilephone, @fax, @email, @address, 
+			    @city, @state, @country, @postal, @userpwd, @roleid, @srecommend, @mrecommend, @recommend, 
+			    @currency, @pwdexpiry, @creator, @site, GETDATE(), @ugroup
+			    )
 
-SELECT @UplineSecurityCode		 = NULL
-	 , @isForcedChangeSecurityCode = 0
+    SELECT @custid=@@IDENTITY
 
-IF @roleid = 4
-BEGIN
-    SELECT @isForcedChangeSecurityCode = CASE
-                                           WHEN site LIKE '789y%' THEN 0
-                                           ELSE 1
-                                         END
-      FROM Customer WITH(NOLOCK)
-     WHERE custid = @custid
+    IF @@ERROR <> 0
+    BEGIN
+	    SELECT @ErrMsg = CASE @Language 
+							    WHEN 'E' THEN 'Create customer failed. Please try again.'
+							    ELSE [dbo].[f_Get_MsgNamebyMsgID](40004, @Language)
+						    END,
+		    @ErrCode = 111
+    		
+	    -- ROLLBACK MANUALLY
+	    DELETE FROM Customer WITH (ROWLOCK) WHERE custId = @CustID
+    		
+	    RETURN
+    END
 
-	SET @srecommend = @custid
-	UPDATE Customer WITH(ROWLOCK, UPDLOCK)
-	   SET srecommend = @custid
-	 WHERE custId = @CustID
+    DECLARE	@UplineSecurityCode			 VARCHAR(50)
+	      , @isForcedChangeSecurityCode BIT
 
-	INSERT INTO CustSuper
-	(
-	    custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU,
-	    AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption
-	)
-	VALUES
-	(
-	    @CustID, 0, 0, 0,
-	    0, 0, 0, @IsInternal, CASE
-	                            WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0)
-	                            ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0))
-	                          END
+    SELECT @UplineSecurityCode		 = NULL
+	     , @isForcedChangeSecurityCode = 0
+
+    IF @roleid = 4
+    BEGIN
+        SELECT @isForcedChangeSecurityCode = CASE
+                                               WHEN site LIKE '789y%' THEN 0
+                                               ELSE 1
+                                             END
+          FROM Customer WITH(NOLOCK)
+         WHERE custid = @custid
+
+	    SET @srecommend = @custid
+	    UPDATE Customer WITH(ROWLOCK, UPDLOCK)
+	       SET srecommend = @custid
+	     WHERE custId = @CustID
+
+	    INSERT INTO CustSuper
+	    (
+	        custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU,
+	        AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption
+	    )
+	    VALUES
+	    (
+	        @CustID, 0, 0, 0,
+	        0, 0, 0, @IsInternal, CASE
+	                                WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0)
+	                                ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0))
+	                              END
+        )
+    	
+    END
+    ELSE IF @roleid = 3
+    BEGIN
+	    SELECT @UplineSecurityCode = SecurityCode,
+	           @isForcedChangeSecurityCode = isForcedChangeSecurityCode
+	      FROM dbo.CustLoginInfo WITH(NOLOCK)
+	     WHERE CustID = @srecommend
+
+	    SET @mrecommend = @custid 
+	    UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET mrecommend = @custid WHERE custId = @CustID
+
+	    INSERT INTO CustMaster(custId, DisableAutoMPT, IsInternal, TransferOption)
+	    VALUES(@CustID,@DisableAutoMPT, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END)
+    END
+    ELSE IF @roleid = 2
+    BEGIN
+
+	    SELECT @UplineSecurityCode = SecurityCode,
+	           @isForcedChangeSecurityCode = isForcedChangeSecurityCode
+	      FROM dbo.CustLoginInfo WITH(NOLOCK)
+	     WHERE CustID = @mrecommend
+
+	    SET @recommend = @custid
+	    UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET recommend = @custid WHERE custId = @CustID
+
+	    INSERT INTO CustAgent(custId, MaxCredit, IsInternal, TransferOption, Site)
+	    VALUES(@CustID, @MaxCredit, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END, @site)
+
+    END
+    IF @@ERROR <> 0
+    BEGIN
+	    SELECT @ErrMsg = CASE @Language 
+					       WHEN 'E' THEN 'Create customer failed. Please try again.'
+					       ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+					     END
+		     , @ErrCode = 112
+
+	    -- ROLLBACK MANUALLY
+	    IF @RoleID = 4
+		    DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	    ELSE IF @RoleID = 3
+		    DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
+	    ELSE IF @RoleID = 2
+		    DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
+
+	    DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
+
+	    RETURN
+    END
+
+    IF @roleid BETWEEN 2 AND 4 
+    BEGIN
+	    IF @UplineSecurityCode IS NOT NULL OR @isForcedChangeSecurityCode = 1
+		    SELECT @isForcedChangeSecurityCode = 1
+
+	    INSERT INTO dbo.CustLoginInfo
+	    (
+	        CustID, OldUserPwd, LastChangedPwdDate, isFirstLogin, SecurityCodeCount,
+	        SecurityCode, isForcedChangeSecurityCode, LastChangedSecurityCodeDate
+	    )
+	    VALUES
+	    (
+	        @custid, NULL, GETDATE(), 1, 0,
+	        NULL, @isForcedChangeSecurityCode, NULL
+	    )
+
+	    IF @@ERROR <> 0
+	    BEGIN
+		    SELECT	@ErrMsg = CASE @Language
+								    WHEN 'E' THEN 'Create customer failed. Please try again.'
+								    ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							    END
+				    ,@ErrCode = 115
+
+		    IF @RoleID = 4
+			    DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+		    ELSE IF @RoleID = 3
+			    DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
+		    ELSE IF @RoleID = 2
+			    DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
+
+		    DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
+
+		    RETURN
+	    END
+    END
+
+    INSERT INTO [dbo].[custinfo]
+    (
+	    custid, currency
+	  , maxpermatch, maxpermatch2, maxpermatch3, maxpermatch5, maxpermatch8, maxpermatch10, maxpermatch11, maxpermatch201, maxpermatch151
+	  , maxpermatch151_OT, MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, maxpermatch99
+	  , roleid, srecommend, mrecommend, recommend, dangercust, autosuspend, autosuspend2, reject, credit, closed, username
+	  , MatchLimit, VirtualMultiplier, DisableHorseRacing, DisableOpenTote, Disable151_AU, Disable152_UK, Disable152_AU, Disable153_AU
+	  , DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo, maxpermatch161, MaxPerMatch99MP, MaxPerBall161
+	  , MaxPerMatch180, MaxPerMatch181, MaxPerMatch186, danger, danger2, danger3, Abnormal, DisableP2P, DisableFunP2P, IsAutoResetP2P
+	  , DisableLiveCasino, DisableVirtualSports, HideVirtualSports, DoubleCommLosing, isAutoResetLiveCasino, MaxWinLiveCasino
+	  , DisableCasinoBonus, maxpermatch154, DisableHRFixedOdds, maxpermatch182, maxpermatch184, HideKeno, maxpermatch183, maxpermatch185
+	  , DisableEsports)
+    VALUES
+    (
+	    @custid, @currency
+	  , @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31
+	  , @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
+	  , @roleid, @srecommend, @mrecommend, @recommend, 0, @autosuspend, @autosuspend2, ISNULL(@suspended, 0), @credit, ISNULL(@closed, 0), @username
+	  , @matchlimit, @virtualmultiplier, @Disable151_31, @Disable151_41, @Disable151_51, @Disable152_41, @Disable152_51, @Disable153_51
+	  , @DisableFinancial, @DisableOutright, @DisableCasino, @DisableNumber, @DisableBingo, @MaxPerMatchv161, @MaxPerMatchv99MP, @MaxPerBallv161
+	  , @MaxPerMatchv180, @MaxPerMatchv181, @MaxPerMatchv186, @danger, @danger2, @danger3, @Abnormal, @DisableP2P, @DisableFUNP2P, @ISAUTORESETP2P
+	  , @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing, @isAutoResetLiveCasino, @MaxWinLiveCasino
+	  , @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds, @maxpermatchv182, @maxpermatchv184, @HideKeno, @maxpermatchv183, @maxpermatchv185
+	  , @DisableEsports
     )
-	
-END
-ELSE IF @roleid = 3
-BEGIN
-	SELECT @UplineSecurityCode = SecurityCode,
-	       @isForcedChangeSecurityCode = isForcedChangeSecurityCode
-	  FROM dbo.CustLoginInfo WITH(NOLOCK)
-	 WHERE CustID = @srecommend
 
-	SET @mrecommend = @custid 
-	UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET mrecommend = @custid WHERE custId = @CustID
+    IF @@ERROR <> 0
+    BEGIN 
+    --	DELETE customer with (ROWLOCK) where custid =  @custid
+	    SELECT @ErrMsg = CASE @Language
+					       WHEN 'E' THEN 'Create customer failed. Please try again.'
+					       ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+					     END,
+		       @ErrCode = 113
 
-	INSERT INTO CustMaster(custId, DisableAutoMPT, IsInternal, TransferOption)
-	VALUES(@CustID,@DisableAutoMPT, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END)
-END
-ELSE IF @roleid = 2
-BEGIN
+	    -- ROLLBACK MANUALLY
+	    IF @RoleID = 4
+	    BEGIN
+		    DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+		    DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID
+	    END
+	    ELSE IF @RoleID = 3
+	    BEGIN
+		    DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
+		    DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
+	    END
+	    ELSE IF @RoleID = 2
+	    BEGIN
+		    DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
+		    DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
+	    END
 
-	SELECT @UplineSecurityCode = SecurityCode,
-	       @isForcedChangeSecurityCode = isForcedChangeSecurityCode
-	  FROM dbo.CustLoginInfo WITH(NOLOCK)
-	 WHERE CustID = @mrecommend
+	    DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
 
-	SET @recommend = @custid
-	UPDATE Customer WITH (ROWLOCK, UPDLOCK) SET recommend = @custid WHERE custId = @CustID
-
-	INSERT INTO CustAgent(custId, MaxCredit, IsInternal, TransferOption, Site)
-	VALUES(@CustID, @MaxCredit, @IsInternal, CASE WHEN @TransferOption IS NULL THEN ISNULL(@TransferOption_dec, 0) ELSE dbo.F_Binary_Decimal(ISNULL(@TransferOption, 0)) END, @site)
-
-END
-IF @@ERROR <> 0
-BEGIN
-	SELECT @ErrMsg = CASE @Language 
-					   WHEN 'E' THEN 'Create customer failed. Please try again.'
-					   ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-					 END
-		 , @ErrCode = 112
-
-	-- ROLLBACK MANUALLY
-	IF @RoleID = 4
-		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
-	ELSE IF @RoleID = 3
-		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
-	ELSE IF @RoleID = 2
-		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
-
-	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
-
-	RETURN
-END
-
-IF @roleid BETWEEN 2 AND 4 
-BEGIN
-	IF @UplineSecurityCode IS NOT NULL OR @isForcedChangeSecurityCode = 1
-		SELECT @isForcedChangeSecurityCode = 1
-
-	INSERT INTO dbo.CustLoginInfo
-	(
-	    CustID, OldUserPwd, LastChangedPwdDate, isFirstLogin, SecurityCodeCount,
-	    SecurityCode, isForcedChangeSecurityCode, LastChangedSecurityCodeDate
-	)
-	VALUES
-	(
-	    @custid, NULL, GETDATE(), 1, 0,
-	    NULL, @isForcedChangeSecurityCode, NULL
-	)
-
-	IF @@ERROR <> 0
-	BEGIN
-		SELECT	@ErrMsg = CASE @Language
-								WHEN 'E' THEN 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							END
-				,@ErrCode = 115
-
-		IF @RoleID = 4
-			DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
-		ELSE IF @RoleID = 3
-			DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
-		ELSE IF @RoleID = 2
-			DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
-
-		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
-
-		RETURN
-	END
-END
-
-INSERT INTO [dbo].[custinfo](
-	[custId], [currency], [maxpermatch], [maxpermatch2], [maxpermatch3], [maxpermatch5], [maxpermatch8], [maxpermatch10], [maxpermatch11], [maxpermatch201],[maxpermatch151],[maxpermatch151_OT], MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, [maxpermatch99]
-	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend],[autosuspend2], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
-	,DisableHorseRacing,DisableOpenTote,Disable151_AU,Disable152_UK,Disable152_AU,Disable153_AU,DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo
-	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161, MaxPerMatch180, MaxPerMatch181,MaxPerMatch186, danger,danger2,danger3,Abnormal,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports, HideVirtualSports, DoubleCommLosing
-	,isAutoResetLiveCasino, MaxWinLiveCasino, DisableCasinoBonus, maxpermatch154, DisableHRFixedOdds, maxpermatch182, maxpermatch184, HideKeno, maxpermatch183, maxpermatch185 )
-VALUES(
-	@custid, @currency, @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31, @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
-	,@roleid, @srecommend, @mrecommend, @recommend, 0,@autosuspend, @autosuspend2, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
-	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
-	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161, @MaxPerMatchv180, @MaxPerMatchv181,@MaxPerMatchv186, @danger,@danger2,@danger3,@Abnormal,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101, @Disable180_1201, @HideVirtualSports, @DoubleCommLosing
-	,@isAutoResetLiveCasino, @MaxWinLiveCasino, @DisableCasinoBonus, @MaxPerMatchv154, @DisableHRFixedOdds, @maxpermatchv182, @maxpermatchv184, @HideKeno, @maxpermatchv183, @maxpermatchv185)
-
-IF @@ERROR <> 0
-BEGIN 
---	DELETE customer with (ROWLOCK) where custid =  @custid
-	SELECT @ErrMsg = CASE @Language
-					   WHEN 'E' THEN 'Create customer failed. Please try again.'
-					   ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-					 END,
-		   @ErrCode = 113
-
-	-- ROLLBACK MANUALLY
-	IF @RoleID = 4
-	BEGIN
-		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
-		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID
-	END
-	ELSE IF @RoleID = 3
-	BEGIN
-		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
-		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
-	END
-	ELSE IF @RoleID = 2
-	BEGIN
-		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
-		DELETE FROM CustLoginInfo WITH (ROWLOCK) WHERE CustID = @CustID 
-	END
-
-	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
-
-	RETURN
-END
+	    RETURN
+    END
+END    
 GO
 
 SET QUOTED_IDENTIFIER OFF 
