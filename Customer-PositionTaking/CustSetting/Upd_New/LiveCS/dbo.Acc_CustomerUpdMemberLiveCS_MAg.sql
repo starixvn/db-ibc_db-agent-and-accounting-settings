@@ -30,6 +30,7 @@ AS
 		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
 		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		- 20140318@Johnson: check um1 with constraint um1_min and merge code correct pt [Redmine: #11562]
+		- 20140926@Johnson: remove bettype name out of error message
 	Parameters Explanation:
 */
 BEGIN
@@ -90,8 +91,7 @@ BEGIN
 		AND @v162UpdatePositiontaking_1101 = 1
 	BEGIN
 		select @ErrCode_cur = 5
-		Select @ErrMsg_cur = 	@UserName + ': ' +
-			case @Language 
+		Select @ErrMsg_cur = case @Language 
 							when 'E' then 'Wrong position taking.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
 					end
@@ -185,21 +185,17 @@ BEGIN
 	BEGIN
 		--Check um1<=m3
 		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-' + typenamee
-		+ '-Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
+		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag AS mcs INNER JOIN
 			(
 				SELECT 162 AS sporttype, 1101 AS bettype, @auto_v162mpositiontaking_mem_1101 AS autopositiontaking, @isauto_v162mpositiontaking_mem_1101 AS isautopositiontaking
-			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype		
 		WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
 
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 7,
-				   @ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
+				   @ErrMsg_cur = CASE @Language 
 									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
 								END							
@@ -211,22 +207,18 @@ BEGIN
 		
 		--check um1>=u1_min
 		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType + sportname + '-' + typenamee
-		+ '-Min: '+ CAST((mco.minpositiontaking - cs.apositiontaking) AS VARCHAR(10))
+		SELECT @ErrType = @ErrType +  'Min: '+ CAST((mco.minpositiontaking - cs.apositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag AS mco 
 		INNER JOIN @tmp_cs cs ON mco.sporttype = cs.sporttype AND mco.bettype = cs.bettype		
 		INNER JOIN	(
 				SELECT 162 AS sporttype, 1101 AS bettype, @auto_v162mpositiontaking_mem_1101 AS autopositiontaking, @isauto_v162mpositiontaking_mem_1101 AS isautopositiontaking
-			) AS b ON mco.sporttype=b.sporttype AND mco.bettype=b.bettype
-		INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			) AS b ON mco.sporttype=b.sporttype AND mco.bettype=b.bettype		
 		WHERE (b.isautopositiontaking>0 AND cs.apositiontaking + b.autopositiontaking < mco.minpositiontaking) 
 
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 10,
-				   @ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
+				   @ErrMsg_cur = CASE @Language 
 									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
 								END							
@@ -262,21 +254,17 @@ BEGIN
 	BEGIN	
 		--Check m1<=m3
 		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType 
-		 + 'Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
+		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag mcs INNER JOIN 
 			(
 				SELECT 162 AS sporttype	,	 1101 AS bettype	,	 @v162mpositiontaking_1101 AS mpositiontaking
-			)b ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype		
-			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			)b ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype					
 		WHERE (b.mpositiontaking>mcs.mpositiontaking) 
 
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 8,
-					@ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
+					@ErrMsg_cur = CASE @Language 
 									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 								END							
@@ -288,22 +276,18 @@ BEGIN
 		
 		--check m1 + a1 <= m3
 		SELECT @ErrType = ''
-		SELECT @ErrType = @ErrType 
-		 + 'Max: '+ CAST((mcs.mpositiontaking - cs.apositiontaking) AS VARCHAR(10))
+		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking - cs.apositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag mcs INNER JOIN 
 			(
 				SELECT 162 AS sporttype	,	 1101 AS bettype	,	 @v162mpositiontaking_1101 AS mpositiontaking
 			)b ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype	
-			INNER JOIN @tmp_cs cs ON mcs.sporttype = cs.sporttype and mcs.bettype = cs.bettype	
-			INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			INNER JOIN @tmp_cs cs ON mcs.sporttype = cs.sporttype and mcs.bettype = cs.bettype				
 		WHERE (b.mpositiontaking + cs.apositiontaking > mcs.mpositiontaking) 
 
 		IF @ErrType <>''
 		BEGIN
 			SELECT @ErrCode_cur = 8,
-					@ErrMsg_cur = @UserName + ': '+
-								CASE @Language 
+					@ErrMsg_cur = CASE @Language 
 									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 								END							
@@ -317,7 +301,7 @@ BEGIN
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + 'Min: ' + CAST((mco.minpositiontaking - cs.apositiontaking) AS VARCHAR(10))  
 		FROM @tmp_cs cs
-			INNER JOIN @tmp_mag mco ON cs.sporttype = mco.sporttype AND cs.bettype = mco.bettype
+			INNER JOIN @tmp_mag mco ON cs.sporttype = mco.sporttype AND cs.bettype = mco.bettype			
 		WHERE cs.apositiontaking + @v162mpositiontaking_1101< mco.minpositiontaking
 		
 		IF @ErrType <>''

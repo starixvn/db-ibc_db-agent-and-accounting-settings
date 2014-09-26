@@ -18,7 +18,7 @@ AS
 		DB: DBTXN/CustDB
 		
 		Revisions:
-		
+			- 20140925@Johnson: Remove bettype name from error message
 		Parameter's explanation:
 	*/
 BEGIN
@@ -41,8 +41,7 @@ BEGIN
 		OR @v162apositiontaking_1101 + @v162mpositiontaking_1101 > 1
 	BEGIN
 		SELECT @ErrCode = 100
-		SELECT @ErrMsg = 	@UserName + ': '+
-			CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Wrong position taking.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
 					END
@@ -52,15 +51,12 @@ BEGIN
 	--check n3<=m2+a2  if im2 = 0, 
 	--a2<=l3 and um2+a2>=n3 if im2 = 1
 	SELECT @ErrType = ''
-	SELECT @ErrType = @ErrType + s.SportName + ' - ' + typenamee
-		+ '-Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10))+ '<br>'
+	SELECT @ErrType = @ErrType + 'Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10))+ '<br>'
 	FROM custoverrideGame co WITH(NOLOCK)
 		INNER JOIN 
 			(
 				SELECT 1101 AS bettype, 162 AS sporttype, @v162apositiontaking_1101 AS apositiontaking, @v162mpositiontaking_1101 AS mpositiontaking, @isauto_v162mpositiontaking_1101 AS isauto_mpositiontaking, @auto_v162mpositiontaking_1101 AS auto_mpositiontaking
-			) b ON co.sporttype = b.sporttype AND co.bettype = b.bettype
-		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+			) b ON co.sporttype = b.sporttype AND co.bettype = b.bettype				
 	WHERE co.custid = @mrecommend AND (	
 						((b.isauto_mpositiontaking = 0) AND (b.mpositiontaking + b.apositiontaking < co.minpositiontaking)) or 
 						(b.isauto_mpositiontaking > 0 AND (b.apositiontaking + b.auto_mpositiontaking < co.minpositiontaking))
@@ -68,8 +64,7 @@ BEGIN
 	IF @ErrType <>''
 	BEGIN
 		SELECT @ErrCode = 101
-		SELECT @ErrMsg = @UserName + ': '+
-				CASE @Language 
+		SELECT @ErrMsg = CASE @Language 
 							WHEN 'E' THEN 'Wrong position taking (min/max set by company).<br>'+@ErrType
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + '<br>' + @ErrType
 					END
@@ -78,8 +73,7 @@ BEGIN
 	
 	--n2<=a2
 	SELECT @ErrType = ''
-	SELECT @ErrType = @ErrType + s.SportName + ' - ' + typenamee	
-		+ '-Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10)) + '<br>'
+	SELECT @ErrType = @ErrType + 'Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10)) + '<br>'
 	FROM 
 		( 
 			SELECT 1101 AS bettype, 162 AS sporttype, @min_v162apositiontaking_1101 AS minpositiontaking
@@ -87,16 +81,13 @@ BEGIN
 		INNER JOIN 
 		(
 			select 1101 AS bettype, 162 AS sporttype, @v162apositiontaking_1101 AS apositiontaking
-		) AS b ON co.sporttype = b.sporttype AND co.bettype = b.bettype
-		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		) AS b ON co.sporttype = b.sporttype AND co.bettype = b.bettype				
 	WHERE b.apositiontaking < co.minpositiontaking
 
 	IF @ErrType <>''
 	BEGIN
 		SELECT @ErrCode = 102
-		SELECT @ErrMsg = 	@UserName + ': '+
-					case @Language 
+		SELECT @ErrMsg = case @Language 
 							when 'E' then 'Wrong position taking (min/max set by company).<br>'+@ErrType
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language) + '<br>' + @ErrType
 					end
@@ -113,16 +104,13 @@ BEGIN
 	FROM
 		(				
 			select 1101 as bettype, 162 as sporttype, @v162apositiontaking_1101 AS apositiontaking, @v162mpositiontaking_1101 AS mpositiontaking, @max_v162mapositiontaking_1101 AS max_mapositiontaking
-		) b
-		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s witH(nolock) on b.sporttype = s.sporttype
+		) b				
 	WHERE (b.apositiontaking + b.mpositiontaking > b.max_mapositiontaking) 
 
 	IF @ErrType <>''
 	BEGIN
 		select @ErrCode = 103
-		Select @ErrMsg = 	@UserName + ': '+
-							case @Language 
+		Select @ErrMsg = 	case @Language 
 							when 'E' then 'Wrong position taking.<br>'+@ErrType
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 					end		
@@ -131,14 +119,11 @@ BEGIN
 	
 	--check um2<=min(m3,l3) - Phuc@20081209
 	select @ErrType = ''
-	select @ErrType = @ErrType + s.SportName + ' - ' + typenamee
-	 + '-Max: '+ cast(max_mapositiontaking as varchar(10)) + '<br>'
+	select @ErrType = @ErrType + 'Max: '+ cast(max_mapositiontaking as varchar(10)) + '<br>'
 	from 
 	(
 		select 1101 AS bettype, 162 as sporttype, @auto_v162mpositiontaking_1101 as autopositiontaking, @isauto_v162mpositiontaking_1101 as isautopositiontaking, @max_v162mapositiontaking_1101 as max_mapositiontaking		
-	) as b 
-		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
+	) as b 				
 	where b.isautopositiontaking = 1 
 		AND b.autopositiontaking > max_mapositiontaking
 		
@@ -146,8 +131,7 @@ BEGIN
 	if @ErrType <>''
 	BEGIN
 		select @ErrCode = 104
-		Select @ErrMsg = 	@UserName + ': '+
-							case @Language 
+		Select @ErrMsg = 	case @Language 
 							when 'E' then 'Wrong position taking.<br>'+@ErrType
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 					end		

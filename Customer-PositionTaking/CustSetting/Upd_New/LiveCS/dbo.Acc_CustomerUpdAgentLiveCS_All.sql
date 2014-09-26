@@ -111,7 +111,7 @@ BEGIN
 		--check n3<=m2+a2  if im2 = 0, 
 		--a2<=l3 and um2+a2>=n3 if im2 = 1
 		SELECT @ErrMsg_Cur = ''
-		SELECT @ErrMsg_Cur = @ErrMsg_Cur + '-Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10))+ '<br>'
+		SELECT @ErrMsg_Cur = @ErrMsg_Cur + 'Min: '+ CAST((co.minpositiontaking) AS VARCHAR(10))+ '<br>'
 		FROM custoverrideGame co WITH(NOLOCK)
 			INNER JOIN 
 				(
