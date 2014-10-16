@@ -37,7 +37,7 @@ Revisions:
 	- 20130709@Jamie: Apply ExecRep 
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
 	- 20140618@Thien: Prevent robot from opening back the closed accounts
-	
+	- 20141016@Johnson: Stopping temporarily function un-close for customers under site 722222 and SD currency [RedmineID:#24481]
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 
@@ -89,8 +89,9 @@ END
 ---------------------------
 
 Declare @roleid tinyint, @LoginCount int, @Old_Closed bit, @UplineClosed bit, @srecommend int, @mrecommend int, @recommend int 
-
-select @roleid = roleid, @LoginCount = logincount
+		,@site varchar(20) ,@currency int ,@isDeposit bit
+		
+select @roleid = roleid, @LoginCount = logincount, @currency = currency
 from customer with (nolock)
 where custid = @custid
 
@@ -101,6 +102,27 @@ select  @Old_Closed = closed,
 from custinfo with (nolock)
 where custid = @custid
 
+--check site 722222 customers(role = 1,2) and all customers belong to SD currency not to un-suspend
+IF @closed = 0
+ BEGIN
+	SELECT @site = site FROM customer WITH(NOLOCK) WHERE custid = @recommend
+	
+	IF EXISTS (SELECT 1 FROm Dep_custSuper WITH(NOLOCK) WHERE custid = @srecommend)
+		SELECT @isDeposit = 1
+	ELSE SELECT @isDeposit = 0
+		
+	IF (@Site = '722222' AND @roleid IN (1,2)) OR (@isDeposit = 0 AND @currency = 1)
+	BEGIN	
+		Select @ErrMsg = case @Language 
+								when 'E' then 'This CLOSED function is temporarily unavailable, please update later.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](60004,@Language)
+							end	,
+				@ErrCode = 106				
+			return
+	END
+	
+ END
+ 
 -- 20130410@Elodie: Only update 'closed' status if values are different
 IF @Old_Closed = @Closed -- and @LoginCount > 5
 	return
