@@ -34,8 +34,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130527@Elodie: Change linked server DB053 to DBAGE for Acc_CustomerSelCheckAllowedDownlines
 	- 20130709@Jamie: Apply Exec Rep 
-	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
-	- 20141016@Johnson: Stopping temporarily function un-suspend for customers under site 722222 and SD currency [RedmineID:#24481]
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)		
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -80,39 +79,16 @@ begin
 end
 ----------
 
-Declare @RoleID tinyint , @UplineSuspended bit , @Old_Suspended bit, @UplineClosed bit,
-		@site varchar(20), @currency int, @isDeposit bit
+Declare @RoleID tinyint , @UplineSuspended bit , @Old_Suspended bit, @UplineClosed bit
 
 select 
 	@RoleID = RoleID, 
 	@Old_Suspended = isnull(reject,0),
 	@srecommend = srecommend,
 	@mrecommend = mrecommend,
-	@recommend = recommend,
-	@currency = currency
+	@recommend = recommend
 from Custinfo with (nolock)
 where CustID = @CustID
-
---check site 722222 customers(role = 1,2) and all customers belong to SD currency not to un-suspend
-IF @Suspended = 0
- BEGIN
-	SELECT @site = site FROM customer WITH(NOLOCK) WHERE custid = @recommend
-	
-	IF EXISTS (SELECT 1 FROm Dep_custSuper WITH(NOLOCK) WHERE custid = @srecommend)
-		SELECT @isDeposit = 1
-	ELSE SELECT @isDeposit = 0
-		
-	IF (@Site = '722222' AND @roleid IN (1,2)) OR (@isDeposit = 0 AND @currency = 1)
-	BEGIN	
-		Select @ErrMsg = case @Language 
-							when 'E' then 'This SUSPENDED function is temporarily unavailable, please update later.'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](60001,@Language)
-						end	,
-			@ErrCode = 105
-			return
-	END
-	
- END
 
 -- Check Allowed downlines during peak hour at weekend 
 EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
