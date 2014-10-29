@@ -1,4 +1,15 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_02]    Script Date: 10/29/2014 02:38:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/14/2014 2:13:15 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/11/2014 5:04:54 PM ******/
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/11/2014 4:19:39 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
 	@custid INT =0,
 	@ExistingCustid INT = 0,
 	@Language VARCHAR(3) = 'E',
@@ -9,32 +20,22 @@ AS
 	Created: Johnson
 	Date: 20131106
 	Task: Apply execrep when insert into custsetting/custsetting3rd
-	DB: DBTXN/CustDB
+	DB: DBTXN/bodb02
 	
 	Revisions:
-	
+		20140303@Patrick	: Add more sport: 202 for Keno
 	Parameter's Explanation:
 */ 
 BEGIN
 	SET NOCOUNT ON
 	
-	--DECLARE @IsExistTables tinyint
-	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-	--		AND xtype = 'U'
-
-	--if @IsExistTables <> 6 RETURN
-	
-	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
+	DECLARE @IsExistTables tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
+	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
 			AND xtype = 'U'
-	
-	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-			AND xtype = 'V'
-			
-	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
+			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2')
+
+	if @IsExistTables <> 7 RETURN	
 	
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
@@ -73,11 +74,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 107
+		SELECT @ErrCode = 107
 		RETURN				
 	END
 	
@@ -112,11 +109,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 108
+		SELECT @ErrCode = 108
 					
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -145,11 +138,7 @@ BEGIN
 	if @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 109
+		SELECT @ErrCode = 109
 			
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -180,11 +169,7 @@ BEGIN
 	IF @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 110
+		SELECT @ErrCode = 110
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -205,11 +190,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 111
+		SELECT @ErrCode = 111
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -231,11 +212,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 112
+		SELECT @ErrCode = 112
 			
 		-- ROLLBACK MANUALLY			
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -285,11 +262,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 113
+		SELECT @ErrCode = 113
 			
 		-- ROLLBACK MANUALLY				
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -312,11 +285,7 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 114
+		SELECT @ErrCode = 114
 			
 		-- ROLLBACK MANUALLY		
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -329,4 +298,31 @@ BEGIN
 					
 		RETURN
 	END	
+
+	--Keno
+	INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
+	SELECT	GameTypeID, @CustID, MinBet, MaxBet, MaxPerGameType, IsDisabled
+	FROM	dbo.CustGameType WITH(NOLOCK)
+	WHERE	Custid = @ExistingCustid
+
+	IF @@ERROR <> 0
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 156
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			
+		RETURN
+	END
+	--End Keno
 END
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_02] TO [vnteam] AS [dbo]
