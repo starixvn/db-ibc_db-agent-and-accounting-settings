@@ -784,6 +784,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 			- 20140318@Elodie: Add CustSettingGame for Keno [Redmine:#13156]
 			- 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+            - 20141029@Logan:   Check constraint for customer MinBet: MAX(AllUpline.MinBet, Global.MinBet) [Redmine: #25165]
+
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -795,7 +797,17 @@ SET NOCOUNT ON
 			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
 
 	if @IsExistTables <> 7 RETURN
-	
+
+    DECLARE @currency INT
+          , @super    INT
+          , @master   INT
+
+    SELECT @currency = currency
+         , @super = srecommend
+         , @master = mrecommend
+      FROM dbo.custInfo WITH(NOLOCK)
+     WHERE custid = @custid
+
 	IF @roleid = 4
 	BEGIN					
 		INSERT INTO [dbo].[custsetting]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [alivepositiontaking], [mlivepositiontaking], [slivepositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [groupa], [groupb], [groupc], [groupd], [groupe], [groupf], [Minbet], [Maxbet], autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking ,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
@@ -1618,11 +1630,35 @@ SET NOCOUNT ON
 			RETURN
 		END
 		
-		--Keno: copy all bet setting from super to master
-		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-		WHERE custid = @srecommend
+		--Keno: Master.MinBet = MAX(Super.MinBet, Global.MinBet)
+        --      Other values will be copy from super
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT cg.GameTypeID
+             , @CustID
+             , cg.StakeLevelList
+             , (SELECT MAX(MinBet)
+                  FROM (VALUES (cg.MinBet)
+                             , (pbs.MinBet)
+                       ) AS UplineMinBet(MinBet)
+               )
+             , cg.MaxBet
+             , cg.MaxPerGameType
+             , cg.IsDisabled
+		  FROM dbo.CustGameType cg WITH(NOLOCK)
+    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+		 WHERE cg.CustID = @srecommend
+           AND pbs.Currency = @currency
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -2069,11 +2105,38 @@ SET NOCOUNT ON
 			RETURN
 		END
 
-		--Keno: copy gametype from master to agent
-		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 			
-		WHERE custid = @mrecommend
+		--Keno: Agent.MinBet = MAX(Master.MinBet, Super.MinBet, Global.MinBet)
+        --      Other values will be copy from master
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT mcg.GameTypeID
+             , @CustID
+             , mcg.StakeLevelList
+             , (SELECT MAX(MinBet)
+                  FROM (VALUES (mcg.MinBet)
+                             , (scg.MinBet)
+                             , (pbs.MinBet)
+                       ) AS UplineMinBet(MinBet)
+               )
+             , mcg.MaxBet
+             , mcg.MaxPerGameType
+             , mcg.IsDisabled
+		  FROM dbo.CustGameType mcg WITH(NOLOCK)
+    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON mcg.GameTypeID = gt.GameTypeID
+    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+    INNER JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
+		 WHERE mcg.CustID = @mrecommend
+           AND pbs.Currency = @currency
+           AND scg.CustID = @super
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 
 		IF @@error <> 0
 		BEGIN
@@ -2389,12 +2452,41 @@ SET NOCOUNT ON
 			RETURN
 		END
 
-		--Keno: copy CustGameType from Agent to Member
-		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @Custid, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
+		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
+        --      Other values will be copied from Agent                
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT acg.GameTypeID
+             , @CustID
+             , acg.StakeLevelList
+             , (SELECT MAX(MinBet)
+                  FROM (VALUES (acg.MinBet)
+                             , (mcg.MinBet)
+                             , (scg.MinBet)
+                             , (pbs.MinBet)
+                       ) AS UplineMinBet(MinBet)
+               ) 
+             , acg.MaxBet
+             , acg.MaxPerGameType
+             , acg.IsDisabled
+		  FROM dbo.CustGameType acg WITH(NOLOCK)
+    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON acg.GameTypeID = gt.GameTypeID
+    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+    INNER JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = acg.GameTypeID
+    INNER JOIN dbo.CustGameType mcg WITH(NOLOCK) ON mcg.GameTypeID = acg.GameTypeID
+		 WHERE mcg.CustID = @master
+           AND pbs.Currency = @currency
+           AND scg.CustID = @super
+           AND acg.CustID = @recommend
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 
 		IF @@error <> 0
 		BEGIN
