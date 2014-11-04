@@ -18,6 +18,7 @@ AS
 
 	Param's Explanation:
 	• @RoleID: Created level
+	• @CustID: Created customer ID
 	
 	*/
 BEGIN
@@ -25,7 +26,7 @@ BEGIN
 	BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
-		SELECT @SuperID,SportType,BetType,IsDisabled,IsHidden,IsSync
+		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
 		FROM dbo.ProductSettingDetail
 		WHERE SettingType = 4
 	END
@@ -33,7 +34,7 @@ BEGIN
 	BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
-		SELECT @MasterID,SportType,BetType,IsDisabled,IsHidden,IsSync
+		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
 		FROM dbo.CustProductStatus
 		WHERE CustID=@SuperID
 	END
@@ -41,7 +42,7 @@ BEGIN
 	BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
-		SELECT @AgentID,SportType,BetType,IsDisabled,IsHidden,IsSync
+		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
 		FROM dbo.CustProductStatus
 		WHERE CustID=@MasterID
 	END
