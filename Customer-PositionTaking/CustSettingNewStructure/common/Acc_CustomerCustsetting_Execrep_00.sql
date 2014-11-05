@@ -21,6 +21,22 @@ AS
 	• @CustID: Created customer ID
 	*/
 BEGIN
+	DECLARE @IsExistTables tinyint
+	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN (
+				'CustPTSetting3rd_Agent',
+				'AgentPTGroupSetting_3rd',
+				'CustSettingMode_3rd',
+				'CustPTSetting3rd_Member',
+				'CustBetSetting3rd_Agent',
+				'CustBetSetting3rd_Member',
+				'CustDiscount3rd_Agent',
+				'CustDiscount3rd_Member')
+			AND xtype = 'U'
+
+	if @IsExistTables <> 8  RETURN
+	
+	
 	--Insert default PT for customer
 	IF @RoleID <> 1
 	BEGIN
@@ -160,7 +176,7 @@ BEGIN
 	END
 	ELSE IF @RoleID=1
 	BEGIN
-		INSERT INTO dbo.CustBetSetting3rd_Agent
+		INSERT INTO dbo.CustBetSetting3rd_Member
 		(custid,sporttype,bettype,minbet,maxbet,maxpermatch)
 		SELECT
 		@CustID,scs.SportType,scs.BetType,
