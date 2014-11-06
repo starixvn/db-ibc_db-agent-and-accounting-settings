@@ -27,7 +27,7 @@ BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
 		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
-		FROM dbo.ProductSettingDetail
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
 		WHERE SettingType = 4
 	END
 	ELSE IF @RoleID = 3
@@ -35,7 +35,7 @@ BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
 		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
-		FROM dbo.CustProductStatus
+		FROM dbo.CustProductStatus WITH (NOLOCK)
 		WHERE CustID=@SuperID
 	END
 	ELSE IF @RoleID = 2
@@ -43,7 +43,7 @@ BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
 		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
-		FROM dbo.CustProductStatus
+		FROM dbo.CustProductStatus WITH (NOLOCK)
 		WHERE CustID=@MasterID
 	END
 	ELSE IF @RoleID = 1
@@ -51,7 +51,7 @@ BEGIN
 		INSERT INTO dbo.CustProductStatus
 		(CustID,SportType,BetType,IsDisabled,IsHidden,IsSync)
 		SELECT @CustID,SportType,BetType,IsDisabled,IsHidden,IsSync
-		FROM dbo.CustProductStatus
+		FROM dbo.CustProductStatus WITH (NOLOCK)
 		WHERE CustID=@AgentID
 	END
 END

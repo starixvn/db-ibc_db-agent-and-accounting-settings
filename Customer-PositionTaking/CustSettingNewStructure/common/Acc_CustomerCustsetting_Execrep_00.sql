@@ -24,17 +24,14 @@ BEGIN
 	DECLARE @IsExistTables tinyint
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN (
-				'CustPTSetting3rd_Agent',
-				'AgentPTGroupSetting_3rd',
-				'CustSettingMode_3rd',
-				'CustPTSetting3rd_Member',
+				'CustPTSetting3rd_Agent',,
 				'CustBetSetting3rd_Agent',
 				'CustBetSetting3rd_Member',
 				'CustDiscount3rd_Agent',
 				'CustDiscount3rd_Member')
 			AND xtype = 'U'
 
-	if @IsExistTables <> 8  RETURN
+	if @IsExistTables <> 5  RETURN
 	
 	
 	--Insert default PT for customer
@@ -46,98 +43,98 @@ BEGIN
 		SELECT 
 		@CustID,SportType,BetType,IsLive,
 			0,0,0,0,0,0,0,0,MaxPT
-		FROM dbo.ProductSettingDetail
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
 		WHERE SettingType = 1
 	END
-	ELSE
-	BEGIN
-		DECLARE @memberPTTbl 
-			TABLE(
-			[SportType] [smallint] NOT NULL,
-			[BetType] [smallint] NOT NULL,
-			[Islive] [bit] NOT NULL,
-			[SuperPT] [tinyint] NOT NULL,
-			[MasterPT] [tinyint] NOT NULL,
-			[AgentPT] [tinyint] NOT NULL,
-			[IsAutoMPT] [bit] NOT NULL,
-			[AutoMPT] [tinyint] NOT NULL,
-			[IsautoSPT] [bit] NOT NULL,
-			[AutoSPT] [tinyint] NOT NULL)
+	--ELSE
+	--BEGIN
+	--	DECLARE @memberPTTbl 
+	--		TABLE(
+	--		[SportType] [smallint] NOT NULL,
+	--		[BetType] [smallint] NOT NULL,
+	--		[Islive] [bit] NOT NULL,
+	--		[SuperPT] [tinyint] NOT NULL,
+	--		[MasterPT] [tinyint] NOT NULL,
+	--		[AgentPT] [tinyint] NOT NULL,
+	--		[IsAutoMPT] [bit] NOT NULL,
+	--		[AutoMPT] [tinyint] NOT NULL,
+	--		[IsautoSPT] [bit] NOT NULL,
+	--		[AutoSPT] [tinyint] NOT NULL)
 		
-		INSERT INTO @memberPTTbl
-				(SportType,BetType,Islive,
-				SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT)	
-		SELECT 
-				acs.SportType,acs.BetType,acs.IsLive,
-				mcs.superPT,acs.masterPT,acs.agentPT,0,0,0,0
-		FROM dbo.CustPTSetting3rd_Agent acs
-		JOIN dbo.CustPTSetting3rd_Agent mcs 
-					ON acs.sporttype = mcs.sporttype
-					AND acs.bettype = mcs.bettype
-					AND acs.islive = mcs.islive
-					AND mcs.custid = @MasterID
-		WHERE acs.custid=@AgentID 
+	--	INSERT INTO @memberPTTbl
+	--			(SportType,BetType,Islive,
+	--			SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT)	
+	--	SELECT 
+	--			acs.SportType,acs.BetType,acs.IsLive,
+	--			mcs.superPT,acs.masterPT,acs.agentPT,0,0,0,0
+	--	FROM dbo.CustPTSetting3rd_Agent acs
+	--	JOIN dbo.CustPTSetting3rd_Agent mcs 
+	--				ON acs.sporttype = mcs.sporttype
+	--				AND acs.bettype = mcs.bettype
+	--				AND acs.islive = mcs.islive
+	--				AND mcs.custid = @MasterID
+	--	WHERE acs.custid=@AgentID 
 			
 			
-		--If this is the first member,insert into Group Setting
-		INSERT INTO dbo.AgentPTGroupSetting_3rd
-		(AgentID,SportType,BetType,Islive,
-			SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT)
-		SELECT 
-		@AgentID,SportType,BetType,Islive,
-			SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT
-		FROM @memberPTTbl
-		WHERE NOT EXISTS(SELECT TOP 1 1 FROM dbo.AgentPTGroupSetting_3rd WHERE AgentID=@AgentID)
+	--	--If this is the first member,insert into Group Setting
+	--	INSERT INTO dbo.AgentPTGroupSetting_3rd
+	--	(AgentID,SportType,BetType,Islive,
+	--		SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT)
+	--	SELECT 
+	--	@AgentID,SportType,BetType,Islive,
+	--		SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT
+	--	FROM @memberPTTbl
+	--	WHERE NOT EXISTS(SELECT TOP 1 1 FROM dbo.AgentPTGroupSetting_3rd WHERE AgentID=@AgentID)
 		
-		IF @@ROWCOUNT<>0
-		BEGIN
-			--It this is the fist member,just insert IsgroupedPT=1
-			INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
-			SELECT @CustID,@AgentID,1
-		END
-		ELSE
-		BEGIN
-			IF EXISTS(SELECT TOP 1 1
-					FROM dbo.AgentPTGroupSetting_3rd apt
-					JOIN @memberPTTbl tmp ON tmp.SportType = apt.SportType
-											AND tmp.BetType = apt.BetType
-											AND tmp.Islive = apt.Islive
-					WHERE apt.AgentID = @AgentID
-					AND (
-						tmp.SuperPT <> apt.SuperPT
-						OR
-						tmp.MasterPT <> apt.MasterPT
-						OR
-						tmp.AgentPT <> apt.AgentPT
-						OR
-						tmp.IsAutoMPT <> apt.IsAutoMPT
-						OR
-						tmp.AutoMPT <> apt.AutoMPT
-						OR
-						tmp.IsautoSPT <> apt.IsautoSPT
-						OR
-						tmp.AutoSPT <> apt.AutoSPT
-					))
-			BEGIN
-				--If this member's PT setting are diffrent from Group PT Setting
-				INSERT INTO dbo.CustPTSetting3rd_Member
-				(custid,sporttype,bettype,islive,
-					superPT,masterPT,agentPT,isautomPT,automPT,isautosPT,autosPT)
-				SELECT 
-				@CustID,SportType,BetType,Islive,
-					SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT
-				FROM @memberPTTbl
+	--	IF @@ROWCOUNT<>0
+	--	BEGIN
+	--		--It this is the fist member,just insert IsgroupedPT=1
+	--		INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
+	--		SELECT @CustID,@AgentID,1
+	--	END
+	--	ELSE
+	--	BEGIN
+	--		IF EXISTS(SELECT TOP 1 1
+	--				FROM dbo.AgentPTGroupSetting_3rd apt
+	--				JOIN @memberPTTbl tmp ON tmp.SportType = apt.SportType
+	--										AND tmp.BetType = apt.BetType
+	--										AND tmp.Islive = apt.Islive
+	--				WHERE apt.AgentID = @AgentID
+	--				AND (
+	--					tmp.SuperPT <> apt.SuperPT
+	--					OR
+	--					tmp.MasterPT <> apt.MasterPT
+	--					OR
+	--					tmp.AgentPT <> apt.AgentPT
+	--					OR
+	--					tmp.IsAutoMPT <> apt.IsAutoMPT
+	--					OR
+	--					tmp.AutoMPT <> apt.AutoMPT
+	--					OR
+	--					tmp.IsautoSPT <> apt.IsautoSPT
+	--					OR
+	--					tmp.AutoSPT <> apt.AutoSPT
+	--				))
+	--		BEGIN
+	--			--If this member's PT setting are diffrent from Group PT Setting
+	--			INSERT INTO dbo.CustPTSetting3rd_Member
+	--			(custid,sporttype,bettype,islive,
+	--				superPT,masterPT,agentPT,isautomPT,automPT,isautosPT,autosPT)
+	--			SELECT 
+	--			@CustID,SportType,BetType,Islive,
+	--				SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT
+	--			FROM @memberPTTbl
 				
-				INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
-				SELECT @CustID,@AgentID,0
-			END
-			ELSE
-			BEGIN
-				INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
-				SELECT @CustID,@AgentID,1
-			END
-		END
-	END
+	--			INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
+	--			SELECT @CustID,@AgentID,0
+	--		END
+	--		ELSE
+	--		BEGIN
+	--			INSERT INTO dbo.CustSettingMode_3rd(CustID,AgentID,IsGroupedPT)
+	--			SELECT @CustID,@AgentID,1
+	--		END
+	--	END
+	--END
 	
 	--Insert default Bet Limit for customer
 	IF @RoleID=4
@@ -146,7 +143,7 @@ BEGIN
 		(custid,sporttype,bettype,minbet,maxbet,maxpermatch,maxperBall)
 		SELECT
 		@CustID,SportType,BetType,0,0,0,0
-		FROM dbo.ProductSettingDetail
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
 		WHERE SettingType = 2
 	END
 	ELSE IF @RoleID=3
@@ -155,7 +152,7 @@ BEGIN
 		(custid,sporttype,bettype,minbet,maxbet,maxpermatch)
 		SELECT
 		@CustID,SportType,BetType,minbet,maxbet,maxpermatch
-		FROM dbo.CustBetSetting3rd_Agent
+		FROM dbo.CustBetSetting3rd_Agent WITH (NOLOCK)
 		WHERE custid=@SuperID
 	END
 	ELSE IF @RoleID=2
@@ -167,8 +164,8 @@ BEGIN
 			CASE WHEN scs.minbet > mcs.minbet THEN scs.minbet ELSE mcs.minbet END,
 			CASE WHEN scs.maxbet < mcs.maxbet THEN scs.maxbet ELSE mcs.maxbet END,
 			CASE WHEN scs.maxpermatch < mcs.maxpermatch THEN scs.maxpermatch ELSE mcs.maxpermatch END
-		FROM dbo.CustBetSetting3rd_Agent scs
-		JOIN dbo.CustBetSetting3rd_Agent mcs
+		FROM dbo.CustBetSetting3rd_Agent scs WITH (NOLOCK)
+		JOIN dbo.CustBetSetting3rd_Agent mcs WITH (NOLOCK)
 					ON scs.sporttype = mcs.sporttype
 					AND scs.bettype = mcs.bettype
 					AND mcs.custid = @MasterID
@@ -192,12 +189,12 @@ BEGIN
 				WHEN scs.maxpermatch < mcs.maxpermatch AND scs.maxpermatch < acs.maxpermatch THEN scs.maxpermatch 
 				WHEN mcs.maxpermatch < scs.maxpermatch AND mcs.maxpermatch < acs.maxpermatch THEN mcs.maxpermatch
 				WHEN acs.maxpermatch < scs.maxpermatch AND acs.maxpermatch < mcs.maxpermatch THEN acs.maxpermatch END
-		FROM dbo.CustBetSetting3rd_Agent scs
-		JOIN dbo.CustBetSetting3rd_Agent mcs
+		FROM dbo.CustBetSetting3rd_Agent scs WITH (NOLOCK)
+		JOIN dbo.CustBetSetting3rd_Agent mcs WITH (NOLOCK)
 					ON scs.sporttype = mcs.sporttype
 					AND scs.bettype = mcs.bettype
 					AND mcs.custid = @MasterID
-		JOIN dbo.CustBetSetting3rd_Agent acs
+		JOIN dbo.CustBetSetting3rd_Agent acs WITH (NOLOCK)
 					ON scs.sporttype = acs.sporttype
 					AND scs.bettype = acs.bettype
 					AND acs.custid = @AgentID
@@ -211,7 +208,7 @@ BEGIN
 		(custid,sporttype,bettype,discounta)
 		SELECT 
 		@CustID,SportType,BetType,0
-		FROM dbo.ProductSettingDetail
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
 		WHERE SettingType = 3
 	END
 	ELSE
@@ -221,12 +218,12 @@ BEGIN
 		(custid,sporttype,bettype,playerdiscount,discount,adiscount,sdiscount)
 		SELECT 
 		@CustID,acs.SportType,acs.BetType,0,acs.discounta,mcs.discounta,scs.discounta
-		FROM dbo.CustDiscount3rd_Agent acs
-		JOIN dbo.CustDiscount3rd_Agent mcs 
+		FROM dbo.CustDiscount3rd_Agent acs WITH (NOLOCK)
+		JOIN dbo.CustDiscount3rd_Agent mcs WITH (NOLOCK)
 					ON acs.sporttype = mcs.sporttype
 					AND acs.bettype = mcs.bettype
 					AND mcs.custid = @MasterID
-		JOIN dbo.CustDiscount3rd_Agent scs 
+		JOIN dbo.CustDiscount3rd_Agent scs WITH (NOLOCK)
 					ON acs.sporttype = scs.sporttype
 					AND acs.bettype = scs.bettype
 					AND scs.custid = @SuperID
