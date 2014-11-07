@@ -178,17 +178,17 @@ BEGIN
 		SELECT
 		@CustID,scs.SportType,scs.BetType,
 			CASE 
-				WHEN scs.minbet > mcs.minbet AND scs.minbet > acs.minbet THEN scs.minbet 
-				WHEN mcs.minbet > scs.minbet AND mcs.minbet > acs.minbet THEN mcs.minbet
-				WHEN acs.minbet > scs.minbet AND acs.minbet > mcs.minbet THEN acs.minbet END,
+				WHEN scs.minbet >= mcs.minbet AND scs.minbet >= acs.minbet THEN scs.minbet 
+				WHEN mcs.minbet >= scs.minbet AND mcs.minbet >= acs.minbet THEN mcs.minbet
+				WHEN acs.minbet >= scs.minbet AND acs.minbet >= mcs.minbet THEN acs.minbet END,
 			CASE 
-				WHEN scs.maxbet < mcs.maxbet AND scs.maxbet < acs.maxbet THEN scs.maxbet 
-				WHEN mcs.maxbet < scs.maxbet AND mcs.maxbet < acs.maxbet THEN mcs.maxbet
-				WHEN acs.maxbet < scs.maxbet AND acs.maxbet < mcs.maxbet THEN acs.maxbet END,
+				WHEN scs.maxbet <= mcs.maxbet AND scs.maxbet <= acs.maxbet THEN scs.maxbet 
+				WHEN mcs.maxbet <= scs.maxbet AND mcs.maxbet <= acs.maxbet THEN mcs.maxbet
+				WHEN acs.maxbet <= scs.maxbet AND acs.maxbet <= mcs.maxbet THEN acs.maxbet END,
 			CASE 
-				WHEN scs.maxpermatch < mcs.maxpermatch AND scs.maxpermatch < acs.maxpermatch THEN scs.maxpermatch 
-				WHEN mcs.maxpermatch < scs.maxpermatch AND mcs.maxpermatch < acs.maxpermatch THEN mcs.maxpermatch
-				WHEN acs.maxpermatch < scs.maxpermatch AND acs.maxpermatch < mcs.maxpermatch THEN acs.maxpermatch END
+				WHEN scs.maxpermatch <= mcs.maxpermatch AND scs.maxpermatch <= acs.maxpermatch THEN scs.maxpermatch 
+				WHEN mcs.maxpermatch <= scs.maxpermatch AND mcs.maxpermatch <= acs.maxpermatch THEN mcs.maxpermatch
+				WHEN acs.maxpermatch <= scs.maxpermatch AND acs.maxpermatch <= mcs.maxpermatch THEN acs.maxpermatch END
 		FROM dbo.CustBetSetting3rd_Agent scs WITH (NOLOCK)
 		JOIN dbo.CustBetSetting3rd_Agent mcs WITH (NOLOCK)
 					ON scs.sporttype = mcs.sporttype
