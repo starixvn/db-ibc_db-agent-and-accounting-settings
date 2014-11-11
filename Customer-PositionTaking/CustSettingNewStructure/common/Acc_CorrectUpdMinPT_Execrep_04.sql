@@ -19,6 +19,19 @@ AS
 
 	*/
 BEGIN
+
+	DECLARE @IsExistTables tinyint
+	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN (
+				'CustPTSetting3rd_Agent',
+				'custinfo',
+				'CustPTSetting3rd_Member',
+				'AgentPTGroupSetting_3rd',
+				'ProductSettingDetail')
+			AND xtype = 'U'
+
+	if @IsExistTables <> 5  RETURN
+	
 	DECLARE @mpos TINYINT, @apos TINYINT, @spos TINYINT, @mapos1 TINYINT, @mapos2 TINYINT, @mapos TINYINT, @maxmapos TINYINT
 	
 	IF @RoleID=4
