@@ -18,7 +18,7 @@ AS
 	DB: DBTXN/CustDB
 
 	Revisions:
-							
+		- 20141114@Johnson: Apply execrep when update commission on member [Redmine: #25787]					
 							
 	Param's Explanation:
 	* @ErrCode:
@@ -41,10 +41,12 @@ BEGIN
 		,@srecommend INT
 		,@mrecommend INT
 		,@recommend INT
+		,@roleid	INT
 
 	SELECT @srecommend = srecommend
 		,@mrecommend = mrecommend
 		,@recommend = recommend
+		,@roleid = roleid
 	FROM CustInfo WITH (NOLOCK)
 	WHERE CustID = @custid
 
@@ -75,25 +77,15 @@ BEGIN
 
 	IF ( @discount = @old_PlayerDiscount ) RETURN
 
-	--update playerdiscount
-
-	UPDATE CustSettingGame WITH (UPDLOCK, ROWLOCK)
-	SET playerdiscount = @discount
-	WHERE custid = @custid
-		AND sporttype = @sporttype
-		AND bettype = @bettype
-
-	IF @@ERROR <> 0
-	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E' THEN 'Update process is unsuccessful !'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-				END
-			,@ErrCode = 102
-
-		RETURN
-	END
-
+	-- Apply exec rep
+	exec dbo.Acc_CustSetting3rd_06
+			@CustId = @custid,
+			@RoleId = @roleid ,
+			@Discount = @discount,	
+			@sporttype = @sporttype,
+			@bettype = @bettype,		
+			@mode = 'Keno'
+			
 
 	DECLARE @LogSPData VARCHAR(MAX)
 	DECLARE @TrackingValue2 VARCHAR(5000)

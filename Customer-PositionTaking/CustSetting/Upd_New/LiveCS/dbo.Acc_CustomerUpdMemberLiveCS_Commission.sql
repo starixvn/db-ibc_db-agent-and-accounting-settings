@@ -22,6 +22,7 @@ AS
 			- 20121002@Kiwi: Hardcode for super SLAM can have 0.022 comm
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: write log on DBTXN if DBLOG failure
+			- 20141114@Johnson: Apply execrep when update commission on member [Redmine: #25787]
 		Parameters Explanation:
 	*/ 
 SET NOCOUNT ON
@@ -32,9 +33,9 @@ declare @duration int
 set @startRun = getdate()
 
 DECLARE @db_v162playerdiscount_1101 DECIMAL(9,8), @v162discount_1101 DECIMAL(9,8), @v162adiscount_1101 DECIMAL(9,8), @v162sdiscount_1101 DECIMAL(9,8),
-		@srecommend INT, @mrecommend INT, @recommend INT, @SyncLiveCasino BIT
+		@srecommend INT, @mrecommend INT, @recommend INT, @SyncLiveCasino BIT, @roleid INT
 
-SELECT @srecommend = srecommend, @mrecommend = mrecommend , @recommend = recommend,
+SELECT @srecommend = srecommend, @mrecommend = mrecommend , @recommend = recommend, @roleid = roleid,
 	@SyncLiveCasino = SyncLiveCasino 
 FROM CustInfo WITH(NOLOCK)
 WHERE CustID = @custid
@@ -63,20 +64,12 @@ IF @SyncLiveCasino = 1
 BEGIN
 	SELECT @v162playerdiscount_1101 = CASE WHEN @v162playerdiscount_1101 > @v162discount_1101 THEN @v162discount_1101 ELSE @v162playerdiscount_1101 END
 
-	
-	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
-	SET playerdiscount = @v162playerdiscount_1101
-	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
-
-	IF @@ERROR <> 0
-	BEGIN
-			SELECT @ErrMsg = 
-					CASE @Language 
-						WHEN 'E' THEN 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					END	, @ErrCode = 102
-			RETURN
-	END
+	-- Apply exec rep
+	exec dbo.Acc_CustSetting3rd_06
+			@CustId = @custid,
+			@RoleId = @roleid,
+			@v162discount_1101 = @v162playerdiscount_1101,			
+			@mode = 'LiveCasino'			
 END
 ELSE
 BEGIN 

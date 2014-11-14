@@ -58,7 +58,7 @@ BEGIN
 	WHERE custid = @mrecommend AND bettype = @BetType AND sporttype = @SportType
 
 	-- apply exec rep
-		EXEC Acc_CustSetting3rd_06_xtest @CustId = @custid
+		EXEC Acc_CustSetting3rd_06 @CustId = @custid
 		, @RoleId = @roleid
 		, @discount = @discount
 		, @mode = 'Keno'
