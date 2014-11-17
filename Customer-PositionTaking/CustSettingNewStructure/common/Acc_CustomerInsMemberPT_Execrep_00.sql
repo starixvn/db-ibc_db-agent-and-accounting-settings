@@ -99,5 +99,6 @@ BEGIN
 		END
 	END
 	
+	IF OBJECT_ID('tempdb..#memberPTTbl') IS NOT NULL
 	DROP TABLE #memberPTTbl
 END

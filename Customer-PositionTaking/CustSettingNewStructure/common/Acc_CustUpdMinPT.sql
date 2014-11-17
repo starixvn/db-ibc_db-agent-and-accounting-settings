@@ -204,4 +204,6 @@ BEGIN
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID    
 	END
 
+	IF OBJECT_ID('tempdb..#newPTTbl') IS NOT NULL
+		DROP TABLE #newPTTbl
 END
