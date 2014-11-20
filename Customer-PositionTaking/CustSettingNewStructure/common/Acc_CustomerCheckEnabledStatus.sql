@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[Acc_CustomerCheckEnabledStatus]
-	@IsDisabled_XML BIT,
+	@IsDisabled_XML VARCHAR(MAX),
 	@RoleID INT,
 	@AgentID INT,
 	@MasterID INT,

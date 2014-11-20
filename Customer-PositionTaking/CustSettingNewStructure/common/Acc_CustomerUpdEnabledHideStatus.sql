@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[Acc_CustomerUpdEnabledHideStatus]
-	@IsDisabled_XML BIT,
+	@IsDisabled_XML VARCHAR(MAX),
 	@CustID INT,
 	@RoleID INT
 AS
