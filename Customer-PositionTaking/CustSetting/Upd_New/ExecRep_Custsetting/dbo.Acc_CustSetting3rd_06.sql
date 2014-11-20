@@ -922,6 +922,7 @@ BEGIN
                                     ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 151
+                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
 
                 UPDATE cs
                        SET cs.discount = CASE 
@@ -949,6 +950,7 @@ BEGIN
                         ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 152
+                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
 
                 --Update g2, a2 at Member level    
                 UPDATE cs
@@ -975,6 +977,7 @@ BEGIN
                                     ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 153
+                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
 
                 --Update g2, a2 at Member level
                 UPDATE cs
@@ -1206,6 +1209,7 @@ BEGIN
             UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
             SET    discount = @v162discount_1101
              WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
+				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
 
             --Update g2, a2 at Member level
             UPDATE cs

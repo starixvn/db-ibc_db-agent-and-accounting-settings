@@ -482,6 +482,7 @@ BEGIN
             groupd = CASE WHEN bettype IN (1,2,3,7,8) THEN @groupd ELSE groupd END,
             discount = CASE WHEN bettype IN (4,6,9,10,20,21,22,9999) AND sporttype <> 154 THEN @discountcs WHEN bettype =5 THEN @discount1x2 WHEN bettype = 20 and sporttype = 154 THEN @discountHRFixedOdds ELSE discount END
         WHERE custid=@custid
+			AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
     
         --Update g2, a2 at Member level
         UPDATE custsetting WITH (ROWLOCK, UPDLOCK) 
@@ -550,8 +551,7 @@ BEGIN
                                   WHEN bettype = 20 and sporttype = 154 then @discountHRFixedOdds ELSE playerdiscount END  
         FROM custSetting 
         inner JOIN custInfo WITH(NOLOCK) ON custInfo.custid = custSetting.custid
-        WHERE custInfo.custid=@custid
-             AND custInfo.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+        WHERE custInfo.custid=@custid             
             AND custInfo.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)
     END
 END
