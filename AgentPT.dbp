@@ -616,8 +616,10 @@ Begin DataProject = "AgentPT"
             Script = "dbo.SPTest.sql"
          End
          Begin Folder = "Select"
+            Script = "dbo.SPTest.sql"
          End
          Begin Folder = "Update"
+            Script = "dbo.SPTest.sql"
          End
       End
       Script = "dbo.Acc_CustOverrideUpd_MaxPos.proc.sql"
