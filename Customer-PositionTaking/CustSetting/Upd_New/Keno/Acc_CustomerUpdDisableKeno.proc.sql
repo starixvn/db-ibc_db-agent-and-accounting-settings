@@ -1,4 +1,5 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
+﻿
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
 	@CustID INT
 	,@Bettype INT
 	,@Disable BIT			
@@ -21,7 +22,6 @@ AS
 	Revisions:
 		20140227@Bobby: Implement upd disabled keno gaming for credit customers
 		20140320@Bobby: Implement tracking values & cheking HasDownline
-		20140605@Elodie: Get data from GameType_tmp for testing
 
 	Param's Explanation:
 		• @custid: customer id.   
@@ -92,7 +92,7 @@ BEGIN
 
 	-- update CustGameType proccess
 	SELECT @GameTypeID = g.GameTypeID
-	FROM DBAGE.bodb02.dbo.GameType_tmp g WITH(NOLOCK)
+	FROM DBPRO.bodb02.dbo.GameType g WITH(NOLOCK)
 	WHERE g.IBCBetTypeID = @Bettype
 		AND g.IsDisabled = 0 -- active bettype
 	
@@ -320,6 +320,8 @@ BEGIN
 
 	RETURN
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbadminNet] AS [dbo]
