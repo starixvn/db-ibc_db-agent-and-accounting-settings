@@ -612,6 +612,12 @@ Begin DataProject = "AgentPT"
             Script = "Acc_CustomerUpdSMA_PresetPT.sql"
             Script = "Acc_CustomerUpdSuperPresetPT_Check.sql"
          End
+         Begin Folder = "Insert"
+         End
+         Begin Folder = "Select"
+         End
+         Begin Folder = "Update"
+         End
       End
       Script = "dbo.Acc_CustOverrideUpd_MaxPos.proc.sql"
       Script = "dbo.Acc_CustOverrideUpd_MinPos.proc.sql"
