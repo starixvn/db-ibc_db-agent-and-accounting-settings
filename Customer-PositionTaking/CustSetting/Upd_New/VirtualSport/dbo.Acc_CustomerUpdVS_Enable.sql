@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_Enable]  
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_Enable]  
 	@custid   INT,  
 	@DisableVS  BIT = 0,  
 	@DisableDownlinesVS  BIT = 0,  
@@ -18,7 +20,8 @@ AS
   Revisions:       
 	- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure  
 	- 20130926@Kathy: Apply exec rep
-	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)		
+	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
+	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
   Parameters Explanation:  
   
  */   
@@ -93,7 +96,7 @@ DECLARE @startRun DATETIME,
 	IF @DisableVS = 0 and @DisableDownlinesVS = 0  
 	BEGIN TRY
 		--20130926@Kathy: Apply ExecRep 
-		EXEC [Acc_ExecRep_Cust_04]
+		EXEC [Acc_CustomerInfo_Execrep_04]
 			@CustID		= @CustID,
 			@RoleID		= @RoleID,
 			@Action		= 'EnableVS',
@@ -145,12 +148,10 @@ BEGIN CATCH
 	@ActionID = 1138,  
 	@TrackingValue = @LogSPData  ,  
 	@duration = @duration
-END CATCH		   
-
-
+END CATCH
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_Enable] TO [bodbDownlineNet] AS [dbo]
 GO
