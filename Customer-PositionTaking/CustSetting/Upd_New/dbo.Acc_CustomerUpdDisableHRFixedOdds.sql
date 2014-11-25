@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableHRFixedOdds]
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableHRFixedOdds]
 	@custid		INT,
 	@DisableHRFixedOdds BIT = NULL,	
 	@EnableDownlinesHRFixedOdds BIT = 0,
@@ -17,7 +19,8 @@ DB: DBTXN/CustDB
 Original:
 
 Revisions:
-	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)		
+	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
+	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]		
 Param's Explanation:
 • @custid: customer id.   
 • @DisabledHRFixedOdds: status
@@ -109,7 +112,7 @@ end
 IF (@DisableHRFixedOdds = 1 or (@DisableHRFixedOdds = 0 and @EnableDownlinesHRFixedOdds = 1)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130926@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_Cust_04]
+	EXEC [Acc_CustomerInfo_Execrep_04]
 		@CustID		= @CustID,
 		@RoleID		= @RoleID,
 		@Action		= 'DisableHRFixedOdds',
@@ -170,8 +173,6 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	 ,
 		@duration = @duration		
 END CATCH
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableHRFixedOdds] TO [bodbAdminNet] AS [dbo]

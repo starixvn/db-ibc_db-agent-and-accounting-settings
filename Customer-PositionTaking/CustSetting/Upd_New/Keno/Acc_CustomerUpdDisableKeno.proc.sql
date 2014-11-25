@@ -1,4 +1,5 @@
-﻿
+﻿USE [CustDB]
+GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
 	@CustID INT
 	,@Bettype INT
@@ -22,6 +23,7 @@ AS
 	Revisions:
 		20140227@Bobby: Implement upd disabled keno gaming for credit customers
 		20140320@Bobby: Implement tracking values & cheking HasDownline
+		20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
 
 	Param's Explanation:
 		• @custid: customer id.   
@@ -223,7 +225,7 @@ BEGIN
 		BEGIN
 			BEGIN TRY	
 				--update HideKeno for all downline
-				EXEC [Acc_ExecRep_Cust_04] @CustID = @CustID
+				EXEC [Acc_CustomerInfo_Execrep_04] @CustID = @CustID
 					,@RoleID = @RoleID
 					,@Action = 'UpdKeno-Hide'	
 			END TRY
@@ -320,11 +322,8 @@ BEGIN
 
 	RETURN
 END
-
-
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbDownlineNet] AS [dbo]
 GO
