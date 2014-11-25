@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdClosed]
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdClosed]
 	@CustID int,
 	@Closed bit,	
 	@SubAccID int = 0, --Sub-AccountID
@@ -36,7 +38,8 @@ Revisions:
 	- 20130410@Elodie: Only update 'closed' status if values are different
 	- 20130709@Jamie: Apply ExecRep 
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
-	- 20140618@Thien: Prevent robot from opening back the closed accounts	
+	- 20140618@Thien: Prevent robot from opening back the closed accounts
+	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 
@@ -59,7 +62,43 @@ if @ErrCode <>0 return
 IF @CustID IN (14105547, --SUPERTEST1IY for testing
 				15046519, --TVA9661
 				15046495, --TVA9660
-				11799369 --ECJACR
+				11799369, --ECJACR
+				14953680, --TVA960A
+				2434401, --ELAC
+				14953786, --TVA960B
+				13925115 --TVA12P7
+				, 15151088 --KX467
+				, 15127440 --TVA6244
+				, 15183681 --TVA6245
+				, 14025219 --CG7KC
+				, 6364393 --EA656
+				, 14040657	--EG5TI23
+				, 14040683	--EG5TI30
+				, 14040677	--EG5TI28
+				, 14040654	--EG5TI22
+				, 14040682	--EG5TI29
+				,14040662	--EG5TI24
+				,11799369	--ECJACR
+				,14040669	--EG5TI26
+				,14040673	--EG5TI27
+				,14040666	--EG5TI25
+				,15103901 --TVA620A
+				
+				--20140712
+				,	15134582	--	TVA967100
+				,	15134804	--	TVA967800
+				,	15134769	--	TVA967600
+				,	15134831	--	TVA967900
+				,	15134751	--	TVA967500
+				,	15134782	--	TVA967700
+				,	15134550	--	TVA967000
+				,	15134594	--	TVA967200
+				,	15134622	--	TVA967400
+				,	15134609	--	TVA967300
+				, 15131938 --TVA9670
+				
+				
+				
 				) AND @Closed = 0
 BEGIN
 	Select @ErrMsg = case @Language 
@@ -87,8 +126,8 @@ END
 
 ---------------------------
 
-Declare @roleid tinyint, @LoginCount int, @Old_Closed bit, @UplineClosed bit, @srecommend int, @mrecommend int, @recommend int		
-		
+Declare @roleid tinyint, @LoginCount int, @Old_Closed bit, @UplineClosed bit, @srecommend int, @mrecommend int, @recommend int 
+
 select @roleid = roleid, @LoginCount = logincount
 from customer with (nolock)
 where custid = @custid
@@ -99,7 +138,7 @@ select  @Old_Closed = closed,
 		@recommend = recommend
 from custinfo with (nolock)
 where custid = @custid
- 
+
 -- 20130410@Elodie: Only update 'closed' status if values are different
 IF @Old_Closed = @Closed -- and @LoginCount > 5
 	return
@@ -171,7 +210,7 @@ end
 --20130709@Jamie: Apply Exec Rep SP 
 IF @Closed = 1 AND @RoleID BETWEEN 2 AND 4
 BEGIN
-	EXEC Acc_ExecRep_Cust_04
+	EXEC Acc_CustomerInfo_Execrep_04
 		 @CustID		= @CustID
 		,@RoleID		= @RoleID
 		,@Action		= 'Closed'
@@ -223,13 +262,8 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	,
 		@duration = @duration
 END CATCH
-
-
-
-
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbDownlineNet] AS [dbo]
 GO
