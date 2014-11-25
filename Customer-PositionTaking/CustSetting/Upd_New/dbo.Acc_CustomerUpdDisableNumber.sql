@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableNumber]
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableNumber]
 	@CustID int,
 	@DisableNumber bit,
 	@DisableDownline bit = true, --Disable all downline
@@ -23,6 +25,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20130926@Kathy: Apply exec rep
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
+	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
 	
 Param's Explanation:
 • @custid: customer id.   
@@ -115,7 +118,7 @@ end
 IF (@DisableNumber = 1 or (@DisableNumber = 0 and @DisableDownline = 0)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130926@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_Cust_04]
+	EXEC [Acc_CustomerInfo_Execrep_04]
 		@CustID		= @CustID,
 		@RoleID		= @RoleID,
 		@Action		= 'DisableNumberGame',
@@ -179,9 +182,8 @@ BEGIN CATCH
 		@duration = @duration		
 END CATCH
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableNumber] TO [bodbDownlineNet] AS [dbo]
 GO

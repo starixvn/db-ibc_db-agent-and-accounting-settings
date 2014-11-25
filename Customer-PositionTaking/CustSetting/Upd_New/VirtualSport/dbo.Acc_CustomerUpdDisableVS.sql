@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableVS]
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableVS]
 	@CustID					INT,	
 	@Disable			BIT,
 	@DisableDownlines	BIT = true, --Disable all downline
@@ -12,7 +14,7 @@ AS
 /*
 Created: 20120801@dan.nguyen
 Task : Update Vistual Sport status for customer
-DB: DBTXN/bodb02
+DB: DBTXN/CustDB
 Original: Acc_CustomerUpdDisable151_31
 	
 Revisions:
@@ -22,6 +24,7 @@ Revisions:
     - 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 	- 20130926@Kathy: Apply execRep
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
+	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
 Param's Explanation:
 • @custid: customer id.   
 • @Disable: status
@@ -107,7 +110,7 @@ end
 if (@Disable = 1 or (@Disable = 0 and @DisableDownlines = 0)) --Disable all downline or enable all downline
 BEGIN TRY
 	--20130924@Kathy: Apply ExecRep 
-	EXEC [Acc_ExecRep_Cust_04]
+	EXEC [Acc_CustomerInfo_Execrep_04]
 			@CustID		= @CustID,
 			@RoleID		= @RoleID,
 			@Action		= 'DisableVS',
@@ -170,9 +173,8 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableVS] TO [bodbDownlineNet] AS [dbo]
 GO

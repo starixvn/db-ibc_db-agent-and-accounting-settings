@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableLiveCS]
+﻿USE [CustDB]
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableLiveCS]
 	@custid		INT,
 	@DisabledLiveCS BIT = NULL,	
 	@EnableDownlinesLiveCS BIT = 0,
@@ -23,7 +25,8 @@ AS
 			- 20130124@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20130924@Kathy: Apply Exec Rep 
-			- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
+			- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)
+			- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
 		Parameters Explanation:
 	*/ 
 SET NOCOUNT ON
@@ -34,7 +37,7 @@ SET NOCOUNT ON
 	SET @startRun = GETDATE()
 	
 	--Check disable user
-	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode OUTPUT,@ErrMsg=@ErrMsg OUTPUT
+		EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode OUTPUT,@ErrMsg=@ErrMsg OUTPUT
 	IF @ErrCode <>0 RETURN
 	
 	DECLARE @status INT, @Allow2Update BIT, @SyncLiveCS BIT ,@RoleID TINYINT, @UplineSyncLiveCS BIT, @UplineEnableLiveCS BIT, @Old_DisabledLiveCS BIT
@@ -112,7 +115,7 @@ BEGIN TRY
 		--20130924@Kathy: Apply ExecRep 
 		IF @RoleID BETWEEN 2 AND 4 
 		BEGIN
-			EXEC [Acc_ExecRep_Cust_04]
+			EXEC [Acc_CustomerInfo_Execrep_04]
 				 @CustID		= @CustID,
 				 @RoleID		= @RoleID,
 				 @Action		= 'DisableLiveCasino',
@@ -184,7 +187,7 @@ BEGIN CATCH
 END CATCH
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableLiveCS] TO [bodbDownlineNet] AS [dbo]
 GO
