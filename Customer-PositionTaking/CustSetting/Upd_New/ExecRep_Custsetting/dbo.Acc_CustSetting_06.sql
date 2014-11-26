@@ -79,7 +79,10 @@ BEGIN
 	UNION SELECT	10409086	,	1	--	388RMB
 	UNION SELECT	8679169		,	1	--	585RMB
 	UNION SELECT	13885522	,	1	--	688HKK
-
+	
+	--UUS accounnts for testing
+	UNION SELECT	14180041	,	2	--	supertestUAT0101
+	UNION SELECT	14228293	,	1	--	supertestUAT20101001
 	--End customer list------------------------------------------
 	   
     IF @RoleId = 4
