@@ -2566,7 +2566,7 @@ SET NOCOUNT ON
            ,[MaxBet]
            ,[MaxPerMatch])
 		SELECT
-		@custid,SportType,BetType,ISNULL(dtl.Min_MinBet,0),0,0
+		@custid,SportType,BetType,0,0,0
 		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
 		WHERE dtl.SettingType = 2
 	END
