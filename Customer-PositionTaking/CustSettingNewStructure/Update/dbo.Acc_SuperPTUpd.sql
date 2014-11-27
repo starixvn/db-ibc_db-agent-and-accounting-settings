@@ -4,7 +4,7 @@
 	@UserID		INT = 0,    
     @Language	VARCHAR(2) = 'E',
     @IP			VARCHAR(15)='',
-    @ErrCode	VARCHAR(300) = '' OUTPUT,
+    @ErrCode	INT = 0 OUTPUT,
     @ErrMsg		NVARCHAR(4000) = '' OUTPUT
 AS
 	/*
@@ -16,24 +16,25 @@ AS
 		Revisions:
 		
 		Parameter's Explanation:
-			@PT = <Root>
-					<PT sporttype="1" bettype="1" isLive="0" SuperPT="50" SuperMinPT="0" />
-					<PT sporttype="1" bettype="1" isLive="1" SuperPT="50" SuperMinPT="0" />
-				</Root>
+			@PT = <ROOT>
+					<PT SportType="1" BetType="1" IsLive="0" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="1" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
+				</ROOT>
 				
 	*/
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @roleid TINYINT
-			,@ErrCode_Cur INT
-			,@ErrMsg_Cur NVARCHAR(4000)
+	DECLARE @roleid			TINYINT			
+			,@startRun		DATETIME
+			,@endRun		DATETIME
+			,@duration		INT
+			,@logSPData		VARCHAR(5000)
+			,@logSPDataOld	VARCHAR(5000)
+			,@xml			XML
+    
+    SET @startRun = GETDATE()
 			
-	SELECT @ErrCode_Cur = 0
-			,@ErrMsg_Cur = ''
-			,@ErrCode = ''
-			,@ErrMsg = ''
-	
 	---------------------------
 	-- ***Check Downline Belonging***
 	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
@@ -45,15 +46,11 @@ BEGIN
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
 		@custid		= @custid
-		,@ErrCode	= @ErrCode_Cur OUTPUT
-		,@ErrMsg	= @ErrMsg_Cur OUTPUT
+		,@ErrCode	= @ErrCode OUTPUT
+		,@ErrMsg	= @ErrMsg OUTPUT
 		
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+	IF @ErrCode > 0	
 		RETURN
-	END
 	--end
 	
 	---- Checking total downlines before UPDATEs 
@@ -77,6 +74,8 @@ BEGIN
 				BetType		SMALLINT,
 				IsLive		BIT,
 				SuperPT		SMALLINT,
+				MasterPT	SMALLINT,
+				AgentPT		SMALLINT,
 				SuperMinPT	SMALLINT
 				)	
 				
@@ -91,6 +90,8 @@ BEGIN
 				BetType,
 				IsLive,
 				SuperPT,
+				MasterPT,
+				AgentPT,
 				SuperMinPT
 			)
 	SELECT
@@ -98,6 +99,8 @@ BEGIN
 		Data.BetType,
 		Data.IsLive,
 		Data.SuperPT,
+		Data.MasterPT,
+		Data.AgentPT,
 		Data.SuperMinPT
 	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
 	WITH (
@@ -105,12 +108,88 @@ BEGIN
 		BetType		SMALLINT,
 		IsLive		BIT,
 		SuperPT		SMALLINT,
+		MasterPT	SMALLINT,
+		AgentPT		SMALLINT,
 		SuperMinPT	SMALLINT		
 	) AS Data
 	
 	EXEC sp_xml_removedocument @DocHandler
 	-- end read xml	
 	
+	--log old data
+	SET @xml =(
+		SELECT cs.sporttype AS '@s'
+			,cs.bettype AS '@b'
+			,cs.isLive AS '@i'
+			,cs.SuperPT AS '@s4'
+			,cs.MasterPT AS '@m4'
+			,cs.AgentPT AS '@a4'
+			,cs.MinPT AS '@n4'
+		FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+			INNER JOIN @tblPT t ON cs.sporttype = t.SportType AND cs.bettype = t.BetType AND cs.isLive = t.IsLive
+		WHERE custid = @custid
+		FOR XML PATH('p'), ROOT('r')
+	)
+	
+	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)
+		
+    --Check Param
+    DECLARE @ErrAcc NVARCHAR(4000)
+			,@ErrType VARCHAR(1000)
+	
+	IF EXISTS(SELECT TOP 1 1 
+			FROM @tblPT t
+				INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON t.SportType = ps.Sporttype AND t.BetType = ps.bettype AND t.IsLive = ps.IsLive
+		WHERE ps.SettingType = 1--PT
+			AND (t.SuperPT < 0 OR t.SuperPT > ps.MaxPT
+				OR t.MasterPT < 0 OR t.MasterPT > ps.MaxPT
+				OR t.AgentPT < 0 OR t.AgentPT > 0
+				OR t.SuperPT < t.MasterPT 
+				OR t.MasterPT < t.AgentPT
+			))
+	 BEGIN
+        
+        SELECT @ErrMsg =     CASE @Language 
+                            WHEN 'E' THEN 'Wrong position taking.'
+                            ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
+                    END, @ErrCode = 101
+        RETURN
+    END		
+	
+	--check PT change or not	
+	IF NOT EXISTS (SELECT TOP 1 1
+	FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+		INNER JOIN @tblPT t ON cs.sporttype = t.SportType AND cs.bettype = t.BetType AND cs.isLive = t.IsLive
+	WHERE custid = @custid
+		AND (cs.SuperPT <> t.SuperPT
+			OR cs.MasterPT <> t.MasterPT
+			OR cs.AgentPT <> t.AgentPT
+		)
+	)
+	BEGIN
+		--PT no change
+		RETURN
+	END
+	
+	--check n4<=s4
+	 SELECT @ErrType = ''
+     
+     SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + 
+		CASE WHEN t.IsLive = 0 THEN '-Min: '+ CAST((t.SuperMinPT) AS VARCHAR(10))
+			WHEN t.IsLive = 1 THEN '-MinLive: '+ cast((co.minlivepositiontaking) as varchar(10)) else '' end + '<br>'
+        + case when b.sporttype=1 and b.bettype in (1,3,7,8) then '-MinLive: '+ cast((co.minlivepositiontaking) as varchar(10)) else '' end + '<br>'
+     FROM @tblPT t
+		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON t.SportType = s.sporttype
+        INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON t.bettype = bt.typeid
+	WHERE SuperPT < SuperMinPT	
+		
+	BEGIN
+		SELECT @ErrMsg =     CASE @Language 
+                            WHEN 'E' THEN 'Wrong position taking.'
+                            ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
+                    END, @ErrCode = 102
+        RETURN
+	END
 	
 END
 GO
