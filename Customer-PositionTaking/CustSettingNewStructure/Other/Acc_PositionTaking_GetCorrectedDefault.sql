@@ -4,7 +4,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[Acc_PositionTaking_GetCorrectedDefault]
-	@CustID INT,
 	@AgentID INT,
 	@MasterID INT,
 	@SuperID INT,
@@ -103,12 +102,12 @@ BEGIN
 	SET
 		 main.MasterPT = 
 				CASE WHEN spt.masterPT > mpt.masterPT THEN
-						CASE WHEN mpt.masterPT-main.AgentPT > (CASE WHEN main.IsAutoMPT = 1 then main.AutoMPT else apt.automPT end)
-						then (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.automPT end)
+						CASE WHEN mpt.masterPT-main.AgentPT > (CASE WHEN main.IsAutoMPT = 1 then main.AutoMPT else apt.AutoMasterPT end)
+						then (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.AutoMasterPT end)
 						else  mpt.masterPT-main.AgentPT end
 					else 
-						case when spt.masterPT-main.AgentPT > (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.automPT end)
-						then (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.automPT end)
+						case when spt.masterPT-main.AgentPT > (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.AutoMasterPT end)
+						then (case when main.IsAutoMPT = 1 then main.AutoMPT else apt.AutoMasterPT end)
 						else  spt.masterPT-main.AgentPT end
 					end
 	FROM @memberPTTbl main 
@@ -127,7 +126,7 @@ BEGIN
 			AND apt.sporttype=main.sporttype 
 			AND apt.bettype=main.bettype
 			AND apt.islive=main.Islive
-	WHERE (apt.isautomPT = 1 or main.IsAutoMPT = 1)
+	WHERE (apt.IsAutoMasterPT = 1 or main.IsAutoMPT = 1)
 	
 	--m1 = max(m1,n3-a1)
 	UPDATE main 
@@ -289,4 +288,5 @@ BEGIN
 	FROM @memberPTTbl
 	FOR XML RAW ('PositionTaking'))
 
+	SELECT @CorrectedPT_XML = '<ROOT>'+@CorrectedPT_XML+'</ROOT>'
 END
