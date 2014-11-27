@@ -41,8 +41,11 @@ BEGIN
 	--PT Setting
 	
 	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
-			pt.SuperPT ,pt.MasterPT ,pt.AgentPT,
-			pt.MinPT,pt.MaxPT,
+			pt.SuperPT AS S4,
+			pt.MasterPT AS M4 ,
+			pt.AgentPT AS A4,
+			pt.MinPT AS N4,
+			pt.MaxPT AS L4,
 			pdt.MaxPT AS DefaullMaxPT
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
