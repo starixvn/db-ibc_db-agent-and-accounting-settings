@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_SuperPTUpd]
+﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTUpd]
 	@custid		INT,
 	@PT			VARCHAR(MAX),
 	@UserID		INT = 0,    
@@ -176,20 +176,48 @@ BEGIN
      
      SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + 
 		CASE WHEN t.IsLive = 0 THEN '-Min: '+ CAST((t.SuperMinPT) AS VARCHAR(10))
-			WHEN t.IsLive = 1 THEN '-MinLive: '+ cast((co.minlivepositiontaking) as varchar(10)) else '' end + '<br>'
-        + case when b.sporttype=1 and b.bettype in (1,3,7,8) then '-MinLive: '+ cast((co.minlivepositiontaking) as varchar(10)) else '' end + '<br>'
+			WHEN t.IsLive = 1 THEN '-MinLive: '+ CAST((t.SuperMinPT) AS VARCHAR(10)) ELSE '' END + '<br>'        
      FROM @tblPT t
 		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON t.SportType = s.sporttype
         INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON t.bettype = bt.typeid
 	WHERE SuperPT < SuperMinPT	
+	ORDER BY t.SportType, t.BetType, t.IsLive
 		
-	BEGIN
-		SELECT @ErrMsg =     CASE @Language 
-                            WHEN 'E' THEN 'Wrong position taking.'
-                            ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
+	IF @ErrType <>''
+    BEGIN
+        SELECT @ErrMsg =     CASE @Language 
+                            WHEN 'E' THEN 'Wrong position taking (min set by company).<br>'+@ErrType
+                            ELSE [dbo].[f_Get_MsgNamebyMsgID](20006,@Language) + '<br>' + @ErrType
                     END, @ErrCode = 102
         RETURN
-	END
+    END
+	
+	--check all s3+m3<=s4 if i3 = 0,
+    --m3<=s4 and u3<=s4 if i3=1
+	SELECT @ErrAcc = ''
+    SELECT top 100 @ErrAcc = @ErrAcc + username +', '
+    FROM 
+        custinfo as c WITH (NOLOCK) 
+        INNER JOIN CustPTSetting3rd_Agent AS cs WITH (NOLOCK) ON c.custid = cs.custid
+        INNER JOIN @tblPT as b on cs.sporttype=b.sporttype AND cs.bettype = b.BetType AND cs.isLive = b.IsLive
+    where c.srecommend = @custid AND c.roleid = 3 AND (
+                            ((cs.isautopositiontaking=0) and (cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or 
+                            ((cs.isautopositiontaking=1) and (cs.mpositiontaking>b.maxpositiontaking)) or 
+                            ((cs.isautopositiontaking=1) and (cs.autopositiontaking>b.maxpositiontaking)) 
+                        )
+    group by username
+    if @ErrAcc<>''
+    BEGIN
+        Select @ErrMsg_Cur = @username + ': ' +
+                    case @Language 
+                            when 'E' then 'Existing masters exceeded new super position taking ('+@ErrAcc+').'
+                            ELSE [dbo].[f_Get_MsgNamebyMsgID](20013,@Language) + ' ('+@ErrAcc+').'
+                    end, @ErrCode_cur = 103
+        
+        select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
+                @ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+        return        
+    END
 	
 END
 GO
