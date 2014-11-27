@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_PositionTaking_GetCorrectedDefault]
+CREATE PROCEDURE [dbo].[Acc_CustSetting_DefaultMemberPTCorrect]
 	@AgentID INT,
 	@MasterID INT,
 	@SuperID INT,
