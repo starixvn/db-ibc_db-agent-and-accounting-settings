@@ -44,7 +44,7 @@ BEGIN
 			[AgentPT] [tinyint] NOT NULL,
 			[IsAutoMPT] [bit] NOT NULL,
 			[AutoMPT] [tinyint] NOT NULL,
-			[IsautoSPT] [bit] NOT NULL,
+			[IsAutoSPT] [bit] NOT NULL,
 			[AutoSPT] [tinyint] NOT NULL)
 			
 	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, 
@@ -53,7 +53,7 @@ BEGIN
 	--Get default PT settings	
 	INSERT INTO @memberPTTbl
 			(SportType,BetType,Islive,
-			SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsautoSPT,AutoSPT)	
+			SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsAutoSPT,AutoSPT)	
 	SELECT 
 			acs.SportType,acs.BetType,acs.IsLive,
 			mcs.superPT,acs.masterPT,acs.agentPT,0,0,0,0
@@ -179,7 +179,7 @@ BEGIN
 					)
 				THEN (
 						CASE 
-							WHEN main.IsautoSPT = 1
+							WHEN main.IsAutoSPT = 1
 								THEN main.autoSPT
 							ELSE mpt.AutoSuperPT
 							END
@@ -198,7 +198,7 @@ BEGIN
 			AND spt.bettype=main.bettype
 			AND spt.islive=main.Islive
 	WHERE (
-			main.IsautoSPT = 1
+			main.IsAutoSPT = 1
 			OR mpt.IsAutoSuperPT = 1
 			)
 			
