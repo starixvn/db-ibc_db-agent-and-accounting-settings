@@ -66,10 +66,11 @@ BEGIN
 
 	-- Apply exec rep
 	exec dbo.Acc_CustSetting3rd_06
-			@CustId = @custid,
-			@RoleId = @roleid,
-			@v162discount_1101 = @v162playerdiscount_1101,			
-			@mode = 'LiveCasino'			
+			@CustId						= @custid,
+			@RoleId						= @roleid,
+			@v162playerdiscount_1101	= @v162playerdiscount_1101,	
+			@SyncLiveCasino				= @SyncLiveCasino,		
+			@mode						= 'LiveCasino'			
 END
 ELSE
 BEGIN 
@@ -85,23 +86,17 @@ BEGIN
 	SELECT @v162discount_1101  = CASE WHEN @v162discount_1101 > @v162adiscount_1101 THEN @v162adiscount_1101 ELSE @v162discount_1101 END	
 	SELECT @v162playerdiscount_1101 = CASE WHEN @v162playerdiscount_1101 > @v162discount_1101 THEN @v162discount_1101 ELSE @v162playerdiscount_1101 END
 	
-
-	UPDATE CustSettingGame WITH(UPDLOCK,ROWLOCK)
-	SET sdiscount		= @v162sdiscount_1101,
-		adiscount		= @v162adiscount_1101,
-		discount		= @v162discount_1101,
-		playerdiscount  = @v162playerdiscount_1101
-	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
-
-	IF @@ERROR <> 0
-	BEGIN
-			SELECT @ErrMsg = 
-					CASE @Language 
-						WHEN 'E' THEN 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					END	, @ErrCode = 102
-			RETURN
-	END
+	-- Apply exec rep
+	exec dbo.Acc_CustSetting3rd_06
+			@CustId						= @custid,
+			@RoleId						= @roleid,
+			@v162sdiscount_1101			= @v162sdiscount_1101,
+			@v162adiscount_1101			= @v162adiscount_1101,
+			@v162discount_1101			= @v162discount_1101,
+			@v162playerdiscount_1101	= @v162playerdiscount_1101,	
+			@SyncLiveCasino				= @SyncLiveCasino,		
+			@mode						= 'LiveCasino'	
+	
 END
 
 

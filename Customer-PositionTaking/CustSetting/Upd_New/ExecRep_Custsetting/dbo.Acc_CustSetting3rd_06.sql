@@ -20,6 +20,10 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
     @v153discount_51 decimal(9,8)   = 0,
 
     @v162discount_1101 DECIMAL(9,8) = 0,-- Live Casino
+	@v162sdiscount_1101	DECIMAL(9,8) = 0,
+	@v162adiscount_1101	DECIMAL(9,8) = 0,	
+	@v162playerdiscount_1101 DECIMAL(9,8) = 0,
+    @SyncLiveCasino	BIT = 1,
     
     @mode varchar(30),
     @Sporttype INT = 202, 
@@ -1074,6 +1078,8 @@ BEGIN
               FROM CustSettingGame cs
         INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
              WHERE ci.srecommend = @custid
+				AND ci.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+               AND ci.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)                              
                AND ci.roleid = 1
                AND ci.Enabled = 1
                AND ci.SyncLiveCasino = 1 
@@ -1247,12 +1253,37 @@ BEGIN
         END
         
         IF @RoleId = 1
-        BEGIN            
-            UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
-            SET    playerdiscount = @v162discount_1101
-             WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
-			
+        BEGIN          
+			IF @SyncLiveCasino = 1
+			BEGIN  
+				UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
+				SET    playerdiscount = @v162playerdiscount_1101
+				 WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
+					AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+			END
+			ELSE
+			BEGIN
+				IF EXISTS(SELECT 1 FROM @tblCustList WHERE custid = @custid AND roleid = 1)
+					OR EXISTS(SELECT 1 
+								FROM custinfo WITH(NOLOCK) 
+								WHERE custid = @custid AND recommend IN (SELECT custid FROM @tblCustList WHERE roleid = 2)
+								)
+				BEGIN
+						SELECT @v162sdiscount_1101			= 0
+								,@v162adiscount_1101		= 0
+								,@v162discount_1101			= 0 
+								,@v162playerdiscount_1101	= 0
+					
+				END
+												
+				UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
+				SET sdiscount		= @v162sdiscount_1101,
+					adiscount		= @v162adiscount_1101,
+					discount		= @v162discount_1101,
+					playerdiscount  = @v162playerdiscount_1101   					
+				 WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
+					
+			END
 		END             
     END
     IF @mode = 'LiveCasinoUpdAll'
