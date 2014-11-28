@@ -81,7 +81,7 @@ BEGIN
 	--Discount Setting
 	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
 			dc.Discount, 
-			sdc.Discount AS Discount_Max
+			sdc.Discount AS MaxDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
 	ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
