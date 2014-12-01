@@ -12,7 +12,7 @@ AS
 	/*
 	Created: 20141105@Dominic
 	Task : Correct default PT settings of a specific member
-	DB: CUSTDB
+	DB:  DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
@@ -34,8 +34,7 @@ AS
 					</ROOT>
 	*/
 BEGIN
-	DECLARE @memberPTTbl 
-			TABLE(
+	DECLARE @memberPTTbl TABLE(
 			[SportType] [smallint] NOT NULL,
 			[BetType] [smallint] NOT NULL,
 			[Islive] [bit] NOT NULL,
@@ -58,7 +57,7 @@ BEGIN
 			acs.SportType,acs.BetType,acs.IsLive,
 			mcs.superPT,acs.masterPT,acs.agentPT,0,0,0,0
 	FROM dbo.CustPTSetting3rd_Agent acs WITH (NOLOCK)
-	JOIN dbo.CustPTSetting3rd_Agent mcs WITH (NOLOCK)
+	INNER JOIN dbo.CustPTSetting3rd_Agent mcs WITH (NOLOCK)
 				ON acs.sporttype = mcs.sporttype
 				AND acs.bettype = mcs.bettype
 				AND acs.islive = mcs.islive
@@ -138,7 +137,7 @@ BEGIN
 			AND mpt.sporttype=main.sporttype 
 			AND mpt.bettype=main.bettype
 			AND mpt.islive=main.Islive
-	where main.AgentPT+main.MasterPT<mpt.minPT
+	WHERE main.AgentPT+main.MasterPT<mpt.minPT
 
 	--if a1 + m1 > l3 then	
 	--@x=min(m3,l3)
@@ -164,7 +163,7 @@ BEGIN
 				AND apt.sporttype=main.sporttype 
 				AND apt.bettype=main.bettype
 				AND apt.islive=main.Islive
-	where main.AgentPT+main.MasterPT>mpt.maxPT
+	WHERE main.AgentPT+main.MasterPT>mpt.maxPT
 
 	--if is1 = 1 or is3=1 then s1=min(s4-m1-a1, is1?us1:us3)
 	UPDATE main

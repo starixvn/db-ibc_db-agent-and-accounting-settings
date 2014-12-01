@@ -3,14 +3,14 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperAllSettingOnProductSelect]
+CREATE PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect]
 	@CustID INT,
 	@ProductID TINYINT
 AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Super'setting values of a product
-	DB: CUSTDB
+	DB: DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
@@ -39,7 +39,6 @@ BEGIN
 	WHERE	c.custID = @CustID 
 	
 	--PT Setting
-	
 	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
 			pt.SuperPT AS S4,
 			pt.MasterPT AS M4 ,
@@ -48,29 +47,29 @@ BEGIN
 			pt.MaxPT AS L4,
 			pdt.MaxPT AS DefaullMaxPT
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-	JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
-	ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype AND pdt.IsLive=pt.islive AND pt.custid=@CustID
+		INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
+			ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype AND pdt.IsLive=pt.islive AND pt.custid=@CustID
 	WHERE pdt.ProductID=@ProductID AND pdt.SettingType=1
 	
 	--Bet Limit Setting
-	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
+	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,
 			bl.MinBet,bl.MaxBet,bl.MaxPerMatch,
 			pdt.Min_MinBet AS MinMinBet
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-	JOIN dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
-	ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
+		INNER JOIN dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
+			ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
 	WHERE pdt.ProductID=@ProductID AND pdt.SettingType=2
 	
 	--Discount Setting
-	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
+	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,
 			dc.Discount, ISNULL(pdt.MaxDiscount,0) MaxDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-	JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
-	ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
+		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
+			ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
 	WHERE pdt.ProductID=@ProductID AND pdt.SettingType=3
 	
 	--Product Status
-	SELECT stt.SportType,stt.BetType,pdt.SettingType,pdt.IsLive,
+	SELECT stt.SportType,stt.BetType,pdt.SettingType,
 			ISNULL(stt.IsDisabled,0) IsDisabled,
 			ISNULL(stt.IsHidden,0) IsHidden,
 			ISNULL(stt.IsSync,0) IsSync,
@@ -84,9 +83,9 @@ BEGIN
 				WHERE srecommend=@CustID AND roleid=3),0)
 			END as DisableDownlines
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-	JOIN dbo.CustProductStatus stt WITH(NOLOCK)
-		ON stt.SportType=pdt.SportType
-		AND stt.BetType=pdt.BetType
-		AND stt.CustID=@CustID
+		INNER JOIN dbo.CustProductStatus stt WITH(NOLOCK)
+			ON stt.SportType=pdt.SportType
+			AND stt.BetType=pdt.BetType
+			AND stt.CustID=@CustID
 	WHERE pdt.ProductID=@ProductID AND pdt.SettingType=4
 END

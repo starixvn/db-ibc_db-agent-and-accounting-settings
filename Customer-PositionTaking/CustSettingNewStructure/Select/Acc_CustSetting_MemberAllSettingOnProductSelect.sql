@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_MemberAllSettingOnProductSelect]
+CREATE PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect]
 	@CustID INT,
 	@AgentID INT,
 	@MasterID INT,
@@ -14,7 +14,7 @@ AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Member'setting values of a product
-	DB: CUSTDB
+	DB:  DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
@@ -57,14 +57,14 @@ BEGIN
 			CASE WHEN mode.IsGrouped = 0 THEN  pt.IsAutoMasterPT ELSE ptgr.IsAutoMasterPT END AS IM1,
 			CASE WHEN mode.IsGrouped = 0 THEN  pt.AutoMasterPT ELSE ptgr.AutoMasterPT END AS UM1
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustSettingMode3rd mode 
-				ON mode.CustID = @CustID
-		LEFT JOIN dbo.CustPTSetting3rd_Member pt WITH (NOLOCK)
-				ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype 
-				AND pdt.IsLive=pt.islive AND pt.custid=@CustID
-		LEFT JOIN CustPTGroupSetting3rd_Member ptgr WITH (NOLOCK)
-				ON pdt.SportType=ptgr.sporttype AND pdt.BetType=ptgr.bettype 
-				AND pdt.IsLive=ptgr.islive AND ptgr.AgentID=@AgentID
+			INNER JOIN dbo.CustSettingMode3rd mode 
+					ON mode.CustID = @CustID
+			LEFT JOIN dbo.CustPTSetting3rd_Member pt WITH (NOLOCK)
+					ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype 
+					AND pdt.IsLive=pt.islive AND pt.custid=@CustID
+			LEFT JOIN CustPTGroupSetting3rd_Member ptgr WITH (NOLOCK)
+					ON pdt.SportType=ptgr.sporttype AND pdt.BetType=ptgr.bettype 
+					AND pdt.IsLive=ptgr.islive AND ptgr.AgentID=@AgentID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=1
 	
 	
@@ -103,12 +103,12 @@ BEGIN
 						THEN 0 
 					ELSE superpt.MinPT - (mb.M1 + mb.A1) END AS S1_MIN
 		FROM @MemberPT mb
-		JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
-				ON mb.SportType=masterpt.sporttype AND mb.BetType=masterpt.bettype 
-				AND mb.IsLive=masterpt.islive AND masterpt.custid=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-				ON mb.SportType=superpt.sporttype AND mb.BetType=superpt.bettype 
-				AND mb.IsLive=superpt.islive AND superpt.custid=@SuperID
+			INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+					ON mb.SportType=masterpt.sporttype AND mb.BetType=masterpt.bettype 
+					AND mb.IsLive=masterpt.islive AND masterpt.custid=@MasterID
+			INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+					ON mb.SportType=superpt.sporttype AND mb.BetType=superpt.bettype 
+					AND mb.IsLive=superpt.islive AND superpt.custid=@SuperID
 				
 				
 		--Bet Limit Setting
@@ -117,8 +117,8 @@ BEGIN
 				bl.MaxBet,
 				bl.MaxPerMatch
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
-			ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
+			INNER JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
+				ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=2
 		
 		--Discount Setting
@@ -127,18 +127,18 @@ BEGIN
 				dc.AgentDiscount,
 				dc.MasterDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
-			ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
+			INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
+				ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=3
 		
 		--Product Status
 		SELECT stt.SportType,stt.BetType,pdt.SettingType,pdt.IsLive,
 				ISNULL(stt.IsHidden,0) IsHidden
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustProductStatus stt WITH(NOLOCK)
-			ON stt.SportType=pdt.SportType
-			AND stt.BetType=pdt.BetType
-			AND stt.CustID=@CustID
+			INNER JOIN dbo.CustProductStatus stt WITH(NOLOCK)
+				ON stt.SportType=pdt.SportType
+				AND stt.BetType=pdt.BetType
+				AND stt.CustID=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=4
 	END	
 	ELSE IF @RoleID = 3
@@ -176,12 +176,12 @@ BEGIN
 				END,
 				masterpt.MinPT
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
-				ON pdt.SportType=masterpt.sporttype AND pdt.BetType=masterpt.bettype 
-				AND pdt.IsLive=masterpt.islive AND masterpt.custid=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-				ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
-				AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID		
+			INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+					ON pdt.SportType=masterpt.sporttype AND pdt.BetType=masterpt.bettype 
+					AND pdt.IsLive=masterpt.islive AND masterpt.custid=@MasterID
+			INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+					ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
+					AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID		
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=1	
 		
 		
@@ -214,12 +214,12 @@ BEGIN
 				--um1_max =  Min(M3, M4)
 				ISNULL(mpt.M1_Max,0) as UM1_MAX
 		FROM @MemberPT mb
-		JOIN @MasterMaxPT mpt ON mb.SportType=mpt.sporttype 
-				AND mb.BetType=mpt.bettype 
-				AND mb.IsLive=mpt.islive 
-		JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-				ON mb.SportType=agentpt.sporttype AND mb.BetType=agentpt.bettype 
-				AND mb.IsLive=agentpt.islive AND agentpt.custid=@AgentID
+			INNER JOIN @MasterMaxPT mpt ON mb.SportType=mpt.sporttype 
+					AND mb.BetType=mpt.bettype 
+					AND mb.IsLive=mpt.islive 
+			INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+					ON mb.SportType=agentpt.sporttype AND mb.BetType=agentpt.bettype 
+					AND mb.IsLive=agentpt.islive AND agentpt.custid=@AgentID
 				
 				
 		--Bet Limit Setting
@@ -228,8 +228,8 @@ BEGIN
 				bl.MaxBet,
 				bl.MaxPerMatch
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
-			ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
+			INNER JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
+				ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=2
 		
 		--Discount Setting
@@ -237,18 +237,18 @@ BEGIN
 				dc.PlayerDiscount, 
 				dc.AgentDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
-			ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
+			INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
+				ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=3
 		
 		--Product Status
 		SELECT stt.SportType,stt.BetType,pdt.SettingType,pdt.IsLive,
 				ISNULL(stt.IsHidden,0) IsHidden
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustProductStatus stt WITH(NOLOCK)
-			ON stt.SportType=pdt.SportType
-			AND stt.BetType=pdt.BetType
-			AND stt.CustID=@CustID
+			INNER JOIN dbo.CustProductStatus stt WITH(NOLOCK)
+				ON stt.SportType=pdt.SportType
+				AND stt.BetType=pdt.BetType
+				AND stt.CustID=@CustID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=4
 		
 		
@@ -289,12 +289,12 @@ BEGIN
 				END,
 				agentpt.MinPT
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-				ON pdt.SportType=agentpt.sporttype AND pdt.BetType=agentpt.bettype 
-				AND pdt.IsLive=agentpt.islive AND agentpt.custid=@AgentID
-		JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-				ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
-				AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID		
+			INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+					ON pdt.SportType=agentpt.sporttype AND pdt.BetType=agentpt.bettype 
+					AND pdt.IsLive=agentpt.islive AND agentpt.custid=@AgentID
+			INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+					ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
+					AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID		
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=1		
 		
 		--Get Min/Max base on autoPT settings
@@ -324,17 +324,17 @@ BEGIN
 							END
 				END
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-				ON pdt.SportType=agentpt.sporttype AND pdt.BetType=agentpt.bettype 
-				AND pdt.IsLive=agentpt.islive AND agentpt.custid=@AgentID
-		JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
-				ON pdt.SportType=masterpt.sporttype AND pdt.BetType=masterpt.bettype 
-				AND pdt.IsLive=masterpt.islive AND masterpt.custid=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-				ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
-				AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID
-		JOIN @MemberPT mb ON pdt.SportType=mb.sporttype AND pdt.BetType=mb.bettype 
-				AND pdt.IsLive=mb.islive
+			INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+					ON pdt.SportType=agentpt.sporttype AND pdt.BetType=agentpt.bettype 
+					AND pdt.IsLive=agentpt.islive AND agentpt.custid=@AgentID
+			INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+					ON pdt.SportType=masterpt.sporttype AND pdt.BetType=masterpt.bettype 
+					AND pdt.IsLive=masterpt.islive AND masterpt.custid=@MasterID
+			INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+					ON pdt.SportType=superpt.sporttype AND pdt.BetType=superpt.bettype 
+					AND pdt.IsLive=superpt.islive AND superpt.custid=@SuperID
+			INNER JOIN @MemberPT mb ON pdt.SportType=mb.sporttype AND pdt.BetType=mb.bettype 
+					AND pdt.IsLive=mb.islive
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=1
 				
 		--Cusinfo
@@ -355,15 +355,15 @@ BEGIN
 				apt.A1_Min,
 				CASE WHEN apt.A1_Max <= apt_auto.A1_Max THEN apt.A1_Max ELSE apt_auto.A1_Max END AS  A1_Max
 		FROM @MemberPT mb
-		JOIN @AgentMaxPT apt ON mb.SportType=apt.sporttype 
-				AND mb.BetType=apt.bettype 
-				AND mb.IsLive=apt.islive 
-		JOIN @AgentMaxPTWithAuto apt_auto ON mb.SportType=apt_auto.sporttype 
-				AND mb.BetType=apt_auto.bettype 
-				AND mb.IsLive=apt_auto.islive 
+			INNER JOIN @AgentMaxPT apt ON mb.SportType=apt.sporttype 
+					AND mb.BetType=apt.bettype 
+					AND mb.IsLive=apt.islive 
+			INNER JOIN @AgentMaxPTWithAuto apt_auto ON mb.SportType=apt_auto.sporttype 
+					AND mb.BetType=apt_auto.bettype 
+					AND mb.IsLive=apt_auto.islive 
 		
 		--Bet Limit Setting
-		SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
+		SELECT pdt.SportType,pdt.BetType,pdt.SettingType,
 				bl.MinBet,
 				bl.MaxBet,
 				bl.MaxPerMatch,
@@ -384,42 +384,42 @@ BEGIN
 					WHEN abl.maxpermatch <= sbl.maxpermatch AND abl.maxpermatch <= mbl.maxpermatch THEN abl.maxpermatch 
 					END AS MaxPerMatch_Max
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
-		ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
-		JOIN dbo.CustBetSetting3rd_Agent abl WITH (NOLOCK)
-		ON pdt.SportType=abl.sporttype AND pdt.BetType=abl.bettype AND abl.custid=@AgentID
-		JOIN dbo.CustBetSetting3rd_Agent mbl WITH (NOLOCK)
-		ON pdt.SportType=mbl.sporttype AND pdt.BetType=mbl.bettype AND mbl.custid=@MasterID
-		JOIN dbo.CustBetSetting3rd_Agent sbl WITH (NOLOCK)
-		ON pdt.SportType=sbl.sporttype AND pdt.BetType=sbl.bettype AND sbl.custid=@SuperID
+			INNER JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
+				ON pdt.SportType=bl.sporttype AND pdt.BetType=bl.bettype AND bl.custid=@CustID
+			INNER JOIN dbo.CustBetSetting3rd_Agent abl WITH (NOLOCK)
+				ON pdt.SportType=abl.sporttype AND pdt.BetType=abl.bettype AND abl.custid=@AgentID
+			INNER JOIN dbo.CustBetSetting3rd_Agent mbl WITH (NOLOCK)
+				ON pdt.SportType=mbl.sporttype AND pdt.BetType=mbl.bettype AND mbl.custid=@MasterID
+			INNER JOIN dbo.CustBetSetting3rd_Agent sbl WITH (NOLOCK)
+				ON pdt.SportType=sbl.sporttype AND pdt.BetType=sbl.bettype AND sbl.custid=@SuperID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=2
 		
 		--Discount Setting
-		SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
+		SELECT pdt.SportType,pdt.BetType,pdt.SettingType,
 				dc.PlayerDiscount, 
 				adc.Discount AS maxDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
-		ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
-		JOIN dbo.CustDiscount3rd_Agent adc WITH (NOLOCK)
-		ON pdt.SportType=adc.sporttype AND pdt.BetType=adc.bettype AND adc.custid=@AgentID
+			INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
+				ON pdt.SportType=dc.sporttype AND pdt.BetType=dc.bettype AND dc.custid=@CustID
+			INNER JOIN dbo.CustDiscount3rd_Agent adc WITH (NOLOCK)
+				ON pdt.SportType=adc.sporttype AND pdt.BetType=adc.bettype AND adc.custid=@AgentID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=3
 		
 		--Product Status
-		SELECT stt.SportType,stt.BetType,pdt.SettingType,pdt.IsLive,
+		SELECT stt.SportType,stt.BetType,pdt.SettingType,
 				ISNULL(stt.IsDisabled,0) IsDisabled,
 				ISNULL(stt.IsHidden,0) IsHidden,
 				ISNULL(stt.IsSync,0) IsSync,
 				ISNULL(Agentstt.IsDisabled,0)  AS DisableUpline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		JOIN dbo.CustProductStatus stt WITH(NOLOCK)
-			ON stt.SportType=pdt.SportType
-			AND stt.BetType=pdt.BetType
-			AND stt.CustID=@CustID
-		JOIN dbo.CustProductStatus Agentstt WITH(NOLOCK)
-			ON Agentstt.SportType=pdt.SportType
-			AND Agentstt.BetType=pdt.BetType
-			AND Agentstt.CustID=@AgentID
+			INNER JOIN dbo.CustProductStatus stt WITH(NOLOCK)
+				ON stt.SportType=pdt.SportType
+				AND stt.BetType=pdt.BetType
+				AND stt.CustID=@CustID
+			INNER JOIN dbo.CustProductStatus Agentstt WITH(NOLOCK)
+				ON Agentstt.SportType=pdt.SportType
+				AND Agentstt.BetType=pdt.BetType
+				AND Agentstt.CustID=@AgentID
 		WHERE pdt.ProductID=@ProductID AND pdt.SettingType=4
 	END
 END
