@@ -46,14 +46,23 @@ BEGIN
 			@MaxPerMatch MONEY = 0,
 			@MinMinBet MONEY = 0,
 			@MaxMaxBet MONEY = 0,
-			@MaxMaxPerMatch MONEY = 0
+			@MaxMaxPerMatch MONEY = 0,
+			@SportType SMALLINT
 	
-	CREATE  TABLE 	#UplineLimit(
+	DECLARE @UplineLimitTbl TABLE(
 		SportType SMALLINT,
 		BetType SMALLINT,
 		MinBet MONEY,
 		MaxBet MONEY,
 		MaxPerMatch MONEY
+	)
+	
+	DECLARE @NewBetLimitTbl TABLE(
+		SportType SMALLINT,
+		BetType SMALLINT,
+		MinBet MONEY,
+		MaxBet MONEY,
+		MaxPerMatch Money
 	)
 	
 	SELECT @UserName = username
@@ -83,8 +92,9 @@ BEGIN
 	DECLARE @iDoc INT
 	EXEC sp_xml_preparedocument @iDoc OUTPUT, @BetLimit_XML
 	
+	
+	INSERT @NewBetLimitTbl
 	SELECT *
-	INTO #newBetLimitTbl
 	FROM OPENXML (@iDoc, '/ROOT/BetLimit',1) 
 	WITH(SportType smallint, BetType smallint, MinBet MONEY, MaxBet MONEY,MaxPerMatch MONEY)	
 	
@@ -93,11 +103,13 @@ BEGIN
 	IF @RoleID=3 
 	BEGIN
 		--Get super 's bet limit
-		INSERT INTO #UplineLimit
-		SELECT bl.SportType,bl.BetType,MAX(bl.MinBet) AS MinBet, MIN(bl.MaxBet) AS MaxBet,
-					MIN(bl.MaxPerMatch) AS MaxPerMatch
+		INSERT INTO @UplineLimitTbl
+		SELECT bl.SportType,bl.BetType,
+				MAX(case when bl.MinBet = 0 then NULL else bl.MinBet end) AS MinBet, 
+				MIN(case when bl.MaxBet = 0 then NULL else bl.MaxBet end) AS MaxBet,
+				MIN(case when bl.MaxPerMatch = 0 then NULL else bl.MaxPerMatch end) AS MaxPerMatch
 		FROM dbo.CustBetSetting3rd_Agent bl
-		JOIN #newBetLimitTbl tmp
+		JOIN @NewBetLimitTbl tmp
 		ON tmp.SportType=bl.SportType
 		AND tmp.BetType=bl.BetType
 		WHERE bl.CustID=@SuperID
@@ -106,11 +118,13 @@ BEGIN
 	ELSE IF @RoleID=2
 	BEGIN
 		--Get super/master 's bet limit
-		INSERT INTO #UplineLimit
-		SELECT bl.SportType,bl.BetType,MAX(bl.MinBet) AS MinBet, MIN(bl.MaxBet) AS MaxBet,
-					MIN(bl.MaxPerMatch) AS MaxPerMatch
+		INSERT INTO @UplineLimitTbl
+		SELECT bl.SportType,bl.BetType,
+					MAX(case when bl.MinBet = 0 then NULL else bl.MinBet end) AS MinBet, 
+					MIN(case when bl.MaxBet = 0 then NULL else bl.MaxBet end) AS MaxBet,
+					MIN(case when bl.MaxPerMatch = 0 then NULL else bl.MaxPerMatch end) AS MaxPerMatch
 		FROM dbo.CustBetSetting3rd_Agent bl
-		JOIN #newBetLimitTbl tmp
+		JOIN @NewBetLimitTbl tmp
 		ON tmp.SportType=bl.SportType
 		AND tmp.BetType=bl.BetType
 		WHERE bl.CustID=@SuperID OR bl.CustID=@MasterID
@@ -119,11 +133,13 @@ BEGIN
 	ELSE IF @RoleID=1
 	BEGIN
 		--Get super/master 's bet limit
-		INSERT INTO #UplineLimit
-		SELECT bl.SportType,bl.BetType,MAX(bl.MinBet) AS MinBet, MIN(bl.MaxBet) AS MaxBet,
-					MIN(bl.MaxPerMatch) AS MaxPerMatch
+		INSERT INTO @UplineLimitTbl
+		SELECT bl.SportType,bl.BetType,
+					MAX(case when bl.MinBet = 0 then NULL else bl.MinBet end) AS MinBet, 
+					MIN(case when bl.MaxBet = 0 then NULL else bl.MaxBet end) AS MaxBet,
+					MIN(case when bl.MaxPerMatch = 0 then NULL else bl.MaxPerMatch end) AS MaxPerMatch
 		FROM dbo.CustBetSetting3rd_Agent bl
-		JOIN #newBetLimitTbl tmp
+		JOIN @NewBetLimitTbl tmp
 		ON tmp.SportType=bl.SportType
 		AND tmp.BetType=bl.BetType
 		WHERE bl.CustID=@SuperID OR bl.CustID=@MasterID OR bl.CustID=@AgentID
@@ -138,9 +154,10 @@ BEGIN
 			@MaxPerMatch=ISNULL(tmp.MaxPerMatch,0),
 			@MinMinBet = ISNULL(ubl.MinBet,0),
 			@MaxMaxBet = ISNULL(ubl.MaxBet,0),
-			@MaxMaxPerMatch = ISNULL(ubl.MaxPerMatch,0)
-	FROM #newBetLimitTbl tmp
-	LEFT JOIN #UplineLimit ubl
+			@MaxMaxPerMatch = ISNULL(ubl.MaxPerMatch,0),
+			@SportType = ubl.SportType
+	FROM @NewBetLimitTbl tmp
+	LEFT JOIN @UplineLimitTbl ubl
 	ON tmp.SportType=ubl.SportType
 	AND tmp.BetType=ubl.BetType
 	WHERE
@@ -170,7 +187,7 @@ BEGIN
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E'
 					THEN 'Wrong Min bet/ Max bet/ Max per match.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11, @Language) + ')'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
 				END
 				,@ErrCode = 3
 		RETURN
@@ -189,7 +206,7 @@ BEGIN
 				CASE @Language
 					WHEN 'E'
 						THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](1, @Language) + ')'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
 					END + CHAR(13) + CHAR(10) + convert(VARCHAR(20), @MinBet) + '-' + convert(VARCHAR(20), @MaxBet) + '-' + convert(VARCHAR(20), @MaxPerMatch)	
 					,@ErrCode = 109
 		RETURN
@@ -207,8 +224,23 @@ BEGIN
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
 					WHEN 'E'
-						THEN 'Min bet must be equal to or greater than Master Agent min bet.'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](10019, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](1, @Language) + ')'
+						THEN 
+							CASE 
+								WHEN @RoleID=3
+									THEN 'Min bet must be equal to or greater than Super Agent min bet' 
+								WHEN @RoleID=2
+									THEN 'Min bet must be equal to or greater than Master Agent min bet' 
+								WHEN @RoleID=1
+									THEN 'Min bet must be equal to or greater than Agent min bet'
+							END
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+													CASE 
+														WHEN @RoleID=3 THEN 10016 
+														WHEN @RoleID=2 THEN 10019 
+														WHEN @RoleID=2 THEN 10006
+													END, 
+													@Language) 
+							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
 					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
 				,@ErrCode = 110
 
@@ -224,9 +256,24 @@ BEGIN
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
 					WHEN 'E'
-						THEN 'Max bet must be equal to or less than Master Agent max bet (for Soccer)'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](10020, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](1, @Language) + ')'
-					END + ' (' + convert(VARCHAR(20), @MaxMaxBet) + ').'
+						THEN 
+							CASE 
+								WHEN @RoleID=3
+									THEN 'Max bet must be equal to or less than Super Agent max bet' 
+								WHEN @RoleID=2
+									THEN 'Max bet must be equal to or less than Master Agent max bet' 
+								WHEN @RoleID=1
+									THEN 'Max bet must be equal to or less than Agent max bet'
+							END
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+													CASE 
+														WHEN @RoleID=3 THEN 10017 
+														WHEN @RoleID=2 THEN 10020 
+														WHEN @RoleID=2 THEN 10007
+													END, 
+													@Language) 
+							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
+					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
 				,@ErrCode = 111
 
 			RETURN
@@ -241,10 +288,25 @@ BEGIN
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
 					WHEN 'E'
-						THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match (for Soccer)'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](10021, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](1, @Language) + ')'
-					END + ' (' + convert(VARCHAR(20), @MaxMaxPerMatch) + ').'
-				,@ErrCode = 111
+						THEN 
+							CASE 
+								WHEN @RoleID=3
+									THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match' 
+								WHEN @RoleID=2
+									THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match' 
+								WHEN @RoleID=1
+									THEN 'Max Per Match must be equal to or less than Agent Max Per Match'
+							END
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+													CASE 
+														WHEN @RoleID=3 THEN 10018 
+														WHEN @RoleID=2 THEN 10021 
+														WHEN @RoleID=2 THEN 10008
+													END, 
+													@Language) 
+							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
+					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
+				,@ErrCode = 112
 
 			RETURN
 		END
