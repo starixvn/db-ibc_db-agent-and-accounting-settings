@@ -29,6 +29,7 @@ Revisions for Acc_CustomerUpdSuper_MaxPositiontaking:
 	- 20130222@Johnson: add virtual horse racing setting (sporttype: 181)
 	- 20131126@Kathy: Add Virtual Greyhounds/Motor Racing (182, 184) [Redmine:#7234]
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20141201@Johnson: New setting revonation for others porduct [Redmine: #26274]
 Param's Explanation: 
 
 * @mode:
@@ -50,10 +51,16 @@ Param's Explanation:
 --		AND xtype = 'U'
 
 --if @IsExistTables <> 3 RETURN
-
-IF ((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'U') <> 3
-	AND (SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'V') <> 3) 
+IF @mode = 'Others'
+BEGIN
+	(SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustPTSetting3rd_Agent', 'CustPTSetting3rd_Member','CustPTGroupSetting3rd_Member') AND type = 'U') <> 4
+END
+ELSE IF 
+BEGIN
+	((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'U') <> 3
+		AND (SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'V') <> 3) 
 	RETURN
+END
 
     declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 
@@ -281,6 +288,91 @@ BEGIN
     where cs.spositiontaking+cs.apositiontaking+cs.mpositiontaking>scs.spositiontaking
 	    and cs.sporttype in(180, 181, 182, 183, 184, 185, 186) --between 180 and 186
 	    
+    RETURN
+END
+
+if @mode = 'Others'
+BEGIN
+	----------------------------------------------------------------------------
+    --s1=min(s1,s4-m3) if i=0
+    update cs
+	    set cs.SuperPT = scs.SuperPT - mcs.MasterPT
+    from 
+	    CustPTSetting3rd_Member as cs with (ROWLOCK, UPDLOCK)
+	    INNER JOIN custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.srecommend = @srecommend and mb.roleid=1
+	    INNER JOIN CustPTSetting3rd_Agent as mcs with (NOLOCK) on mcs.custid = mb.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype AND mcs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+    WHERE cs.IsAutoSuperPT=0 
+	    and mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT
+    ----------------------------------------------------------------------------
+
+    --update s1,m1,a1 in case s1+m1+a1>s4
+    --s1=max(0,s4-m1-a1)
+    --@mapos1=iif(s1_new+m1+a1>s4,s4-s1_new,m1+a1)
+    --@maxmapos=min(m3,l3)
+    --@mapos2=min(@mapos1,@maxmapos)
+    --@mapos=max(@mapos2,n3)
+    --m1=max(0,@mapos-a1)
+    --a1=iif(m1_new+a1>@mapos,@mapos-m1_new,a1)
+    UPDATE cs
+	    SET @spos = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT<0 THEN 0 ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT END,
+		    SuperPT = @spos,
+		    @mapos1 = CASE WHEN @spos+cs.MasterPT+cs.AgentPT>scs.SuperPT THEN scs.SuperPT -@spos ELSE cs.MasterPT+cs.AgentPT END,
+		    @maxmapos = CASE WHEN mcs.MasterPT>mcs.MaxPT then mcs.MaxPT ELSE mcs.MasterPT END,
+		    @mapos2 = CASE WHEN @mapos1>@maxmapos THEN @maxmapos ELSE @mapos1 END,
+		    @mapos = CASE WHEN @mapos2<mcs.MinPT THEN mcs.MinPT ELSE @mapos2 END,
+		    @mpos = CASE WHEN @mapos-cs.AgentPT<0 THEN 0 ELSE @mapos-cs.AgentPT END,
+		    MasterPT = @mpos,
+		    @apos = CASE WHEN cs.AgentPT + @mpos>@mapos THEN @mapos-@mpos ELSE cs.AgentPT END,
+		    AgentPT = CASE WHEN @apos<aco.MinPT THEN aco.MinPT ELSE @apos END
+    FROM 
+	    CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid AND mb.srecommend=@srecommend AND mb.roleid=1
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
+	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
+    WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+	
+	--correct pt on group settings
+	 --s1=min(s1,s4-m3) if i=0
+    UPDATE cs
+	    SET cs.SuperPT = scs.SuperPT - mcs.MasterPT
+    FROM 
+	    CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid AND mb.srecommend = @srecommend AND mb.roleid=2
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype AND mcs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+    WHERE cs.IsAutoSuperPT=0 
+	    AND mcs.IsAutoSuperPT=0 AND scs.SuperPT - mcs.MasterPT<cs.SuperPT
+    ----------------------------------------------------------------------------
+
+    --update s1,m1,a1 in case s1+m1+a1>s4
+    --s1=max(0,s4-m1-a1)
+    --@mapos1=iif(s1_new+m1+a1>s4,s4-s1_new,m1+a1)
+    --@maxmapos=min(m3,l3)
+    --@mapos2=min(@mapos1,@maxmapos)
+    --@mapos=max(@mapos2,n3)
+    --m1=max(0,@mapos-a1)
+    --a1=iif(m1_new+a1>@mapos,@mapos-m1_new,a1)
+    UPDATE cs
+	    SET @spos = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT<0 THEN 0 ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT END,
+		    SuperPT = @spos,
+		    @mapos1 = CASE WHEN @spos+cs.MasterPT+cs.AgentPT>scs.SuperPT THEN scs.SuperPT -@spos ELSE cs.MasterPT+cs.AgentPT END,
+		    @maxmapos = CASE WHEN mcs.MasterPT>mcs.MaxPT then mcs.MaxPT ELSE mcs.MasterPT END,
+		    @mapos2 = CASE WHEN @mapos1>@maxmapos THEN @maxmapos ELSE @mapos1 END,
+		    @mapos = CASE WHEN @mapos2<mcs.MinPT THEN mcs.MinPT ELSE @mapos2 END,
+		    @mpos = CASE WHEN @mapos-cs.AgentPT<0 THEN 0 ELSE @mapos-cs.AgentPT END,
+		    MasterPT = @mpos,
+		    @apos = CASE WHEN cs.AgentPT + @mpos>@mapos THEN @mapos-@mpos ELSE cs.AgentPT END,
+		    AgentPT = CASE WHEN @apos<aco.MinPT THEN aco.MinPT ELSE @apos END
+    FROM 
+	    CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.AgentID = mb.custid AND mb.srecommend=@srecommend AND mb.roleid=2
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
+	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
+    WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+    
     RETURN
 END
 

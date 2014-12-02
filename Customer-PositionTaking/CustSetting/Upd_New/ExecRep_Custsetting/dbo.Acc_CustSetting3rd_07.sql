@@ -39,6 +39,7 @@ AS
         - 20131203@Johnson: update virtual-sport for agent by @sporttype not hard code in sp
         - 20140314@Elodie: Add Keno product [Redmine:#13326]
         - 20140818@Logan:   Exclude disabled members while updating Super, Master setting [Redmine:#19631]
+        - 20141201@Johnson: New setting revonation for others porduct [Redmine: #26274]
     Parameter's Explanation:
 */ 
 BEGIN
@@ -53,17 +54,31 @@ BEGIN
         FROM dbo.sysobjects
         WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
                 AND xtype = 'U'
+		
+		IF @IsExistTables <> 3 
+        RETURN                
     END
-    ELSE
+    ELSE IF @mode IN ('Others')
+    BEGIN
+		 SELECT @IsExistTables = COUNT(*) 
+        FROM dbo.sysobjects
+        WHERE    name IN ('custinfo','CustPTSetting3rd_Agent', 'CustPTSetting3rd_Member','CustPTGroupSetting3rd_Member')
+                AND xtype = 'U'
+		
+		IF @IsExistTables <> 4
+        RETURN                
+    END
+    ELSE 
     BEGIN
         SELECT @IsExistTables = COUNT(*) 
         FROM dbo.sysobjects
         WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
                 AND xtype = 'U'
+        
+        IF @IsExistTables <> 3 
+			RETURN
     END
-
-    IF @IsExistTables <> 3 
-        RETURN
+    
     
     IF @roleid = 4
     BEGIN            
@@ -177,7 +192,40 @@ BEGIN
                 AND cs.sporttype = @sporttype AND cs.bettype = @bettype 
                 AND (cs.isautopositiontaking = 1 OR mcs.isautopositiontaking = 1)     
             
-        END        
+        END      
+        ELSE IF @mode = 'Others'
+        BEGIN
+			--u = (i3 or i1)?(u3 or u1)
+            --s1 = min(s4-m1-a1, u)
+            UPDATE cs 
+            SET SuperPT = CASE WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT >
+                                         CASE WHEN cs.IsAutoSuperPT = 1 THEN cs.AutoSuperPT ELSE mcs.AutoSuperPT END THEN
+                                        (CASE WHEN cs.IsAutoSuperPT = 1 THEN cs.AutoSuperPT ELSE mcs.AutoSuperPT END) 
+                                    ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
+                                END                            
+            FROM CustPTSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK)
+                INNER JOIN CustInfo ci WITH(NOLOCK) ON ci.custid = cs.custid
+                INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = ci.mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype AND mcs.isLive = cs.isLive
+                INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype AND scs.isLive = cs.isLive
+            WHERE ci.srecommend = @srecommend AND ci.roleid = 1
+                AND ci.Enabled = 1              
+                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)
+                
+            --correct on pt grouped settings
+             UPDATE cs 
+            SET SuperPT = CASE WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT >
+                                         CASE WHEN cs.IsAutoSuperPT = 1 THEN cs.AutoSuperPT ELSE mcs.AutoSuperPT END THEN
+                                        (CASE WHEN cs.IsAutoSuperPT = 1 THEN cs.AutoSuperPT ELSE mcs.AutoSuperPT END) 
+                                    ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
+                                END                            
+            FROM CustPTGroupSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK)
+                INNER JOIN CustInfo ci WITH(NOLOCK) ON ci.custid = cs.AgentID
+                INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = ci.mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype AND mcs.isLive = cs.isLive
+                INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype AND scs.isLive = cs.isLive
+            WHERE ci.srecommend = @srecommend AND ci.roleid = 2
+                AND ci.Enabled = 1              
+                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)
+        END  
     END
     ELSE IF @roleid = 3
     BEGIN
