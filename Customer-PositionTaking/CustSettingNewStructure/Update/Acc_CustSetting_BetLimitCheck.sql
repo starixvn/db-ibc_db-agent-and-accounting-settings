@@ -36,10 +36,6 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON
-
-	DECLARE @ErrCode_Cur INT, 
-			@ErrMsg_Cur NVARCHAR(4000),
-			@UserName varchar(30)
 	
 	DECLARE @MinBet MONEY = 0,
 			@MaxBet MONEY =0,
@@ -64,26 +60,7 @@ BEGIN
 		MaxBet MONEY,
 		MaxPerMatch Money
 	)
-	
-	SELECT @UserName = username
-	FROM customer WITH (NOLOCK)
-	WHERE CustID = @CustID
 
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-
-	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-	,@ErrCode = @ErrCode_Cur OUTPUT
-	,@ErrMsg = @ErrMsg_Cur OUTPUT
-
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-		RETURN
-	END
-	
 	
 	IF @BetLimit_XML IS NULL OR @BetLimit_XML='' RETURN
 	
@@ -202,7 +179,7 @@ BEGIN
 		OR ((@MinBet <> 0 OR @MaxPerMatch <> 0) and @MinBet>@MaxPerMatch) 
 		)
 	BEGIN
-		SELECT @ErrMsg =	@UserName + ': '+
+		SELECT @ErrMsg =
 				CASE @Language
 					WHEN 'E'
 						THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
@@ -222,7 +199,7 @@ BEGIN
 				AND @MinBet < @MinMinBet
 		)
 		BEGIN
-			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
+			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 
 							CASE 
@@ -254,7 +231,7 @@ BEGIN
 				AND @MaxBet > @MaxMaxBet
 				)
 		BEGIN
-			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
+			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 
 							CASE 
@@ -286,7 +263,7 @@ BEGIN
 				AND @MaxPerMatch > @MaxMaxPerMatch
 				)
 		BEGIN
-			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
+			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 
 							CASE 

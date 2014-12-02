@@ -69,6 +69,20 @@ BEGIN
 			
 	
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	
+		--Check disable user
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
+	,@ErrCode = @ErrCode_Cur OUTPUT
+	,@ErrMsg = @ErrMsg_Cur OUTPUT
+
+	IF @ErrCode_Cur > 0
+	BEGIN
+		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+		RETURN
+	END
+	
 	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
 	FROM dbo.custInfo  WITH(NOLOCK)
 	WHERE custid=@CustID

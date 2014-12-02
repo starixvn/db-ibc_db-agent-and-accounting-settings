@@ -34,9 +34,6 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON
-
-	DECLARE @ErrCode_Cur INT
-			,@ErrMsg_Cur NVARCHAR(4000)
 			
 	DECLARE @NewDiscountTbl TABLE(
 		SportType SMALLINT,
@@ -44,21 +41,7 @@ BEGIN
 		Discount Decimal(9,8)
 	)
 	
-	SELECT @ErrCode_Cur = 0
-			,@ErrMsg_Cur = ''
 
-	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-	,@ErrCode = @ErrCode_Cur OUTPUT
-	,@ErrMsg = @ErrMsg_Cur OUTPUT
-
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-		RETURN
-	END
 	
 	IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
 	
