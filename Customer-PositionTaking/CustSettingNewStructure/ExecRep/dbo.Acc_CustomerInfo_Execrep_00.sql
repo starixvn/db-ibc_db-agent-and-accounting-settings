@@ -2375,6 +2375,22 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--BET LIMIT
+		DECLARE @BetlimitAgent TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT,
+				MinBet MONEY,
+				MaxBet MONEY,
+				MaxPerMatch MONEY
+			)
+		INSERT INTO @BetlimitAgent
+		SELECT SportType,BetType,
+				 Max(case when MinBet = 0 then NULL else MinBet end) MinBet,
+				 Min(case when MaxBet = 0 then NULL else MaxBet end) MaxBet,
+				 Min(case when MaxPerMatch = 0 then NULL else MaxPerMatch end) MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent smcs WITH (NOLOCK)
+		WHERE smcs.custid=@srecommend OR smcs.custid=@mrecommend
+		GROUP BY SportType,BetType
+		
 		INSERT INTO [dbo].[CustBetSetting3rd_Agent]
            ([CustID]
            ,[SportType]
@@ -2383,16 +2399,9 @@ SET NOCOUNT ON
            ,[MaxBet]
            ,[MaxPerMatch])
 		SELECT
-		@CustID,scs.SportType,scs.BetType,
-			CASE WHEN scs.MinBet > mcs.MinBet THEN scs.MinBet ELSE mcs.MinBet END,
-			CASE WHEN scs.MaxBet < mcs.MaxBet THEN scs.MaxBet ELSE mcs.MaxBet END,
-			CASE WHEN scs.MaxPerMatch < mcs.MaxPerMatch THEN scs.MaxPerMatch ELSE mcs.MaxPerMatch END
-		FROM dbo.CustBetSetting3rd_Agent scs WITH (NOLOCK)
-		JOIN dbo.CustBetSetting3rd_Agent mcs WITH (NOLOCK)
-					ON scs.SportType = mcs.SportType
-					AND scs.BetType = mcs.BetType
-					AND mcs.CustID = @mrecommend
-		WHERE scs.custid=@srecommend
+		@CustID,SportType,BetType,ISNULL(MinBet,0),ISNULL(MaxBet,0),ISNULL(MaxPerMatch,0)
+		FROM @BetlimitAgent
+
 		
 		IF @@error <> 0
 		BEGIN
@@ -2767,6 +2776,24 @@ SET NOCOUNT ON
 		
 		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
 		--BET LIMIT
+		DECLARE @BetlimitMember TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT,
+				MinBet MONEY,
+				MaxBet MONEY,
+				MaxPerMatch MONEY
+			)
+		INSERT INTO @BetlimitMember
+		SELECT SportType,BetType,
+				 Max(case when MinBet = 0 then NULL else MinBet end) MinBet,
+				 Min(case when MaxBet = 0 then NULL else MaxBet end) MaxBet,
+				 Min(case when MaxPerMatch = 0 then NULL else MaxPerMatch end) MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent  WITH (NOLOCK)
+		WHERE custid=@srecommend 
+				OR custid=@mrecommend
+				OR custid=@recommend
+		GROUP BY SportType,BetType
+		
 		INSERT INTO [dbo].[CustBetSetting3rd_Member]
            ([CustID]
            ,[SportType]
@@ -2775,29 +2802,9 @@ SET NOCOUNT ON
            ,[MaxBet]
            ,[MaxPerMatch])
 		SELECT
-		@CustID,scs.SportType,scs.BetType,
-			CASE 
-				WHEN scs.minbet >= mcs.minbet AND scs.minbet >= acs.minbet THEN scs.minbet 
-				WHEN mcs.minbet >= scs.minbet AND mcs.minbet >= acs.minbet THEN mcs.minbet
-				WHEN acs.minbet >= scs.minbet AND acs.minbet >= mcs.minbet THEN acs.minbet END,
-			CASE 
-				WHEN scs.maxbet <= mcs.maxbet AND scs.maxbet <= acs.maxbet THEN scs.maxbet 
-				WHEN mcs.maxbet <= scs.maxbet AND mcs.maxbet <= acs.maxbet THEN mcs.maxbet
-				WHEN acs.maxbet <= scs.maxbet AND acs.maxbet <= mcs.maxbet THEN acs.maxbet END,
-			CASE 
-				WHEN scs.maxpermatch <= mcs.maxpermatch AND scs.maxpermatch <= acs.maxpermatch THEN scs.maxpermatch 
-				WHEN mcs.maxpermatch <= scs.maxpermatch AND mcs.maxpermatch <= acs.maxpermatch THEN mcs.maxpermatch
-				WHEN acs.maxpermatch <= scs.maxpermatch AND acs.maxpermatch <= mcs.maxpermatch THEN acs.maxpermatch END
-		FROM dbo.CustBetSetting3rd_Agent scs WITH (NOLOCK)
-		JOIN dbo.CustBetSetting3rd_Agent mcs WITH (NOLOCK)
-					ON scs.sporttype = mcs.sporttype
-					AND scs.bettype = mcs.bettype
-					AND mcs.custid = @mrecommend
-		JOIN dbo.CustBetSetting3rd_Agent acs WITH (NOLOCK)
-					ON scs.sporttype = acs.sporttype
-					AND scs.bettype = acs.bettype
-					AND acs.custid = @recommend
-		WHERE scs.custid=@srecommend
+		@CustID,SportType,BetType,ISNULL(MinBet,0),ISNULL(MaxBet,0),ISNULL(MaxPerMatch,0)
+		FROM @BetlimitMember
+
 		
 		IF @@error <> 0
 		BEGIN
