@@ -6,14 +6,13 @@ GO
 ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitUpd]
 	@CustID INT,
 	@RoleID INT,
-	@AgentID INT,
-	@MasterID INT,
-	@SuperID INT,
 	@BetLimit_XML VARCHAR(MAX),
 
-	@Language varchar(2) = 'E',
-	@ErrCode  VARCHAR(300)  = ''  OUTPUT,
-	@ErrMsg     NVARCHAR(4000) = '' OUTPUT
+	@UserID		INT,
+	@IP			VARCHAR(50)= '',
+	@Language	VARCHAR(20) = 'E',		
+	@ErrCode	VARCHAR(300) = '' OUTPUT,
+	@ErrMsg		NVARCHAR(4000) = '' OUTPUT
 AS
 	/*
 	Created: 20141111@Dominic
@@ -37,7 +36,42 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	SELECT @ErrCode='',@ErrMsg=''
+	DECLARE @startRun DATETIME
+			,@endRun DATETIME
+			,@duration INT
+	DECLARE @logSpData NVARCHAR(MAX)
+			,@logSpData_Old NVARCHAR(MAX)
+			,@xml XML
+	DECLARE @ErrCode_Cur	INT 
+			,@ErrMsg_Cur		NVARCHAR(4000)
+			,@AgentID INT
+			,@MasterID INT
+			,@SuperID INT
+			
+	DECLARE @OldBetLimitTbl TABLE
+				(
+					SportType SMALLINT,
+					BetType SMALLINT,
+					MinBet MONEY,
+					MaxBet MONEY,
+					MaxPerMatch MONEY
+				)
+				
+	DECLARE @NewBetLimitTbl TABLE(
+		SportType SMALLINT,
+		BetType SMALLINT,
+		MinBet MONEY,
+		MaxBet MONEY,
+		MaxPerMatch Money
+	)
+	
+	SET @startRun = GETDATE()
+			
+	
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
+	FROM dbo.custInfo  WITH(NOLOCK)
+	WHERE custid=@CustID
 
 	IF @BetLimit_XML IS NULL OR @BetLimit_XML= '' RETURN
 	
@@ -45,8 +79,8 @@ BEGIN
 	DECLARE @iDoc INT
 	EXEC sp_xml_preparedocument @iDoc OUTPUT, @BetLimit_XML
 
+	INSERT @NewBetLimitTbl
 	SELECT *
-	INTO #newBetLimitTbl
 	FROM OPENXML (@iDoc, '/ROOT/BetLimit',1) 
 	WITH(SportType smallint, BetType smallint, MinBet MONEY, MaxBet MONEY,MaxPerMatch MONEY)	
 	
@@ -65,31 +99,172 @@ BEGIN
 
 	IF @ErrCode <> '' RETURN
 	
+		
 	IF @RoleID=1
 	BEGIN
+		--get old settings
+		INSERT INTO @OldBetLimitTbl
+		SELECT bl.SportType,bl.BetType,bl.MinBet,bl.MaxBet,bl.MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Member bl
+				INNER JOIN @NewBetLimitTbl tmp
+					ON tmp.SportType=bl.sporttype
+					AND tmp.BetType=bl.bettype
+		WHERE bl.custid=@CustID
+		
+		--update new settings
 		UPDATE main
 		SET
 			main.minbet = tmp.MinBet,
 			main.maxbet = tmp.MaxBet,
 			main.maxpermatch = tmp.MaxperMatch
 		FROM dbo.CustBetSetting3rd_Member main
-		JOIN #newBetLimitTbl tmp
-		ON tmp.SportType=main.sporttype
-		AND tmp.BetType=main.bettype
+			INNER JOIN @NewBetLimitTbl tmp
+				ON tmp.SportType=main.sporttype
+				AND tmp.BetType=main.bettype
 		WHERE main.custid=@CustID
+		AND (
+			main.minbet <> tmp.MinBet
+			OR
+			main.maxbet <> tmp.MaxBet
+			OR
+			main.maxpermatch <> tmp.MaxperMatch
+		)
+		
 	END
 	ELSE IF @RoleID IN (2,3,4)
 	BEGIN
+		--get old settings
+		INSERT INTO @OldBetLimitTbl
+		SELECT bl.SportType,bl.BetType,bl.MinBet,bl.MaxBet,bl.MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent bl
+			INNER JOIN @NewBetLimitTbl tmp
+				ON tmp.SportType=bl.sporttype
+					AND tmp.BetType=bl.bettype
+		WHERE bl.custid=@CustID
+		
+		--update new settings
 		UPDATE main
 		SET
 			main.minbet = tmp.MinBet,
 			main.maxbet = tmp.MaxBet,
 			main.maxpermatch = tmp.MaxperMatch
 		FROM dbo.CustBetSetting3rd_Agent main
-		JOIN #newBetLimitTbl tmp
-		ON tmp.SportType=main.sporttype
-		AND tmp.BetType=main.bettype
+			INNER JOIN @NewBetLimitTbl tmp
+				ON tmp.SportType=main.sporttype
+					AND tmp.BetType=main.bettype
 		WHERE main.custid=@CustID
+		AND (
+			main.minbet <> tmp.MinBet
+			OR
+			main.maxbet <> tmp.MaxBet
+			OR
+			main.maxpermatch <> tmp.MaxperMatch
+		)
 	END
 
+	IF (@@ERROR <> 0)
+	BEGIN
+		SELECT @ErrMsg_Cur = CASE @Language
+				WHEN 'E'
+					THEN 'Update process is unsuccessful !'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
+				END
+			,@ErrCode_cur = 106
+
+		IF @ErrCode_Cur > 0
+		BEGIN
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+			RETURN
+		END
+	END
+	
+	--START LOGGING		
+	SET @xml = (
+			SELECT @CustID AS '@c'
+				, @RoleID AS '@r'
+				, @UserID AS '@u'
+				, @IP AS '@i'
+				, @Language AS '@l'
+				, (SELECT SportType AS '@s'
+					, BetType AS '@b'
+					, MinBet AS '@mib'
+					, MaxBet AS '@mab'
+					, MaxPerMatch AS '@mam'
+				FROM @OldBetLimitTbl
+				FOR XML PATH('x'), TYPE)
+			FOR XML PATH('r'), TYPE)
+	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
+	SET @xml = (
+			SELECT @CustID AS '@c'
+				, @RoleID AS '@r'
+				, @UserID AS '@u'
+				, @IP AS '@i'
+				, @Language AS '@l'
+				, (SELECT SportType AS '@s'
+					, BetType AS '@b'
+					, MinBet AS '@mib'
+					, MaxBet AS '@mab'
+					, MaxPerMatch AS '@mam'
+				FROM @NewBetLimitTbl
+				FOR XML PATH('x'), TYPE)
+		FOR XML PATH('r'), TYPE)
+	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
+	SELECT @endRun = GETDATE(), @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
+	
+
+	BEGIN TRY
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 384,
+			@TrackingValue = @logSpData,
+			@TrackingValue2 = @logSpData_Old,
+			@duration = @duration
+	END TRY
+	BEGIN CATCH		
+		--START LOGGING		
+		SET @xml = (
+				SELECT @CustID AS '@c'
+					, @RoleID AS '@r'
+					, @UserID AS '@u'
+					, @IP AS '@i'
+					, @Language AS '@l'
+					, (SELECT SportType AS '@s'
+						, BetType AS '@b'
+						, MinBet AS '@mib'
+						, MaxBet AS '@mab'
+						, MaxPerMatch AS '@mam'
+					FROM @OldBetLimitTbl
+					FOR XML PATH('x'), TYPE)
+				FOR XML PATH('r'), TYPE)
+		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		
+		SET @xml = (
+				SELECT @CustID AS '@c'
+					, @RoleID AS '@r'
+					, @UserID AS '@u'
+					, @IP AS '@i'
+					, @Language AS '@l'
+					, (SELECT SportType AS '@s'
+						, BetType AS '@b'
+						, MinBet AS '@mib'
+						, MaxBet AS '@mab'
+						, MaxPerMatch AS '@mam'
+					FROM @NewBetLimitTbl
+					FOR XML PATH('x'), TYPE)
+			FOR XML PATH('r'), TYPE)
+		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 384,
+			@TrackingValue = @logSpData,
+			@TrackingValue2 = @logSpData_Old,
+			@duration = @duration		
+	END CATCH	
 END
