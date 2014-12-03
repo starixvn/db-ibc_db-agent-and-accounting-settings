@@ -42,9 +42,7 @@ BEGIN
 	DECLARE @logSpData NVARCHAR(MAX)
 			,@logSpData_Old NVARCHAR(MAX)
 			,@xml XML
-	DECLARE @ErrCode_Cur	INT 
-			,@ErrMsg_Cur		NVARCHAR(4000)
-			,@AgentID INT
+	DECLARE @AgentID INT
 			,@MasterID INT
 			,@SuperID INT
 			
@@ -60,20 +58,19 @@ BEGIN
 		Discount Decimal(9,8)
 	)
 			
-	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	SELECT @ErrCode = '', @ErrMsg = ''
 	
-	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-	,@ErrCode = @ErrCode_Cur OUTPUT
-	,@ErrMsg = @ErrMsg_Cur OUTPUT
-
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
-		RETURN
-	END
+	--Check Allowed downlines	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+				@roleid=@roleid,
+				@isExecRep=1,
+				@isUpdatePT = 1,
+				@Sporttype = 1,
+				@Language=@Language,
+				@ErrMsg=@ErrMsg output,
+				@ErrCode=@ErrCode output
+	IF	@ErrCode <> 0 
+		RETURN 
 	
 	
 	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
