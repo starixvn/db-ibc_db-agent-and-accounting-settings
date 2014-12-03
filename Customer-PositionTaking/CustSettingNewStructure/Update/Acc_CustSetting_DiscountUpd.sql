@@ -45,7 +45,10 @@ BEGIN
 	DECLARE @AgentID INT
 			,@MasterID INT
 			,@SuperID INT
-			
+	
+	DECLARE @ErrCode_Cur	INT 
+			,@ErrMsg_Cur		NVARCHAR(4000)
+					
 	DECLARE @NewDiscountTbl TABLE(
 		SportType SMALLINT,
 		BetType SMALLINT,
@@ -58,7 +61,7 @@ BEGIN
 		Discount Decimal(9,8)
 	)
 			
-	SELECT @ErrCode = '', @ErrMsg = ''
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '',@ErrCode = '', @ErrMsg = ''
 	
 	--Check if XML is null or empty
 	IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
