@@ -3,13 +3,14 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_DisableStatCheck]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatCheck]
 	@IsDisabled_XML VARCHAR(MAX),
 	@RoleID INT,
 	@AgentID INT,
 	@MasterID INT,
 	@SuperID INT,
 
+	@Language varchar(2) = 'E',
 	@ErrCode  VARCHAR(300)  = ''  OUTPUT,
 	@ErrMsg     NVARCHAR(4000) = '' OUTPUT
 AS

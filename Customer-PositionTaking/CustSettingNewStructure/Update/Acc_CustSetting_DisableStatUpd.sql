@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd]
 	@CustID INT,
 	@RoleID INT,
 	@IsDisabled_XML VARCHAR(MAX),
@@ -39,6 +39,10 @@ BEGIN
 			,@endRun DATETIME
 			,@duration INT
 			
+	DECLARE @logSpData NVARCHAR(MAX)
+			,@logSpData_Old NVARCHAR(MAX)
+			,@xml XML
+					
 	DECLARE @ErrCode_Cur	INT 
 			,@ErrMsg_Cur		NVARCHAR(4000)
 			
@@ -54,8 +58,7 @@ BEGIN
 	DECLARE @OldDisableStatTbl TABLE(
 				SportType SMALLINT,
 				BetType SMALLINT,
-				IsDisabled BIT,
-				IsDisabledDownline BIT
+				IsDisabled BIT
 			)
 			
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
@@ -118,7 +121,7 @@ BEGIN
 	
 	--Get old disabled status
 	INSERT INTO @OldDisableStatTbl
-	SELECT *
+	SELECT stt.SportType,stt.BetType,stt.IsDisabled
 	FROM @NewDisableStatTbl tmp
 	JOIN dbo.CustProductStatus stt
 		ON tmp.SportType=stt.SportType
@@ -233,7 +236,6 @@ BEGIN
 				, (SELECT SportType AS '@s'
 					, BetType AS '@b'
 					, IsDisabled AS '@i'
-					, IsDisabledDownline AS '@d'
 				FROM @OldDisableStatTbl
 				FOR XML PATH('x'), TYPE)
 			FOR XML PATH('r'), TYPE)
@@ -248,7 +250,6 @@ BEGIN
 				, (SELECT SportType AS '@s'
 					, BetType AS '@b'
 					, IsDisabled AS '@i'
-					, IsDisabledDownline AS '@d'
 				FROM @NewDisableStatTbl
 				FOR XML PATH('x'), TYPE)
 		FOR XML PATH('r'), TYPE)
