@@ -60,26 +60,57 @@ BEGIN
 			
 	SELECT @ErrCode = '', @ErrMsg = ''
 	
-	--Check Allowed downlines	
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
-				@roleid=@roleid,
-				@isExecRep=1,
-				@isUpdatePT = 1,
-				@Sporttype = 1,
-				@Language=@Language,
-				@ErrMsg=@ErrMsg output,
-				@ErrCode=@ErrCode output
-	IF	@ErrCode <> 0 
-		RETURN 
-	
-	
-	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
-	FROM dbo.custInfo  WITH(NOLOCK)
-	WHERE custid=@CustID
+	--Check if XML is null or empty
+	IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
 	
 	SET @startRun = GETDATE()
 	
-	IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
+	--Check disable user
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
+		,@ErrCode = @ErrCode_Cur OUTPUT
+		,@ErrMsg = @ErrMsg_Cur OUTPUT
+
+	IF @ErrCode_Cur > 0
+	BEGIN
+		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+		RETURN
+	END
+	
+	--Check RoleID
+	IF @RoleID not in (1,2,3,4)
+	BEGIN
+		Select @ErrMsg = case @Language 
+							when 'E' then 'Invalid user!'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](40002,@Language)
+						end, @ErrCode = 100	
+		return
+	END
+	
+	--Check Allowed downlines	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+					@roleid=@roleid,
+					@isExecRep=1,
+					@isUpdatePT = 1,
+					@Sporttype = 1,
+					@Language=@Language,
+					@ErrCode = @ErrCode_Cur OUTPUT,
+					@ErrMsg = @ErrMsg_Cur OUTPUT
+
+	IF @ErrCode_Cur > 0
+	BEGIN
+		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+		RETURN
+	END
+	
+	
+	--Get line information
+	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
+	FROM dbo.custInfo  WITH(NOLOCK)
+	WHERE custid=@CustID
 	
 	--Parse XML
 	EXEC sp_xml_preparedocument @iDoc OUTPUT, @Discount_XML
@@ -216,35 +247,6 @@ BEGIN
 			@duration = @duration
 	END TRY
 	BEGIN CATCH		
-		--START LOGGING		
-		SET @xml = (
-				SELECT @CustID AS '@c'
-					, @RoleID AS '@r'
-					, @UserID AS '@u'
-					, @IP AS '@i'
-					, @Language AS '@l'
-					, (SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
-					FROM @oldDiscountTbl
-					FOR XML PATH('x'), TYPE)
-				FOR XML PATH('r'), TYPE)
-		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-		
-		SET @xml = (
-				SELECT @CustID AS '@c'
-					, @RoleID AS '@r'
-					, @UserID AS '@u'
-					, @IP AS '@i'
-					, @Language AS '@l'
-					, (SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
-					FROM @NewDiscountTbl
-					FOR XML PATH('x'), TYPE)
-			FOR XML PATH('r'), TYPE)
-		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-		
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,

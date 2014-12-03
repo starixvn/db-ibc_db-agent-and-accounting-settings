@@ -38,6 +38,10 @@ BEGIN
 	DECLARE @startRun DATETIME
 			,@endRun DATETIME
 			,@duration INT
+			
+	DECLARE @ErrCode_Cur	INT 
+			,@ErrMsg_Cur		NVARCHAR(4000)
+			
 	DECLARE @AgentID INT
 			,@MasterID INT
 			,@SuperID INT
@@ -54,7 +58,7 @@ BEGIN
 				IsDisabledDownline BIT
 			)
 			
-	SELECT @ErrCode = '', @ErrMsg = ''
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 	
 	--Check if XML is null or empty
 	IF @IsDisabled_XML IS NULL OR @IsDisabled_XML='' RETURN
@@ -63,9 +67,16 @@ BEGIN
 	
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-						,@ErrCode=@ErrCode output
-						,@ErrMsg=@ErrMsg output
-	IF @ErrCode <>0 RETURN
+		,@ErrCode = @ErrCode_Cur OUTPUT
+		,@ErrMsg = @ErrMsg_Cur OUTPUT
+
+	IF @ErrCode_Cur > 0
+	BEGIN
+		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+		RETURN
+	END
 	
 	--Check RoleID
 	IF @RoleID not in (1,2,3,4)
@@ -139,10 +150,16 @@ BEGIN
 					@isUpdatePT = 1,
 					@Sporttype = 1,
 					@Language=@Language,
-					@ErrMsg=@ErrMsg output,
-					@ErrCode=@ErrCode output
-		IF	@ErrCode <> 0 
-			RETURN 
+					@ErrCode = @ErrCode_Cur OUTPUT,
+					@ErrMsg = @ErrMsg_Cur OUTPUT
+
+		IF @ErrCode_Cur > 0
+		BEGIN
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+			RETURN
+		END
 	END
 		
 	--Update main table

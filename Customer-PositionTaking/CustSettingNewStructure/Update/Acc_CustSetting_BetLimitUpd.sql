@@ -65,12 +65,15 @@ BEGIN
 		MaxPerMatch Money
 	)
 	
+	--Check if XML is null or empty
+	IF @BetLimit_XML IS NULL OR @BetLimit_XML= '' RETURN
+	
 	SET @startRun = GETDATE()
 			
 	
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 	
-		--Check disable user
+	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
 	,@ErrCode = @ErrCode_Cur OUTPUT
 	,@ErrMsg = @ErrMsg_Cur OUTPUT
@@ -83,11 +86,20 @@ BEGIN
 		RETURN
 	END
 	
+	--Check RoleID
+	IF @RoleID not in (1,2,3,4)
+	BEGIN
+		Select @ErrMsg = case @Language 
+							when 'E' then 'Invalid user!'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](40002,@Language)
+						end, @ErrCode = 100	
+		return
+	END
+	
+	--Get line information
 	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
 	FROM dbo.custInfo  WITH(NOLOCK)
 	WHERE custid=@CustID
-
-	IF @BetLimit_XML IS NULL OR @BetLimit_XML= '' RETURN
 	
 	--Parse XML	
 	DECLARE @iDoc INT
@@ -100,6 +112,7 @@ BEGIN
 	
 	EXEC sp_xml_removedocument @iDoc
 	
+	--Validate new bet settings
 	EXEC [dbo].[Acc_CustSetting_BetLimitCheck]
 									@CustID = @CustID,
 									@RoleID = @RoleID,
@@ -240,39 +253,6 @@ BEGIN
 			@duration = @duration
 	END TRY
 	BEGIN CATCH		
-		--START LOGGING		
-		SET @xml = (
-				SELECT @CustID AS '@c'
-					, @RoleID AS '@r'
-					, @UserID AS '@u'
-					, @IP AS '@i'
-					, @Language AS '@l'
-					, (SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, MinBet AS '@mib'
-						, MaxBet AS '@mab'
-						, MaxPerMatch AS '@mam'
-					FROM @OldBetLimitTbl
-					FOR XML PATH('x'), TYPE)
-				FOR XML PATH('r'), TYPE)
-		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-		
-		SET @xml = (
-				SELECT @CustID AS '@c'
-					, @RoleID AS '@r'
-					, @UserID AS '@u'
-					, @IP AS '@i'
-					, @Language AS '@l'
-					, (SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, MinBet AS '@mib'
-						, MaxBet AS '@mab'
-						, MaxPerMatch AS '@mam'
-					FROM @NewBetLimitTbl
-					FOR XML PATH('x'), TYPE)
-			FOR XML PATH('r'), TYPE)
-		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-		
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
