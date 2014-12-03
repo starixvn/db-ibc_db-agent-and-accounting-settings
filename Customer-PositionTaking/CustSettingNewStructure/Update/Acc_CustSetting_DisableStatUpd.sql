@@ -236,6 +236,7 @@ BEGIN
 				, (SELECT SportType AS '@s'
 					, BetType AS '@b'
 					, IsDisabled AS '@i'
+					, NULL AS '@d'
 				FROM @OldDisableStatTbl
 				FOR XML PATH('x'), TYPE)
 			FOR XML PATH('r'), TYPE)
@@ -250,6 +251,7 @@ BEGIN
 				, (SELECT SportType AS '@s'
 					, BetType AS '@b'
 					, IsDisabled AS '@i'
+					, IsDisabledDownline AS '@d'
 				FROM @NewDisableStatTbl
 				FOR XML PATH('x'), TYPE)
 		FOR XML PATH('r'), TYPE)
