@@ -1,4 +1,10 @@
-ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_00    Script Date: 10/31/2014 11:14:10 AM ******/
+CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -784,8 +790,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 			- 20140318@Elodie: Add CustSettingGame for Keno [Redmine:#13156]
 			- 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
-            - 20141029@Logan:   Check constraint for customer MinBet: MAX(AllUpline.MinBet, Global.MinBet) [Redmine: #25165]
-
+            - 20141029@Logan:   Check constraint for customer Keno bet setting:  [Redmine: #25165]
+                                + MinBet = MAX(AllUpline.MinBet, Global.MinBet)
+                                + MaxBet & MaxPerMatch = MIN(AllUpline)
+                                + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -1645,11 +1653,14 @@ SET NOCOUNT ON
 		SELECT cg.GameTypeID
              , @CustID
              , cg.StakeLevelList
-             , (SELECT MAX(MinBet)
-                  FROM (VALUES (cg.MinBet)
-                             , (pbs.MinBet)
-                       ) AS UplineMinBet(MinBet)
-               )
+             , CASE
+                 WHEN cg.MinBet = 0 AND cg.MaxBet = 0 AND cg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (cg.MinBet)
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
              , cg.MaxBet
              , cg.MaxPerGameType
              , cg.IsDisabled
@@ -2106,6 +2117,9 @@ SET NOCOUNT ON
 		END
 
 		--Keno: Agent.MinBet = MAX(Master.MinBet, Super.MinBet, Global.MinBet)
+        --      Agent.MaxBet = MIN(Master.MaxBet, Super.MaxBet)
+        --      Member.MaxPerMatch = MIN(Master.MaxPerMatch, Super.MaxPerMatch)
+        --      Upline with unlimit value(MinBet = MaxBet = MaxPerMatch = 0) will be ignore when comparing
         --      Other values will be copy from master
 		INSERT INTO dbo.CustGameType
         (
@@ -2120,22 +2134,40 @@ SET NOCOUNT ON
 		SELECT mcg.GameTypeID
              , @CustID
              , mcg.StakeLevelList
-             , (SELECT MAX(MinBet)
-                  FROM (VALUES (mcg.MinBet)
-                             , (scg.MinBet)
-                             , (pbs.MinBet)
-                       ) AS UplineMinBet(MinBet)
-               )
-             , mcg.MaxBet
-             , mcg.MaxPerGameType
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (mcg.MinBet)
+                                    , (ISNULL(scg.MinBet, 0))
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxBet)
+                         FROM (VALUES (mcg.MaxBet)
+                                    , (ISNULL(scg.MaxBet, mcg.MaxBet))
+                              ) AS UplineMaxBet(MaxBet)
+                      )
+               END
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxPerMatch)
+                         FROM (VALUES (mcg.MaxPerGameType)
+                                    , (ISNULL(scg.MaxPerGameType, mcg.MaxPerGameType))
+                              ) AS UplineMaxPerMatch(MaxPerMatch)
+                      )
+               END
              , mcg.IsDisabled
 		  FROM dbo.CustGameType mcg WITH(NOLOCK)
     INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON mcg.GameTypeID = gt.GameTypeID
     INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
-    INNER JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
+     LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
+                                                AND scg.CustID = @super
+                                                AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
 		 WHERE mcg.CustID = @mrecommend
            AND pbs.Currency = @currency
-           AND scg.CustID = @super
            AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 
 		IF @@error <> 0
@@ -2453,7 +2485,10 @@ SET NOCOUNT ON
 		END
 
 		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
-        --      Other values will be copied from Agent                
+        --      Member.MaxBet = MIN(Agent.MaxBet, Master.MaxBet, Super.MaxBet)
+        --      Member.MaxPerMatch = MIN(Agent.MaxPerMatch, Master.MaxPerMatch, Super.MaxPerMatch)
+        --      Upline with unlimit value(MinBet = MaxBet = MaxPerMatch = 0) will be ignore when comparing
+        --      Other values will be copied from Agent
 		INSERT INTO dbo.CustGameType
         (
             GameTypeID
@@ -2467,24 +2502,47 @@ SET NOCOUNT ON
 		SELECT acg.GameTypeID
              , @CustID
              , acg.StakeLevelList
-             , (SELECT MAX(MinBet)
-                  FROM (VALUES (acg.MinBet)
-                             , (mcg.MinBet)
-                             , (scg.MinBet)
-                             , (pbs.MinBet)
-                       ) AS UplineMinBet(MinBet)
-               ) 
-             , acg.MaxBet
-             , acg.MaxPerGameType
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (acg.MinBet)
+                                    , (ISNULL(mcg.MinBet, 0))
+                                    , (ISNULL(scg.MinBet, 0))
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxBet)
+                         FROM (VALUES (acg.MaxBet)
+                                    , (ISNULL(mcg.MaxBet, 0))
+                                    , (ISNULL(scg.MaxBet, 0))
+                              ) AS UplineMaxBet(MaxBet)
+                        WHERE MaxBet <> 0
+                      )
+               END
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxPerMatch)
+                         FROM (VALUES (acg.MaxPerGameType)
+                                    , (ISNULL(mcg.MaxPerGameType, 0))
+                                    , (ISNULL(scg.MaxPerGameType, 0))
+                              ) AS UplineMaxPerMatch(MaxPerMatch)
+                        WHERE MaxPerMatch <> 0
+                      )
+               END
              , acg.IsDisabled
 		  FROM dbo.CustGameType acg WITH(NOLOCK)
     INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON acg.GameTypeID = gt.GameTypeID
     INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
-    INNER JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = acg.GameTypeID
-    INNER JOIN dbo.CustGameType mcg WITH(NOLOCK) ON mcg.GameTypeID = acg.GameTypeID
-		 WHERE mcg.CustID = @master
-           AND pbs.Currency = @currency
-           AND scg.CustID = @super
+     LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON acg.GameTypeID = scg.GameTypeID
+                                                AND scg.CustID = @super
+                                                AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
+     LEFT JOIN dbo.CustGameType mcg WITH(NOLOCK) ON acg.GameTypeID = mcg.GameTypeID
+                                                AND mcg.CustID = @master
+                                                AND NOT (mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0)
+		 WHERE pbs.Currency = @currency
            AND acg.CustID = @recommend
            AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 
@@ -2506,3 +2564,14 @@ SET NOCOUNT ON
 		--End Keno
 	END
 END
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
+GO 
