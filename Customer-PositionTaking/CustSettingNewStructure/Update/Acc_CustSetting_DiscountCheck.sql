@@ -41,9 +41,11 @@ BEGIN
 		Discount Decimal(9,8)
 	)
 	
-
+	DECLARE @ErrSport VARCHAR(4000)	= ''
 	
 	IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
+	
+	SELECT @ErrCode='',@ErrMsg=''
 	
 	DECLARE @iDoc INT
 	EXEC sp_xml_preparedocument @iDoc OUTPUT, @Discount_XML
@@ -55,9 +57,8 @@ BEGIN
 	
 	EXEC sp_xml_removedocument @iDoc
 	
-	IF EXISTS (
-			SELECT TOP 1 1
-			FROM @NewDiscountTbl tmp
+	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](dtl.SportType,@Language) + ','
+	FROM @NewDiscountTbl tmp
 				INNER JOIN dbo.ProductSettingDetail dtl 
 					ON dtl.SportType = tmp.SportType
 					AND dtl.BetType = tmp.BetType
@@ -65,16 +66,17 @@ BEGIN
 				AND dtl.IsLive = 0
 				AND tmp.Discount < 0
 				OR tmp.Discount > dtl.maxDiscount
-			)
+	
+	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
+	IF @ErrSport <> ''
 	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Invalid commission rate.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](1, @Language)
-				END
-				,@ErrCode = 1
-
-		RETURN
+		SELECT @ErrMsg =  CASE @Language 
+						WHEN 'E' THEN 'Invalid commission rate.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](1,@Language)
+					END
+					+ ' (' + @ErrSport + ')'
+					, @ErrCode = 101
 	END
 		
 

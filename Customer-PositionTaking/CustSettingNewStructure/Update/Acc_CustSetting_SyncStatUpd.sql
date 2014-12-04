@@ -39,6 +39,8 @@ BEGIN
 			,@UplineCustID INT
 	
 	DECLARE @ErrSport VARCHAR(4000)	= ''
+	DECLARE @ErrCode_Cur	INT 
+			,@ErrMsg_Cur		NVARCHAR(4000)
 			
 	DECLARE @SyncStatusTbl TABLE (
 		SportType SMALLINT
@@ -49,12 +51,27 @@ BEGIN
 		,Allow2Update BIT
 		)
 
+	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
+	
 	IF @IsSync_XML IS NULL
 		OR @IsSync_XML = ''
 		RETURN
 
 	SET @startRun = GETDATE()
 
+	--Check disable user
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
+		,@ErrCode = @ErrCode_Cur OUTPUT
+		,@ErrMsg = @ErrMsg_Cur OUTPUT
+
+	IF @ErrCode_Cur > 0
+	BEGIN
+		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+			,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+		RETURN
+	END
+	
 	--Parse xml
 	DECLARE @iDoc INT
 
@@ -101,7 +118,7 @@ BEGIN
 					THEN 'Account does not exist or invalid customer account'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](40019, @Language)
 				END
-			,@ErrCode = 100
+			,@ErrCode = 101
 
 		RETURN
 	END
@@ -173,6 +190,23 @@ BEGIN
 				AND main.BetType = tmp.BetType
 	WHERE main.CustID=@CustID
 
+	IF (@@ERROR <> 0)
+	BEGIN
+		SELECT @ErrMsg_Cur = CASE @Language
+				WHEN 'E'
+					THEN 'Update process is unsuccessful !'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
+				END
+			,@ErrCode_cur = 103
+
+		IF @ErrCode_Cur > 0
+		BEGIN
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
+				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
+			RETURN
+		END
+	END
 
 	--START LOGGING		
 	SET @xml = (

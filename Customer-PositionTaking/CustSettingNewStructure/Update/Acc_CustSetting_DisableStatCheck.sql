@@ -115,5 +115,5 @@ BEGIN
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](60031,@Language)
 					END
 					+ ' (' + @ErrSport + ')'
-					, @ErrCode = 105
+					, @ErrCode = 101
 END

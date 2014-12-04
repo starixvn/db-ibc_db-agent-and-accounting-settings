@@ -37,13 +37,17 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @MinBet MONEY = 0,
-			@MaxBet MONEY =0,
-			@MaxPerMatch MONEY = 0,
-			@MinMinBet MONEY = 0,
-			@MaxMaxBet MONEY = 0,
-			@MaxMaxPerMatch MONEY = 0,
-			@SportType SMALLINT
+	DECLARE @ErrorSportTypeTbl TABLE (
+		SportType SMALLINT,
+		MinBet MONEY,
+		MaxBet MONEY,
+		MaxPerMatch MONEY,
+		MinMinBet MONEY ,
+		MaxMaxBet MONEY ,
+		MaxMaxPerMatch MONEY 
+	)
+			
+	DECLARE @ErrSport VARCHAR(4000)	= ''
 	
 	DECLARE @UplineLimitTbl TABLE(
 		SportType SMALLINT,
@@ -64,6 +68,7 @@ BEGIN
 	
 	IF @BetLimit_XML IS NULL OR @BetLimit_XML='' RETURN
 	
+	SELECT @ErrCode='',@ErrMsg=''
 	
 	--Parse XML data
 	DECLARE @iDoc INT
@@ -125,14 +130,15 @@ BEGIN
 	
 	
 	--Get 1 error row
-	SELECT TOP 1 
-			@MinBet=ISNULL(tmp.MinBet,0),
-			@MaxBet=ISNULL(tmp.MaxBet,0),
-			@MaxPerMatch=ISNULL(tmp.MaxPerMatch,0),
-			@MinMinBet = ISNULL(ubl.MinBet,0),
-			@MaxMaxBet = ISNULL(ubl.MaxBet,0),
-			@MaxMaxPerMatch = ISNULL(ubl.MaxPerMatch,0),
-			@SportType = ubl.SportType
+	INSERT INTO @ErrorSportTypeTbl
+	SELECT 
+			ubl.SportType,
+			tmp.MinBet,
+			tmp.MaxBet,
+			tmp.MaxPerMatch,
+			ISNULL(ubl.MinBet,0),
+			ISNULL(ubl.MaxBet,0),
+			ISNULL(ubl.MaxPerMatch,0)
 	FROM @NewBetLimitTbl tmp
 	LEFT JOIN @UplineLimitTbl ubl
 	ON tmp.SportType=ubl.SportType
@@ -148,144 +154,180 @@ BEGIN
 		OR
 		 (ubl.MinBet>0 and tmp.MinBet>0 and tmp.MinBet<ubl.MinBet)
 		OR
-		 (ubl.MaxBet>0 and tmp.MaxBet>0 and ubl.MaxBet>ubl.MaxBet)
+		 (ubl.MaxBet>0 and tmp.MaxBet>0 and tmp.MaxBet>ubl.MaxBet)
 		OR
 		 (ubl.MaxPerMatch>0 and tmp.MaxPerMatch>0 and tmp.MaxPerMatch>ubl.MaxPerMatch)
 	
 	
 	
+	
+	--IF there's no error data then return
+	IF NOT EXISTS ( 
+			SELECT TOP 1 1
+			FROM @ErrorSportTypeTbl
+	)
+	RETURN
+	
+	
 	--Check all setting >=0
-	IF (
-		@MinBet < 0
-		OR @MaxBet < 0
-		OR @MaxPerMatch < 0
-		)
+	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) + ','
+	FROM @ErrorSportTypeTbl tmp
+	WHERE tmp.MinBet < 0 OR tmp.MaxBet < 0 OR tmp.MaxPerMatch < 0
+
+	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
+	IF @ErrSport <> ''
 	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Wrong Min bet/ Max bet/ Max per match.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
-				END
-				,@ErrCode = 3
+		SELECT @ErrMsg =  CASE @Language 
+							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10003,@Language)
+						END
+						+ ' (' + @ErrSport + ')'
+						, @ErrCode = 101
 		RETURN
 	END
 	
 	
-	
 	--Check MinBet<=MaxBet<=MaxPerMatch	
-	IF (	
-		((@MinBet<>0 OR @MaxBet <> 0) AND  @MinBet>@MaxBet) 
-		OR ((@MaxBet<> 0 OR @MaxPerMatch <> 0) and @MaxBet>@MaxPerMatch) 
-		OR ((@MinBet <> 0 OR @MaxPerMatch <> 0) and @MinBet>@MaxPerMatch) 
-		)
+	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) + ','
+	FROM @ErrorSportTypeTbl tmp
+	WHERE ((tmp.MinBet<>0 OR tmp.MaxBet <> 0) AND  tmp.MinBet>tmp.MaxBet) 
+		OR 
+		((tmp.MaxBet<> 0 OR tmp.MaxPerMatch <> 0) and tmp.MaxBet>tmp.MaxPerMatch) 
+		OR 
+		((tmp.MinBet <> 0 OR tmp.MaxPerMatch <> 0) and tmp.MinBet>tmp.MaxPerMatch) 
+
+	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
+	IF @ErrSport <> ''
 	BEGIN
-		SELECT @ErrMsg =
-				CASE @Language
-					WHEN 'E'
-						THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
-					END + CHAR(13) + CHAR(10) + convert(VARCHAR(20), @MinBet) + '-' + convert(VARCHAR(20), @MaxBet) + '-' + convert(VARCHAR(20), @MaxPerMatch)	
-					,@ErrCode = 109
+		SELECT @ErrMsg =  CASE @Language 
+							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+						END
+						+ ' (' + @ErrSport + ')'
+						, @ErrCode = 102
 		RETURN
-	END	
+	END
 	
 	
 	IF @RoleID IN (1,2,3)
 	BEGIN
+	
 		--Check if MAX(upper.minbet) > 0 and minbet>0 then minbet>=MAX(upper.minbet)
-		IF (
-				@MinMinBet > 0
-				AND @MinBet > 0
-				AND @MinBet < @MinMinBet
-		)
+		SELECT @ErrSport = @ErrSport 
+					+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) 
+					+ ':'
+					+ convert(varchar(20), tmp.MinMinBet)
+					+ ','
+		FROM @ErrorSportTypeTbl tmp
+		WHERE tmp.MinMinBet>0 and tmp.MinBet>0 and tmp.MinBet<tmp.MinMinBet
+
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		
+		IF @ErrSport <> ''
 		BEGIN
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN 
-							CASE 
-								WHEN @RoleID=3
-									THEN 'Min bet must be equal to or greater than Super Agent min bet' 
-								WHEN @RoleID=2
-									THEN 'Min bet must be equal to or greater than Master Agent min bet' 
-								WHEN @RoleID=1
-									THEN 'Min bet must be equal to or greater than Agent min bet'
-							END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+			SELECT @ErrMsg =  CASE @Language 
+								WHEN 'E' THEN 
+									CASE 
+										WHEN @RoleID=3
+											THEN 'Min bet must be equal to or greater than Super Agent min bet' 
+										WHEN @RoleID=2
+											THEN 'Min bet must be equal to or greater than Master Agent min bet' 
+										WHEN @RoleID=1
+											THEN 'Min bet must be equal to or greater than Agent min bet'
+									END
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](
 													CASE 
 														WHEN @RoleID=3 THEN 10016 
 														WHEN @RoleID=2 THEN 10019 
 														WHEN @RoleID=2 THEN 10006
-													END, 
-													@Language) 
-							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
-					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
-				,@ErrCode = 110
-
+													END
+													,@Language)
+							END
+							+ ' (' + @ErrSport + ')'
+							, @ErrCode = 103
 			RETURN
 		END
 		
+	
+	
+	
 		--Check if MIN(upper.maxbet) > 0 and maxbet>0 then maxbet<=MIN(upper.maxbet)
-		IF (
-				@MaxMaxBet > 0
-				AND @MaxBet > 0
-				AND @MaxBet > @MaxMaxBet
-				)
+		SELECT @ErrSport = @ErrSport 
+					+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) 
+					+ ':'
+					+ convert(varchar(20), tmp.MaxMaxBet)
+					+ ','
+		FROM @ErrorSportTypeTbl tmp
+		WHERE tmp.MaxMaxBet>0 and tmp.MaxBet>0 and tmp.MaxBet>tmp.MaxMaxBet
+
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		
+		IF @ErrSport <> ''
 		BEGIN
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN 
-							CASE 
-								WHEN @RoleID=3
-									THEN 'Max bet must be equal to or less than Super Agent max bet' 
-								WHEN @RoleID=2
-									THEN 'Max bet must be equal to or less than Master Agent max bet' 
-								WHEN @RoleID=1
-									THEN 'Max bet must be equal to or less than Agent max bet'
-							END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+			SELECT @ErrMsg =  CASE @Language 
+								WHEN 'E' THEN 
+									CASE 
+										WHEN @RoleID=3
+											THEN 'Max bet must be equal to or less than Super Agent max bet' 
+										WHEN @RoleID=2
+											THEN 'Max bet must be equal to or less than Master Agent max bet' 
+										WHEN @RoleID=1
+											THEN 'Max bet must be equal to or less than Agent max bet'
+									END
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](
 													CASE 
 														WHEN @RoleID=3 THEN 10017 
 														WHEN @RoleID=2 THEN 10020 
 														WHEN @RoleID=2 THEN 10007
-													END, 
-													@Language) 
-							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
-					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
-				,@ErrCode = 111
-
+													END
+													,@Language)
+							END
+							+ ' (' + @ErrSport + ')'
+							, @ErrCode = 104
 			RETURN
 		END
+	
+	
+
 		
 		--Check if MIN(upper.maxpermatch)> 0 and maxpermatch>0 then maxpermatch<=MIN(upper.maxpermatch)
-		IF (
-				@MaxMaxPerMatch > 0
-				AND @MaxPerMatch > 0
-				AND @MaxPerMatch > @MaxMaxPerMatch
-				)
+		SELECT @ErrSport = @ErrSport 
+					+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) 
+					+ ':'
+					+ convert(varchar(20), tmp.MaxMaxPerMatch)
+					+ ','
+		FROM @ErrorSportTypeTbl tmp
+		WHERE tmp.MaxMaxPerMatch>0 and tmp.MaxPerMatch>0 and tmp.MaxPerMatch>tmp.MaxMaxPerMatch
+
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		
+		IF @ErrSport <> ''
 		BEGIN
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN 
-							CASE 
-								WHEN @RoleID=3
-									THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match' 
-								WHEN @RoleID=2
-									THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match' 
-								WHEN @RoleID=1
-									THEN 'Max Per Match must be equal to or less than Agent Max Per Match'
-							END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](
+			SELECT @ErrMsg =  CASE @Language 
+								WHEN 'E' THEN 
+									CASE 
+										WHEN @RoleID=3
+											THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match' 
+										WHEN @RoleID=2
+											THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match' 
+										WHEN @RoleID=1
+											THEN 'Max Per Match must be equal to or less than Agent Max Per Match'
+									END
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](
 													CASE 
 														WHEN @RoleID=3 THEN 10018 
 														WHEN @RoleID=2 THEN 10021 
 														WHEN @RoleID=2 THEN 10008
-													END, 
-													@Language) 
-							+ ' (' + [dbo].[f_Get_SportNameBySporttype](@SportType, @Language) + ')'
-					END + ' (' + convert(VARCHAR(20), @MinMinBet) + ').'
-				,@ErrCode = 112
-
+													END
+													,@Language)
+							END
+							+ ' (' + @ErrSport + ')'
+							, @ErrCode = 105
 			RETURN
 		END
+		
+		
 	END
 END

@@ -92,7 +92,7 @@ BEGIN
 		Select @ErrMsg = case @Language 
 							when 'E' then 'Invalid user!'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40002,@Language)
-						end, @ErrCode = 100	
+						end, @ErrCode = 101	
 		return
 	END
 	

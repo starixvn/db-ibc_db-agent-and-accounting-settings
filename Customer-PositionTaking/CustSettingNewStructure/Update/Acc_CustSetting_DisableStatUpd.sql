@@ -87,7 +87,7 @@ BEGIN
 		Select @ErrMsg = case @Language 
 							when 'E' then 'Invalid user!'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40002,@Language)
-						end, @ErrCode = 100	
+						end, @ErrCode = 101	
 		return
 	END
 	
@@ -192,7 +192,7 @@ BEGIN
 					THEN 'Update process is unsuccessful.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 				END
-			,@ErrCode = 101
+			,@ErrCode = 102
 
 		RETURN
 	END
@@ -216,11 +216,11 @@ BEGIN
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
 						 end
 		IF @RoleID = 4
-			SELECT 	@ErrCode = 102
+			SELECT 	@ErrCode = 103
 		ELSE IF @RoleID = 3
-			SELECT 	@ErrCode = 103	
+			SELECT 	@ErrCode = 104	
 		ELSE IF @RoleID = 2
-			SELECT 	@ErrCode = 104
+			SELECT 	@ErrCode = 105
 
 		RETURN
 	END CATCH
