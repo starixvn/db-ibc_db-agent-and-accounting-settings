@@ -41,6 +41,13 @@ BEGIN
 				IsDisabled BIT,
 				IsDisabledDownline BIT
 			)
+			
+	DECLARE @ErrorSportTypeTbl TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT
+			)
+			
+	DECLARE @ErrSport VARCHAR(4000)	= ''
 	
 	SELECT @ErrCode = 0, @ErrMsg = ''
 
@@ -55,61 +62,58 @@ BEGIN
 	
 	EXEC sp_xml_removedocument @iDoc
 	
+	
+	--Get error data
 	IF @RoleID=3
 	BEGIN
-		IF EXISTS
-		(
-		SELECT TOP 1 1
+		INSERT INTO @ErrorSportTypeTbl
+		SELECT stt.SportType,stt.BetType
 		FROM @NewDisableStatTbl tmp 
 		JOIN dbo.CustProductStatus stt
 			ON tmp.SportType=stt.SportType
 			AND tmp.BetType=stt.BetType
 			AND stt.CustID=@SuperID
-		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0)
-		BEGIN
-			SELECT @ErrMsg =  CASE @Language 
-								WHEN 'E' THEN 'Account disabled for Virtual Sports. Unable to edit downlines.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](60015,@Language)
-							END, @ErrCode = 105
-			return
-		END
+		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0
 	END
 	ELSE IF @RoleID=2
 	BEGIN
-		IF EXISTS
-		(
-		SELECT TOP 1 1
+		INSERT INTO @ErrorSportTypeTbl
+		SELECT stt.SportType,stt.BetType
 		FROM @NewDisableStatTbl tmp 
 		JOIN dbo.CustProductStatus stt
 			ON tmp.SportType=stt.SportType
 			AND tmp.BetType=stt.BetType
 			AND stt.CustID=@MasterID
-		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0)
-		BEGIN
-			SELECT @ErrMsg =  CASE @Language 
-								WHEN 'E' THEN 'Account disabled for Virtual Sports. Unable to edit downlines.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](60015,@Language)
-							END, @ErrCode = 105
-			return
-		END
+		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0
 	END
 	ELSE IF @RoleID=1
 	BEGIN
-		IF EXISTS
-		(
-		SELECT TOP 1 1
+		INSERT INTO @ErrorSportTypeTbl
+		SELECT stt.SportType,stt.BetType
 		FROM @NewDisableStatTbl tmp 
 		JOIN dbo.CustProductStatus stt
 			ON tmp.SportType=stt.SportType
 			AND tmp.BetType=stt.BetType
-			AND stt.CustID=@AgentID
-		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0)
-		BEGIN
-			SELECT @ErrMsg =  CASE @Language 
-								WHEN 'E' THEN 'Account disabled for Virtual Sports. Unable to edit downlines.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](60015,@Language)
-							END, @ErrCode = 105
-			return
-		END
+			AND stt.CustID=@SuperID
+		WHERE stt.IsDisabled=1 AND tmp.IsDisabled=0
 	END
+	
+	--IF there's no error data then return
+	IF NOT EXISTS ( 
+			SELECT TOP 1 1
+			FROM @ErrorSportTypeTbl
+	)
+	RETURN
+
+	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) + ','
+	FROM @ErrorSportTypeTbl tmp
+
+	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
+	SELECT @ErrMsg =  CASE @Language 
+						WHEN 'E' THEN 'Account disabled for this product. Unable to edit downlines.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](60031,@Language)
+					END
+					+ ' (' + @ErrSport + ')'
+					, @ErrCode = 105
 END
