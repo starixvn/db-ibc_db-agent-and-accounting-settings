@@ -5,7 +5,6 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitUpd]
 	@CustID INT,
-	@RoleID INT,
 	@BetLimit_XML VARCHAR(MAX),
 
 	@UserID		INT,
@@ -47,6 +46,7 @@ BEGIN
 			,@AgentID INT
 			,@MasterID INT
 			,@SuperID INT
+			,@RoleID INT
 			
 	DECLARE @OldBetLimitTbl TABLE
 				(
@@ -97,7 +97,7 @@ BEGIN
 	END
 	
 	--Get line information
-	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
+	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend,@RoleID=RoleID
 	FROM dbo.custInfo  WITH(NOLOCK)
 	WHERE custid=@CustID
 	
@@ -210,7 +210,6 @@ BEGIN
 	--START LOGGING		
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'
@@ -226,7 +225,6 @@ BEGIN
 	
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'

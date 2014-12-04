@@ -132,7 +132,7 @@ BEGIN
 	--Get 1 error row
 	INSERT INTO @ErrorSportTypeTbl
 	SELECT 
-			ubl.SportType,
+			ISNULL(ubl.SportType,0),
 			tmp.MinBet,
 			tmp.MaxBet,
 			tmp.MaxPerMatch,
@@ -174,10 +174,11 @@ BEGIN
 	FROM @ErrorSportTypeTbl tmp
 	WHERE tmp.MinBet < 0 OR tmp.MaxBet < 0 OR tmp.MaxPerMatch < 0
 
-	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
 	
 	IF @ErrSport <> ''
 	BEGIN
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		SELECT @ErrMsg =  CASE @Language 
 							WHEN 'E' THEN 'Wrong Min bet/ Max bet/ Max per match.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10003,@Language)
@@ -196,11 +197,10 @@ BEGIN
 		((tmp.MaxBet<> 0 OR tmp.MaxPerMatch <> 0) and tmp.MaxBet>tmp.MaxPerMatch) 
 		OR 
 		((tmp.MinBet <> 0 OR tmp.MaxPerMatch <> 0) and tmp.MinBet>tmp.MaxPerMatch) 
-
-	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 	
 	IF @ErrSport <> ''
 	BEGIN
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		SELECT @ErrMsg =  CASE @Language 
 							WHEN 'E' THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
@@ -222,11 +222,10 @@ BEGIN
 					+ ','
 		FROM @ErrorSportTypeTbl tmp
 		WHERE tmp.MinMinBet>0 and tmp.MinBet>0 and tmp.MinBet<tmp.MinMinBet
-
-		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		
 		IF @ErrSport <> ''
 		BEGIN
+			SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 			SELECT @ErrMsg =  CASE @Language 
 								WHEN 'E' THEN 
 									CASE 
@@ -261,11 +260,10 @@ BEGIN
 					+ ','
 		FROM @ErrorSportTypeTbl tmp
 		WHERE tmp.MaxMaxBet>0 and tmp.MaxBet>0 and tmp.MaxBet>tmp.MaxMaxBet
-
-		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		
 		IF @ErrSport <> ''
 		BEGIN
+			SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 			SELECT @ErrMsg =  CASE @Language 
 								WHEN 'E' THEN 
 									CASE 
@@ -300,11 +298,10 @@ BEGIN
 					+ ','
 		FROM @ErrorSportTypeTbl tmp
 		WHERE tmp.MaxMaxPerMatch>0 and tmp.MaxPerMatch>0 and tmp.MaxPerMatch>tmp.MaxMaxPerMatch
-
-		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		
 		IF @ErrSport <> ''
 		BEGIN
+			SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 			SELECT @ErrMsg =  CASE @Language 
 								WHEN 'E' THEN 
 									CASE 

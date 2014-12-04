@@ -108,12 +108,15 @@ BEGIN
 	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) + ','
 	FROM @ErrorSportTypeTbl tmp
 
-	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
-	
-	SELECT @ErrMsg =  CASE @Language 
-						WHEN 'E' THEN 'Account disabled for this product. Unable to edit downlines.'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](60031,@Language)
-					END
-					+ ' (' + @ErrSport + ')'
-					, @ErrCode = 101
+	IF @ErrSport <> ''
+	BEGIN
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		
+		SELECT @ErrMsg =  CASE @Language 
+							WHEN 'E' THEN 'Account disabled for this product. Unable to edit downlines.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](60031,@Language)
+						END
+						+ ' (' + @ErrSport + ')'
+						, @ErrCode = 101
+	END
 END

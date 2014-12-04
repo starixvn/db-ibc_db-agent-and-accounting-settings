@@ -5,7 +5,6 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd]
 	@CustID INT,
-	@RoleID INT,
 	@Discount_XML VARCHAR(MAX),
 
 	@UserID		INT,
@@ -45,6 +44,7 @@ BEGIN
 	DECLARE @AgentID INT
 			,@MasterID INT
 			,@SuperID INT
+			,@RoleID INT
 	
 	DECLARE @ErrCode_Cur	INT 
 			,@ErrMsg_Cur		NVARCHAR(4000)
@@ -111,7 +111,7 @@ BEGIN
 	
 	
 	--Get line information
-	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
+	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend,@RoleID=RoleID
 	FROM dbo.custInfo  WITH(NOLOCK)
 	WHERE custid=@CustID
 	
@@ -211,7 +211,6 @@ BEGIN
     --START LOGGING		
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'
@@ -225,7 +224,6 @@ BEGIN
 	
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'

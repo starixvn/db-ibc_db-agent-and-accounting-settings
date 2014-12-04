@@ -67,10 +67,9 @@ BEGIN
 				AND tmp.Discount < 0
 				OR tmp.Discount > dtl.maxDiscount
 	
-	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
-	
 	IF @ErrSport <> ''
 	BEGIN
+		SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
 		SELECT @ErrMsg =  CASE @Language 
 						WHEN 'E' THEN 'Invalid commission rate.'
 						ELSE [dbo].[f_Get_MsgNamebyMsgID](1,@Language)

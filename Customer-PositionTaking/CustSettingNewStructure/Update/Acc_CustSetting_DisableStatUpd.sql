@@ -5,7 +5,6 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd]
 	@CustID INT,
-	@RoleID INT,
 	@IsDisabled_XML VARCHAR(MAX),
 	
 	@UserID		INT,
@@ -49,6 +48,7 @@ BEGIN
 	DECLARE @AgentID INT
 			,@MasterID INT
 			,@SuperID INT
+			,@RoleID INT
 	DECLARE @NewDisableStatTbl TABLE(
 				SportType SMALLINT,
 				BetType SMALLINT,
@@ -92,7 +92,7 @@ BEGIN
 	END
 	
 	--Get line information
-	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend
+	SELECT @AgentID=recommend,@MasterID=mrecommend,@SuperID=srecommend,@RoleID=RoleID
 	FROM dbo.custInfo  WITH(NOLOCK)
 	WHERE custid=@CustID
 	
@@ -229,7 +229,6 @@ BEGIN
 	--START LOGGING		
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'
@@ -244,7 +243,6 @@ BEGIN
 	
 	SET @xml = (
 			SELECT @CustID AS '@c'
-				, @RoleID AS '@r'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'
