@@ -4,7 +4,7 @@ SET ANSI_NULLS ON
 GO
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_00    Script Date: 10/31/2014 11:14:10 AM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
+ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -126,6 +126,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202spositiontaking_1507 smallmoney = 0,
 	@v202spositiontaking_1508 smallmoney = 0,
 	@v202spositiontaking_1509 smallmoney = 0,
+	@v202spositiontaking_1514 smallmoney = 0,
 	---
 	---create new master
 	@auto_spositiontaking_1 smallmoney = 0,
@@ -382,6 +383,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202mpositiontaking_1507 smallmoney = 0,
 	@v202mpositiontaking_1508 smallmoney = 0,
 	@v202mpositiontaking_1509 smallmoney = 0,
+	@v202mpositiontaking_1514 smallmoney = 0,
 	---
 	---create agent
 	--Auto Master PT
@@ -623,6 +625,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202apositiontaking_1507 smallmoney = 0,
 	@v202apositiontaking_1508 smallmoney = 0,
 	@v202apositiontaking_1509 smallmoney = 0,
+	@v202apositiontaking_1514 smallmoney = 0,
 	
 	@MinBet MONEY = 0,
 	@MaxBet MONEY = 0,	
@@ -739,6 +742,8 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202discount_1507 decimal(9,8) = 0,
 	@v202discount_1508 decimal(9,8) = 0,
 	@v202discount_1509 decimal(9,8) = 0,
+	@v202discount_1514 decimal(9,8) = 0,
+	
 	@v202adiscount_1501 decimal(9,8) = 0,
 	@v202adiscount_1511 decimal(9,8) = 0,
 	@v202adiscount_1503 decimal(9,8) = 0,
@@ -748,6 +753,8 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202adiscount_1507 decimal(9,8) = 0,
 	@v202adiscount_1508 decimal(9,8) = 0,
 	@v202adiscount_1509 decimal(9,8) = 0,
+	@v202adiscount_1514 decimal(9,8) = 0,
+	
 	@v202sdiscount_1501 decimal(9,8) = 0,
 	@v202sdiscount_1511 decimal(9,8) = 0,
 	@v202sdiscount_1503 decimal(9,8) = 0,
@@ -757,6 +764,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202sdiscount_1507 decimal(9,8) = 0,
 	@v202sdiscount_1508 decimal(9,8) = 0,
 	@v202sdiscount_1509 decimal(9,8) = 0,
+	@v202sdiscount_1514 decimal(9,8) = 0,
 
 	--v162
 	@v162discount_1101 decimal(9,8) = 0,
@@ -794,6 +802,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
                                 + MinBet = MAX(AllUpline.MinBet, Global.MinBet)
                                 + MaxBet & MaxPerMatch = MIN(AllUpline)
                                 + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
+			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -1125,6 +1134,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid , 1507, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1507
 		UNION ALL SELECT @custid , 1508, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1508
 		UNION ALL SELECT @custid , 1509, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1509
+		UNION ALL SELECT @custid , 1514, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1514
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1158,6 +1168,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 1507, 202, 0
 		UNION ALL SELECT @custid, 1508, 202, 0
 		UNION ALL SELECT @custid, 1509, 202, 0
+		UNION ALL SELECT @custid, 1514, 202, 0
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -2466,6 +2477,8 @@ SET NOCOUNT ON
 		SELECT @custid, 1508, 202, ISNULL(@v202apositiontaking_1508,0), ISNULL(@v202mpositiontaking_1508,0), ISNULL(@v202spositiontaking_1508,0), 0, ISNULL(@v202discount_1508,0), ISNULL(@v202adiscount_1508,0), ISNULL(@v202sdiscount_1508,0), 0, 0, 0, 0
 		UNION ALL
 		SELECT @custid, 1509, 202, ISNULL(@v202apositiontaking_1509,0), ISNULL(@v202mpositiontaking_1509,0), ISNULL(@v202spositiontaking_1509,0), 0, ISNULL(@v202discount_1509,0), ISNULL(@v202adiscount_1509,0), ISNULL(@v202sdiscount_1509,0), 0, 0, 0, 0
+		UNION ALL
+		SELECT @custid, 1514, 202, ISNULL(@v202apositiontaking_1514,0), ISNULL(@v202mpositiontaking_1514,0), ISNULL(@v202spositiontaking_1514,0), 0, ISNULL(@v202discount_1514,0), ISNULL(@v202adiscount_1514,0), ISNULL(@v202sdiscount_1514,0), 0, 0, 0, 0
 				
 				
 		if @@error <> 0
