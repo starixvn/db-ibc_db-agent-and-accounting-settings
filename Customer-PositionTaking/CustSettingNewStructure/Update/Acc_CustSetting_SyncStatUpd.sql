@@ -1,0 +1,229 @@
+ALTER PROCEDURE [dbo].[Acc_CustSetting_SyncStatUpd] 
+	@custid INT
+	,@IsSync_XML VARCHAR(MAX) = NULL
+	,@UserID INT = 0
+	,@SubAccID INT = 0
+	,@IP VARCHAR(20) = ''
+	,@Language VARCHAR(2) = 'E'
+	,@ErrCode INT = 0 OUTPUT
+	,@ErrMsg VARCHAR(4000) = '' OUTPUT
+AS
+/*  
+  Created: Dominic  
+  Date: 2014-12-04  
+  DB: DBTXN/BODB02  
+  Task: Update synchronize status on a product 
+    
+  Parameters Explanation:  
+	* @IsSync_XML:	   <ROOT>
+								<ProductStatus
+										SportType="1" 
+										BetType="1" 
+										IsSync="1"
+								/>
+						</ROOT> 
+ */
+BEGIN
+	SET NOCOUNT ON
+
+	DECLARE @startRun DATETIME
+	DECLARE @endRun DATETIME
+	DECLARE @duration INT
+	
+	DECLARE @logSpData NVARCHAR(MAX)
+			,@logSpData_Old NVARCHAR(MAX)
+			,@xml XML
+			
+	DECLARE @RoleID TINYINT
+			,@Allow2Update BIT
+			,@UplineCustID INT
+	
+	DECLARE @ErrSport VARCHAR(4000)	= ''
+			
+	DECLARE @SyncStatusTbl TABLE (
+		SportType SMALLINT
+		,BetType SMALLINT
+		,IsSync BIT
+		,OldSync BIT
+		,UplineSync BIT
+		,Allow2Update BIT
+		)
+
+	IF @IsSync_XML IS NULL
+		OR @IsSync_XML = ''
+		RETURN
+
+	SET @startRun = GETDATE()
+
+	--Parse xml
+	DECLARE @iDoc INT
+
+	EXEC sp_xml_preparedocument @iDoc OUTPUT
+		,@IsSync_XML
+
+	INSERT @SyncStatusTbl
+	SELECT SportType
+		,BetType
+		,IsSync
+		,0
+		,0
+		,1
+	FROM OPENXML(@iDoc, '/ROOT/ProductStatus', 1) WITH (
+			SportType SMALLINT
+			,BetType SMALLINT
+			,IsSync BIT
+			)
+
+	EXEC sp_xml_removedocument @iDoc
+
+	--Check disable user  
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
+		,@ErrCode = @ErrCode OUTPUT
+		,@ErrMsg = @ErrMsg OUTPUT
+
+	IF @ErrCode <> 0
+		RETURN
+
+
+	--Get roleid
+	SELECT @RoleID = RoleID
+	FROM dbo.custinfo(NOLOCK)
+	WHERE custid = @custid
+
+	--Validate roleid
+	IF (
+			@RoleID IS NULL
+			OR @roleid > 4
+			)
+	BEGIN
+		SELECT @ErrMsg = CASE @Language
+				WHEN 'E'
+					THEN 'Account does not exist or invalid customer account'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](40019, @Language)
+				END
+			,@ErrCode = 100
+
+		RETURN
+	END
+
+
+	--Get old value
+	UPDATE main
+	SET main.OldSync = ISNULL(stt.IsSync,0)
+	FROM @SyncStatusTbl main
+	JOIN dbo.CustProductStatus stt
+			ON main.SportType = stt.SportType
+			AND main.BetType = stt.BetType
+			AND stt.CustID=@custid
+	
+	--Get upline CustID
+	SELECT @UplineCustID =  CASE 
+								WHEN roleid = 1
+									THEN recommend
+								WHEN roleid = 2
+									THEN mrecommend
+								WHEN roleid = 3
+									THEN srecommend
+								END
+	FROM dbo.CustInfo WITH (NOLOCK)
+	WHERE custid = @custid
+
+
+	IF @roleid IN (1,2,3)
+	BEGIN
+		--Get upline's sync status
+		UPDATE main
+		SET main.UplineSync = ISNULL(stt.IsSync,0)
+		FROM @SyncStatusTbl main
+		JOIN dbo.CustProductStatus stt
+				ON main.SportType = stt.SportType
+				AND main.BetType = stt.BetType
+				AND stt.CustID=@UplineCustID
+		
+		--Update Allow2Update
+		UPDATE @SyncStatusTbl
+		SET Allow2Update = UplineSync
+
+	END
+
+	--Get error sport
+	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType,@Language) + ','
+	FROM @SyncStatusTbl tmp
+	WHERE tmp.ALlow2Update=0
+
+	SET @ErrSport= LEFT(@ErrSport, LEN(@ErrSport) - 1)
+	
+	IF @ErrSport <> ''
+	BEGIN
+		SELECT @ErrMsg =  CASE @Language 
+						WHEN 'E' THEN 'Cannot synchronize this product because this account''s upline not synchronize setting.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](6032,@Language)
+					END
+					+ ' (' + @ErrSport + ')'
+					,@ErrCode = 102
+		RETURN
+	END
+
+	--Update data
+	UPDATE main
+	SET main.IsSync = ISNULL(tmp.IsSync,main.IsSync)
+	FROM dbo.CustProductStatus main
+		JOIN @SyncStatusTbl tmp
+				ON main.SportType = tmp.SportType
+				AND main.BetType = tmp.BetType
+	WHERE main.CustID=@CustID
+
+
+	--START LOGGING		
+	SET @xml = (
+			SELECT @CustID AS '@c'
+				, @UserID AS '@u'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@n'
+				, @IP AS '@i'
+				, @Language AS '@l'
+				, (SELECT SportType AS '@s'
+					, BetType AS '@b'
+					, OldSync AS '@i'
+				FROM @SyncStatusTbl
+				FOR XML PATH('x'), TYPE)
+			FOR XML PATH('r'), TYPE)
+	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
+	SET @xml = (
+			SELECT @CustID AS '@c'
+				, @UserID AS '@u'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@n'
+				, @IP AS '@i'
+				, @Language AS '@l'
+				, (SELECT SportType AS '@s'
+					, BetType AS '@b'
+					, IsSync AS '@i'
+				FROM @SyncStatusTbl
+				FOR XML PATH('x'), TYPE)
+			FOR XML PATH('r'), TYPE)
+	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
+	SELECT @endRun = GETDATE(), @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
+	
+
+	BEGIN TRY
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 1153,
+			@TrackingValue = @logSpData,
+			@TrackingValue2 = @logSpData_Old,
+			@duration = @duration
+	END TRY
+	BEGIN CATCH		
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 1153,
+			@TrackingValue = @logSpData,
+			@TrackingValue2 = @logSpData_Old,
+			@duration = @duration		
+	END CATCH	
+
+
+END
