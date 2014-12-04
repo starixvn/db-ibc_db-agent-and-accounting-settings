@@ -486,7 +486,40 @@ BEGIN
                                 END, @ErrCode = 109
                                 
             RETURN    
-        END		
+        END
+        
+         --u3>=Max(0, N4-M4)        
+        SELECT @ErrType = ''
+        SELECT @ErrType = @ErrType + s.SportName + ' - ' + typenamee +
+						 CASE WHEN b.IsLive = 0 THEN '-Min: '+ CAST((CASE WHEN scs.MinPT - scs.MasterPT > 0 
+																			THEN scs.MinPT - scs.MasterPT ELSE 0 END) AS VARCHAR(10))+ '<br>'
+								WHEN b.IsLive = 1 THEN '-MinLive: '+ CAST((CASE WHEN scs.MinPT - scs.MasterPT > 0 
+																			THEN scs.MinPT - scs.MasterPT ELSE 0 END) AS VARCHAR(10))+ '<br>'
+							END																			
+        FROM CustPTSetting3rd_Agent AS scs WITH (NOLOCK)
+            INNER JOIN @tblPT b ON scs.sporttype = b.sporttype 
+									AND scs.bettype = b.bettype
+									AND scs.isLive = b.IsLive
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+            INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype										
+       WHERE scs.custid = @srecommend 
+            AND (b.IsAutoSuperPT >0 
+				AND b.AutoSuperPT < CASE WHEN scs.MinPT - scs.MasterPT > 0 
+											THEN scs.MinPT - cs.MasterPT ELSE 0 END
+				)
+        
+        IF @ErrType <>''
+        BEGIN
+            SELECT @ErrMsg_Cur = CASE @Language 
+                                    WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+                                    ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+                                END, @ErrCode_Cur = 111
+            
+            SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
+                    @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+                    
+            RETURN
+        END    		
     END		
 END	
  
