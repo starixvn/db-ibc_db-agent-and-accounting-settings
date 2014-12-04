@@ -95,8 +95,6 @@ BEGIN
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 					@roleid=@roleid,
 					@isExecRep=1,
-					@isUpdatePT = 1,
-					@Sporttype = 1,
 					@Language=@Language,
 					@ErrCode = @ErrCode_Cur OUTPUT,
 					@ErrMsg = @ErrMsg_Cur OUTPUT
