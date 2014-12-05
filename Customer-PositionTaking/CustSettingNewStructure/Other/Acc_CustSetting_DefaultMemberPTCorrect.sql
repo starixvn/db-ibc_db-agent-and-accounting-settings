@@ -96,7 +96,7 @@ BEGIN
 			AND apt.islive=main.Islive
 	WHERE main.AgentPT>apt.maxPT
 	
-	--if im1=1 or im2=1 then then m1=min(m3-a1, im1?um1:um2)
+	--if im1=1 or im2=1 then then m1=min(m4-a1,m3-a1, im1?um1:um2)
 	Update main
 	SET
 		 main.MasterPT = 
