@@ -29,9 +29,9 @@ BEGIN
 	DECLARE @roleid			TINYINT			
 			,@startRun		DATETIME
 			,@endRun		DATETIME
-			,@duration		INT
+			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
-			,@logSPDataOld	VARCHAR(5000)
+			,@logSPDataOld	VARCHAR(5000)			
 			,@xml			XML
 	  SET @startRun = GETDATE()
 			
@@ -157,7 +157,7 @@ BEGIN
 	)
 	
 	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)    
-   
+      
     --Check Param
     DECLARE @ErrAcc NVARCHAR(4000)
 			,@ErrType VARCHAR(1000)
@@ -510,16 +510,168 @@ BEGIN
         
         IF @ErrType <>''
         BEGIN
-            SELECT @ErrMsg_Cur = CASE @Language 
+            SELECT @ErrMsg = CASE @Language 
                                     WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
                                     ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
-                                END, @ErrCode_Cur = 111
+                                END, @ErrCode = 110
             
-            SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-                    @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-                    
             RETURN
-        END    		
-    END		
+        END 
+        
+         --s3<=s4,s3+m3<=s4
+        SELECT @ErrType = ''
+        SELECT @ErrType = @ErrType + s.SportName + ' - ' + typenamee +
+							CASE WHEN b.IsLive = 0 THEN '-Max: '+ CAST((cs.SuperPT) AS VARCHAR(10))+ '<br>'
+								WHEN b.IsLive = 1 THEN '-MaxLive: '+ CAST((cs.SuperPT) AS VARCHAR(10))+ '<br>'
+							END
+        FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
+			INNER JOIN @tblPT b ON cs.sporttype = b.SportType
+									AND cs.bettype = b.BetType
+									AND cs.isLive = b.IsLive
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+            INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype																			
+        WHERE custid = @srecommend 
+            AND (cs.SuperPT < b.SuperPT OR b.SuperPT + b.MasterPT > cs.SuperPT)
+        
+        IF @ErrType <>''
+        BEGIN
+            SELECT @ErrMsg = CASE @Language 
+                                    WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+                                    ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+                                END, @ErrCode = 111
+            
+                  
+            RETURN
+        END
+        
+        --s3>=Max(0, N4-M4)        
+        SELECT @ErrType = ''
+        SELECT @ErrType = @ErrType + s.SportName + ' - ' + typenamee +
+					CASE WHEN b.IsLive = 0 THEN '-Min: ' ELSE  '-MinLive: ' END
+					+ CAST((CASE WHEN cs.MinPT - cs.MasterPT > 0 THEN cs.MinPT - cs.MasterPT ELSE 0 END) AS VARCHAR(10))+ '<br>'
+        FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
+			INNER JOIN @tblPT b ON cs.sporttype = b.SportType
+									AND cs.bettype = b.BetType
+									AND cs.isLive = b.isLive            
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+            INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype																			      									
+        WHERE cs.custid = @srecommend
+            AND (b.IsAutoSuperPT = 0 
+				AND b.SuperPT < CASE WHEN cs.MinPT - cs.MasterPT > 0 
+										THEN cs.MinPT - cs.MasterPT ELSE 0 END)
+        
+        IF @ErrType <>''
+        BEGIN
+            SELECT @ErrMsg = CASE @Language 
+                                    WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+                                    ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+                                END, @ErrCode = 112
+                                
+            RETURN
+        END 	
+    END	
+    --end check constraint
+    
+    --update data change into db
+    UPDATE cs
+	SET cs.SuperPT = b.SuperPT
+		,cs.MasterPT = b.MasterPT
+		,cs.IsAutoSuperPT = b.IsAutoSuperPT
+		,cs.AutoSuperPT = b.AutoSuperPT
+		,cs.MinPT = b.MasterMinPT		
+	FROM CustPTSetting3rd_Agent cs WITH(UPDLOCK,ROWLOCK)
+		INNER JOIN @tblPT b ON cs.Sporttype = b.SportType
+								AND cs.bettype = b.BetType
+								AND cs.isLive = b.IsLive								
+	WHERE cs.custid = @custid
+		AND (
+				cs.SuperPT <> b.SuperPT
+			OR cs.isAutoSuperPT <> b.IsAutoSuperPT
+			OR cs.AutoSuperPT <> b.AutoSuperPT			
+			OR cs.MasterPT <> b.MasterPT
+			OR cs.MinPT <> b.MasterMinPT					
+		)
+	
+	IF @UpdateMinPT = 1
+	BEGIN
+		EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @custid, @srecommend = @srecommend, @mode = 'Others', @roleid = 3
+	END
+	
+	IF @UpdatePresetPT = 1
+	BEGIN
+		 EXEC dbo.Acc_CustSetting3rd_05
+            @srecommend = @srecommend,
+            @mrecommend = @custid,
+            @roleid = 3,
+            @mode = 'Others',
+            
+            @PT = @PT,
+            @PT_old = @logSPDataOld,
+                
+            @updateallmembers = @updateallmembers,
+            @newspositiontaking = @s1
+            
+         EXEC dbo.Acc_CustSetting3rd_07
+            @srecommend = @srecommend , 
+            @mrecommend = @custid,
+            @roleid = 3,
+            @mode = 'Others',
+	END
+	
+	 -- Write log after update
+	SET @xml = (
+			SELECT @custid AS '@ci'
+					,@userid AS '@ui'
+					,@langue AS '@l'
+					,@IP AS '@Ip'
+					,@updateallmembers AS '@ua'
+					,@SuperPT AS '@s1'
+					,(
+						SELECT cs.sporttype AS '@s'
+							,cs.bettype AS '@b'
+							,cs.isLive AS '@i'
+							,cs.SuperPT AS '@s3'
+							,cs.isAutoSuperPT AS '@is3'
+							,cs.AutoSuperPT AS '@us3'
+							,cs.MasterPT AS '@m3'						
+							,cs.MinPT AS '@n3'						
+						FROM @tblPT	cs							
+						FOR XML PATH('pt'), Type
+					)
+			FOR XML PATH('r'),TYPE				
+	)
+    
+    
+	SET @logSPData = CONVERT(VARCHAR(MAX), @xml)	
+	
+	-- end write log
+	SET @endRun		= GETDATE()  
+	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
+						
+	BEGIN TRY
+		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 449,
+			@TrackingValue = @LogSPData,
+			@TrackingValue2 = @logSPDataOld,
+			@duration = @duration
+	END	TRY
+	BEGIN CATCH
+		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+			@UserID = @UserID,
+			@CustID = @CustID,
+			@ActionID = 449,
+			@TrackingValue = @LogSPData,
+			@TrackingValue2 = @logSPDataOld,
+			@duration = @duration
+	END CATCH 
+		
 END	
- 
+ GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTUpd] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTUpd] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTUpd] TO [bodbExtAccNet]
+GO 
