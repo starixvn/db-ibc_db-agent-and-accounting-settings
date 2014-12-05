@@ -2862,13 +2862,26 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--POSITION TAKING
-		IF @MemberPT_XML IS NOT NULL
+		IF @MemberPT_XML IS NOT NULL AND @MemberPT_XML <> ''
 		BEGIN
 			DECLARE @iDoc INT
-			EXEC sp_xml_preparedocument @iDoc OUTPUT, @MemberPT_XML
+			DECLARE @memberPTTbl TABLE (
+				SportType	SMALLINT
+				,BetType	SMALLINT
+				,Islive		BIT
+				,SuperPT	TINYINT
+				,MasterPT	TINYINT
+				,AgentPT	TINYINT
+				,IsAutoMPT	BIT
+				,AutoMPT	TINYINT
+				,IsAutoSPT	BIT
+				,AutoSPT	TINYINT
+			)
 			
+			EXEC sp_xml_preparedocument @iDoc OUTPUT, @MemberPT_XML	
+			
+			INSERT @memberPTTbl
 			SELECT *
-			INTO #memberPTTbl
 			FROM OPENXML (@iDoc, '/ROOT/PositionTaking',1) 
 			WITH(SportType smallint, BetType smallint, Islive bit, SuperPT tinyint, 
 			MasterPT tinyint, AgentPT tinyint, IsAutoMPT bit,AutoMPT tinyint,IsAutoSPT bit,AutoSPT tinyint)	
@@ -2891,7 +2904,7 @@ SET NOCOUNT ON
 			SELECT 
 				@recommend,SportType,BetType,Islive,
 				SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsAutoSPT,AutoSPT
-			FROM #memberPTTbl
+			FROM @memberPTTbl
 			WHERE NOT EXISTS(SELECT TOP 1 1 FROM dbo.CustPTGroupSetting3rd_Member WHERE AgentID=@recommend)
 			
 			IF @@error <> 0
@@ -2942,7 +2955,7 @@ SET NOCOUNT ON
 			BEGIN
 				IF EXISTS(SELECT TOP 1 1
 						FROM dbo.CustPTGroupSetting3rd_Member grp
-						JOIN #memberPTTbl tmp ON tmp.SportType = grp.SportType
+						JOIN @memberPTTbl tmp ON tmp.SportType = grp.SportType
 												AND tmp.BetType = grp.BetType
 												AND tmp.Islive = grp.Islive
 						WHERE grp.AgentID = @recommend
@@ -2978,7 +2991,7 @@ SET NOCOUNT ON
 					SELECT 
 					@CustID,SportType,BetType,Islive,
 						SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsAutoSPT,AutoSPT
-					FROM #memberPTTbl
+					FROM @memberPTTbl
 					
 					IF @@error <> 0
 					BEGIN
