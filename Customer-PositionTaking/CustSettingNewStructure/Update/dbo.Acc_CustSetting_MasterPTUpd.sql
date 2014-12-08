@@ -2,7 +2,7 @@
 	@custid				INT,
 	@PT					VARCHAR(MAX),
 	@updateallmembers	BIT = 0,
-	@SuperPT			SMALLINT = 0,	
+	@newSuperPT			SMALLINT = 0,	
 	@UserID				INT = 0,    
     @Language			VARCHAR(2) = 'E',
     @IP					VARCHAR(15)='',
@@ -625,7 +625,7 @@ BEGIN
             @PT = @AutoPT,
                             
             @updateallmembers = @updateallmembers,
-            @newspositiontaking = @SuperPT,
+            @newspositiontaking = @newSuperPT,
             
          EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend , 
