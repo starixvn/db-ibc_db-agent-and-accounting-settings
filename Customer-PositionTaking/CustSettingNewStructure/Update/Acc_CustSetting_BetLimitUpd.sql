@@ -16,7 +16,7 @@ AS
 /*
 	Created: 20141111@Dominic
 	Task : Update Customer's Bet Limits
-	DB: CUSTDB
+	DB: DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
