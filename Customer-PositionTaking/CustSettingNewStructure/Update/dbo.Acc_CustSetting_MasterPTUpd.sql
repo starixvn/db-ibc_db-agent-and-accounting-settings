@@ -31,7 +31,8 @@ BEGIN
 			,@endRun		DATETIME
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
-			,@logSPDataOld	VARCHAR(5000)			
+			,@logSPDataOld	VARCHAR(5000)
+			,@AutoPT		VARCHAR(MAX)			
 			,@xml			XML
 	  SET @startRun = GETDATE()
 			
@@ -157,7 +158,23 @@ BEGIN
 	)
 	
 	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)    
-      
+    
+    SET @AutoPT =(
+		SELECT cs.sporttype AS '@SportType'
+			,cs.bettype AS '@BetType'
+			,cs.isLive AS '@IsLive'			
+			,t.isAutoSuperPT AS '@IsAutoSuperPT'
+			,cs.isAutoSuperPT AS '@IsAutoSuperPTOld'
+			,t.AutoSuperPT AS '@AutoSuperPT'			
+			,CASE WHEN t.IsAutoSuperPT = cs.IsAutoSuperPT AND t.AutoSuperPT = cs.AutoSuperPT THEN 0 ELSE 1 END AS '@IsUpdateAutoPT'			
+		FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+			INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
+									AND cs.bettype = t.BetType 
+									AND cs.isLive = t.IsLive
+		WHERE custid = @custid
+		FOR XML PATH('PT'), ROOT('ROOT')
+	 )
+	 
     --Check Param
     DECLARE @ErrAcc NVARCHAR(4000)
 			,@ErrType VARCHAR(1000)
@@ -605,11 +622,10 @@ BEGIN
             @roleid = 3,
             @mode = 'Others',
             
-            @PT = @PT,
-            @PT_old = @logSPDataOld,
-                
+            @PT = @AutoPT,
+                            
             @updateallmembers = @updateallmembers,
-            @newspositiontaking = @s1
+            @newspositiontaking = @SuperPT,
             
          EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend , 

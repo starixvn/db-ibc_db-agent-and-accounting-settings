@@ -304,6 +304,9 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_05]
     @KenoBetType INT = 0,
     @updateautopositiontakingv202 bit = 1,
     
+    --for others product 
+    @AutoPT VARCHAR(MAX) = '',
+    
     @updateallmembers bit = 0,
     @updatemultiple bit = 0,
     @newspositiontaking smallmoney =0 ,
@@ -327,7 +330,7 @@ AS
             - 20131104@Johnson: Add virtual sports, live casino, racing
             - 20140320@Patrick: Add more Keno product
             - 20140818@Logan: Exclude disabled members while updating Master setting [Redmine: #19631]
-
+			- 20141208@Johnson: New setting revonation for others porduct [Redmine: #26274] 
         Parameter's Explanation:
     */
 BEGIN
@@ -346,7 +349,20 @@ BEGIN
         SELECT @IsExistViews = COUNT(*) 
         FROM dbo.sysobjects
         WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'V'                
+                AND xtype = 'V'
+		
+		IF @IsExistTables <> 3 AND @IsExistViews <> 3
+        RETURN                                
+    END
+    ELSE IF @mode IN ('Others')
+    BEGIN
+		 SELECT @IsExistTables = COUNT(*) 
+        FROM dbo.sysobjects
+        WHERE    name IN ('custinfo','CustPTSetting3rd_Agent', 'CustPTSetting3rd_Member','CustPTGroupSetting3rd_Member')
+                AND xtype = 'U'
+		
+		IF @IsExistTables <> 4 
+        RETURN                
     END
     ELSE
     BEGIN
@@ -358,11 +374,11 @@ BEGIN
         SELECT @IsExistViews = COUNT(*) 
         FROM dbo.sysobjects
         WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'V'                
+                AND xtype = 'V'   
+		
+		IF @IsExistTables <> 3 AND @IsExistViews <> 3
+        RETURN                             
     END
-
-    IF @IsExistTables <> 3 AND @IsExistViews <> 3
-        RETURN
 
     DECLARE
         @bettype int,
@@ -378,7 +394,15 @@ BEGIN
         
         @old_isautov161positiontaking smallmoney,
         @old_isautov161livepositiontaking smallmoney
-        
+
+	DECLARE @tblPT TABLE(sporttype SMALLINT
+						,bettype SMALLINT
+						,isLive BIT
+						,isAutoSuperPT BIT
+						,isAutoSuperPTOld BIT
+						,AutoSuperPT SMALLINT
+						,isUpdateAutoPT BIT
+						)                
     --UPDATE min/max pt ON master
     IF @roleid = 3
     BEGIN
@@ -1642,7 +1666,47 @@ BEGIN
                  WHERE b.isautopositiontaking = 0 --and b.oldisautopositiontaking = 0 
                    AND cs.isautopositiontaking = 0
             END
-        END    
+        END --end Keno
+        ELSE IF @mode = 'Others'
+        BEGIN
+			-- For read xml
+			DECLARE @DocHandler INT    
+			
+			-- For read xml					
+			EXEC sp_xml_preparedocument @DocHandler OUTPUT, @AutoPT
+			
+			INSERT INTO @tblPT(
+						SportType,
+						BetType,
+						IsLive,
+						SuperPT,
+						IsAutoSuperPT,
+						AutoSuperPT,
+						MasterPT,				
+						MasterMinPT
+					)
+			SELECT
+				Data.SportType,
+				Data.BetType,
+				Data.IsLive,				
+				Data.isAutoSuperPT,
+				Data.isAutoSuperPTOld,
+				Data.AutoSuperPT,
+				Data.IsUpdateAutoPT
+			FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
+			WITH (
+				SportType		SMALLINT,
+				BetType			SMALLINT,
+				IsLive			BIT,
+				IsAutoSuperPT	BIT,
+				IsAutoSuperPTOld BIT,
+				AutoSuperPT		SMALLINT,
+				IsUpdateAutoPT	BIT	
+			) AS Data
+			
+			EXEC sp_xml_removedocument @DocHandler
+			-- end read xml	
+        END   
     END
     ELSE IF @roleid = 2
     BEGIN
