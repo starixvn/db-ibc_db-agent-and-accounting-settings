@@ -1,6 +1,3 @@
-USE [custDB]
-GO
-
 /****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 11/28/2013 14:47:11 ******/
 SET ANSI_NULLS ON
 GO
@@ -8,7 +5,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTMultipleUpd] @CustIDLst VARCHAR(4000)
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTAgentMultiUpd] 
+	  @CustIDLst VARCHAR(4000)
 	, @PT_XML VARCHAR(MAX)
 	, @SubAccID INT = 0
 	, @IP VARCHAR(50) = ''
@@ -24,7 +22,7 @@ AS
 		DB: DBCUST/CUSTDB
 
 		Parameter's Explanation:	
-		• @@PT_XML:
+		• @PT_XML:
 					<ROOT>
 							<PT 
 									SportType="1" 
@@ -42,9 +40,7 @@ BEGIN
 		, @endRun DATETIME
 		, @duration INT
 		
-	DECLARE @logSpData NVARCHAR(MAX)
-		, @logSpData_Old NVARCHAR(MAX)
-		, @xml XML
+	DECLARE @AdjustedPT_XML VARCHAR(MAX)=NULL
 		
 	DECLARE @ErrCode_Cur INT
 		, @ErrMsg_Cur NVARCHAR(4000)
@@ -57,6 +53,8 @@ BEGIN
 		, @TotalCount DECIMAL = 0
 		, @DiffCount INT = 0
 		, @MoveToIndv BIT = 0
+	
+	DECLARE @Old_PT_XML VARCHAR(MAX)
 		
 	DECLARE @tblCust TABLE (CustID INT)
 	
@@ -512,6 +510,18 @@ BEGIN
 	SELECT @MoveToIndv = 1
 	WHERE ISNULL(@DiffCount,0)/ISNULL(@TotalCount,1) < 0.5
 	
+	SELECT @AdjustedPT_XML = (SELECT SportType,BetType,IsLive,SuperPT,MasterPT,AgentPT
+	FROM @NewPTTble
+	FOR XML RAW ('PT'))
+
+	SELECT @AdjustedPT_XML = '<ROOT>'+@AdjustedPT_XML+'</ROOT>'
+	
+	
+	SELECT @Old_PT_XML = (SELECT SportType,BetType,IsLive,AgentPT
+	FROM @OldPTTble
+	FOR XML RAW ('PT'))
+
+	SELECT @Old_PT_XML = '<ROOT>'+@Old_PT_XML+'</ROOT>'
 	
 	--Call execrep to update member PT		
 	EXEC dbo.Acc_CustSetting3rd_08
@@ -527,65 +537,31 @@ BEGIN
 		@recommend = @AgentID, 
 		@mrecommend = @MasterID, 
 		@srecommend = @SuperID,
-		@mode = 'Others',
-		@MoveToIndv=@MoveToIndv
+		@MoveToIndv=@MoveToIndv,
+		@mode = 'Others'
 		
 	--START LOGGING		
-	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, @IP AS '@i'
-				, @Language AS '@l'
-				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
-					FROM @oldDiscountTbl
-					FOR XML PATH('x')
-						, TYPE
-					)
-			FOR XML PATH('r')
-				, TYPE
-			)
-	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, @IP AS '@i'
-				, @Language AS '@l'
-				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
-					FROM @NewDiscountTbl
-					FOR XML PATH('x')
-						, TYPE
-					)
-			FOR XML PATH('r')
-				, TYPE
-			)
-	SET @logSpData	= REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
 	SELECT @endRun	= GETDATE()
 		, @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
 
 	BEGIN TRY
-		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
-			, @CustID			= @CustID
-			, @ActionID			= 237
-			, @TrackingValue	= @logSpData
-			, @TrackingValue2	= @logSpData_Old
+			, @CustIDLst		= @CustIDLst
+			, @ActionID			= 450
+			, @NewPT_XML		= @PT_XML
+			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END TRY
 
 	BEGIN CATCH
-		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
-			, @CustID			= @CustID
-			, @ActionID			= 237
-			, @TrackingValue	= @logSpData
-			, @TrackingValue2	= @logSpData_Old
+			, @CustIDLst		= @CustIDLst
+			, @ActionID			= 450
+			, @NewPT_XML		= @PT_XML
+			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END CATCH
 END
