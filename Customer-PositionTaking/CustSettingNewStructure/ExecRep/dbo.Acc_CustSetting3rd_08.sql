@@ -868,13 +868,17 @@ SET NOCOUNT ON
 		DECLARE @tblCust TABLE (CustID INT)
 		
 		DECLARE @NewPTTble TABLE (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, ISLive BIT
-			, SuperPT TINYINT
-			, MasterPT TINYINT
-			, AgentPT TINYINT
-		)
+		SportType SMALLINT
+		, BetType SMALLINT
+		, IsLive BIT
+		, SuperPT TINYINT
+		, MasterPT TINYINT
+		, AgentPT TINYINT
+		, IsAutoMasterPT TINYINT
+		, AutoMasterPT TINYINT
+		, IsAutoSuperPT BIT
+		, AutoSuperPT TINYINT)
+		
 		--Parse affected Customer
 		INSERT INTO @tblCust (CustID)
 		SELECT CONVERT(INT, val)
@@ -884,10 +888,10 @@ SET NOCOUNT ON
 		DECLARE @iDoc INT
 
 		EXEC sp_xml_preparedocument @iDoc OUTPUT
-			, @AdjustedPT_XML
+		, @AdjustedPT_XML
 
 		INSERT @NewPTTble
-		SELECT SportType,BetType,IsLive,SuperPT,MasterPT,AgentPT
+		SELECT *
 		FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
 				SportType SMALLINT
 				, BetType SMALLINT
@@ -895,6 +899,10 @@ SET NOCOUNT ON
 				, SuperPT TINYINT
 				, MasterPT TINYINT
 				, AgentPT TINYINT
+				, IsAutoMasterPT TINYINT
+				, AutoMasterPT TINYINT
+				, IsAutoSuperPT BIT
+				, AutoSuperPT TINYINT
 				)
 
 		EXEC sp_xml_removedocument @iDoc
