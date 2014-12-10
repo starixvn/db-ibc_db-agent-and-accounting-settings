@@ -88,7 +88,7 @@
 	@UpdatePositiontakingv152_51 BIT = 1,
 	@UpdatePositiontakingv153_51 BIT = 1,
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(MAX) = '',
+	@CustIDList VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0,
 	@AdjustedPT_XML VARCHAR(MAX)=NULL
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
@@ -855,12 +855,12 @@ SET NOCOUNT ON
 		END--end @roleid = 2
 	END--end mode = 'horse'	
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	ELSE IF @mode = 'Others'
+	ELSE IF @mode = 'Others-MultiUpd'
 	BEGIN
 		IF @AdjustedPT_XML IS NULL
 				OR @AdjustedPT_XML = ''
-				OR @CustIDLst IS NULL
-				OR @CustIDLst = ''
+				OR @CustIDList IS NULL
+				OR @CustIDList = ''
 			RETURN
 			
 		DECLARE @RepresentCustID INT
@@ -878,7 +878,7 @@ SET NOCOUNT ON
 		--Parse affected Customer
 		INSERT INTO @tblCust (CustID)
 		SELECT CONVERT(INT, val)
-		FROM dbo.strSplit(@CustIDLst, ',')
+		FROM dbo.strSplit(@CustIDList, ',')
 		
 		
 		DECLARE @RemainCustTbl TABLE (CustID INT)
@@ -1209,6 +1209,13 @@ SET NOCOUNT ON
 				FROM dbo.CustSettingMode3rd main
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
+				
+				--Update setting mode for reamining CustIDs
+				UPDATE main
+				SET main.IsGrouped=1
+				FROM dbo.CustSettingMode3rd main
+				JOIN @RemainCustTbl cust
+				ON cust.CustID=main.CustID
 			END
 			ELSE
 			BEGIN			
@@ -1261,6 +1268,13 @@ SET NOCOUNT ON
 				FROM dbo.CustSettingMode3rd main
 				JOIN @RemainCustTbl cust
 				ON cust.CustID=main.CustID
+				
+				--Update setting mode for affected CustIDs
+				UPDATE main
+				SET main.IsGrouped=1
+				FROM dbo.CustSettingMode3rd main
+				JOIN @tblCust cust
+				ON cust.CustID=main.CustID
 			END
 		END
 		IF @RoleID=2
@@ -1307,6 +1321,13 @@ SET NOCOUNT ON
 				FROM dbo.CustSettingMode3rd main
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
+				
+				--Update setting mode for reamining CustIDs
+				UPDATE main
+				SET main.IsGrouped=1
+				FROM dbo.CustSettingMode3rd main
+				JOIN @RemainCustTbl cust
+				ON cust.CustID=main.CustID
 			END
 			ELSE
 			BEGIN				
@@ -1349,6 +1370,13 @@ SET NOCOUNT ON
 				SET main.IsGrouped=0
 				FROM dbo.CustSettingMode3rd main
 				JOIN @RemainCustTbl cust
+				ON cust.CustID=main.CustID
+				
+				--Update setting mode for affected CustIDs
+				UPDATE main
+				SET main.IsGrouped=1
+				FROM dbo.CustSettingMode3rd main
+				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
 			END
 		END

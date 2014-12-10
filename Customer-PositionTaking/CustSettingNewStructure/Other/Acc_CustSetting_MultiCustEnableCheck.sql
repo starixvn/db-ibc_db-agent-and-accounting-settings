@@ -1,5 +1,5 @@
-CREATE PROCEDURE [dbo].[Acc_CustSetting_MultiCustEnableCheck] 
-	  @CustIDLst VARCHAR(4000) =''
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MultiCustEnableCheck] 
+	  @CustIDList VARCHAR(MAX) =''
 	, @ErrCode INT = 0 OUTPUT
 	, @ErrMsg NVARCHAR(200) = '' OUTPUT
 AS
@@ -19,7 +19,7 @@ BEGIN
 	
 	--Parse CustID
 	INSERT INTO @tblCust (CustID )
-	SELECT CONVERT(INT,val) FROM dbo.strSplit(@CustIDLst,',') 
+	SELECT CONVERT(INT,val) FROM dbo.strSplit(@CustIDList,',') 
 
 
 	SELECT @isEnable = ISNULL(ci.enabled, 0)

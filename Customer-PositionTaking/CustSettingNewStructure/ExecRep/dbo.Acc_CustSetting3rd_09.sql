@@ -128,7 +128,7 @@
 	@isauto_v153mpositiontaking_mem_52 bit = 0,
 
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(MAX) = '',
+	@CustIDList VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0,
 	@AutoPT_XML VARCHAR(MAX)=NULL,
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
@@ -1313,12 +1313,12 @@ BEGIN
 					OR cs.autompositiontaking <> t.autompositiontaking
 	END--end @mode = 'horse'
 	/*DOMINIC-CUSTOMER RENOVATION-START */
-	ELSE IF @mode = 'Others'
+	ELSE IF @mode = 'Others-MultiUpd'
 	BEGIN
 		IF @AutoPT_XML IS NULL
 				OR @AutoPT_XML = ''
-				OR @CustIDLst IS NULL
-				OR @CustIDLst = ''
+				OR @CustIDList IS NULL
+				OR @CustIDList = ''
 			RETURN
 			
 		DECLARE @RepresentCustID INT
@@ -1337,7 +1337,7 @@ BEGIN
 		--Parse affected Customer
 		INSERT INTO @tblCust (CustID)
 		SELECT CONVERT(INT, val)
-		FROM dbo.strSplit(@CustIDLst, ',')
+		FROM dbo.strSplit(@CustIDList, ',')
 		
 		--get line infor
 		SELECT TOP 1 @RepresentCustID=CustID

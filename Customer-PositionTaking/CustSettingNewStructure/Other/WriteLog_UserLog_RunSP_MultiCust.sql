@@ -1,6 +1,6 @@
 ALTER PROCEDURE [dbo].[WriteLog_UserLog_RunSP_MultiCust]  
   @UserID INT,  
-  @CustIDLst VARCHAR(4000),
+  @CustIDList VARCHAR(MAX),
   @NewPT_XML VARCHAR(MAX),
   @OldPT_XML VARCHAR(MAX),
   @SubAccID INT = 0,
@@ -50,7 +50,7 @@ BEGIN
 	--Parse affected Customer
 	INSERT INTO @tblCust (CustID)
 	SELECT CONVERT(INT, val)
-	FROM dbo.strSplit(@CustIDLst, ',')
+	FROM dbo.strSplit(@CustIDList, ',')
 	
 	
 	DECLARE @iDoc INT
@@ -102,7 +102,7 @@ BEGIN
 		
 	--START LOGGING		
 	SET @xml = (
-			SELECT @CustIDLst AS '@c'
+			SELECT @CustIDList AS '@c'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'
@@ -126,7 +126,7 @@ BEGIN
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustIDLst AS '@c'
+			SELECT @CustIDList AS '@c'
 				, @UserID AS '@u'
 				, @IP AS '@i'
 				, @Language AS '@l'

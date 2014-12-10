@@ -6,7 +6,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTSuperMultiUpd] 
-	  @CustIDLst VARCHAR(MAX)
+	  @CustIDList VARCHAR(MAX)
 	, @PT_XML VARCHAR(MAX)
 	, @SubAccID INT = 0
 	, @IP VARCHAR(50) = ''
@@ -88,8 +88,8 @@ BEGIN
 	--Check if XML is null or empty
 	IF @PT_XML IS NULL
 		OR @PT_XML = ''
-		OR @CustIDLst IS NULL
-		OR @CustIDLst = ''
+		OR @CustIDList IS NULL
+		OR @CustIDList = ''
 		RETURN
 
 	SET @startRun = GETDATE()
@@ -103,11 +103,11 @@ BEGIN
 	--Parse affected Customer
 	INSERT INTO @tblCust (CustID)
 	SELECT CONVERT(INT, val)
-	FROM dbo.strSplit(@CustIDLst, ',')
+	FROM dbo.strSplit(@CustIDList, ',')
 
 			
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDLst = @CustIDLst
+	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
 		, @ErrCode = @ErrCode_Cur OUTPUT
 		, @ErrMsg = @ErrMsg_Cur OUTPUT
 
@@ -267,20 +267,20 @@ BEGIN
 	
 	--Call execrep to update member PT		
 	EXEC dbo.Acc_CustSetting3rd_08
-			@CustIDLst = @CustIDLst,
+			@CustIDList = @CustIDList,
 			@roleid = 3,
-			@mode = 'Others',
+			@mode = 'Others-MultiUpd',
 			@AdjustedPT_XML=@AdjustedPT_XML,
 			@MoveToIndv=@MoveToIndv
 			
 	--Call execrept to correct PT		
 	EXEC dbo.Acc_CustSetting3rd_09
-		@CustIDLst = @CustIDLst, 
+		@CustIDList = @CustIDList, 
 		@recommend = @AgentID, 
 		@mrecommend = @MasterID, 
 		@srecommend = @SuperID,
 		@MoveToIndv=@MoveToIndv,
-		@mode = 'Others'
+		@mode = 'Others-MultiUpd'
 		
 	--START LOGGING		
 
@@ -290,7 +290,7 @@ BEGIN
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
-			, @CustIDLst		= @CustIDLst
+			, @CustIDList		= @CustIDList
 			, @ActionID			= 452
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML
@@ -300,7 +300,7 @@ BEGIN
 	BEGIN CATCH
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
-			, @CustIDLst		= @CustIDLst
+			, @CustIDList		= @CustIDList
 			, @ActionID			= 452
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML

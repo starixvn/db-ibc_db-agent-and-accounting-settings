@@ -9,7 +9,7 @@
 	@updautosuper bit = 1,
 	@mode varchar(20) ='',--'horse' or 'number' or 'finance' or 'virtual-sports',
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(MAX) = '',
+	@CustIDList VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0
 	/*DOMINIC-CUSTOMER RENOVATION-END*/
 AS
@@ -48,7 +48,7 @@ BEGIN
 			AND xtype = 'U'
 END
 /*DOMINIC-CUSTOMER RENOVATION-START*/
-ELSE IF @mode = 'Others'
+ELSE IF @mode = 'Others-MultiUpd'
 BEGIN
 	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
 	WHERE	name IN ('CustPTSetting3rd_Agent'
@@ -812,10 +812,10 @@ BEGIN
 END--end mode = 'Keno'
 
 /*DOMINIC-CUSTOMER RENOVATION-START*/
-IF @mode = 'Others'
+IF @mode = 'Others-MultiUpd'
 BEGIN
-	IF  @CustIDLst IS NULL
-			OR @CustIDLst = ''
+	IF  @CustIDList IS NULL
+			OR @CustIDList = ''
 		RETURN
 		
 	DECLARE @tblCust TABLE (CustID INT)	
@@ -823,7 +823,7 @@ BEGIN
 	--Parse affected Customer
 	INSERT INTO @tblCust (CustID)
 	SELECT CONVERT(INT, val)
-	FROM dbo.strSplit(@CustIDLst, ',')
+	FROM dbo.strSplit(@CustIDList, ',')
 	
 	DECLARE @CorredPTTable TABLE(
 		CustID INT,
