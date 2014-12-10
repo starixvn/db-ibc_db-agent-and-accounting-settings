@@ -128,7 +128,7 @@
 	@isauto_v153mpositiontaking_mem_52 bit = 0,
 
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(4000) = '',
+	@CustIDLst VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0,
 	@AutoPT_XML VARCHAR(MAX)=NULL,
 	/*DOMINIC-CUSTOMER RENOVATION-START*/

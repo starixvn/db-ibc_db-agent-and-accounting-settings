@@ -9,7 +9,7 @@
 	@updautosuper bit = 1,
 	@mode varchar(20) ='',--'horse' or 'number' or 'finance' or 'virtual-sports',
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(4000) = '',
+	@CustIDLst VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0
 	/*DOMINIC-CUSTOMER RENOVATION-END*/
 AS

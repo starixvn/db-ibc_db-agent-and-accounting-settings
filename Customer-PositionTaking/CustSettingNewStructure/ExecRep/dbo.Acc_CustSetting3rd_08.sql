@@ -88,7 +88,7 @@
 	@UpdatePositiontakingv152_51 BIT = 1,
 	@UpdatePositiontakingv153_51 BIT = 1,
 	/*DOMINIC-CUSTOMER RENOVATION-START*/
-	@CustIDLst VARCHAR(4000) = '',
+	@CustIDLst VARCHAR(MAX) = '',
 	@MoveToIndv BIT = 0,
 	@AdjustedPT_XML VARCHAR(MAX)=NULL
 	/*DOMINIC-CUSTOMER RENOVATION-START*/

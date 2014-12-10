@@ -6,7 +6,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTMasterMultiUpd] 
-	  @CustIDLst VARCHAR(4000)
+	  @CustIDLst VARCHAR(MAX)
 	, @PT_XML VARCHAR(MAX)
 	, @SubAccID INT = 0
 	, @IP VARCHAR(50) = ''

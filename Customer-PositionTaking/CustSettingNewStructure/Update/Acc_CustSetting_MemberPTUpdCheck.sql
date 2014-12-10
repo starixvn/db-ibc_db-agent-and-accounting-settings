@@ -5,7 +5,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTUpdCheck] 
-	@CustID				INT = NULL
+	@CustID				INT 
 	, @RoleID			INT
 	, @AgentID			INT
 	, @MasterID			INT
@@ -144,27 +144,28 @@ BEGIN
 		END
 	
 	
-		--Check range
-		IF EXISTS(
-			SELECT TOP 1 1
-			FROM @NewPTTble mempt
-			JOIN dbo.ProductSettingDetail pdt
-			ON pdt.SportType=mempt.SportType
-				AND pdt.BetType=mempt.BetType
-				AND pdt.IsLive=mempt.IsLive
-			WHERE mempt.AgentPT < 0 OR mempt.AgentPT > pdt.MaxPT)
-		BEGIN
-			SELECT @ErrMsg_Cur = 
-							CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
-							END, @ErrCode_Cur = 100
-							
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+		--Check range		
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + + '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType=mempt.SportType
+			AND pdt.BetType=mempt.BetType
+			AND pdt.IsLive=mempt.IsLive
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.AgentPT < 0 OR mempt.AgentPT > pdt.MaxPT
 			
-			RETURN	
+		if @ErrType <>''
+		BEGIN
+			select @ErrCode = 6
+			Select @ErrMsg = 	case @Language 
+								when 'E' then 'Wrong position taking.'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			return
 		END
+			
 		
 		--check n2<=a1<=l2
 		SELECT @ErrType = ''
@@ -336,26 +337,26 @@ BEGIN
 		END
 		
 		
-		--Check range
-		IF EXISTS(
-			SELECT TOP 1 1
-			FROM @NewPTTble mempt
-			JOIN dbo.ProductSettingDetail pdt
-			ON pdt.SportType=mempt.SportType
-				AND pdt.BetType=mempt.BetType
-				AND pdt.IsLive=mempt.IsLive
-			WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT)
-		BEGIN
-			SELECT @ErrMsg_Cur = 
-							CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
-							END, @ErrCode_Cur = 100
-							
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+		--Check range		
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + + '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType=mempt.SportType
+			AND pdt.BetType=mempt.BetType
+			AND pdt.IsLive=mempt.IsLive
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT
 			
-			RETURN	
+		if @ErrType <>''
+		BEGIN
+			select @ErrCode = 6
+			Select @ErrMsg = 	case @Language 
+								when 'E' then 'Wrong position taking.'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			return
 		END
 		
 		--if im1=1 then um1<=l3
@@ -606,44 +607,258 @@ BEGIN
 		END
 		
 		--Check range
-		--Check range
-		IF EXISTS(
-			SELECT TOP 1 1
-			FROM @NewPTTble mempt
-			JOIN dbo.ProductSettingDetail pdt
-			ON pdt.SportType=mempt.SportType
-				AND pdt.BetType=mempt.BetType
-				AND pdt.IsLive=mempt.IsLive
-			WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT)
-		BEGIN
-			SELECT @ErrMsg_Cur = 
-							CASE @Language 
-								WHEN 'E' THEN 'Wrong position taking.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
-							END, @ErrCode_Cur = 100
-							
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname +  ','
+		FROM @NewPTTble mempt
+		JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType=mempt.SportType
+			AND pdt.BetType=mempt.BetType
+			AND pdt.IsLive=mempt.IsLive
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT
 			
-			RETURN	
+		if @ErrType <>''
+		BEGIN
+			SET @ErrType = LEFT(@ErrType, LEN(@ErrType) - 1)
+			
+			select @ErrCode = 6
+			Select @ErrMsg = 	case @Language 
+								when 'E' then 'Wrong position taking.'+@ErrType
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+						end
+			return
 		END
 		
 		
 		--if is1=1 then us1<=l4
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee + ', '
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.IsAutoSuperPT = 1 AND mempt.AutoSuperPT > spt.MaxPT
 		
-		
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =case @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 7							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
+			
 		--us1<=s4
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee 
+			+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+			+ cast((spt.SuperPT) AS varchar(10))
+			+ '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.AutoSuperPT > spt.SuperPT
+		
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =case @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 7							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
 		
 		--if is1=1 then us1>=max(n4-m1-a1,0)
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee 
+			+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+			+ cast((CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
+											THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
+											ELSE 0
+											END) AS varchar(10))
+			+ '<br>'		
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.IsAutoSuperPT = 1 
+			AND mempt.AutoSuperPT < CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
+											THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
+											ELSE 0
+											END
 		
+		
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =
+								case @Language 
+									WHEN 'E' THEN 'Wrong auto position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 11							
+			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END	
 		--s1<=s4
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee 
+			+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+			+ cast((spt.SuperPT) AS varchar(10))
+			+ '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.SuperPT > spt.SuperPT
 		
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =	
+								case @Language 
+									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 8							
+			select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
 		
 		--if is1=0 AND is3=0 then s1<=max(min(s4,l4) - m3,max(n4-m1-a1,0))
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee 
+			+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+			+ cast((CASE 
+					WHEN CASE 
+							WHEN spt.SuperPT < spt.MaxPT
+								THEN spt.SuperPT
+							ELSE spt.MaxPT
+							END - mpt.MasterPT > CASE 
+							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+							ELSE 0
+							END
+						THEN CASE 
+								WHEN spt.SuperPT < spt.MaxPT
+									THEN spt.SuperPT
+								ELSE spt.MaxPT
+								END - mpt.MasterPT
+					ELSE CASE 
+							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+							ELSE 0
+							END
+				END) AS varchar(10))
+			+ '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		JOIN dbo.CustPTSetting3rd_Agent mpt
+			ON mpt.SportType=mempt.SportType
+					AND mpt.BetType=mempt.BetType
+					AND mpt.IsLive=mempt.IsLive
+					AND mpt.CustID=@MasterID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
+			AND mempt.SuperPT >  
+				CASE 
+					WHEN CASE 
+							WHEN spt.SuperPT < spt.MaxPT
+								THEN spt.SuperPT
+							ELSE spt.MaxPT
+							END - mpt.MasterPT > CASE 
+							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+							ELSE 0
+							END
+						THEN CASE 
+								WHEN spt.SuperPT < spt.MaxPT
+									THEN spt.SuperPT
+								ELSE spt.MaxPT
+								END - mpt.MasterPT
+					ELSE CASE 
+							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+							ELSE 0
+							END
+				END
 		
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =
+								case @Language 
+									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 8							
+			select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
 		
 		--if is1=0 AND is3=0 then s1>=max(n4-m1-a1,0)
-		
-		
+		SELECT @ErrType = ''
+		SELECT @ErrType = @ErrType + sportname + '-'+ typenamee 
+			+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+			+ cast((CASE 
+							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+							ELSE 0
+							END ) AS varchar(10))
+			+ '<br>'
+		FROM @NewPTTble mempt
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=mempt.SportType
+					AND spt.BetType=mempt.BetType
+					AND spt.IsLive=mempt.IsLive
+					AND spt.CustID=@SuperID
+		JOIN dbo.CustPTSetting3rd_Agent mpt
+			ON mpt.SportType=mempt.SportType
+					AND mpt.BetType=mempt.BetType
+					AND mpt.IsLive=mempt.IsLive
+					AND mpt.CustID=@MasterID
+		INNER JOIN bodb02.dbo.bettype bt with (nolock) on mempt.bettype = bt.typeid
+		INNER JOIN bodb02.dbo.sports s with(nolock) on mempt.sporttype = s.sporttype
+		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
+			AND mempt.SuperPT < CASE 
+									WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+										THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+									ELSE 0
+								END 
+		if @ErrType <>''
+		BEGIN
+			SELECT @ErrMsg_cur =	
+								case @Language 
+									WHEN 'E' THEN 'Wrong  position taking.<br>'+@ErrType
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
+								END, @ErrCode_cur = 12							
+			select	@ErrCode = @ErrCode + cast(@ErrCode_cur AS varchar(300)) + char(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
+			return
+		END
 	END
 END
