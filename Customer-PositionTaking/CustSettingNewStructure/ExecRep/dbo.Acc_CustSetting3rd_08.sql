@@ -854,6 +854,7 @@ SET NOCOUNT ON
 			WHERE custid=@custid and sporttype BETWEEN 151 AND 153
 		END--end @roleid = 2
 	END--end mode = 'horse'	
+	/*DOMINIC-CUSTOMER RENOVATION-START*/
 	ELSE IF @mode = 'Others'
 	BEGIN
 		IF @AdjustedPT_XML IS NULL
@@ -1012,5 +1013,5 @@ SET NOCOUNT ON
 		END
 		
 	END
-				
+	/*DOMINIC-CUSTOMER RENOVATION-END*/			
 END
