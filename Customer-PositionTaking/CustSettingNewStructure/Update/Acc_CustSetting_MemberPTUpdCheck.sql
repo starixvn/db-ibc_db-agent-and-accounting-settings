@@ -573,4 +573,77 @@ BEGIN
 		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
 			and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0	
 	END
+	ELSE IF @RoleID = 4
+	BEGIN
+		--Get member's setting to be adjusted
+		IF @IsGrouped = 1
+		BEGIN
+			UPDATE main
+			SET  main.MasterPT = cs.MasterPT
+				, main.AgentPT = cs.AgentPT
+				, main.IsAutoMasterPT =cs.IsAutoMasterPT
+				, main.AutoMasterPT = cs.AutoMasterPT
+			FROM @NewPTTble main
+			JOIN dbo.CustPTGroupSetting3rd_Member cs
+			ON cs.SportType=main.SportType
+					AND cs.BetType=main.BetType
+					AND cs.IsLive=main.IsLive
+					AND cs.AgentID=@AgentID
+		END
+		ELSE
+		BEGIN
+			UPDATE main
+			SET  main.MasterPT = cs.MasterPT
+				, main.AgentPT = cs.AgentPT
+				, main.IsAutoMasterPT =cs.IsAutoMasterPT
+				, main.AutoMasterPT = cs.AutoMasterPT
+			FROM @NewPTTble main
+			JOIN dbo.CustPTSetting3rd_Member cs
+			ON cs.SportType=main.SportType
+					AND cs.BetType=main.BetType
+					AND cs.IsLive=main.IsLive
+					AND cs.CustID=@CustID
+		END
+		
+		--Check range
+		--Check range
+		IF EXISTS(
+			SELECT TOP 1 1
+			FROM @NewPTTble mempt
+			JOIN dbo.ProductSettingDetail pdt
+			ON pdt.SportType=mempt.SportType
+				AND pdt.BetType=mempt.BetType
+				AND pdt.IsLive=mempt.IsLive
+			WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT)
+		BEGIN
+			SELECT @ErrMsg_Cur = 
+							CASE @Language 
+								WHEN 'E' THEN 'Wrong position taking.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
+							END, @ErrCode_Cur = 100
+							
+			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			
+			RETURN	
+		END
+		
+		
+		--if is1=1 then us1<=l4
+		
+		
+		--us1<=s4
+		
+		--if is1=1 then us1>=max(n4-m1-a1,0)
+		
+		--s1<=s4
+		
+		
+		--if is1=0 AND is3=0 then s1<=max(min(s4,l4) - m3,max(n4-m1-a1,0))
+		
+		
+		--if is1=0 AND is3=0 then s1>=max(n4-m1-a1,0)
+		
+		
+	END
 END

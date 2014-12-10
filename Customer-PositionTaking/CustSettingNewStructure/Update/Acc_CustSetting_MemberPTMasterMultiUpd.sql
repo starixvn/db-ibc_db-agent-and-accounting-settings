@@ -420,7 +420,7 @@ BEGIN
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
 			, @CustIDLst		= @CustIDLst
-			, @ActionID			= 450
+			, @ActionID			= 451
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
@@ -430,7 +430,7 @@ BEGIN
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
 			, @CustIDLst		= @CustIDLst
-			, @ActionID			= 450
+			, @ActionID			= 451
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
