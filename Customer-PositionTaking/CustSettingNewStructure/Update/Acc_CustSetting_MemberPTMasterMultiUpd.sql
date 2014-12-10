@@ -580,7 +580,8 @@ BEGIN
 	WHERE (
 		npt.SuperPT <> opt.SuperPT
 		OR npt.MasterPT <> opt.MasterPT
-		OR npt.AgentPT <> opt.AgentPT
+		OR npt.IsAutoMasterPT <> opt.IsAutoMasterPT
+		OR npt.AutoMasterPT <> opt.AutoMasterPT
 	))
 	BEGIN
 		SELECT @DiffCount = ISNULL((SELECT COUNT(1) FROM @tblCust),0)

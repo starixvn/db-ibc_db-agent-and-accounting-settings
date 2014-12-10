@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_09]
+﻿ALTER PROCEDURE [dbo].[Acc_Custsetting3rd_09_SettingRenovation]
 	@mrecommend INT = 0,
 	@custid int = 0,
 	@roleid INT,
@@ -127,6 +127,11 @@
 	@isauto_v153mpositiontaking_mem_51 bit = 0,
 	@isauto_v153mpositiontaking_mem_52 bit = 0,
 
+	/*DOMINIC-CUSTOMER RENOVATION-START*/
+	@CustIDLst VARCHAR(4000) = '',
+	@MoveToIndv BIT = 0,
+	@AutoPT_XML VARCHAR(MAX)=NULL,
+	/*DOMINIC-CUSTOMER RENOVATION-START*/
 	
 	@UpdateMultiple BIT = 0,
 	@UpdatePositiontakingv161 BIT = 1,
@@ -164,6 +169,18 @@ BEGIN
 			AND xtype = 'U'
 
 	if @IsExistTables <> 3 RETURN
+	
+	/*DOMINIC-CUSTOMER RENOVATION-START*/
+	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN ('CustPTSetting3rd_Agent'
+					, 'CustPTSetting3rd_Member'
+					, 'CustPTGroupSetting3rd_Member'
+					, 'CustSettingMode3rd')
+			AND xtype = 'U'
+
+	if @IsExistTables <> 4 RETURN
+	/*DOMINIC-CUSTOMER RENOVATION-END*/
+	
 	Declare @bettype int,
 			@maxpos smallmoney,	
 			@autov161positiontaking smallmoney,
@@ -1295,4 +1312,52 @@ BEGIN
 					OR cs.autopositiontaking <> t.autopositiontaking
 					OR cs.autompositiontaking <> t.autompositiontaking
 	END--end @mode = 'horse'
+	/*DOMINIC-CUSTOMER RENOVATION-START */
+	ELSE IF @mode = 'Others'
+	BEGIN
+		IF @AutoPT_XML IS NULL
+				OR @AutoPT_XML = ''
+				OR @CustIDLst IS NULL
+				OR @CustIDLst = ''
+			RETURN
+			
+		DECLARE @RepresentCustID INT
+		
+		DECLARE @tblCust TABLE (CustID INT)
+		
+		DECLARE @NewPTTble TABLE (
+			SportType SMALLINT
+			, BetType SMALLINT
+			, IsLive BIT
+			, IsAutoSuperPT BIT
+			, AutoSuperPT TINYINT
+			, IsAutoMasterPT BIT
+			, AutoMasterPT TINYINT)
+		
+		--Parse affected Customer
+		INSERT INTO @tblCust (CustID)
+		SELECT CONVERT(INT, val)
+		FROM dbo.strSplit(@CustIDLst, ',')
+		
+		--Parse XML	
+		DECLARE @iDoc INT
+
+		EXEC sp_xml_preparedocument @iDoc OUTPUT
+		, @AutoPT_XML
+
+		INSERT @NewPTTble
+		SELECT *
+		FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
+				SportType SMALLINT
+				, BetType SMALLINT
+				, IsLive BIT
+				, IsAutoSuperPT BIT
+				, AutoSuperPT TINYINT
+				, IsAutoMasterPT BIT
+				, AutoMasterPT TINYINT
+				)
+
+		EXEC sp_xml_removedocument @iDoc
+	END
+	/*DOMINIC-CUSTOMER RENOVATION-END */
 END
