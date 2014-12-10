@@ -111,6 +111,19 @@ AS
 			- 20140221@Johnson: merge code correct pt after update pt on member for number game [RedmineId: #11562]
 			- 20140313@Johnson: merge code correct pt after update pt on member for racing
 		Parameter's Explanation:
+			/DOMINIC STAR/
+			*@AdjustedPT_XML:
+				   <ROOT>
+						<PT 
+								SportType="1" 
+								BetType="1" 
+								IsLive="1" 
+								SuperPT="10" 
+								MasterPT="10" 
+								AgentPT="10"
+						/>
+					</ROOT>
+			/DOMINIC END/
 	*/ 
 BEGIN
 SET NOCOUNT ON
@@ -873,11 +886,7 @@ SET NOCOUNT ON
 		, IsLive BIT
 		, SuperPT TINYINT
 		, MasterPT TINYINT
-		, AgentPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT)
+		, AgentPT TINYINT)
 		
 		--Parse affected Customer
 		INSERT INTO @tblCust (CustID)
@@ -899,10 +908,6 @@ SET NOCOUNT ON
 				, SuperPT TINYINT
 				, MasterPT TINYINT
 				, AgentPT TINYINT
-				, IsAutoMasterPT TINYINT
-				, AutoMasterPT TINYINT
-				, IsAutoSuperPT BIT
-				, AutoSuperPT TINYINT
 				)
 
 		EXEC sp_xml_removedocument @iDoc
