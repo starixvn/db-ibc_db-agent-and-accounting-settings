@@ -205,8 +205,22 @@ BEGIN
 	IF @ErrCode <> ''
 		RETURN		
 
+	--AdjustPT: s1= s1+m1+ a1> s4?s4-m1-a1:s1
+	UPDATE main
+	SET main.SuperPT = spt.SuperPT - main.MasterPT-main.AgentPT
+	FROM @NewPTTble main
+		JOIN dbo.CustPTSetting3rd_Agent spt
+			ON spt.SportType=main.SportType
+					AND spt.BetType=main.BetType
+					AND spt.IsLive=main.IsLive
+					AND spt.CustID=@SuperID
+	WHERE main.SuperPT+main.MasterPT+main.AgentPT > spt.SuperPT
 	
-	
+	--AdjustPT: s1=s1<0?:0:s1
+	UPDATE main
+	SET main.SuperPT = CASE WHEN main.SuperPT > 0 THEN main.SuperPT ELSE 0 END
+	FROM @NewPTTble main
+	WHERE main.SuperPT < 0
 	
 	
 	
