@@ -198,14 +198,12 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
-							+ cast((apt.MinPT) as varchar(10))
-							+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((apt.MaxPT) as varchar(10))
-							+ ','
-					END
+				+  CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+				+ cast((apt.MinPT) as varchar(10))
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ cast((apt.MaxPT) as varchar(10))
+				+ ','
+
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent apt
 			ON apt.SportType=mempt.SportType
@@ -250,12 +248,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((spt.AgentPT) as varchar(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ cast((spt.AgentPT) as varchar(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 		ON spt.SportType=mempt.SportType
@@ -361,12 +356,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=1 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((mempt.AgentPT_Max) as varchar(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=1 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ cast((mempt.AgentPT_Max) as varchar(10))
+				+ ','
 		FROM @NewPTTble mempt 
 		JOIN dbo.ProductSettingDetail pdt
 			ON pdt.SportType = mempt.SportType
@@ -476,12 +468,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ CAST((mpt.MaxPT) AS VARCHAR(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ CAST((mpt.MaxPT) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent mpt
 		ON mpt.SportType=mempt.SportType
@@ -527,12 +516,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent mpt
 			ON mpt.SportType=mempt.SportType
@@ -584,12 +570,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-							ELSE
-									CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
-									+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
-									+ ','
-						END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+				+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent mpt
 		ON mpt.SportType=mempt.SportType
@@ -635,12 +618,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+  CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-							ELSE
-								 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-								+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
-								+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent mpt
 			ON mpt.SportType=mempt.SportType
@@ -691,12 +671,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-					+  CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-							ELSE
-								 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-								+ CAST((mpt.MaxPT) AS VARCHAR(10))
-								+ ','
-						END
+					+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+					+ CAST((mpt.MaxPT) AS VARCHAR(10))
+					+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent mpt
 			ON mpt.SportType=mempt.SportType
@@ -742,12 +719,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-							ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent apt
 			ON apt.SportType=mempt.SportType
@@ -798,12 +772,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-							ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
-							+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
-							+ ','
-						END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+				+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent apt
 			ON apt.SportType=mempt.SportType
@@ -971,12 +942,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END
-				+CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((spt.SuperPT) AS varchar(10)) 
-							+ ','
-				END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ cast((spt.SuperPT) AS varchar(10)) 
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 			ON spt.SportType=mempt.SportType
@@ -1021,15 +989,12 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END	
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
-									+ cast((CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
-																	THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
-																	ELSE 0
-																	END) AS varchar(10))
-									+ ','
-				END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+				+ cast((CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
+												THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
+												ELSE 0
+												END) AS varchar(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 			ON spt.SportType=mempt.SportType
@@ -1080,12 +1045,9 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END	
-					+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((spt.SuperPT) AS varchar(10))
-							+ ','
-					END
+					+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+					+ cast((spt.SuperPT) AS varchar(10))
+					+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 			ON spt.SportType=mempt.SportType
@@ -1131,32 +1093,29 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END	
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
-							+ cast((CASE 
-									WHEN CASE 
-											WHEN spt.SuperPT < spt.MaxPT
-												THEN spt.SuperPT
-											ELSE spt.MaxPT
-											END - mpt.MasterPT > CASE 
-											WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
-												THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
-											ELSE 0
-											END
-										THEN CASE 
-												WHEN spt.SuperPT < spt.MaxPT
-													THEN spt.SuperPT
-												ELSE spt.MaxPT
-												END - mpt.MasterPT
-									ELSE CASE 
-											WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
-												THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
-											ELSE 0
-											END
-								END) AS varchar(10))
-							+ ','
-					END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
+				+ cast((CASE 
+						WHEN CASE 
+								WHEN spt.SuperPT < spt.MaxPT
+									THEN spt.SuperPT
+								ELSE spt.MaxPT
+								END - mpt.MasterPT > CASE 
+								WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+									THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+								ELSE 0
+								END
+							THEN CASE 
+									WHEN spt.SuperPT < spt.MaxPT
+										THEN spt.SuperPT
+									ELSE spt.MaxPT
+									END - mpt.MasterPT
+						ELSE CASE 
+								WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+									THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+								ELSE 0
+								END
+					END) AS varchar(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 			ON spt.SportType=mempt.SportType
@@ -1229,16 +1188,13 @@ BEGIN
 										+ ' - '
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 						END	
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						ELSE
-							 CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
-							+ cast((CASE 
-											WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
-												THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
-											ELSE 0
-											END ) AS varchar(10))
-							+ ','
-				END
+				+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
+				+ cast((CASE 
+								WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+									THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
+								ELSE 0
+								END ) AS varchar(10))
+				+ ','
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
 			ON spt.SportType=mempt.SportType
