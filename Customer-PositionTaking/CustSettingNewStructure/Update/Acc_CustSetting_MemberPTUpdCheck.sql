@@ -143,7 +143,6 @@ BEGIN
 					AND cs.CustID=@CustID
 		END
 	
-	
 		--Check range		
 		--Get error sport
 		SELECT @ErrType = ''
@@ -176,7 +175,7 @@ BEGIN
 				SET @ErrType = LEFT(@ErrType, LEN(@ErrType) - 1)
 			select @ErrCode = 101
 			Select @ErrMsg = 	case @Language 
-								when 'E' then 'Wrong position taking.'+ @ErrType
+								when 'E' then 'Wrong position taking.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) 
 						end
 						+ CASE WHEN @ErrType <> '' THEN ' (' + @ErrType + ')' ELSE '' END

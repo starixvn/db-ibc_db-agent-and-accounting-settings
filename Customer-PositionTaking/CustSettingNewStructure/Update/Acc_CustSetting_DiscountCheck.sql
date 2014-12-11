@@ -71,7 +71,7 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 2
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 3
-								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 4
 								THEN p.ProductName + ','
 						WHEN pdt.ErrMsgLevel = 5
