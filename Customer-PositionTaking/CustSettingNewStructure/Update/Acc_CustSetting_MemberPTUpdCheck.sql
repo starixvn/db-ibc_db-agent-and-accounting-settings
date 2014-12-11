@@ -240,7 +240,7 @@ BEGIN
 			select @ErrCode = 102
 			
 			Select @ErrMsg = 	case @Language 
-								when 'E' then 'Wrong position taking (min/max set by company)<br>'
+								when 'E' then 'Wrong position taking (min/max set by company).'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](20002,@Language)
 								end
 								+ CASE WHEN @ErrType <> '' THEN ' (' + @ErrType + ')' ELSE '' END
