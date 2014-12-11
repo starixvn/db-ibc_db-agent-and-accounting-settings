@@ -120,13 +120,13 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 2
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 3
-								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 4
 								THEN p.ProductName + ','
 						WHEN pdt.ErrMsgLevel = 5
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 									+ ' - '
-									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
@@ -134,7 +134,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 4
-	JOIN dbo.Products p
+	JOIN [bodb02].[dbo].[Products] p
 		ON p.ProductID = pdt.ProductID
 
 	IF @@ROWCOUNT > 0

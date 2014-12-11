@@ -246,21 +246,21 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 2
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 3
-								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 4
 								THEN p.ProductName + ','
 						WHEN pdt.ErrMsgLevel = 5
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 									+ ' - '
-									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
-			AND pdt.SettingType = 4
-	JOIN dbo.Products p
+			AND pdt.SettingType = 2
+	JOIN [bodb02].[dbo].[Products] p
 		ON p.ProductID = pdt.ProductID
 	WHERE		tmp.MinBet	< 0
 		OR tmp.MaxBet		< 0
@@ -288,21 +288,21 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 2
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 									WHEN pdt.ErrMsgLevel = 4
 											THEN p.ProductName + ','
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 								END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
-			AND pdt.SettingType = 4
-	JOIN dbo.Products p
+			AND pdt.SettingType = 2
+	JOIN [bodb02].[dbo].[Products] p
 		ON p.ProductID = pdt.ProductID
 	WHERE (
 			(
@@ -325,7 +325,7 @@ BEGIN
 				)
 			AND tmp.MinBet > tmp.MaxPerMatch
 			)
-
+	
 	IF @@ROWCOUNT > 0
 	BEGIN
 		IF @ErrSport <> ''
@@ -353,7 +353,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MinMinBet) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MinMinBet) 
 											+ ','
@@ -365,7 +365,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MinMinBet) 
 												+ ','
@@ -375,8 +375,8 @@ BEGIN
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
-				AND pdt.SettingType = 4
-		JOIN dbo.Products p
+				AND pdt.SettingType = 2
+		JOIN [bodb02].[dbo].[Products] p
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MinMinBet > 0
 			AND tmp.MinBet	> 0
@@ -421,7 +421,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 											+ ','
@@ -433,7 +433,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 												+ ','
@@ -443,8 +443,8 @@ BEGIN
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
-				AND pdt.SettingType = 4
-		JOIN dbo.Products p
+				AND pdt.SettingType = 2
+		JOIN [bodb02].[dbo].[Products] p
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxBet > 0
 			AND tmp.MaxBet	> 0
@@ -489,7 +489,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 											+ ','
@@ -501,7 +501,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 												+ ','
@@ -511,8 +511,8 @@ BEGIN
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
-				AND pdt.SettingType = 4
-		JOIN dbo.Products p
+				AND pdt.SettingType = 2
+		JOIN [bodb02].[dbo].[Products] p
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxPerMatch	> 0
 			AND tmp.MaxPerMatch		> 0

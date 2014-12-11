@@ -152,13 +152,13 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 2
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 4
 									THEN p.ProductName + ','
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
 		JOIN dbo.ProductSettingDetail pdt
@@ -166,7 +166,7 @@ BEGIN
 				AND pdt.BetType=mempt.BetType
 				AND pdt.IsLive=mempt.IsLive
 				AND pdt.SettingType = 1
-		JOIN dbo.Products p
+		JOIN bodb02.dbo.Products p
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT < 0 OR mempt.AgentPT > pdt.MaxPT
 			
@@ -196,7 +196,7 @@ BEGIN
 									+ cast((apt.MaxPT) as varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ cast((apt.MinPT) as varchar(10))
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
@@ -212,7 +212,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 										+ cast((apt.MinPT) as varchar(10))
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
@@ -230,8 +230,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > apt.MaxPT OR mempt.AgentPT < apt.MinPT
 		
 		IF @@ROWCOUNT > 0
@@ -258,7 +258,7 @@ BEGIN
 									+ cast((spt.AgentPT) as varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ cast((spt.AgentPT) as varchar(10))
 									+ ','
@@ -270,7 +270,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ cast((spt.AgentPT) as varchar(10))
 										+ ','
@@ -286,8 +286,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE  mempt.AgentPT > spt.AgentPT
 		
 		IF @@ROWCOUNT > 0
@@ -375,7 +375,7 @@ BEGIN
 									+ cast((mempt.AgentPT_Max) as varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=1 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ cast((mempt.AgentPT_Max) as varchar(10))
 									+ ','
@@ -387,7 +387,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=1 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ cast((mempt.AgentPT_Max) as varchar(10))
 										+ ','
@@ -398,8 +398,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > mempt.AgentPT_Max
 		
 		IF @@ROWCOUNT > 0
@@ -455,13 +455,13 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 2
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 4
 									THEN p.ProductName + ','
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
 		JOIN dbo.ProductSettingDetail pdt
@@ -469,8 +469,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT
 			
 		IF @@ROWCOUNT > 0
@@ -496,7 +496,7 @@ BEGIN
 									+ CAST((mpt.MaxPT) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ CAST((mpt.MaxPT) AS VARCHAR(10))
 									+ ','
@@ -508,7 +508,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ CAST((mpt.MaxPT) AS VARCHAR(10))
 										+ ','
@@ -524,8 +524,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1
 				AND mempt.AutoMasterPT > mpt.MaxPT
 		
@@ -553,7 +553,7 @@ BEGIN
 									+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 									+ ','
@@ -565,7 +565,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 										+ ','
@@ -586,8 +586,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1 
 			AND mempt.AutoMasterPT > CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
 			
@@ -616,7 +616,7 @@ BEGIN
 									+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 									+ ','
@@ -628,7 +628,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 										+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 										+ ','
@@ -644,8 +644,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT=1 
 			AND mempt.AutoMasterPT<CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END
 		
@@ -673,7 +673,7 @@ BEGIN
 									+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 									+ ','
@@ -685,7 +685,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 										+ ','
@@ -706,8 +706,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
 		
 		IF @@ROWCOUNT > 0
@@ -735,7 +735,7 @@ BEGIN
 									+ CAST((mpt.MaxPT) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ CAST((mpt.MaxPT) AS VARCHAR(10))
 									+ ','
@@ -747,7 +747,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ CAST((mpt.MaxPT) AS VARCHAR(10))
 										+ ','
@@ -763,8 +763,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>mpt.MaxPT
 		
 		IF @@ROWCOUNT > 0
@@ -792,7 +792,7 @@ BEGIN
 									+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
 									+ ','
@@ -804,7 +804,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
 										+ ','
@@ -825,8 +825,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT > mpt.MasterPT - mempt.AgentPT and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0
 		
 		
@@ -854,7 +854,7 @@ BEGIN
 									+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 									+ ','
@@ -866,7 +866,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 										+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 										+ ','
@@ -887,8 +887,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
 			and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0	
 			
@@ -946,13 +946,13 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 2
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 4
 									THEN p.ProductName + ','
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
 		JOIN dbo.ProductSettingDetail pdt
@@ -960,8 +960,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT
 			
 		IF @@ROWCOUNT > 0
@@ -986,13 +986,13 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 2
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 							WHEN pdt.ErrMsgLevel = 4
 									THEN p.ProductName + ','
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent spt
@@ -1005,8 +1005,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 AND mempt.AutoSuperPT > spt.MaxPT
 		
 		IF @@ROWCOUNT > 0
@@ -1033,7 +1033,7 @@ BEGIN
 									+ cast((spt.SuperPT) AS varchar(10)) 
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ cast((spt.SuperPT) AS varchar(10)) 
 									+ ','
@@ -1045,7 +1045,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ cast((spt.SuperPT) AS varchar(10)) 
 										+ ','
@@ -1061,8 +1061,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AutoSuperPT > spt.SuperPT
 		
 		IF @@ROWCOUNT > 0
@@ -1092,7 +1092,7 @@ BEGIN
 																	END) AS varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ cast((CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
 																	THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
@@ -1110,7 +1110,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 										+ cast((CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
 																		THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
@@ -1129,8 +1129,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 
 			AND mempt.AutoSuperPT < CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
 											THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
@@ -1163,7 +1163,7 @@ BEGIN
 									+ cast((spt.SuperPT) AS varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ cast((spt.SuperPT) AS varchar(10))
 									+ ','
@@ -1175,7 +1175,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ cast((spt.SuperPT) AS varchar(10))
 										+ ','
@@ -1191,8 +1191,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT > spt.SuperPT
 		
 		IF @@ROWCOUNT > 0
@@ -1240,7 +1240,7 @@ BEGIN
 										END) AS varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 									+ cast((CASE 
 											WHEN CASE 
@@ -1292,7 +1292,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Max: ' ELSE '-MaxLive: ' END
 										+ cast((CASE 
 												WHEN CASE 
@@ -1333,8 +1333,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT >  
 				CASE 
@@ -1388,7 +1388,7 @@ BEGIN
 													END ) AS varchar(10))
 									+ ','
 							WHEN pdt.ErrMsgLevel = 3
-									THEN [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+									THEN [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 									+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ cast((CASE 
 													WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
@@ -1408,7 +1408,7 @@ BEGIN
 							WHEN pdt.ErrMsgLevel = 5
 									THEN [dbo].[f_Get_SportNameBySporttype](mempt.SportType, @Language)
 										+ ' - '
-										+ [dbo].[dbo.F_Get_BetNameByTypeID](mempt.BetType, @Language) 
+										+ [dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) 
 										+ CASE WHEN mempt.IsLive=0 THEN '-Min: ' ELSE '-MinLive: ' END
 									+ cast((CASE 
 													WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
@@ -1433,8 +1433,8 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN dbo.Products p
-			ON pt.ProductID = pdt.ProductID
+		JOIN bodb02.dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT < CASE 
 									WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0

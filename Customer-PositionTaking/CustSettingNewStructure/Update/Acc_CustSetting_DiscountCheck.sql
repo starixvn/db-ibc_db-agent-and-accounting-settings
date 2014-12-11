@@ -77,19 +77,19 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 5
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 									+ ' - '
-									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @NewDiscountTbl tmp
-	INNER JOIN dbo.ProductSettingDetail dtl
-		ON dtl.SportType	= tmp.SportType
-			AND dtl.BetType = tmp.BetType
-			AND dtl.SettingType = 3
-			AND dtl.IsLive		= 0
-	JOIN dbo.Products p
+	INNER JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType	= tmp.SportType
+			AND pdt.BetType = tmp.BetType
+			AND pdt.SettingType = 3
+			AND pdt.IsLive		= 0
+	JOIN bodb02.dbo.Products p
 		ON p.ProductID = pdt.ProductID
 	WHERE 
 	(	tmp.Discount		< 0
-		OR	tmp.Discount	> dtl.maxDiscount
+		OR	tmp.Discount	> pdt.maxDiscount
 	)
 
 	IF @@ROWCOUNT > 0
