@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect]
 	@CustID INT,
 	@AgentID INT,
 	@MasterID INT,
@@ -34,6 +34,7 @@ BEGIN
 			SportType		SMALLINT,
 			BetType			SMALLINT,
 			IsLive			BIT,
+			IsGroupedPT		BIT,
 			S1	TINYINT,
 			M1	TINYINT,
 			A1	TINYINT,
@@ -49,6 +50,7 @@ BEGIN
 			pdt.SportType,
 			pdt.BetType,
 			pdt.IsLive,
+			mode.IsGrouped ,
 			CASE WHEN mode.IsGrouped = 0 THEN  pt.SuperPT ELSE ptgr.SuperPT END AS S1,
 			CASE WHEN mode.IsGrouped = 0 THEN  pt.MasterPT ELSE ptgr.MasterPT END AS M1,
 			CASE WHEN mode.IsGrouped = 0 THEN  pt.AgentPT ELSE ptgr.AgentPT END AS A1,
@@ -85,6 +87,7 @@ BEGIN
 		
 		--PT SETTING
 		SELECT 
+				mb.IsGroupedPT,
 				mb.A1,
 				mb.M1,
 				mb.S1,
@@ -200,6 +203,7 @@ BEGIN
 		
 		--PT SETTING
 		SELECT 
+				mb.IsGroupedPT,
 				mb.A1,
 				mb.M1,
 				agentpt.IsAutoMasterPT IM2,
@@ -351,6 +355,7 @@ BEGIN
 		
 		--PT Setting
 		SELECT 
+				mb.IsGroupedPT,
 				mb.A1,
 				apt.A1_Min,
 				CASE WHEN apt.A1_Max <= apt_auto.A1_Max THEN apt.A1_Max ELSE apt_auto.A1_Max END AS  A1_Max
