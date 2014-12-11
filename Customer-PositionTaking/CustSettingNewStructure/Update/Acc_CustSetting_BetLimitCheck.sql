@@ -18,7 +18,7 @@ AS
 /*
 	Created: 20141111@Dominic
 	Task : Check Customer's Bet Limits
-	DB: CUSTDB
+	DB: DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
@@ -39,6 +39,7 @@ BEGIN
 
 	DECLARE @ErrorSportTypeTbl TABLE (
 			SportType			SMALLINT
+			, BetType			SMALLINT
 			, MinBet			MONEY
 			, MaxBet			MONEY
 			, MaxPerMatch		MONEY
@@ -181,6 +182,7 @@ BEGIN
 	--Get 1 error row
 	INSERT INTO @ErrorSportTypeTbl
 	SELECT ISNULL(ubl.SportType, 0)
+		,ISNULL(ubl.BetType, 0)
 		, tmp.MinBet
 		, tmp.MaxBet
 		, tmp.MaxPerMatch
@@ -240,22 +242,41 @@ BEGIN
 
 	--Check all setting >=0
 	SELECT @ErrSport = @ErrSport 
-							+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-							+ ','
+					+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+						WHEN pdt.ErrMsgLevel = 2
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 3
+								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 4
+								THEN p.ProductName + ','
+						WHEN pdt.ErrMsgLevel = 5
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+									+ ' - '
+									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+					END
 	FROM @ErrorSportTypeTbl tmp
+	JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType = tmp.SportType
+			AND pdt.BetType = tmp.BetType
+			AND pdt.IsLive = 0
+			AND pdt.SettingType = 4
+	JOIN dbo.Products p
+		ON p.ProductID = pdt.ProductID
 	WHERE		tmp.MinBet	< 0
 		OR tmp.MaxBet		< 0
 		OR tmp.MaxPerMatch	< 0
 
-	IF @ErrSport <> ''
+	IF @@ROWCOUNT > 0
 	BEGIN
-		SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		IF @ErrSport <> ''
+			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E'
 					THEN 'Wrong Min bet/ Max bet/ Max per match.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language)
-				END + ' (' + @ErrSport + ')'
+				END 
+				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 			, @ErrCode = 101
 
 		RETURN
@@ -263,9 +284,26 @@ BEGIN
 
 	--Check MinBet<=MaxBet<=MaxPerMatch	
 	SELECT @ErrSport = @ErrSport 
-							+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-							+ ','
+							+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									WHEN pdt.ErrMsgLevel = 2
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
+									WHEN pdt.ErrMsgLevel = 3
+											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									WHEN pdt.ErrMsgLevel = 4
+											THEN p.ProductName + ','
+									WHEN pdt.ErrMsgLevel = 5
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+												+ ' - '
+												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								END
 	FROM @ErrorSportTypeTbl tmp
+	JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType = tmp.SportType
+			AND pdt.BetType = tmp.BetType
+			AND pdt.IsLive = 0
+			AND pdt.SettingType = 4
+	JOIN dbo.Products p
+		ON p.ProductID = pdt.ProductID
 	WHERE (
 			(
 					tmp.MinBet	<> 0
@@ -288,15 +326,17 @@ BEGIN
 			AND tmp.MinBet > tmp.MaxPerMatch
 			)
 
-	IF @ErrSport <> ''
+	IF @@ROWCOUNT > 0
 	BEGIN
-		SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		IF @ErrSport <> ''
+			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E'
 					THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language)
-				END + ' (' + @ErrSport + ')'
+				END 
+				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 			, @ErrCode = 102
 
 		RETURN
@@ -306,18 +346,46 @@ BEGIN
 	BEGIN
 		--Check if MAX(upper.minbet) > 0 and minbet>0 then minbet>=MAX(upper.minbet)
 		SELECT @ErrSport = @ErrSport 
-								+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MinMinBet) 
-								+ ','
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									WHEN pdt.ErrMsgLevel = 2
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MinMinBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 3
+											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MinMinBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 4
+											THEN p.ProductName 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MinMinBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 5
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+												+ ' - '
+												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ ':' 
+												+ convert(VARCHAR(20), tmp.MinMinBet) 
+												+ ','
+								END 
 		FROM @ErrorSportTypeTbl tmp
+		JOIN dbo.ProductSettingDetail pdt
+			ON pdt.SportType = tmp.SportType
+				AND pdt.BetType = tmp.BetType
+				AND pdt.IsLive = 0
+				AND pdt.SettingType = 4
+		JOIN dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MinMinBet > 0
 			AND tmp.MinBet	> 0
 			AND tmp.MinBet	< tmp.MinMinBet
 
-		IF @ErrSport <> ''
+		IF @@ROWCOUNT > 0
 		BEGIN
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+			IF @ErrSport <> ''
+				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
@@ -337,7 +405,8 @@ BEGIN
 								WHEN @RoleID = 2
 									THEN 10006
 								END, @Language)
-					END + ' (' + @ErrSport + ')'
+					END 
+					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 				, @ErrCode = 103
 
 			RETURN
@@ -345,18 +414,46 @@ BEGIN
 
 		--Check if MIN(upper.maxbet) > 0 and maxbet>0 then maxbet<=MIN(upper.maxbet)
 		SELECT @ErrSport = @ErrSport 
-								+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-								+ ','
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									WHEN pdt.ErrMsgLevel = 2
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 3
+											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 4
+											THEN p.ProductName 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 5
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+												+ ' - '
+												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ ':' 
+												+ convert(VARCHAR(20), tmp.MaxMaxBet) 
+												+ ','
+								END 
 		FROM @ErrorSportTypeTbl tmp
+		JOIN dbo.ProductSettingDetail pdt
+			ON pdt.SportType = tmp.SportType
+				AND pdt.BetType = tmp.BetType
+				AND pdt.IsLive = 0
+				AND pdt.SettingType = 4
+		JOIN dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxBet > 0
 			AND tmp.MaxBet	> 0
 			AND tmp.MaxBet	> tmp.MaxMaxBet
 
-		IF @ErrSport <> ''
+		IF @@ROWCOUNT > 0
 		BEGIN
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+			IF @ErrSport <> ''
+				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
@@ -376,7 +473,8 @@ BEGIN
 								WHEN @RoleID = 2
 									THEN 10007
 								END, @Language)
-					END + ' (' + @ErrSport + ')'
+					END 
+					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 				, @ErrCode = 104
 
 			RETURN
@@ -384,18 +482,46 @@ BEGIN
 
 		--Check if MIN(upper.maxpermatch)> 0 and maxpermatch>0 then maxpermatch<=MIN(upper.maxpermatch)
 		SELECT @ErrSport = @ErrSport 
-								+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-								+ ','
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									WHEN pdt.ErrMsgLevel = 2
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 3
+											THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 4
+											THEN p.ProductName 
+											+ ':' 
+											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
+											+ ','
+									WHEN pdt.ErrMsgLevel = 5
+											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+												+ ' - '
+												+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ ':' 
+												+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
+												+ ','
+								END 
 		FROM @ErrorSportTypeTbl tmp
+		JOIN dbo.ProductSettingDetail pdt
+			ON pdt.SportType = tmp.SportType
+				AND pdt.BetType = tmp.BetType
+				AND pdt.IsLive = 0
+				AND pdt.SettingType = 4
+		JOIN dbo.Products p
+			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxPerMatch	> 0
 			AND tmp.MaxPerMatch		> 0
 			AND tmp.MaxPerMatch		> tmp.MaxMaxPerMatch
 
-		IF @ErrSport <> ''
+		IF @@ROWCOUNT > 0
 		BEGIN
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+			IF @ErrSport <> ''
+				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 			SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
@@ -415,7 +541,8 @@ BEGIN
 								WHEN @RoleID = 2
 									THEN 10008
 								END, @Language)
-					END + ' (' + @ErrSport + ')'
+					END 
+					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 				, @ErrCode = 105
 
 			RETURN

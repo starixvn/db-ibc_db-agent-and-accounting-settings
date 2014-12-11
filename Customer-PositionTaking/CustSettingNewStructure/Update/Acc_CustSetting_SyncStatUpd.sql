@@ -11,7 +11,7 @@ AS
 /*  
   Created: Dominic  
   Date: 2014-12-04  
-  DB: DBTXN/BODB02  
+  DB: DBCUST/CUSTDB  
   Task: Update synchronize status on a product 
     
   Parameters Explanation:  
@@ -70,11 +70,8 @@ BEGIN
 	BEGIN
 		SELECT @ErrCode = @ErrCode 
 							+ cast(@ErrCode_cur AS VARCHAR(300)) 
-							+ CHAR(7)
 			, @ErrMsg = @ErrMsg 
-							+ @ErrMsg_Cur 
-							+ CHAR(7)
-
+							+ @ErrMsg_Cur
 		RETURN
 	END
 
@@ -99,13 +96,6 @@ BEGIN
 
 	EXEC sp_xml_removedocument @iDoc
 
-	--Check disable user  
-	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
-		, @ErrCode = @ErrCode OUTPUT
-		, @ErrMsg = @ErrMsg OUTPUT
-
-	IF @ErrCode <> 0
-		RETURN
 
 	--Get roleid
 	SELECT @RoleID = RoleID
@@ -130,12 +120,12 @@ BEGIN
 
 	--Get old value
 	UPDATE main
-	SET main.OldSync = ISNULL(stt.IsSync, 0)
+	SET main.OldSync = stt.IsSync
 	FROM @SyncStatusTbl main
-	INNER JOIN dbo.CustProductStatus stt
-		ON main.SportType = stt.SportType
-			AND main.BetType = stt.BetType
-			AND stt.CustID = @custid
+		INNER JOIN dbo.CustProductStatus stt
+			ON main.SportType = stt.SportType
+				AND main.BetType = stt.BetType
+				AND stt.CustID = @custid
 
 	--Get upline CustID
 	SELECT @UplineCustID = CASE 
@@ -153,12 +143,12 @@ BEGIN
 	BEGIN
 		--Get upline's sync status
 		UPDATE main
-		SET main.UplineSync = ISNULL(stt.IsSync, 0)
+		SET main.UplineSync = stt.IsSync
 		FROM @SyncStatusTbl main
-		INNER JOIN dbo.CustProductStatus stt
-			ON main.SportType = stt.SportType
-				AND main.BetType = stt.BetType
-				AND stt.CustID = @UplineCustID
+			INNER JOIN dbo.CustProductStatus stt
+				ON main.SportType = stt.SportType
+					AND main.BetType = stt.BetType
+					AND stt.CustID = @UplineCustID
 
 		--Update Allow2Update
 		UPDATE @SyncStatusTbl
@@ -166,19 +156,30 @@ BEGIN
 	END
 
 	--Get error sport
-	SELECT @ErrSport = @ErrSport + [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
+	SELECT @ErrSport = ''
+	SELECT @ErrSport = @ErrSport + p.ProductName + ','
 	FROM @SyncStatusTbl tmp
+	JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType = tmp.SportType
+			AND pdt.BetType = tmp.BetType
+			AND pdt.IsLive = 0
+			AND pdt.SettingType = 4
+	JOIN dbo.Products p
+		ON p.ProductID = pdt.ProductID
 	WHERE tmp.ALlow2Update = 0
 
-	SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-	IF @ErrSport <> ''
+	IF @@ROWCOUNT > 0
 	BEGIN
+		IF @ErrSport <> ''
+			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+			
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E'
 					THEN 'Cannot synchronize this product because this account''s upline not synchronize setting.'
 				ELSE [dbo].[f_Get_MsgNamebyMsgID](6032, @Language)
-				END + ' (' + @ErrSport + ')'
+				END 
+				+ 
+				CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 			, @ErrCode = 102
 
 		RETURN
@@ -186,7 +187,7 @@ BEGIN
 
 	--Update data
 	UPDATE main
-	SET main.IsSync = ISNULL(tmp.IsSync, main.IsSync)
+	SET main.IsSync = tmp.IsSync
 	FROM dbo.CustProductStatus main
 	INNER JOIN @SyncStatusTbl tmp
 		ON main.SportType = tmp.SportType
@@ -204,8 +205,8 @@ BEGIN
 
 		IF @ErrCode_Cur > 0
 		BEGIN
-			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-				, @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300))
+				, @ErrMsg = @ErrMsg + @ErrMsg_Cur
 
 			RETURN
 		END

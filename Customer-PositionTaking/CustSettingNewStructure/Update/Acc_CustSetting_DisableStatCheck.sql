@@ -17,7 +17,7 @@ AS
 /*
 	Created: 20141110@Dominic
 	Task : Validate enabled status
-	DB: CUSTDB
+	DB: DBCUST/CUSTDB
 	Original:
 
 	Param's Explanation:
@@ -114,21 +114,40 @@ BEGIN
 			)
 		RETURN
 
+	SELECT @ErrSport = ''
 	SELECT @ErrSport = @ErrSport 
-						+ [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-						+ ','
+				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+						WHEN pdt.ErrMsgLevel = 2
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 3
+								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 4
+								THEN p.ProductName + ','
+						WHEN pdt.ErrMsgLevel = 5
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+									+ ' - '
+									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+					END
 	FROM @ErrorSportTypeTbl tmp
+	JOIN dbo.ProductSettingDetail pdt
+		ON pdt.SportType = tmp.SportType
+			AND pdt.BetType = tmp.BetType
+			AND pdt.IsLive = 0
+			AND pdt.SettingType = 4
+	JOIN dbo.Products p
+		ON p.ProductID = pdt.ProductID
 
-	IF @ErrSport <> ''
+	IF @@ROWCOUNT > 0
 	BEGIN
-		SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		IF @ErrSport <> ''
+			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 		SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 'Account disabled for this product. Unable to edit downlines.'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](60031, @Language)
 				END 
-				+ ' (' + @ErrSport + ')'
+				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 			, @ErrCode = 101
 	END
 END

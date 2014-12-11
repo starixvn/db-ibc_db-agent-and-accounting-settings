@@ -67,29 +67,42 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 
 	SELECT @ErrSport = @ErrSport 
-						+ [dbo].[f_Get_SportNameBySporttype](dtl.SportType, @Language) 
-						+ ','
+						+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+						WHEN pdt.ErrMsgLevel = 2
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 3
+								THEN [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+						WHEN pdt.ErrMsgLevel = 4
+								THEN p.ProductName + ','
+						WHEN pdt.ErrMsgLevel = 5
+								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
+									+ ' - '
+									+ [dbo].[dbo.F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+					END
 	FROM @NewDiscountTbl tmp
 	INNER JOIN dbo.ProductSettingDetail dtl
 		ON dtl.SportType	= tmp.SportType
 			AND dtl.BetType = tmp.BetType
-	WHERE	dtl.SettingType = 3
-		AND dtl.IsLive		= 0
-		AND 
-		(	tmp.Discount		< 0
-			OR	tmp.Discount	> dtl.maxDiscount
-		)
+			AND dtl.SettingType = 3
+			AND dtl.IsLive		= 0
+	JOIN dbo.Products p
+		ON p.ProductID = pdt.ProductID
+	WHERE 
+	(	tmp.Discount		< 0
+		OR	tmp.Discount	> dtl.maxDiscount
+	)
 
-	IF @ErrSport <> ''
+	IF @@ROWCOUNT > 0
 	BEGIN
-		SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
+		IF @ErrSport <> ''
+			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
 
 		SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 'Invalid commission rate.'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](1, @Language)
 				END 
-				+ ' (' + @ErrSport + ')'
+				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
 			, @ErrCode = 101
 	END
 END
