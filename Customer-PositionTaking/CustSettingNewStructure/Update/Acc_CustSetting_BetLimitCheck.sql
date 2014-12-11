@@ -246,13 +246,13 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 2
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 3
-								THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 4
 								THEN p.ProductName + ','
 						WHEN pdt.ErrMsgLevel = 5
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 									+ ' - '
-									+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
@@ -288,13 +288,13 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 2
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 									WHEN pdt.ErrMsgLevel = 4
 											THEN p.ProductName + ','
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 								END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
@@ -353,7 +353,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MinMinBet) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MinMinBet) 
 											+ ','
@@ -365,7 +365,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MinMinBet) 
 												+ ','
@@ -421,7 +421,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 											+ ','
@@ -433,7 +433,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 												+ ','
@@ -489,7 +489,7 @@ BEGIN
 											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 											+ ','
 									WHEN pdt.ErrMsgLevel = 3
-											THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 											+ ':' 
 											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 											+ ','
@@ -501,7 +501,7 @@ BEGIN
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
-												+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
+												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
 												+ ':' 
 												+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 												+ ','

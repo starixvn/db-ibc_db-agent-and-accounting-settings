@@ -120,13 +120,13 @@ BEGIN
 						WHEN pdt.ErrMsgLevel = 2
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 3
-								THEN [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+								THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 						WHEN pdt.ErrMsgLevel = 4
 								THEN p.ProductName + ','
 						WHEN pdt.ErrMsgLevel = 5
 								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 									+ ' - '
-									+ [dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
+									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
 	JOIN dbo.ProductSettingDetail pdt
