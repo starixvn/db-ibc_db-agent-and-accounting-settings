@@ -349,27 +349,21 @@ BEGIN
 								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
 									WHEN pdt.ErrMsgLevel = 2
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MinMinBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 3
 											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MinMinBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 4
 											THEN p.ProductName 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MinMinBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
 												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-												+ ':' 
-												+ convert(VARCHAR(20), tmp.MinMinBet) 
-												+ ','
 								END 
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									ELSE
+										 ':' 
+										+ convert(VARCHAR(20), tmp.MinMinBet) 
+										+ ','
+								END
 		FROM @ErrorSportTypeTbl tmp
 		JOIN dbo.ProductSettingDetail pdt
 			ON pdt.SportType = tmp.SportType
@@ -417,27 +411,21 @@ BEGIN
 								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
 									WHEN pdt.ErrMsgLevel = 2
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 3
 											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 4
 											THEN p.ProductName 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
 												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-												+ ':' 
-												+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-												+ ','
 								END 
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									ELSE
+										 ':' 
+										+ convert(VARCHAR(20), tmp.MaxMaxBet) 
+										+ ','
+								END
 		FROM @ErrorSportTypeTbl tmp
 		JOIN dbo.ProductSettingDetail pdt
 			ON pdt.SportType = tmp.SportType
@@ -485,27 +473,21 @@ BEGIN
 								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
 									WHEN pdt.ErrMsgLevel = 2
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 3
 											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 4
 											THEN p.ProductName 
-											+ ':' 
-											+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-											+ ','
 									WHEN pdt.ErrMsgLevel = 5
 											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
 												+ ' - '
 												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-												+ ':' 
-												+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-												+ ','
 								END 
+								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
+									ELSE
+										 ':' 
+										+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
+										+ ','
+								END
 		FROM @ErrorSportTypeTbl tmp
 		JOIN dbo.ProductSettingDetail pdt
 			ON pdt.SportType = tmp.SportType
