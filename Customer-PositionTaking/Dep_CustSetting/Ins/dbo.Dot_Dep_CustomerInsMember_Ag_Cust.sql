@@ -155,6 +155,7 @@ declare @endRun datetime
 declare @duration int
 set @startRun = getdate()
 
+
 ---------------------------------
 --20100922@Thien:   1st phrase - Get rid of members' information for Licensee site (first name, last name, email).
 --                  Will remove these params once Brian's side removes the calling from Web code.
