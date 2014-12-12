@@ -3,6 +3,8 @@
 	@PT					VARCHAR(MAX),
 	@updateallmembers	BIT = 0,
 	@newSuperPT			SMALLINT = 0,	
+	
+	@SubAccID			INT = 0,
 	@UserID				INT = 0,    
     @Language			VARCHAR(2) = 'E',
     @IP					VARCHAR(15)='',
@@ -133,11 +135,12 @@ BEGIN
    --log old data
 	SET @xml =(
 		SELECT @custid AS '@ci'
+				,f_GetSubUsername(@SubAccID) AS '@su'
 				,@userid AS '@ui'
 				,@language AS '@l'
 				,@IP AS '@Ip'
 				,@updateallmembers AS '@ua'
-				,@SuperPT AS '@s1'
+				,@newSuperPT AS '@s1'
 				,(
 					SELECT cs.sporttype AS '@s'
 						,cs.bettype AS '@b'
@@ -625,7 +628,7 @@ BEGIN
             @PT = @AutoPT,
                             
             @updateallmembers = @updateallmembers,
-            @newspositiontaking = @newSuperPT,
+            @newspositiontaking = @newSuperPT
             
          EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend , 
@@ -637,11 +640,12 @@ BEGIN
 	 -- Write log after update
 	SET @xml = (
 			SELECT @custid AS '@ci'
+					,f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@langue AS '@l'
 					,@IP AS '@Ip'
 					,@updateallmembers AS '@ua'
-					,@SuperPT AS '@s1'
+					,@newSuperPT AS '@s1'
 					,(
 						SELECT cs.sporttype AS '@s'
 							,cs.bettype AS '@b'

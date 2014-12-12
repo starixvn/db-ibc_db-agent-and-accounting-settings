@@ -619,6 +619,7 @@ Begin DataProject = "AgentPT"
             Script = "dbo.SPTest.sql"
          End
          Begin Folder = "Update"
+            Script = "dbo.Acc_CustSetting_AgentPTUpd.sql"
             Script = "dbo.Acc_CustSetting_MasterPTUpd.sql"
             Script = "dbo.Acc_CustSetting_SuperPTUpd.sql"
             Script = "dbo.Acc_SuperPTonMemberUpd.sql"
