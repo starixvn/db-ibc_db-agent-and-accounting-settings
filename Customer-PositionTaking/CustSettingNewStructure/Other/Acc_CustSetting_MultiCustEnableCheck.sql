@@ -12,8 +12,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @IsEnable BIT
-			,@UserName NVARCHAR(50)=NULL
+	DECLARE @UserNames NVARCHAR(4000)=''
 			
 	DECLARE @tblCust TABLE(CustID INT)
 	
@@ -22,19 +21,20 @@ BEGIN
 	SELECT CONVERT(INT,val) FROM dbo.strSplit(@CustIDList,',') 
 
 
-	SELECT @isEnable = ISNULL(ci.enabled, 0)
-			,@UserName=ci.username
+	SELECT TOP 100 @UserNames = @UserNames + ci.username + ','
 	FROM custinfo ci WITH (NOLOCK)
 	JOIN @tblCust tmp ON tmp.CustID=ci.CustID
 	WHERE ISNULL(ci.enabled, 0)=0
 
 
-	IF @isEnable = 0
-		OR @@rowcount = 0
+	IF @@ROWCOUNT > 0
 	BEGIN
+		IF @UserNames <> ''
+			SET @UserNames = LEFT(@UserNames, LEN(@UserNames) - 1)
+			
 		SELECT @ErrMsg = 'Some accounts were disabled!'
-					+ CASE WHEN @UserName IS NOT NULL AND @UserName <> ''
-							THEN '('+@UserName+')'
+					+ CASE WHEN @UserNames IS NOT NULL AND @UserNames <> ''
+							THEN '('+@UserNames+')'
 						ELSE ''
 					END
 			, @ErrCode = 600
