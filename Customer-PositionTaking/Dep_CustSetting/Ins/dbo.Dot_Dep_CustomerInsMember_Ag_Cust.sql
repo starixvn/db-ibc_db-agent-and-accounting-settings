@@ -1,10 +1,5 @@
 USE [CustDB]
 GO
-
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -140,6 +135,7 @@ Revisions:
 	- 20140812@Patrick: Change the algorithm generate system username 
 	- 20140819@Victor: Update AG Casino group for member
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
+	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -903,9 +899,10 @@ SELECT @ugroup = 'a'
 --20131230@Jim: Hard-code the ugroup for Asiabet88 
 --				 Adjust all USD, EUR  currency members to 6 pts line (group B), apply this to all existing and future members
 --20141103@Jim: fix bug alog member's ugroup are wrong  
+--20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 
-SELECT @ugroup = CASE WHEN @site = 'alog' AND  @currency IN (3,12) THEN 'd'  
-					  WHEN @site = 'Asiabet88' AND  @currency IN (3,6) THEN 'b' 
+SELECT @ugroup = CASE WHEN @site = 'Asiabet88' AND  @currency IN (3,6) THEN 'b' 
+					  --WHEN @site = 'alog' AND  @currency IN (3,12) THEN 'd'  
 					  ELSE 'a'
 					  END
  
