@@ -137,6 +137,7 @@ Revisions:
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 
+
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
