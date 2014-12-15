@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_00_SettingRenovation] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_00] 
 	@custid int = 0,
 	@recommend int = 0,
 	@mrecommend int = 0,

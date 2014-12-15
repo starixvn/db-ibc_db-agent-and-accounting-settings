@@ -71,6 +71,10 @@ BEGIN
     IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting3rd','CustSettingGame', 'custinfo', 'customer', 'Dep_CustSuper') AND type = 'U') < 5
         RETURN
     
+    /*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+    IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustDiscount3rd_Member','CustDiscount3rd_Agent') AND type = 'U') < 2
+        RETURN
+    /*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
     IF @Mode = 'NumberGame'
     BEGIN
         IF @RoleId = 4
@@ -1422,7 +1426,9 @@ BEGIN
 		
 		IF @Discount_XML IS NULL OR @Discount_XML='' RETURN
 	
-		--Parse XML
+		--Parse XML	
+		DECLARE @iDoc INT
+		
 		EXEC sp_xml_preparedocument @iDoc OUTPUT, @Discount_XML
 		
 		

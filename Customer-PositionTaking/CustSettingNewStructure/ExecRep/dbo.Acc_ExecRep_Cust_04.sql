@@ -56,6 +56,12 @@ IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND t
 	AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
 	RETURN
 	
+	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustProductStatus') AND type = 'U') < 1
+		RETURN
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
+	
 if @action = 'VirtualMultiplier'
 BEGIN
 	if @roleid = 4
