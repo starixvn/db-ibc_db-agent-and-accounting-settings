@@ -371,6 +371,7 @@ BEGIN
 			SELECT @CustID AS '@c'
 				, @UserID AS '@u'
 				, @IP AS '@i'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @Language AS '@l'
 				, (
 					SELECT SportType AS '@s'
@@ -388,6 +389,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustID AS '@c'
 				, @UserID AS '@u'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP AS '@i'
 				, @Language AS '@l'
 				, (

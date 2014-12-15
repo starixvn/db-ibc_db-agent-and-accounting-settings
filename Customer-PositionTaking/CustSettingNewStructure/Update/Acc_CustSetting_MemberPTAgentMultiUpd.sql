@@ -404,6 +404,7 @@ BEGIN
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
 			, @CustIDList		= @CustIDList
+			, @SubAccID			= @SubAccID
 			, @ActionID			= 450
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML
@@ -414,6 +415,7 @@ BEGIN
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP_MultiCust 
 			@UserID				= @UserID
 			, @CustIDList		= @CustIDList
+			, @SubAccID			= @SubAccID
 			, @ActionID			= 450
 			, @NewPT_XML		= @PT_XML
 			, @OldPT_XML		= @Old_PT_XML

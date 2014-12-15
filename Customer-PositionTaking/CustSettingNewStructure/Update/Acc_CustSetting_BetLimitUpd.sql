@@ -7,6 +7,7 @@ GO
 ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitUpd] 
 	  @CustID		INT
 	, @BetLimit_XML VARCHAR(MAX)
+	, @SubAccID		INT				= 0
 	, @UserID		INT
 	, @IP			VARCHAR(50)		= ''
 	, @Language		VARCHAR(20)		= 'E'
@@ -236,6 +237,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustID	AS '@c'
 				, @UserID	AS '@u'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP		AS '@i'
 				, @Language AS '@l'
 				, (
@@ -255,6 +257,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustID	AS '@c'
 				, @UserID	AS '@u'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP		AS '@i'
 				, @Language AS '@l'
 				, (

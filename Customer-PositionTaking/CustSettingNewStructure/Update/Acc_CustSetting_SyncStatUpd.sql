@@ -216,7 +216,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustID AS '@c'
 				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@n'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP AS '@i'
 				, @Language AS '@l'
 				, (
@@ -234,7 +234,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustID AS '@c'
 				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@n'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP AS '@i'
 				, @Language AS '@l'
 				, (
