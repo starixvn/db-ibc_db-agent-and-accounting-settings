@@ -109,7 +109,7 @@ BEGIN
 							THEN NULL
 						ELSE bl.MaxPerMatch
 					END) AS MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Agent bl
+		FROM dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= bl.SportType
 				AND tmp.BetType = bl.BetType
@@ -138,7 +138,7 @@ BEGIN
 							THEN NULL
 						ELSE bl.MaxPerMatch
 					END) AS MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Agent bl
+		FROM dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= bl.SportType
 				AND tmp.BetType = bl.BetType
@@ -168,7 +168,7 @@ BEGIN
 							THEN NULL
 						ELSE bl.MaxPerMatch
 					END) AS MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Agent bl
+		FROM dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= bl.SportType
 				AND tmp.BetType = bl.BetType
@@ -255,12 +255,12 @@ BEGIN
 									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt
+	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 2
-	JOIN DB02.bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE		tmp.MinBet	< 0
 		OR tmp.MaxBet		< 0
@@ -297,12 +297,12 @@ BEGIN
 												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 								END
 	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt
+	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 2
-	JOIN DB02.bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE (
 			(
@@ -362,12 +362,12 @@ BEGIN
 								+ convert(VARCHAR(20), tmp.MinMinBet) 
 								+ ','
 		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MinMinBet > 0
 			AND tmp.MinBet	> 0
@@ -421,12 +421,12 @@ BEGIN
 								+ convert(VARCHAR(20), tmp.MaxMaxBet) 
 								+ ','
 		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxBet > 0
 			AND tmp.MaxBet	> 0
@@ -480,12 +480,12 @@ BEGIN
 								+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
 								+ ','
 		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = tmp.SportType
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxPerMatch	> 0
 			AND tmp.MaxPerMatch		> 0

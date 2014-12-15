@@ -164,7 +164,7 @@ BEGIN
 		, main.IsAutoSuperPT =cs.IsAutoSuperPT
 		, main.AutoSuperPT = cs.AutoSuperPT
 	FROM @NewPTTble main
-	JOIN dbo.CustPTGroupSetting3rd_Member cs
+	JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -184,7 +184,7 @@ BEGIN
 			, cs.IsAutoMasterPT 
 			, cs.AutoMasterPT 
 	FROM @NewPTTble main
-	JOIN dbo.CustPTGroupSetting3rd_Member cs
+	JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -222,12 +222,12 @@ BEGIN
 							ELSE main.AgentPT
 						END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=main.SportType
 				AND mpt.BetType=main.BetType
 				AND mpt.IsLive=main.IsLive
 				AND mpt.CustID=@MasterID
-	JOIN dbo.CustPTSetting3rd_Agent spt
+	JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=main.SportType
 				AND spt.BetType=main.BetType
 				AND spt.IsLive=main.IsLive
@@ -238,7 +238,7 @@ BEGIN
 	UPDATE main
 	SET main.MasterPT = CASE WHEN main.MasterPT < mpt.MinPT - main.AgentPT THEN mpt.MinPT - main.AgentPT ELSE main.MasterPT END
 	FROM @NewPTTble main
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=main.SportType
 					AND mpt.BetType=main.BetType
 					AND mpt.IsLive=main.IsLive
@@ -267,12 +267,12 @@ BEGIN
 							ELSE mpt.MasterPT - main.AgentPT
 						END				
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent apt
+	JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 		ON apt.SportType=main.SportType
 				AND apt.BetType=main.BetType
 				AND apt.IsLive=main.IsLive
 				AND apt.CustID=@AgentID
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=main.SportType
 				AND mpt.BetType=main.BetType
 				AND mpt.IsLive=main.IsLive
@@ -295,12 +295,12 @@ BEGIN
 							ELSE spt.SuperPT - main.MasterPT - main.AgentPT
 						END				
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent spt
+	JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=main.SportType
 				AND spt.BetType=main.BetType
 				AND spt.IsLive=main.IsLive
 				AND spt.CustID=@SuperID
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=main.SportType
 				AND mpt.BetType=main.BetType
 				AND mpt.IsLive=main.IsLive
@@ -326,12 +326,12 @@ BEGIN
 							ELSE main.SuperPT
 						END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent spt
+	JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=main.SportType
 				AND spt.BetType=main.BetType
 				AND spt.IsLive=main.IsLive
 				AND spt.CustID=@SuperID
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=main.SportType
 				AND mpt.BetType=main.BetType
 				AND mpt.IsLive=main.IsLive
@@ -341,8 +341,8 @@ BEGIN
 	
 	--Get total members that belong to Group
 	SELECT @TotalCount = ISNULL(COUNT(1),0)
-	FROM dbo.CustSettingMode3rd mode
-	JOIN dbo.CustInfo ci ON ci.CustID=mode.CustID
+	FROM dbo.CustSettingMode3rd mode WITH (NOLOCK)
+	JOIN dbo.CustInfo ci WITH (NOLOCK) ON ci.CustID=mode.CustID
 	WHERE ci.recommend=@AgentID AND mode.IsGrouped=1
 	
 	--Get total members that are different from group

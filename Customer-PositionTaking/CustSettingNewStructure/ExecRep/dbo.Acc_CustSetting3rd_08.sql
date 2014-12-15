@@ -887,7 +887,7 @@ SET NOCOUNT ON
 		INSERT @RemainCustTbl
 		SELECT ci.CustID
 		FROM dbo.Custinfo ci WITH(NOLOCK)
-		JOIN dbo.CustSettingMode3rd cm
+		JOIN dbo.CustSettingMode3rd cm WITH(NOLOCK)
 		ON cm.CustID=ci.CustID
 		LEFT JOIN @tblCust cust ON cust.CustID=ci.CustID
 		WHERE ci.roleID=1 AND ci.recommend=@recommend
@@ -966,7 +966,7 @@ SET NOCOUNT ON
 					ON  npt.SportType=main.SportType
 					AND npt.BetType=main.BetType
 					AND npt.IsLive=main.IsLive
-				JOIN dbo.CustPTSetting3rd_Agent apt 
+				JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 					ON  apt.SportType=main.SportType
 					AND apt.BetType=main.BetType
 					AND apt.IsLive=main.IsLive
@@ -983,7 +983,7 @@ SET NOCOUNT ON
 					ON  npt.SportType=main.SportType
 					AND npt.BetType=main.BetType
 					AND npt.IsLive=main.IsLive
-				JOIN dbo.CustPTSetting3rd_Agent mpt 
+				JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 					ON  mpt.SportType=main.SportType
 					AND mpt.BetType=main.BetType
 					AND mpt.IsLive=main.IsLive
@@ -1001,12 +1001,12 @@ SET NOCOUNT ON
 					ELSE main.MasterPT
 					END
 			FROM @tmpTbl main
-			JOIN dbo.CustPTSetting3rd_Agent mpt
+			JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType=main.SportType
 						AND mpt.BetType=main.BetType
 						AND mpt.IsLive=main.IsLive
 						AND mpt.CustID=@mrecommend
-			JOIN dbo.CustPTSetting3rd_Agent apt
+			JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType=main.SportType
 						AND apt.BetType=main.BetType
 						AND apt.IsLive=main.IsLive
@@ -1017,7 +1017,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.AgentPT = apt.MaxPT
 			FROM @tmpTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1028,7 +1028,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.MasterPT = mpt.MinPT - main.AgentPT
 			FROM @tmpTbl main
-			JOIN dbo.CustPTSetting3rd_Agent mpt
+			JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 							ON mpt.SportType=main.SportType
 									AND mpt.BetType=main.BetType
 									AND mpt.IsLive=main.IsLive
@@ -1062,12 +1062,12 @@ SET NOCOUNT ON
 					ELSE @apos
 					END
 			FROM @tmpTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+			INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType = main.SportType
 					AND mpt.BetType = main.BetType
 					AND mpt.IsLive = main.IsLive
 					AND mpt.CustID = @mrecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1078,7 +1078,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.SuperPT = spt.MinPT - main.MasterPT - main.AgentPT
 			FROM @tmpTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent spt
+			INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 				ON spt.SportType = main.SportType
 					AND spt.BetType = main.BetType
 					AND spt.IsLive = main.IsLive
@@ -1138,17 +1138,17 @@ SET NOCOUNT ON
 					ELSE @apos
 					END
 			FROM @tmpTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent spt
+			INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 				ON spt.SportType = main.SportType
 					AND spt.BetType = main.BetType
 					AND spt.IsLive = main.IsLive
 					AND spt.CustID = @srecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+			INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType = main.SportType
 					AND mpt.BetType = main.BetType
 					AND mpt.IsLive = main.IsLive
 					AND mpt.CustID = @mrecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1175,8 +1175,8 @@ SET NOCOUNT ON
 						grpt.IsAutoSuperPT,
 						grpt.AutoSuperPT
 				FROM @tblCust cust
-				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
+				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1188,7 +1188,7 @@ SET NOCOUNT ON
 				SET main.SuperPT=npt.SuperPT,
 					main.MasterPT=npt.MasterPT,
 					main.AgentPT=npt.AgentPT
-				FROM dbo.CustPTSetting3rd_Member main
+				FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust ON main.CustID=cust.CustID
 				JOIN @tmpTbl npt ON  npt.SportType=main.SportType
 				AND npt.BetType=main.BetType
@@ -1200,14 +1200,14 @@ SET NOCOUNT ON
 				--Update setting mode for affected CustIDs
 				UPDATE main
 				SET main.IsGrouped=0
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
 				
 				--Update setting mode for reamining CustIDs
 				UPDATE main
 				SET main.IsGrouped=1
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @RemainCustTbl cust
 				ON cust.CustID=main.CustID
 			END
@@ -1228,8 +1228,8 @@ SET NOCOUNT ON
 						grpt.IsAutoSuperPT,
 						grpt.AutoSuperPT
 				FROM @RemainCustTbl cust
-				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
+				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1240,11 +1240,11 @@ SET NOCOUNT ON
 				UPDATE main
 				SET main.SuperPT=npt.SuperPT,
 					main.MasterPT=npt.MasterPT
-				FROM dbo.CustPTGroupSetting3rd_Member main
+				FROM dbo.CustPTGroupSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tmpTbl npt ON  npt.SportType=main.SportType
 				AND npt.BetType=main.BetType
 				AND npt.IsLive=main.IsLive
-				JOIN dbo.CustPTSetting3rd_Agent apt 
+				JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 					ON  apt.SportType=main.SportType
 					AND apt.BetType=main.BetType
 					AND apt.IsLive=main.IsLive
@@ -1259,14 +1259,14 @@ SET NOCOUNT ON
 				--Update setting mode for remaing Grouped CustIDs
 				UPDATE main
 				SET main.IsGrouped=0
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @RemainCustTbl cust
 				ON cust.CustID=main.CustID
 				
 				--Update setting mode for affected CustIDs
 				UPDATE main
 				SET main.IsGrouped=1
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
 			END
@@ -1290,8 +1290,8 @@ SET NOCOUNT ON
 						grpt.IsAutoSuperPT,
 						grpt.AutoSuperPT
 				FROM @tblCust cust
-				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
+				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1303,7 +1303,7 @@ SET NOCOUNT ON
 				SET main.SuperPT=npt.SuperPT,
 					main.MasterPT=npt.MasterPT,
 					main.AgentPT=npt.AgentPT
-				FROM dbo.CustPTSetting3rd_Member main
+				FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust ON main.CustID=cust.CustID
 				JOIN @NewPTTble npt ON  npt.SportType=main.SportType
 				AND npt.BetType=main.BetType
@@ -1317,14 +1317,14 @@ SET NOCOUNT ON
 				--Update setting mode for affected CustIDs
 				UPDATE main
 				SET main.IsGrouped=0
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
 				
 				--Update setting mode for reamining CustIDs
 				UPDATE main
 				SET main.IsGrouped=1
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @RemainCustTbl cust
 				ON cust.CustID=main.CustID
 			END
@@ -1345,8 +1345,8 @@ SET NOCOUNT ON
 						grpt.IsAutoSuperPT,
 						grpt.AutoSuperPT
 				FROM @RemainCustTbl cust
-				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
+				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1358,7 +1358,7 @@ SET NOCOUNT ON
 				SET main.SuperPT=npt.SuperPT,
 					main.MasterPT=npt.MasterPT,
 					main.AgentPT=npt.AgentPT
-				FROM dbo.CustPTGroupSetting3rd_Member main
+				FROM dbo.CustPTGroupSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 				JOIN @NewPTTble npt ON  npt.SportType=main.SportType
 				AND npt.BetType=main.BetType
 				AND npt.IsLive=main.IsLive
@@ -1373,14 +1373,14 @@ SET NOCOUNT ON
 				--Update setting mode for remaing Grouped CustIDs
 				UPDATE main
 				SET main.IsGrouped=0
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @RemainCustTbl cust
 				ON cust.CustID=main.CustID
 				
 				--Update setting mode for affected CustIDs
 				UPDATE main
 				SET main.IsGrouped=1
-				FROM dbo.CustSettingMode3rd main
+				FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
 				JOIN @tblCust cust
 				ON cust.CustID=main.CustID
 			END
@@ -1471,7 +1471,7 @@ SET NOCOUNT ON
 					ON  npt.SportType=main.SportType
 					AND npt.BetType=main.BetType
 					AND npt.IsLive=main.IsLive
-				JOIN dbo.CustPTSetting3rd_Agent apt 
+				JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 					ON  apt.SportType=main.SportType
 					AND apt.BetType=main.BetType
 					AND apt.IsLive=main.IsLive
@@ -1488,7 +1488,7 @@ SET NOCOUNT ON
 					ON  npt.SportType=main.SportType
 					AND npt.BetType=main.BetType
 					AND npt.IsLive=main.IsLive
-				JOIN dbo.CustPTSetting3rd_Agent mpt 
+				JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 					ON  mpt.SportType=main.SportType
 					AND mpt.BetType=main.BetType
 					AND mpt.IsLive=main.IsLive
@@ -1506,12 +1506,12 @@ SET NOCOUNT ON
 					ELSE main.MasterPT
 					END
 			FROM @tempTbl main
-			JOIN dbo.CustPTSetting3rd_Agent mpt
+			JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType=main.SportType
 						AND mpt.BetType=main.BetType
 						AND mpt.IsLive=main.IsLive
 						AND mpt.CustID=@mrecommend
-			JOIN dbo.CustPTSetting3rd_Agent apt
+			JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType=main.SportType
 						AND apt.BetType=main.BetType
 						AND apt.IsLive=main.IsLive
@@ -1522,7 +1522,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.AgentPT = apt.MaxPT
 			FROM @tempTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1533,7 +1533,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.MasterPT = mpt.MinPT - main.AgentPT
 			FROM @tempTbl main
-			JOIN dbo.CustPTSetting3rd_Agent mpt
+			JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 							ON mpt.SportType=main.SportType
 									AND mpt.BetType=main.BetType
 									AND mpt.IsLive=main.IsLive
@@ -1567,12 +1567,12 @@ SET NOCOUNT ON
 					ELSE @apos
 					END
 			FROM @tempTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+			INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType = main.SportType
 					AND mpt.BetType = main.BetType
 					AND mpt.IsLive = main.IsLive
 					AND mpt.CustID = @mrecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1583,7 +1583,7 @@ SET NOCOUNT ON
 			UPDATE main
 			SET main.SuperPT = spt.MinPT - main.MasterPT - main.AgentPT
 			FROM @tempTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent spt
+			INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 				ON spt.SportType = main.SportType
 					AND spt.BetType = main.BetType
 					AND spt.IsLive = main.IsLive
@@ -1643,17 +1643,17 @@ SET NOCOUNT ON
 					ELSE @apos
 					END
 			FROM @tempTbl main
-			INNER JOIN dbo.CustPTSetting3rd_Agent spt
+			INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 				ON spt.SportType = main.SportType
 					AND spt.BetType = main.BetType
 					AND spt.IsLive = main.IsLive
 					AND spt.CustID = @srecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+			INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 				ON mpt.SportType = main.SportType
 					AND mpt.BetType = main.BetType
 					AND mpt.IsLive = main.IsLive
 					AND mpt.CustID = @mrecommend
-			INNER JOIN dbo.CustPTSetting3rd_Agent apt
+			INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 				ON apt.SportType = main.SportType
 					AND apt.BetType = main.BetType
 					AND apt.IsLive = main.IsLive
@@ -1665,7 +1665,7 @@ SET NOCOUNT ON
 			SET main.SuperPT=npt.SuperPT,
 				main.MasterPT=npt.MasterPT,
 				main.AgentPT=npt.AgentPT
-			FROM dbo.CustPTSetting3rd_Member main
+			FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 			JOIN @tempTbl npt ON  npt.SportType=main.SportType
 			AND npt.BetType=main.BetType
 			AND npt.IsLive=main.IsLive
@@ -1682,7 +1682,7 @@ SET NOCOUNT ON
 		SET main.SuperPT=npt.SuperPT,
 			main.MasterPT=npt.MasterPT,
 			main.AgentPT=npt.AgentPT
-		FROM dbo.CustPTSetting3rd_Member main
+		FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 		JOIN @NewPTTbl npt ON  npt.SportType=main.SportType
 		AND npt.BetType=main.BetType
 		AND npt.IsLive=main.IsLive

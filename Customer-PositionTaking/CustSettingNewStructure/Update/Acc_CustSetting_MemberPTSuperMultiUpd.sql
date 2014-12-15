@@ -164,7 +164,7 @@ BEGIN
 		, main.IsAutoMasterPT =cs.IsAutoMasterPT
 		, main.AutoMasterPT = cs.AutoMasterPT
 	FROM @NewPTTble main
-	JOIN dbo.CustPTGroupSetting3rd_Member cs
+	JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -184,7 +184,7 @@ BEGIN
 			, cs.IsAutoMasterPT 
 			, cs.AutoMasterPT 
 	FROM @NewPTTble main
-	JOIN dbo.CustPTGroupSetting3rd_Member cs
+	JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -209,7 +209,7 @@ BEGIN
 	UPDATE main
 	SET main.SuperPT = spt.SuperPT - main.MasterPT-main.AgentPT
 	FROM @NewPTTble main
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=main.SportType
 					AND spt.BetType=main.BetType
 					AND spt.IsLive=main.IsLive
@@ -226,8 +226,8 @@ BEGIN
 	
 	--Get total members that belong to Group
 	SELECT @TotalCount = ISNULL(COUNT(1),0)
-	FROM dbo.CustSettingMode3rd mode
-	JOIN dbo.CustInfo ci ON ci.CustID=mode.CustID
+	FROM dbo.CustSettingMode3rd mode WITH (NOLOCK)
+	JOIN dbo.CustInfo ci WITH (NOLOCK) ON ci.CustID=mode.CustID 
 	WHERE ci.recommend=@AgentID AND mode.IsGrouped=1
 	
 	--Get total members that are different from group

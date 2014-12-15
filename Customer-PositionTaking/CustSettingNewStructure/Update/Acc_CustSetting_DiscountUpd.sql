@@ -174,7 +174,7 @@ BEGIN
 			, dc.BetType
 			, dc.Discount
 		FROM @NewDiscountTbl tmp
-		INNER JOIN dbo.CustDiscount3rd_Agent dc
+		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
 			ON dc.SportType		= tmp.SportType
 				AND dc.BetType	= tmp.BetType
 				AND dc.CustID	= @CustID
@@ -186,7 +186,7 @@ BEGIN
 			, dc.BetType
 			, dc.PlayerDiscount
 		FROM @NewDiscountTbl tmp
-		INNER JOIN dbo.CustDiscount3rd_Member dc
+		INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
 			ON dc.SportType		= tmp.SportType
 				AND dc.BetType	= tmp.BetType
 				AND dc.CustID	= @CustID
@@ -217,7 +217,7 @@ BEGIN
 				ELSE dcm.Discount
 				END
 		FROM @NewDiscountTbl tmp
-		INNER JOIN dbo.CustDiscount3rd_Agent dcm
+		INNER JOIN dbo.CustDiscount3rd_Agent dcm WITH (NOLOCK)
 			ON tmp.SportType	= dcm.SportType
 				AND tmp.BetType = dcm.BetType
 				AND dcm.custid	= @MasterID
@@ -232,7 +232,7 @@ BEGIN
 				ELSE dca.Discount
 				END
 		FROM @NewDiscountTbl tmp
-		INNER JOIN dbo.CustDiscount3rd_Agent dca
+		INNER JOIN dbo.CustDiscount3rd_Agent dca WITH (NOLOCK)
 			ON dca.SportType	= tmp.SportType
 				AND dca.BetType = tmp.BetType
 				AND dca.custid	= @AgentID

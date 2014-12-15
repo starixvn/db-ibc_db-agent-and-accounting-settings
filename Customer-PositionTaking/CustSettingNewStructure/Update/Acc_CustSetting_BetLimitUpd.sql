@@ -157,7 +157,7 @@ BEGIN
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Member bl
+		FROM dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= bl.sporttype
 				AND tmp.BetType = bl.bettype
@@ -168,7 +168,7 @@ BEGIN
 		SET main.minbet			= tmp.MinBet
 			, main.maxbet		= tmp.MaxBet
 			, main.maxpermatch	= tmp.MaxperMatch
-		FROM dbo.CustBetSetting3rd_Member main
+		FROM dbo.CustBetSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= main.sporttype
 				AND tmp.BetType = main.bettype
@@ -188,7 +188,7 @@ BEGIN
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Agent bl
+		FROM dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= bl.sporttype
 				AND tmp.BetType = bl.bettype
@@ -199,7 +199,7 @@ BEGIN
 		SET main.minbet			= tmp.MinBet
 			, main.maxbet		= tmp.MaxBet
 			, main.maxpermatch	= tmp.MaxperMatch
-		FROM dbo.CustBetSetting3rd_Agent main
+		FROM dbo.CustBetSetting3rd_Agent main WITH(ROWLOCK,UPDLOCK)
 		INNER JOIN @NewBetLimitTbl tmp
 			ON tmp.SportType	= main.sporttype
 				AND tmp.BetType = main.bettype

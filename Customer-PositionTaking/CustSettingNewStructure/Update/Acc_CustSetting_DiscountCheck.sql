@@ -80,12 +80,12 @@ BEGIN
 									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @NewDiscountTbl tmp
-	INNER JOIN dbo.ProductSettingDetail pdt
+	INNER JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		ON pdt.SportType	= tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.SettingType = 3
 			AND pdt.IsLive		= 0
-	JOIN DB02.bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE 
 	(	tmp.Discount		< 0

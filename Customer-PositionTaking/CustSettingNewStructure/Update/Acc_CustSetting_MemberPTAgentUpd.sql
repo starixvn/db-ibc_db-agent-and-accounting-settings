@@ -157,7 +157,7 @@ BEGIN
 		, main.IsAutoMasterPT = cs.IsAutoMasterPT
 		, main.AutoMasterPT = cs.AutoMasterPT
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Member cs
+	JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -177,7 +177,7 @@ BEGIN
 			, cs.IsAutoMasterPT 
 			, cs.AutoMasterPT 
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Member cs
+	JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
@@ -203,7 +203,7 @@ BEGIN
 	UPDATE main
 	SET main.AgentPT = CASE WHEN main.AgentPT > mpt.MasterPT THEN mpt.MasterPT ELSE main.AgentPT  END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 	ON mpt.SportType=main.SportType
 			AND mpt.BetType=main.BetType
 			AND mpt.IsLive=main.IsLive
@@ -220,12 +220,12 @@ BEGIN
 								END
 						END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent apt
+	JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 	ON apt.SportType=main.SportType
 			AND apt.BetType=main.BetType
 			AND apt.IsLive=main.IsLive
 			AND apt.CustID=@AgentID 
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 	ON mpt.SportType=main.SportType
 			AND mpt.BetType=main.BetType
 			AND mpt.IsLive=main.IsLive
@@ -256,12 +256,12 @@ BEGIN
 									END
 						END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent apt
+	JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 	ON apt.SportType=main.SportType
 			AND apt.BetType=main.BetType
 			AND apt.IsLive=main.IsLive
 			AND apt.CustID=@AgentID 
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 	ON mpt.SportType=main.SportType
 			AND mpt.BetType=main.BetType
 			AND mpt.IsLive=main.IsLive
@@ -287,12 +287,12 @@ BEGIN
 									END
 						END
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 	ON mpt.SportType=main.SportType
 			AND mpt.BetType=main.BetType
 			AND mpt.IsLive=main.IsLive
 			AND mpt.CustID=@MasterID
-	JOIN dbo.CustPTSetting3rd_Agent spt
+	JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 	ON spt.SportType=main.SportType
 			AND spt.BetType=main.BetType
 			AND spt.IsLive=main.IsLive
@@ -318,12 +318,12 @@ BEGIN
 								END
 						END														
 	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt
+	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 	ON mpt.SportType=main.SportType
 			AND mpt.BetType=main.BetType
 			AND mpt.IsLive=main.IsLive
 			AND mpt.CustID=@MasterID
-	JOIN dbo.CustPTSetting3rd_Agent spt
+	JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 	ON spt.SportType=main.SportType
 			AND spt.BetType=main.BetType
 			AND spt.IsLive=main.IsLive

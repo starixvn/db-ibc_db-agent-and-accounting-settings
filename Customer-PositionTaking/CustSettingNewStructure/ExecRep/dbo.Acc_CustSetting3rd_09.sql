@@ -1551,12 +1551,12 @@ BEGIN
 				ELSE main.MasterPT
 				END
 		FROM @tmpTbl main
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 			ON mpt.SportType=main.SportType
 					AND mpt.BetType=main.BetType
 					AND mpt.IsLive=main.IsLive
 					AND mpt.CustID=@mrecommend
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 			ON apt.SportType=main.SportType
 					AND apt.BetType=main.BetType
 					AND apt.IsLive=main.IsLive
@@ -1568,7 +1568,7 @@ BEGIN
 		UPDATE main
 		SET main.AgentPT = apt.MaxPT
 		FROM @tmpTbl main
-		INNER JOIN dbo.CustPTSetting3rd_Agent apt
+		INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 			ON apt.SportType = main.SportType
 				AND apt.BetType = main.BetType
 				AND apt.IsLive = main.IsLive
@@ -1638,7 +1638,7 @@ BEGIN
 		UPDATE main
 		SET main.MasterPT = mpt.MinPT - main.AgentPT
 		FROM @tmpTbl main
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 						ON mpt.SportType=main.SportType
 								AND mpt.BetType=main.BetType
 								AND mpt.IsLive=main.IsLive
@@ -1671,12 +1671,12 @@ BEGIN
 				ELSE @apos
 				END
 		FROM @tmpTbl main
-		INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+		INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 			ON mpt.SportType = main.SportType
 				AND mpt.BetType = main.BetType
 				AND mpt.IsLive = main.IsLive
 				AND mpt.CustID = @mrecommend
-		INNER JOIN dbo.CustPTSetting3rd_Agent apt
+		INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 			ON apt.SportType = main.SportType
 				AND apt.BetType = main.BetType
 				AND apt.IsLive = main.IsLive
@@ -1719,7 +1719,7 @@ BEGIN
 		UPDATE main
 		SET main.SuperPT = spt.MinPT - main.MasterPT - main.AgentPT
 		FROM @tmpTbl main
-		INNER JOIN dbo.CustPTSetting3rd_Agent spt
+		INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 			ON spt.SportType = main.SportType
 				AND spt.BetType = main.BetType
 				AND spt.IsLive = main.IsLive
@@ -1778,17 +1778,17 @@ BEGIN
 				ELSE @apos
 				END
 		FROM @tmpTbl main
-		INNER JOIN dbo.CustPTSetting3rd_Agent spt
+		INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
 			ON spt.SportType = main.SportType
 				AND spt.BetType = main.BetType
 				AND spt.IsLive = main.IsLive
 				AND spt.CustID = @srecommend
-		INNER JOIN dbo.CustPTSetting3rd_Agent mpt
+		INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
 			ON mpt.SportType = main.SportType
 				AND mpt.BetType = main.BetType
 				AND mpt.IsLive = main.IsLive
 				AND mpt.CustID = @mrecommend
-		INNER JOIN dbo.CustPTSetting3rd_Agent apt
+		INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
 			ON apt.SportType = main.SportType
 				AND apt.BetType = main.BetType
 				AND apt.IsLive = main.IsLive
@@ -1809,7 +1809,7 @@ BEGIN
 					main.AgentPT  = npt.AgentPT,
 					main.IsAutoMasterPT = npt.IsAutoMasterPT,
 					main.AutoMasterPT = npt.AutoMasterPT
-				FROM dbo.CustPTSetting3rd_Member main
+				FROM dbo.CustPTSetting3rd_Member main WITH(UPDLOCK,ROWLOCK)
 				JOIN @tmpTbl npt 
 					ON main.SportType = npt.SportType
 						AND main.BetType = npt.BetType
@@ -1831,7 +1831,7 @@ BEGIN
 					main.AgentPT  = npt.AgentPT,
 					main.IsAutoSuperPT = npt.IsAutoSuperPT,
 					main.AutoSuperPT = npt.AutoSuperPT
-				FROM dbo.CustPTSetting3rd_Member main
+				FROM dbo.CustPTSetting3rd_Member main WITH(UPDLOCK,ROWLOCK)
 				JOIN @tmpTbl npt 
 					ON main.SportType = npt.SportType
 						AND main.BetType = npt.BetType
@@ -1856,7 +1856,7 @@ BEGIN
 					main.AgentPT  = npt.AgentPT,
 					main.IsAutoMasterPT = npt.IsAutoMasterPT,
 					main.AutoMasterPT = npt.AutoMasterPT
-				FROM dbo.CustPTGroupSetting3rd_Member  main
+				FROM dbo.CustPTGroupSetting3rd_Member  main WITH(UPDLOCK,ROWLOCK)
 				JOIN @tmpTbl npt 
 					ON main.SportType = npt.SportType
 						AND main.BetType = npt.BetType
@@ -1878,7 +1878,7 @@ BEGIN
 					main.AgentPT  = npt.AgentPT,
 					main.IsAutoSuperPT = npt.IsAutoSuperPT,
 					main.AutoSuperPT = npt.AutoSuperPT
-				FROM dbo.CustPTGroupSetting3rd_Member  main
+				FROM dbo.CustPTGroupSetting3rd_Member  main WITH(UPDLOCK,ROWLOCK)
 				JOIN @tmpTbl npt 
 					ON main.SportType = npt.SportType
 						AND main.BetType = npt.BetType

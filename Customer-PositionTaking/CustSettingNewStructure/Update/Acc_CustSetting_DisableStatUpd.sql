@@ -148,7 +148,7 @@ BEGIN
 		, stt.BetType
 		, stt.IsDisabled
 	FROM @NewDisableStatTbl tmp
-	INNER JOIN dbo.CustProductStatus stt
+	INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 		ON tmp.SportType	= stt.SportType
 			AND tmp.BetType = stt.BetType
 	WHERE stt.CustID = @CustID
@@ -198,7 +198,7 @@ BEGIN
 	--Update main table
 	UPDATE stt
 	SET stt.IsDisabled = tmp.IsDisabled
-	FROM dbo.CustProductStatus stt
+	FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
 	INNER JOIN @NewDisableStatTbl tmp
 		ON tmp.SportType	= stt.SportType
 			AND tmp.BetType = stt.BetType
@@ -207,7 +207,7 @@ BEGIN
 
 	UPDATE stt
 	SET stt.IsHidden = 0
-	FROM dbo.CustProductStatus stt
+	FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
 	INNER JOIN @NewDisableStatTbl tmp
 		ON tmp.SportType	= stt.SportType
 			AND tmp.BetType = stt.BetType

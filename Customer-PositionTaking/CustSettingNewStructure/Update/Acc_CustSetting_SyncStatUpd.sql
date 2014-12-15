@@ -122,7 +122,7 @@ BEGIN
 	UPDATE main
 	SET main.OldSync = stt.IsSync
 	FROM @SyncStatusTbl main
-		INNER JOIN dbo.CustProductStatus stt
+		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON main.SportType = stt.SportType
 				AND main.BetType = stt.BetType
 				AND stt.CustID = @custid
@@ -145,7 +145,7 @@ BEGIN
 		UPDATE main
 		SET main.UplineSync = stt.IsSync
 		FROM @SyncStatusTbl main
-			INNER JOIN dbo.CustProductStatus stt
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 				ON main.SportType = stt.SportType
 					AND main.BetType = stt.BetType
 					AND stt.CustID = @UplineCustID
@@ -159,12 +159,12 @@ BEGIN
 	SELECT @ErrSport = ''
 	SELECT @ErrSport = @ErrSport + p.ProductName + ','
 	FROM @SyncStatusTbl tmp
-	JOIN dbo.ProductSettingDetail pdt
+	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 4
-	JOIN DB02.bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE tmp.ALlow2Update = 0
 
@@ -188,7 +188,7 @@ BEGIN
 	--Update data
 	UPDATE main
 	SET main.IsSync = tmp.IsSync
-	FROM dbo.CustProductStatus main
+	FROM dbo.CustProductStatus main WITH (ROWLOCK,UPDLOCK)
 	INNER JOIN @SyncStatusTbl tmp
 		ON main.SportType = tmp.SportType
 			AND main.BetType = tmp.BetType

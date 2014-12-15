@@ -73,7 +73,7 @@ BEGIN
 		SELECT stt.SportType
 			, stt.BetType
 		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt
+		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @SuperID
@@ -86,7 +86,7 @@ BEGIN
 		SELECT stt.SportType
 			, stt.BetType
 		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt
+		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @MasterID
@@ -99,7 +99,7 @@ BEGIN
 		SELECT stt.SportType
 			, stt.BetType
 		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt
+		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @SuperID
@@ -129,12 +129,12 @@ BEGIN
 									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
 					END
 	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt
+	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		ON pdt.SportType = tmp.SportType
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 4
-	JOIN DB02.bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 
 	IF @@ROWCOUNT > 0

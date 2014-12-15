@@ -103,7 +103,7 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 	
 	SELECT @IsGrouped=IsGrouped
-	FROM dbo.CustSettingMode3rd
+	FROM dbo.CustSettingMode3rd WITH(NOLOCK)
 	WHERE CustID=@CustID
 
 			
@@ -120,7 +120,7 @@ BEGIN
 				, main.IsAutoMasterPT = cs.IsAutoMasterPT
 				, main.AutoMasterPT = cs.AutoMasterPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTGroupSetting3rd_Member cs
+			JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -136,7 +136,7 @@ BEGIN
 				, main.IsAutoMasterPT = cs.IsAutoMasterPT
 				, main.AutoMasterPT = cs.AutoMasterPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTSetting3rd_Member cs
+			JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -160,12 +160,12 @@ BEGIN
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType=mempt.SportType
 				AND pdt.BetType=mempt.BetType
 				AND pdt.IsLive=mempt.IsLive
 				AND pdt.SettingType = 1
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT < 0 OR mempt.AgentPT > pdt.MaxPT
 			
@@ -205,17 +205,17 @@ BEGIN
 				+ ','
 
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 			ON apt.SportType=mempt.SportType
 					AND apt.BetType=mempt.BetType
 					AND apt.IsLive=mempt.IsLive
 					AND apt.CustID=@AgentID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > apt.MaxPT OR mempt.AgentPT < apt.MinPT
 		
@@ -252,17 +252,17 @@ BEGIN
 				+ cast((spt.AgentPT) as varchar(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=mempt.SportType
 				AND spt.BetType=mempt.BetType
 				AND spt.IsLive=mempt.IsLive
 				AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE  mempt.AgentPT > spt.AgentPT
 		
@@ -287,12 +287,12 @@ BEGIN
 								ELSE spt.AgentPT
 						END
 		FROM @NewPTTble main
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 		ON apt.SportType=main.SportType
 				AND apt.BetType=main.BetType
 				AND apt.IsLive=main.IsLive
 				AND apt.CustID=@AgentID 
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=main.SportType
 				AND spt.BetType=main.BetType
 				AND spt.IsLive=main.IsLive
@@ -320,17 +320,17 @@ BEGIN
 										END
 								END
 		FROM @NewPTTble main
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 		ON apt.SportType=main.SportType
 				AND apt.BetType=main.BetType
 				AND apt.IsLive=main.IsLive
 				AND apt.CustID=@AgentID 
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=main.SportType
 				AND mpt.BetType=main.BetType
 				AND mpt.IsLive=main.IsLive
 				AND mpt.CustID=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 		ON spt.SportType=main.SportType
 				AND spt.BetType=main.BetType
 				AND spt.IsLive=main.IsLive
@@ -360,12 +360,12 @@ BEGIN
 				+ cast((mempt.AgentPT_Max) as varchar(10))
 				+ ','
 		FROM @NewPTTble mempt 
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > mempt.AgentPT_Max
 		
@@ -393,7 +393,7 @@ BEGIN
 				, main.IsAutoSuperPT =cs.IsAutoSuperPT
 				, main.AutoSuperPT = cs.AutoSuperPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTGroupSetting3rd_Member cs
+			JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -407,7 +407,7 @@ BEGIN
 				, main.IsAutoSuperPT =cs.IsAutoSuperPT
 				, main.AutoSuperPT = cs.AutoSuperPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTSetting3rd_Member cs
+			JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -431,12 +431,12 @@ BEGIN
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT
 			
@@ -472,17 +472,17 @@ BEGIN
 				+ CAST((mpt.MaxPT) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=mempt.SportType
 				AND mpt.BetType=mempt.BetType
 				AND mpt.IsLive=mempt.IsLive
 				AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1
 				AND mempt.AutoMasterPT > mpt.MaxPT
@@ -520,22 +520,22 @@ BEGIN
 				+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1 
 			AND mempt.AutoMasterPT > CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
@@ -574,17 +574,17 @@ BEGIN
 				+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 		ON mpt.SportType=mempt.SportType
 				AND mpt.BetType=mempt.BetType
 				AND mpt.IsLive=mempt.IsLive
 				AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT=1 
 			AND mempt.AutoMasterPT<CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END
@@ -622,22 +622,22 @@ BEGIN
 				+ CAST((CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
 		
@@ -675,17 +675,17 @@ BEGIN
 					+ CAST((mpt.MaxPT) AS VARCHAR(10))
 					+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>mpt.MaxPT
 		
@@ -723,22 +723,22 @@ BEGIN
 				+ CAST((mpt.MasterPT - mempt.AgentPT) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 			ON apt.SportType=mempt.SportType
 					AND apt.BetType=mempt.BetType
 					AND apt.IsLive=mempt.IsLive
 					AND apt.CustID=@AgentID
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT > mpt.MasterPT - mempt.AgentPT and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0
 		
@@ -776,22 +776,22 @@ BEGIN
 				+ CAST((CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END) AS VARCHAR(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent apt
+		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 			ON apt.SportType=mempt.SportType
 					AND apt.BetType=mempt.BetType
 					AND apt.IsLive=mempt.IsLive
 					AND apt.CustID=@AgentID
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
 			and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0	
@@ -822,7 +822,7 @@ BEGIN
 				, main.IsAutoMasterPT =cs.IsAutoMasterPT
 				, main.AutoMasterPT = cs.AutoMasterPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTGroupSetting3rd_Member cs
+			JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -836,7 +836,7 @@ BEGIN
 				, main.IsAutoMasterPT =cs.IsAutoMasterPT
 				, main.AutoMasterPT = cs.AutoMasterPT
 			FROM @NewPTTble main
-			JOIN dbo.CustPTSetting3rd_Member cs
+			JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -859,12 +859,12 @@ BEGIN
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT
 			
@@ -899,17 +899,17 @@ BEGIN
 										+ bodb02.[dbo].[F_Get_BetNameByTypeID](mempt.BetType, @Language) + ','
 						END
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 AND mempt.AutoSuperPT > spt.MaxPT
 		
@@ -946,17 +946,17 @@ BEGIN
 				+ cast((spt.SuperPT) AS varchar(10)) 
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AutoSuperPT > spt.SuperPT
 		
@@ -996,17 +996,17 @@ BEGIN
 												END) AS varchar(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 
 			AND mempt.AutoSuperPT < CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
@@ -1049,17 +1049,17 @@ BEGIN
 					+ cast((spt.SuperPT) AS varchar(10))
 					+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT > spt.SuperPT
 		
@@ -1117,22 +1117,22 @@ BEGIN
 					END) AS varchar(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT >  
@@ -1196,22 +1196,22 @@ BEGIN
 								END ) AS varchar(10))
 				+ ','
 		FROM @NewPTTble mempt
-		JOIN dbo.CustPTSetting3rd_Agent spt
+		JOIN dbo.CustPTSetting3rd_Agent spt WITH (NOLOCK)
 			ON spt.SportType=mempt.SportType
 					AND spt.BetType=mempt.BetType
 					AND spt.IsLive=mempt.IsLive
 					AND spt.CustID=@SuperID
-		JOIN dbo.CustPTSetting3rd_Agent mpt
+		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
 					AND mpt.BetType=mempt.BetType
 					AND mpt.IsLive=mempt.IsLive
 					AND mpt.CustID=@MasterID
-		JOIN dbo.ProductSettingDetail pdt
+		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			ON pdt.SportType = mempt.SportType
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p
+		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT < CASE 
