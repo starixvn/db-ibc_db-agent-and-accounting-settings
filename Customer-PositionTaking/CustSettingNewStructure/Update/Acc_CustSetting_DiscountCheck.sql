@@ -85,7 +85,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.SettingType = 3
 			AND pdt.IsLive		= 0
-	JOIN bodb02.dbo.Products p
+	JOIN DB02.bodb02.dbo.Products p
 		ON p.ProductID = pdt.ProductID
 	WHERE 
 	(	tmp.Discount		< 0

@@ -134,7 +134,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 4
-	JOIN [bodb02].[dbo].[Products] p
+	JOIN DB02.bodb02.dbo.Products p
 		ON p.ProductID = pdt.ProductID
 
 	IF @@ROWCOUNT > 0
