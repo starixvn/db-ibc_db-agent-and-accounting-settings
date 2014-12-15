@@ -31,6 +31,7 @@ BEGIN
 			,@duration		INT
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
+			,@sports		VARCHAR(500)=''
 			,@xml			XML
     
     SET @startRun = GETDATE()
@@ -175,6 +176,9 @@ BEGIN
                     END, @ErrCode = 101
         RETURN
     END		
+	
+	SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
+	FROM @tblPT
 	
 	--check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -540,14 +544,25 @@ BEGIN
     
     IF @UpdatePresetPT = 1
     BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid, @roleid = 4, @mode = 'Others'
+		EXEC dbo.Acc_CustSetting3rd_07 
+			@srecommend = @custid
+			,@roleid = 4
+			,@mode = 'Others'
+			,@sports = @sports 
 		
-		EXEC dbo.Acc_CustSetting3rd_01 @srecommend = @custid, @mode = 'Others'
+		EXEC dbo.Acc_CustSetting3rd_01 
+			@srecommend = @custid
+			,@mode = 'Others'
+			,@sports = @sports 
     END
     
     IF @UpdateMinPT = 1
     BEGIN
-		EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'Others'
+		EXEC dbo.Acc_CustSetting3rd_04 
+			@srecommend = @srecommend
+			,@roleid = 4
+			,@mode = 'Others'
+			,@sports = @sports 
     END
     
     -- Write log after update

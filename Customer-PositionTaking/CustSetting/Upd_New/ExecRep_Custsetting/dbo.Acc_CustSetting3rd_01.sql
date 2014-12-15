@@ -1,6 +1,7 @@
 ﻿ALTER PROCEDURE [Acc_CustSetting3rd_01]
 	@srecommend int,
-	@mode varchar(20) = 'horse' --'horse' or 'number' or 'finance' or 'virtual-sports'
+	@mode varchar(20) = 'horse', --'horse' or 'number' or 'finance' or 'virtual-sports'
+	@sports VARCHAR(500)=''
 AS
 --@Source Control
 /*
@@ -63,7 +64,8 @@ BEGIN
 END
 
     declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
-
+	DECLARE @tmpSport TABLE(sporttype INT)
+	
 if @mode = 'horse'
 BEGIN
 
@@ -293,6 +295,10 @@ END
 
 if @mode = 'Others'
 BEGIN
+	INSERT INTO @tmpSport(sporttype)
+	SELECT DISTINCT val
+	FROM dbo.strSplit(@sports,',')
+	
 	----------------------------------------------------------------------------
     --s1=min(s1,s4-m3) if i=0
     update cs
@@ -304,6 +310,7 @@ BEGIN
 	    INNER JOIN CustPTSetting3rd_Agent as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype AND scs.isLive = cs.isLive
     WHERE cs.IsAutoSuperPT=0 
 	    and mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT
+	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
     ----------------------------------------------------------------------------
 
     --update s1,m1,a1 in case s1+m1+a1>s4
@@ -332,6 +339,7 @@ BEGIN
 	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
 	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
     WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
 	
 	--correct pt on group settings
 	 --s1=min(s1,s4-m3) if i=0
@@ -344,6 +352,7 @@ BEGIN
 	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
     WHERE cs.IsAutoSuperPT=0 
 	    AND mcs.IsAutoSuperPT=0 AND scs.SuperPT - mcs.MasterPT<cs.SuperPT
+	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
     ----------------------------------------------------------------------------
 
     --update s1,m1,a1 in case s1+m1+a1>s4
@@ -372,6 +381,7 @@ BEGIN
 	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
 	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
     WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
     
     RETURN
 END

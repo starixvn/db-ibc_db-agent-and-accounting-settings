@@ -34,7 +34,8 @@ BEGIN
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
-			,@AutoPT		VARCHAR(MAX)			
+			,@AutoPT		VARCHAR(MAX)
+			,@sports		VARCHAR(500)=''			
 			,@xml			XML
 	  SET @startRun = GETDATE()
 			
@@ -90,7 +91,7 @@ BEGIN
 				MasterPT		SMALLINT,				
 				MasterMinPT		SMALLINT
 				)	
-	DECLARE @tmpPTGroup TABLE(custid INT)			
+	DECLARE @tmpPTGroup TABLE(custid INT)		
 	
 	-- For read xml
 	DECLARE @DocHandler INT    
@@ -206,6 +207,9 @@ BEGIN
                     END, @ErrCode = 101
         RETURN
     END			
+    
+    SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
+    FROM @tblPT
     
     --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -614,7 +618,12 @@ BEGIN
 	
 	IF @UpdateMinPT = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @custid, @srecommend = @srecommend, @mode = 'Others', @roleid = 3
+		EXEC dbo.Acc_CustSetting3rd_04 
+				@mrecommend = @custid
+				,@srecommend = @srecommend
+				,@mode = 'Others'
+				,@roleid = 3
+				,@sports = @sports
 	END
 	
 	IF @UpdatePresetPT = 1
@@ -631,10 +640,11 @@ BEGIN
             @newspositiontaking = @newSuperPT
             
          EXEC dbo.Acc_CustSetting3rd_07
-            @srecommend = @srecommend , 
-            @mrecommend = @custid,
-            @roleid = 3,
-            @mode = 'Others',
+            ,@srecommend = @srecommend
+            ,@mrecommend = @custid
+            ,@roleid = 3
+            ,@mode = 'Others'
+            ,@sports = @sports
 	END
 	
 	 -- Write log after update

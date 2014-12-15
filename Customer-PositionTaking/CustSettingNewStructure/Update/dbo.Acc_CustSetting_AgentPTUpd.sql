@@ -33,7 +33,8 @@ BEGIN
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
-			,@AutoPT		VARCHAR(MAX)			
+			,@AutoPT		VARCHAR(MAX)
+			,@sports		VARCHAR(500)			
 			,@xml			XML
 	  SET @startRun = GETDATE()
 			
@@ -77,8 +78,6 @@ BEGIN
 	FROM custinfo with (NOLOCK)         
 	WHERE CustID = @CustID 
 	
-	DECLARE @tmpPTGroup TABLE(custid INT)
-
 	DECLARE @tblPT TABLE (
 				SportType		SMALLINT,
 				BetType			SMALLINT,
@@ -90,8 +89,6 @@ BEGIN
 				AgentMinPT		SMALLINT
 				)	
 				
-	DECLARE @tmpPTGroup TABLE(custid INT)
-	
 	-- For read xml
 	DECLARE @DocHandler INT    
 	
@@ -208,7 +205,11 @@ BEGIN
                             ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>' + @ErrType
 						END, @ErrCode = 100
         RETURN
-    END			
+    END
+    
+    SELECT @sports = ''
+    SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
+    FROM @tblPT 			
     
      --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -663,7 +664,13 @@ BEGIN
 	
 	IF @UpdateMinPT = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_04 @recommend = @custid, @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'Others', @roleid = 2
+		EXEC dbo.Acc_CustSetting3rd_04 
+			@recommend = @custid
+			,@mrecommend = @mrecommend
+			,@srecommend = @srecommend
+			,@mode = 'Others'
+			,@roleid = 2
+			,@sports = @sports
 
 		-- The minimum position taking value of agent was modified by agent's upline
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID 
@@ -672,20 +679,21 @@ BEGIN
 	IF @UpdatePresetPT = 1
 	BEGIN
 		EXEC dbo.Acc_CustSetting3rd_05
-            @mrecommend = @mrecommend,
-			@recommend = @custid,
-			@roleid = 2,
-			@mode = 'Others',
+            ,@mrecommend = @mrecommend
+			,@recommend = @custid
+			,@roleid = 2
+			,@mode = 'Others'
             
-            @PT = @AutoPT,
-                            
-            @updateallmembers = @updateallmembers,
-            @newmpositiontaking = @newMasterPT
+            ,@PT = @AutoPT
+                                        
+            ,@updateallmembers = @updateallmembers
+            ,@newmpositiontaking = @newMasterPT
             
        EXEC dbo.Acc_CustSetting3rd_07 
 			@recommend = @custid
 			,@roleid = 2
 			,@mode = 'Others'
+			,@sports = @sports
 	END	
 	
 	 -- Write log after update
