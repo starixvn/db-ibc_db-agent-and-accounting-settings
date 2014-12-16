@@ -12,7 +12,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountCheck]
 	, @SuperID			INT
 	, @Discount_XML		VARCHAR(MAX)
 	, @Language			VARCHAR(2)		= 'E'
-	, @ErrCode			INT				= 0	OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
 	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
@@ -85,7 +85,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.SettingType = 3
 			AND pdt.IsLive		= 0
-	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+	JOIN bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE 
 	(	tmp.Discount		< 0

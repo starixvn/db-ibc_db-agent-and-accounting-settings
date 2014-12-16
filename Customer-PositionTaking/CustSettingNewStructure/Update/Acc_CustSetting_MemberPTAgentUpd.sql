@@ -6,16 +6,16 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTAgentUpd] 
-	  @CustID INT
-	, @PT_XML VARCHAR(MAX)
+	  @CustID		INT
+	, @PT_XML		VARCHAR(MAX)
 	
-	, @SubAccID INT = 0
-	, @IP VARCHAR(50) = ''
-	, @UserID INT = 0
-	, @Language VARCHAR(20) = 'E'
-	, @Username varchar(30) = '' OUTPUT
-	, @ErrCode INT			= 0 OUTPUT
-	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
+	, @SubAccID		INT				= 0
+	, @IP			VARCHAR(50)		= ''
+	, @UserID		INT				= 0
+	, @Language		VARCHAR(20)		= 'E'
+	, @Username		VARCHAR(30)		= ''
+	, @ErrCode		INT				= 0		OUTPUT
+	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 		Created: Dominic
@@ -177,7 +177,7 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @PT_XML = @PT_XML
+						, @PT_XML		= @PT_XML
 						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUT
 						, @ErrMsg		= @ErrMsg	OUT

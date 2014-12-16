@@ -4,12 +4,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect]
-	@CustID INT,
-	@AgentID INT,
-	@MasterID INT,
-	@SuperID INT,
-	@ProductID TINYINT,
-	@RoleID INT
+	  @CustID			INT
+	, @AgentID			INT
+	, @MasterID			INT
+	, @SuperID			INT
+	, @ProductID		TINYINT
+	, @RoleID			INT
 AS
 	/*
 	Created: 20141104@Dominic
@@ -31,18 +31,19 @@ BEGIN
 	DECLARE @DisableAutoMPT	BIT
 	
 	DECLARE @MemberPT TABLE (
-			SportType		SMALLINT,
-			BetType			SMALLINT,
-			IsLive			BIT,
-			IsGroupedPT		BIT,
-			S1	TINYINT,
-			M1	TINYINT,
-			A1	TINYINT,
-			IS1	BIT,
-			US1 TINYINT,
-			IM1	BIT,
-			UM1 TINYINT
-		)
+		SportType		SMALLINT
+		, BetType		SMALLINT
+		, IsLive		BIT
+		, IsGroupedPT	BIT
+		, S1			TINYINT
+		, M1			TINYINT
+		, A1			TINYINT
+		, IS1			BIT
+		, US1			TINYINT
+		, IM1			BIT
+		, UM1			TINYINT
+	)
+
 	
 	--Get member setting from Group OR Individual Settings	
 	INSERT INTO @MemberPT
@@ -73,17 +74,18 @@ BEGIN
 	IF @RoleID=4
 	BEGIN
 		--Cusinfo
-		SELECT	c.username, 
-				c.username2, 
-				c.firstname,
-				c.lastname,
-				c.phone,
-				c.mobilephone,
-				c.email,
-				c.fax,
-				c.roleid
-		FROM	Customer c WITH (NOLOCK)			
-		WHERE	c.custID = @CustID 
+		SELECT c.username
+			, c.username2
+			, c.firstname
+			, c.lastname
+			, c.phone
+			, c.mobilephone
+			, c.email
+			, c.fax
+			, c.roleid
+		FROM Customer c WITH (NOLOCK)
+		WHERE c.custID = @CustID
+
 		
 		--PT SETTING
 		SELECT 

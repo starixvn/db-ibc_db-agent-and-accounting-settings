@@ -11,8 +11,8 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatCheck]
 	, @MasterID			INT
 	, @SuperID			INT
 	, @Language			VARCHAR(2)		= 'E'
-	, @ErrCode			INT				= 0 OUTPUT
-	, @ErrMsg			NVARCHAR(4000)	= '' OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141110@Dominic
@@ -134,7 +134,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 4
-	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+	JOIN bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 
 	IF @@ROWCOUNT > 0

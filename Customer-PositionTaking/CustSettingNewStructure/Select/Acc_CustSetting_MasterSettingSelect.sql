@@ -4,9 +4,10 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect]
-	@CustID INT,
-	@SuperID INT,
-	@ProductID TINYINT
+	  @CustID		INT
+	, @SuperID		INT
+	, @ProductID	TINYINT
+
 AS
 	/*
 	Created: 20141104@Dominic
@@ -33,29 +34,32 @@ BEGIN
 	WHERE CustID = @CustID
 	
 	--Cusinfo
-	SELECT	c.username, 
-			c.username2, 
-			c.firstname,
-			c.lastname,
-			c.phone,
-			c.mobilephone,
-			c.email,
-			c.fax,
-			@DisableAutoMPT DisableAutoMPT
-	FROM	Customer c WITH (NOLOCK)			
-	WHERE	c.custID = @CustID 
+	SELECT c.username
+		, c.username2
+		, c.firstname
+		, c.lastname
+		, c.phone
+		, c.mobilephone
+		, c.email
+		, c.fax
+		, @DisableAutoMPT DisableAutoMPT
+	FROM Customer c WITH (NOLOCK)
+	WHERE c.custID = @CustID
+
 	
 	--PT Setting
-	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
-			pt.superPT as S3,
-			pt.masterPT AS M3,
-			pt.IsAutoSuperPT AS IS3,
-			pt.AutoSuperPT AS US3,
-			pt.minPT AS N3,
-			
-			superpt.SuperPT AS S4,
-			superpt.MasterPT AS M4,
-			superpt.MinPT AS N4
+	SELECT pdt.SportType
+		, pdt.BetType
+		, pdt.SettingType
+		, pdt.IsLive
+		, pt.superPT		AS S3
+		, pt.masterPT		AS M3
+		, pt.IsAutoSuperPT	AS IS3
+		, pt.AutoSuperPT	AS US3
+		, pt.minPT			AS N3
+		, superpt.SuperPT	AS S4
+		, superpt.MasterPT	AS M4
+		, superpt.MinPT		AS N4
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
 			ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype AND pdt.IsLive=pt.islive AND pt.custid=@CustID

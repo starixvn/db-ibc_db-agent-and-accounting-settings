@@ -6,14 +6,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTSuperMultiUpd] 
-	  @CustIDList VARCHAR(MAX)
-	, @PT_XML VARCHAR(MAX)
-	, @SubAccID INT = 0
-	, @IP VARCHAR(50) = ''
-	, @UserID INT = 0
-	, @Language VARCHAR(20) = 'E'
-	, @ErrCode INT			= 0 OUTPUT
-	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
+	  @CustIDList	VARCHAR(MAX)
+	, @PT_XML		VARCHAR(MAX)
+	, @SubAccID		INT				= 0
+	, @IP			VARCHAR(50)		= ''
+	, @UserID		INT				= 0
+	, @Language		VARCHAR(20)		= 'E'
+	, @ErrCode		INT				= 0 OUTPUT
+	, @ErrMsg		NVARCHAR(4000)	= '' OUTPUT
 AS
 /*
 		Created: Dominic
@@ -232,10 +232,10 @@ BEGIN
 	AND npt.BetType=opt.BetType
 	AND npt.IsLive=opt.IsLive
 	WHERE (
-		npt.SuperPT <> opt.SuperPT
-		OR npt.MasterPT <> opt.MasterPT
-		OR npt.IsAutoMasterPT <> opt.IsAutoMasterPT
-		OR npt.AutoMasterPT <> opt.AutoMasterPT
+		npt.SuperPT				<> opt.SuperPT
+		OR npt.MasterPT			<> opt.MasterPT
+		OR npt.IsAutoMasterPT	<> opt.IsAutoMasterPT
+		OR npt.AutoMasterPT		<> opt.AutoMasterPT
 	))
 	BEGIN
 		SELECT @DiffCount = ISNULL((SELECT COUNT(1) FROM @tblCust),0)

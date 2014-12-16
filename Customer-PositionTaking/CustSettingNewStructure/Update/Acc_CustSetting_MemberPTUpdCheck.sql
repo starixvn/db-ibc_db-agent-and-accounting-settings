@@ -161,7 +161,7 @@ BEGIN
 				AND pdt.BetType=mempt.BetType
 				AND pdt.IsLive=mempt.IsLive
 				AND pdt.SettingType = 1
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT < 0 OR mempt.AgentPT > pdt.MaxPT
 			
@@ -211,7 +211,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > apt.MaxPT OR mempt.AgentPT < apt.MinPT
 		
@@ -258,7 +258,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE  mempt.AgentPT > spt.AgentPT
 		
@@ -361,7 +361,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AgentPT > mempt.AgentPT_Max
 		
@@ -432,7 +432,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT
 			
@@ -478,7 +478,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1
 				AND mempt.AutoMasterPT > mpt.MaxPT
@@ -531,7 +531,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT = 1 
 			AND mempt.AutoMasterPT > CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
@@ -580,7 +580,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoMasterPT=1 
 			AND mempt.AutoMasterPT<CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END
@@ -633,7 +633,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>CASE WHEN mpt.MasterPT < spt.MasterPT THEN mpt.MasterPT ELSE spt.MasterPT END
 		
@@ -681,7 +681,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT>mpt.MaxPT
 		
@@ -734,7 +734,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT > mpt.MasterPT - mempt.AgentPT and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0
 		
@@ -787,7 +787,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
 			and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0	
@@ -860,7 +860,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT
 			
@@ -905,7 +905,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 AND mempt.AutoSuperPT > spt.MaxPT
 		
@@ -952,7 +952,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.AutoSuperPT > spt.SuperPT
 		
@@ -1002,7 +1002,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 1 
 			AND mempt.AutoSuperPT < CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
@@ -1055,7 +1055,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT > spt.SuperPT
 		
@@ -1128,7 +1128,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT >  
@@ -1207,7 +1207,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT < CASE 

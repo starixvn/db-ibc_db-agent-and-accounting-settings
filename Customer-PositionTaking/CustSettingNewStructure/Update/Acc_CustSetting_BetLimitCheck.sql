@@ -12,7 +12,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitCheck]
 	, @SuperID		INT
 	, @BetLimit_XML VARCHAR(MAX)
 	, @Language		VARCHAR(2)		= 'E'
-	, @ErrCode		INT				= 0	OUTPUT
+	, @ErrCode		INT				= 0		OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
@@ -260,7 +260,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 2
-	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+	JOIN bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE		tmp.MinBet	< 0
 		OR tmp.MaxBet		< 0
@@ -302,7 +302,7 @@ BEGIN
 			AND pdt.BetType = tmp.BetType
 			AND pdt.IsLive = 0
 			AND pdt.SettingType = 2
-	JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+	JOIN bodb02.dbo.Products p WITH (NOLOCK)
 		ON p.ProductID = pdt.ProductID
 	WHERE (
 			(
@@ -367,7 +367,7 @@ BEGIN
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MinMinBet > 0
 			AND tmp.MinBet	> 0
@@ -426,7 +426,7 @@ BEGIN
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxBet > 0
 			AND tmp.MaxBet	> 0
@@ -485,7 +485,7 @@ BEGIN
 				AND pdt.BetType = tmp.BetType
 				AND pdt.IsLive = 0
 				AND pdt.SettingType = 2
-		JOIN DB02.bodb02.dbo.Products p WITH (NOLOCK)
+		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE tmp.MaxMaxPerMatch	> 0
 			AND tmp.MaxPerMatch		> 0

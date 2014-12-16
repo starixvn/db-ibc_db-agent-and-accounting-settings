@@ -6,14 +6,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTAgentMultiUpd] 
-	  @CustIDList VARCHAR(MAX)
-	, @PT_XML VARCHAR(MAX)
-	, @SubAccID INT = 0
-	, @IP VARCHAR(50) = ''
-	, @UserID INT = 0
-	, @Language VARCHAR(20) = 'E'
-	, @ErrCode INT			= 0 OUTPUT
-	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
+	  @CustIDList	VARCHAR(MAX)
+	, @PT_XML		VARCHAR(MAX)
+	, @SubAccID		INT				= 0
+	, @IP			VARCHAR(50)		= ''
+	, @UserID		INT				= 0
+	, @Language		VARCHAR(20)		= 'E'
+	, @ErrCode		INT				= 0		OUTPUT
+	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 		Created: Dominic

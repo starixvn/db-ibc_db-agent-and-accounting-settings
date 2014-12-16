@@ -11,8 +11,8 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd]
 	, @UserID			INT
 	, @IP				VARCHAR(50)		= ''
 	, @Language			VARCHAR(20)		= 'E'
-	, @ErrCode			INT				= 0 OUTPUT
-	, @ErrMsg			NVARCHAR(4000)	= '' OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141110@Dominic

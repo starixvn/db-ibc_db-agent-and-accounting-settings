@@ -4,10 +4,10 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]
-	@CustID INT,
-	@MasterID INT,
-	@SuperID INT,
-	@ProductID TINYINT
+	  @CustID		INT
+	, @MasterID		INT
+	, @SuperID		INT
+	, @ProductID	TINYINT
 AS
 	/*
 	Created: 20141104@Dominic
@@ -34,17 +34,18 @@ BEGIN
 	WHERE CustID = @MasterID
 	
 	--Cusinfo
-	SELECT	c.username, 
-			c.username2, 
-			c.firstname,
-			c.lastname,
-			c.phone,
-			c.mobilephone,
-			c.email,
-			c.fax,
-			@DisableAutoMPT AS DisableAutoMPT
-	FROM	Customer c WITH (NOLOCK)			
-	WHERE	c.custID = @CustID 
+	SELECT c.username
+		, c.username2
+		, c.firstname
+		, c.lastname
+		, c.phone
+		, c.mobilephone
+		, c.email
+		, c.fax
+		, @DisableAutoMPT AS DisableAutoMPT
+	FROM Customer c WITH (NOLOCK)
+	WHERE c.custID = @CustID
+
 	
 	--PT Setting
 	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,

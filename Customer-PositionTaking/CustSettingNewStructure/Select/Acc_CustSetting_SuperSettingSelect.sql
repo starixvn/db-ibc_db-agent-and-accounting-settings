@@ -4,8 +4,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect]
-	@CustID INT,
-	@ProductID TINYINT
+	  @CustID		INT
+	, @ProductID	TINYINT
 AS
 	/*
 	Created: 20141104@Dominic
@@ -27,25 +27,29 @@ BEGIN
 
 	
 	--Cusinfo
-	SELECT	c.username, 
-			c.username2, 
-			c.firstname,
-			c.lastname,
-			c.phone,
-			c.mobilephone,
-			c.email,
-			c.fax
-	FROM	dbo.Customer c WITH (NOLOCK)			
-	WHERE	c.custID = @CustID 
+	SELECT c.username
+		, c.username2
+		, c.firstname
+		, c.lastname
+		, c.phone
+		, c.mobilephone
+		, c.email
+		, c.fax
+	FROM dbo.Customer c WITH (NOLOCK)
+	WHERE c.custID = @CustID
+
 	
 	--PT Setting
-	SELECT pdt.SportType,pdt.BetType,pdt.SettingType,pdt.IsLive,
-			pt.SuperPT AS S4,
-			pt.MasterPT AS M4 ,
-			pt.AgentPT AS A4,
-			pt.MinPT AS N4,
-			pt.MaxPT AS L4,
-			pdt.MaxPT AS DefaullMaxPT
+	SELECT pdt.SportType
+		, pdt.BetType
+		, pdt.SettingType
+		, pdt.IsLive
+		, pt.SuperPT	AS S4
+		, pt.MasterPT	AS M4
+		, pt.AgentPT	AS A4
+		, pt.MinPT		AS N4
+		, pt.MaxPT		AS L4
+		, pdt.MaxPT		AS DefaullMaxPT
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
 			ON pdt.SportType=pt.sporttype AND pdt.BetType=pt.bettype AND pdt.IsLive=pt.islive AND pt.custid=@CustID
