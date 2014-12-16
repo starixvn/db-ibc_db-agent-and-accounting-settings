@@ -11,13 +11,13 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitUpd]
 	, @UserID		INT
 	, @IP			VARCHAR(50)		= ''
 	, @Language		VARCHAR(20)		= 'E'
-	, @ErrCode		VARCHAR(300)	= '' OUTPUT
+	, @ErrCode		INT				= 0	OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= '' OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
 	Task : Update Customer's Bet Limits
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
@@ -44,9 +44,7 @@ BEGIN
 		, @logSpData_Old	NVARCHAR(MAX)
 		, @xml				XML
 		
-	DECLARE @ErrCode_Cur	INT
-		, @ErrMsg_Cur		NVARCHAR(4000)
-		, @AgentID			INT
+	DECLARE @AgentID			INT
 		, @MasterID			INT
 		, @SuperID			INT
 		, @RoleID			INT
@@ -73,27 +71,17 @@ BEGIN
 
 	SET @startRun = GETDATE()
 
-	SELECT @ErrCode_Cur		= 0
-		, @ErrMsg_Cur		= ''
-		, @ErrCode			= ''
+	SELECT @ErrCode			= 0
 		, @ErrMsg			= ''
 
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-						, @ErrCode	= @ErrCode_Cur OUTPUT
-						, @ErrMsg	= @ErrMsg_Cur OUTPUT
+						, @ErrCode	= @ErrCode OUTPUT
+						, @ErrMsg	= @ErrMsg OUTPUT
 
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode 
-							+ cast(@ErrCode_cur AS VARCHAR(300)) 
-							+ CHAR(7)
-			,	@ErrMsg = @ErrMsg 
-							+ @ErrMsg_Cur 
-							+ CHAR(7)
-
+	IF @ErrCode > 0
 		RETURN
-	END
+	
 
 	--Check RoleID
 	IF @RoleID NOT IN (1, 2, 3, 4)
@@ -145,7 +133,7 @@ BEGIN
 						, @ErrCode		= @ErrCode OUTPUT
 						, @ErrMsg		= @ErrMsg OUTPUT
 
-	IF @ErrCode <> ''
+	IF @ErrCode <> 0
 		RETURN
 
 	IF @RoleID = 1
@@ -213,24 +201,16 @@ BEGIN
 
 	IF (@@ERROR <> 0)
 	BEGIN
-		SELECT @ErrMsg_Cur = CASE @Language
+		SELECT @ErrMsg = CASE @Language
 					WHEN 'E'
 						THEN 'Update process is unsuccessful !'
 					ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
 				END
-			, @ErrCode_cur = 106
+			, @ErrCode = 106
 
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT @ErrCode = @ErrCode 
-								+ cast(@ErrCode_cur AS VARCHAR(300)) 
-								+ CHAR(7)
-				, @ErrMsg = @ErrMsg 
-								+ @ErrMsg_Cur 
-								+ CHAR(7)
-
+		IF @ErrCode > 0
 			RETURN
-		END
+		
 	END
 
 	--START LOGGING		

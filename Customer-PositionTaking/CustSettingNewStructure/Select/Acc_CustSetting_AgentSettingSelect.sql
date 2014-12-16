@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]
 	@CustID INT,
 	@MasterID INT,
 	@SuperID INT,
@@ -12,7 +12,7 @@ AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Agent'setting values of a product
-	DB:  DBCUST/CUSTDB
+	DB:  DBTXN/CustDB
 	Original:
 
 	Param's Explanation:

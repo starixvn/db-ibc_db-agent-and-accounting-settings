@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_DefaultMemberPTCorrect]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_DefaultMemberPTCorrect]
 	@AgentID INT,
 	@MasterID INT,
 	@SuperID INT,
@@ -12,7 +12,7 @@ AS
 	/*
 	Created: 20141105@Dominic
 	Task : Correct default PT settings of a specific member
-	DB:  DBCUST/CUSTDB
+	DB:  DBTXN/CustDB
 	Original:
 
 	Param's Explanation:

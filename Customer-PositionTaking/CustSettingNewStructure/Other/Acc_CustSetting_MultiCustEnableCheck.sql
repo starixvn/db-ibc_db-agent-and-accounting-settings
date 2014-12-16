@@ -7,7 +7,7 @@ AS
 		Created: Dominic
 		Date: 2014-12-08
 		Task: Check enabled status for a list of costumers
-		DB: DBCUST/CUSTDB
+		DB: DBTXN/CustDB
 */
 BEGIN
 	SET NOCOUNT ON

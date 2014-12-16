@@ -12,13 +12,13 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitCheck]
 	, @SuperID		INT
 	, @BetLimit_XML VARCHAR(MAX)
 	, @Language		VARCHAR(2)		= 'E'
-	, @ErrCode		VARCHAR(300)	= ''	OUTPUT
+	, @ErrCode		INT				= 0	OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
 	Task : Check Customer's Bet Limits
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
@@ -67,7 +67,7 @@ BEGIN
 		OR @BetLimit_XML = ''
 		RETURN
 
-	SELECT @ErrCode = ''
+	SELECT @ErrCode = 0
 		, @ErrMsg = ''
 
 	--Parse XML data

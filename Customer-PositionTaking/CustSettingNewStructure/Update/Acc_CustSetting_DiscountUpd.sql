@@ -11,13 +11,13 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd]
 	, @UserID				INT
 	, @IP					VARCHAR(50)		= ''
 	, @Language				VARCHAR(20)		= 'E'
-	, @ErrCode				VARCHAR(300)	= ''	OUTPUT
+	, @ErrCode				INT				= 0	OUTPUT
 	, @ErrMsg				NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
 	Task : Update Customer's Discount
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
@@ -50,8 +50,6 @@ BEGIN
 		,	@SuperID		INT
 		,	@RoleID			INT
 		
-	DECLARE @ErrCode_Cur	INT
-		,	@ErrMsg_Cur		NVARCHAR(4000)
 		
 	DECLARE @NewDiscountTbl TABLE (
 				SportType	SMALLINT
@@ -70,9 +68,7 @@ BEGIN
 		OR @Discount_XML = ''
 		RETURN
 
-	SELECT	@ErrCode_Cur	= 0
-		,	@ErrMsg_Cur		= ''
-		,	@ErrCode		= ''
+	SELECT	@ErrCode		= 0
 		,	@ErrMsg			= ''
 
 	SET @startRun = GETDATE()
@@ -80,20 +76,12 @@ BEGIN
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
 										@custid		= @custid
-									,	@ErrCode	= @ErrCode_Cur OUTPUT
-									,	@ErrMsg		= @ErrMsg_Cur OUTPUT
+									,	@ErrCode	= @ErrCode OUTPUT
+									,	@ErrMsg		= @ErrMsg OUTPUT
 
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode 
-								+ cast(@ErrCode_cur AS VARCHAR(300)) 
-								+ CHAR(7)
-				, @ErrMsg = @ErrMsg 
-								+ @ErrMsg_Cur 
-								+ CHAR(7)
-
+	IF @ErrCode > 0
 		RETURN
-	END
+	
 
 	--Check RoleID
 	IF @RoleID NOT IN (1, 2, 3, 4)
@@ -114,19 +102,12 @@ BEGIN
 											,	@roleid		= @roleid
 											,	@isExecRep	= 1
 											,	@Language	= @Language
-											,	@ErrCode	= @ErrCode_Cur	OUTPUT
-											,	@ErrMsg		= @ErrMsg_Cur	OUTPUT
+											,	@ErrCode	= @ErrCode	OUTPUT
+											,	@ErrMsg		= @ErrMsg	OUTPUT
 
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT	@ErrCode = @ErrCode 
-							+ cast(@ErrCode_cur AS VARCHAR(300)) 
-							+ CHAR(7)
-			,	@ErrMsg = @ErrMsg 
-							+ @ErrMsg_Cur 
-							+ CHAR(7)
+	IF @ErrCode > 0
 		RETURN
-	END
+	
 
 	--Get line information
 	SELECT @AgentID = recommend
@@ -163,7 +144,7 @@ BEGIN
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
 
-	IF @ErrCode <> ''
+	IF @ErrCode <> 0
 		RETURN
 
 	--Get old comm

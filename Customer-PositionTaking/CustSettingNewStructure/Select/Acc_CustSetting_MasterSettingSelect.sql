@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect]
 	@CustID INT,
 	@SuperID INT,
 	@ProductID TINYINT
@@ -11,7 +11,7 @@ AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Master'setting values of a product
-	DB:  DBCUST/CUSTDB
+	DB:  DBTXN/CustDB
 	Original:
 
 	Param's Explanation:

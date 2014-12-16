@@ -14,7 +14,7 @@ AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Member'setting values of a product
-	DB:  DBCUST/CUSTDB
+	DB:  DBTXN/CustDB
 	Original:
 
 	Param's Explanation:

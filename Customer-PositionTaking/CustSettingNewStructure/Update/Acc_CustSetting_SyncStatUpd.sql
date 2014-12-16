@@ -11,7 +11,7 @@ AS
 /*  
   Created: Dominic  
   Date: 2014-12-04  
-  DB: DBCUST/CUSTDB  
+  DB: DBTXN/CustDB
   Task: Update synchronize status on a product 
     
   Parameters Explanation:  

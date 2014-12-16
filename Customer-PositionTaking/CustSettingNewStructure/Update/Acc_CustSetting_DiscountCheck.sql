@@ -12,13 +12,13 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountCheck]
 	, @SuperID			INT
 	, @Discount_XML		VARCHAR(MAX)
 	, @Language			VARCHAR(2)		= 'E'
-	, @ErrCode			VARCHAR(300)	= ''	OUTPUT
+	, @ErrCode			INT				= 0	OUTPUT
 	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
 	Task : Check Customer's Discount
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
@@ -46,7 +46,7 @@ BEGIN
 		OR @Discount_XML = ''
 		RETURN
 
-	SELECT	@ErrCode	= ''
+	SELECT	@ErrCode	= 0
 		,	@ErrMsg		= ''
 
 	DECLARE @iDoc INT

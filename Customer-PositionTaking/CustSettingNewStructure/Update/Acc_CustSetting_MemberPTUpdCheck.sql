@@ -13,13 +13,13 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTUpdCheck]
 	, @PT_XML			VARCHAR(MAX)
 	
 	, @Language			VARCHAR(2)		= 'E'
-	, @ErrCode			VARCHAR(300)	= ''	OUTPUT
+	, @ErrCode			INT				= 0	OUTPUT
 	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20141210@Dominic
 	Task : Check Member's PT when SMA update member
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
@@ -44,13 +44,9 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @ErrCode_Cur INT
-		, @ErrMsg_Cur NVARCHAR(4000)
-		, @ErrType	NVARCHAR(4000)
+	DECLARE @ErrType	NVARCHAR(4000)
 		
-	SELECT @ErrCode_Cur = 0
-		, @ErrMsg_Cur = ''
-		, @ErrCode = ''
+	SELECT @ErrCode = 0
 		, @ErrMsg = ''
 		
 	DECLARE @NewPTTble TABLE (
@@ -919,7 +915,7 @@ BEGIN
 				SET @ErrType = LEFT(@ErrType, LEN(@ErrType) - 1)
 			select @ErrCode = 114
 			
-			SELECT @ErrMsg_cur =case @Language 
+			SELECT @ErrMsg =case @Language 
 									WHEN 'E' THEN 'Wrong auto position taking.'
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language)
 								END			
@@ -1020,7 +1016,7 @@ BEGIN
 				SET @ErrType = LEFT(@ErrType, LEN(@ErrType) - 1)
 			select @ErrCode = 116
 			
-			SELECT @ErrMsg_cur =
+			SELECT @ErrMsg =
 								case @Language 
 									WHEN 'E' THEN 'Wrong auto position taking.'
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20009,@Language)
@@ -1069,7 +1065,7 @@ BEGIN
 				SET @ErrType = LEFT(@ErrType, LEN(@ErrType) - 1)
 			select @ErrCode = 117
 			
-			SELECT @ErrMsg_cur =	
+			SELECT @ErrMsg =	
 								case @Language 
 									WHEN 'E' THEN 'Wrong  position taking.'
 									ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)

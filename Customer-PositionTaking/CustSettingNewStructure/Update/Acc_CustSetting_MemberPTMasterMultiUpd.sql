@@ -12,14 +12,14 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTMasterMultiUpd]
 	, @IP VARCHAR(50) = ''
 	, @UserID INT = 0
 	, @Language VARCHAR(20) = 'E'
-	, @ErrCode VARCHAR(300) = '' OUTPUT
+	, @ErrCode INT			= 0 OUTPUT
 	, @ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*
 		Created: Dominic
 		Date: 2014-12-09
 		Task: master multiple update grouped member's PT
-		DB: DBCUST/CUSTDB
+		DB: DBTXN/CustDB
 
 		Parameter's Explanation:	
 		• @PT_XML:
@@ -44,9 +44,7 @@ BEGIN
 		
 	DECLARE @AdjustedPT_XML VARCHAR(MAX)=NULL
 		
-	DECLARE @ErrCode_Cur INT
-		, @ErrMsg_Cur NVARCHAR(4000)
-		, @ErrType	NVARCHAR(4000)
+	DECLARE @ErrType	NVARCHAR(4000)
 		, @AgentID INT
 		, @MasterID INT
 		, @SuperID INT
@@ -94,9 +92,7 @@ BEGIN
 
 	SET @startRun = GETDATE()
 
-	SELECT @ErrCode_Cur = 0
-		, @ErrMsg_Cur = ''
-		, @ErrCode = ''
+	SELECT @ErrCode = 0
 		, @ErrMsg = ''
 
 
@@ -108,16 +104,12 @@ BEGIN
 			
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
-		, @ErrCode = @ErrCode_Cur OUTPUT
-		, @ErrMsg = @ErrMsg_Cur OUTPUT
+		, @ErrCode = @ErrCode OUTPUT
+		, @ErrMsg = @ErrMsg OUTPUT
 
-	IF @ErrCode_Cur > 0
-	BEGIN
-		SELECT @ErrCode = @ErrCode + cast(@ErrCode_cur AS VARCHAR(300)) + CHAR(7)
-			, @ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-
+	IF @ErrCode > 0
 		RETURN
-	END
+	
 	
 	--Parse XML	
 	DECLARE @iDoc INT
@@ -202,7 +194,7 @@ BEGIN
 						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
-	IF @ErrCode <> ''
+	IF @ErrCode <> 0
 		RETURN		
 
 	

@@ -3,14 +3,14 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect]
 	@CustID INT,
 	@ProductID TINYINT
 AS
 	/*
 	Created: 20141104@Dominic
 	Task : Get all Super'setting values of a product
-	DB: DBCUST/CUSTDB
+	DB: DBTXN/CustDB
 	Original:
 
 	Param's Explanation:
