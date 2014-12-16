@@ -5,7 +5,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTUpdCheck] 
-	@CustID				INT 
+	  @CustID			INT 
 	, @RoleID			INT
 	, @AgentID			INT
 	, @MasterID			INT
@@ -13,7 +13,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTUpdCheck]
 	, @PT_XML			VARCHAR(MAX)
 	
 	, @Language			VARCHAR(2)		= 'E'
-	, @ErrCode			INT				= 0	OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
 	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
@@ -50,18 +50,18 @@ BEGIN
 		, @ErrMsg = ''
 		
 	DECLARE @NewPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, IsLive BIT
-		, SuperPT TINYINT
-		, MasterPT TINYINT
-		, AgentPT TINYINT
-		, AgentPT_Max TINYINT
-		, AgentAPT_Max TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT)
+		  SportType			SMALLINT
+		, BetType			SMALLINT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
+		, AgentPT			TINYINT
+		, AgentPT_Max		TINYINT
+		, AgentAPT_Max		TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT)
 		
 	DECLARE @IsGrouped BIT = 0
 	
@@ -84,16 +84,16 @@ BEGIN
 		, IsAutoSuperPT 
 		, AutoSuperPT 
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, SuperPT TINYINT
-			, MasterPT TINYINT
-			, AgentPT TINYINT
-			, IsAutoMasterPT TINYINT
-			, AutoMasterPT TINYINT
-			, IsAutoSuperPT BIT
-			, AutoSuperPT TINYINT
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, SuperPT			TINYINT
+			, MasterPT			TINYINT
+			, AgentPT			TINYINT
+			, IsAutoMasterPT	TINYINT
+			, AutoMasterPT		TINYINT
+			, IsAutoSuperPT		BIT
+			, AutoSuperPT		TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc

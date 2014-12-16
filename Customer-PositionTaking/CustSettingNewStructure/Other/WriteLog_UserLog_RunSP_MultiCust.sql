@@ -1,58 +1,55 @@
-ALTER PROCEDURE [dbo].[WriteLog_UserLog_RunSP_MultiCust]  
-  @UserID INT,  
-  @CustIDList VARCHAR(MAX),
-  @NewPT_XML VARCHAR(MAX),
-  @OldPT_XML VARCHAR(MAX),
-  @SubAccID INT = 0,
-  @IP VARCHAR(50) = '',
-  @Language VARCHAR(20) = 'E',
-  
-  @SPName VARCHAR(50)= NULL,  
-  @Doing VARCHAR(4000) = NULL, 
-  
-  @ActionID INT = NULL,  
-  @Duration INT = NULL  
-    
-/* Created: 2014-12-09@Dominic 
+ALTER PROCEDURE [dbo].[WriteLog_UserLog_RunSP_MultiCust] 
+      @UserID		INT
+	, @CustIDList	VARCHAR(MAX)
+	, @NewPT_XML	VARCHAR(MAX)
+	, @OldPT_XML	VARCHAR(MAX)
+	, @SubAccID		INT				= 0
+	, @IP			VARCHAR(50)		= ''
+	, @Language		VARCHAR(20)		= 'E'
+	, @SPName		VARCHAR(50)		= NULL
+	, @Doing		VARCHAR(4000)	= NULL
+	, @ActionID		INT				= NULL
+	, @Duration		INT				= NULL
+	
+	/* Created: 2014-12-09@Dominic 
     Task: Write log for SMA multiple upd grouped member's PT settings 
     DB: bodb_CustomerLog  
-*/  
-AS  
-BEGIN    
-	SET NOCOUNT ON;  
-	
+	*/
+AS
+BEGIN
+	SET NOCOUNT ON;
+
 	DECLARE @NewPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, IsLive BIT
-		, SuperPT TINYINT
-		, MasterPT TINYINT
-		, AgentPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT)
-		
+		  SportType			SMALLINT
+		, BetType			SMALLINT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
+		, AgentPT			TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		)
 	DECLARE @OldPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, IsLive BIT
-		, SuperPT TINYINT
-		, MasterPT TINYINT
-		, AgentPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT)
-		
+		  SportType			SMALLINT
+		, BetType			SMALLINT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
+		, AgentPT			TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		)
 	DECLARE @tblCust TABLE (CustID INT)
-	
+
 	--Parse affected Customer
 	INSERT INTO @tblCust (CustID)
 	SELECT CONVERT(INT, val)
 	FROM dbo.strSplit(@CustIDList, ',')
-	
-	
+
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
@@ -61,45 +58,44 @@ BEGIN
 	INSERT @OldPTTble
 	SELECT *
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, SuperPT TINYINT
-			, MasterPT TINYINT
-			, AgentPT TINYINT
-			, IsAutoMasterPT TINYINT
-			, AutoMasterPT TINYINT
-			, IsAutoSuperPT BIT
-			, AutoSuperPT TINYINT
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, SuperPT			TINYINT
+			, MasterPT			TINYINT
+			, AgentPT			TINYINT
+			, IsAutoMasterPT	TINYINT
+			, AutoMasterPT		TINYINT
+			, IsAutoSuperPT		BIT
+			, AutoSuperPT		TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc
-	
+
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
 		, @NewPT_XML
 
 	INSERT @NewPTTble
 	SELECT *
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, SuperPT TINYINT
-			, MasterPT TINYINT
-			, AgentPT TINYINT
-			, IsAutoMasterPT TINYINT
-			, AutoMasterPT TINYINT
-			, IsAutoSuperPT BIT
-			, AutoSuperPT TINYINT
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, SuperPT			TINYINT
+			, MasterPT			TINYINT
+			, AgentPT			TINYINT
+			, IsAutoMasterPT	TINYINT
+			, AutoMasterPT		TINYINT
+			, IsAutoSuperPT		BIT
+			, AutoSuperPT		TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc
-	
-  
+
 	DECLARE @logSpData NVARCHAR(MAX)
 		, @logSpData_Old NVARCHAR(MAX)
 		, @xml XML
-		
+
 	--START LOGGING		
 	SET @xml = (
 			SELECT @CustIDList AS '@c'
@@ -150,28 +146,25 @@ BEGIN
 			FOR XML PATH('r')
 				, TYPE
 			)
-	SET @logSpData	= REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-	
-		
-	INSERT INTO dbo.UserLog_RunSP( UserID,   
-			CustID,   
-			SPName,  
-			Doing,  
-			ActionID,   
-			TrackingValue,  
-			TrackingValue2,  
-			Duration  
-			)  
-			
-	SELECT  @UserID,
-			tmp.CustID,
-			@SPName,
-			@Doing,
-			@ActionId,
-			@logSpData,  
-			@logSpData_Old,  
-			@Duration 
-	FROM @tblCust tmp
+	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
-END  
-  
+	INSERT INTO dbo.UserLog_RunSP (
+		UserID
+		, CustID
+		, SPName
+		, Doing
+		, ActionID
+		, TrackingValue
+		, TrackingValue2
+		, Duration
+		)
+	SELECT @UserID
+		, tmp.CustID
+		, @SPName
+		, @Doing
+		, @ActionId
+		, @logSpData
+		, @logSpData_Old
+		, @Duration
+	FROM @tblCust tmp
+END

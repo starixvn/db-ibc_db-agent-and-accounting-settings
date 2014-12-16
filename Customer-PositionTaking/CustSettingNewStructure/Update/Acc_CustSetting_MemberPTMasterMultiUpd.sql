@@ -44,43 +44,43 @@ BEGIN
 		
 	DECLARE @AdjustedPT_XML VARCHAR(MAX)=NULL
 		
-	DECLARE @ErrType	NVARCHAR(4000)
-		, @AgentID INT
-		, @MasterID INT
-		, @SuperID INT
-		, @RepresentCustID INT
-		, @RoleID INT
-		, @TotalCount DECIMAL = 0
-		, @DiffCount INT = 0
-		, @MoveToIndv BIT = 0
+	DECLARE @ErrType		NVARCHAR(4000)
+		, @AgentID			INT
+		, @MasterID			INT
+		, @SuperID			INT
+		, @RepresentCustID	INT
+		, @RoleID			INT
+		, @TotalCount		DECIMAL = 0
+		, @DiffCount		INT		= 0
+		, @MoveToIndv		BIT		= 0
 	
 	DECLARE @Old_PT_XML VARCHAR(MAX)
 		
 	DECLARE @tblCust TABLE (CustID INT)
 	
 	DECLARE @NewPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, ISLive BIT
-		, AgentPT TINYINT
-		, SuperPT TINYINT
-		, MasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
+		  SportType			SMALLINT
+		, BetType			SMALLINT
+		, ISLive			BIT
+		, AgentPT			TINYINT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
 		)
 	DECLARE @OldPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, IsLive BIT
-		, SuperPT TINYINT
-		, AgentPT TINYINT
-		, MasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
+		  SportType			SMALLINT
+		, BetType			SMALLINT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, AgentPT			TINYINT
+		, MasterPT			TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
 		)
 
 	--Check if XML is null or empty
@@ -104,8 +104,8 @@ BEGIN
 			
 	--Check disable user
 	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
-		, @ErrCode = @ErrCode OUTPUT
-		, @ErrMsg = @ErrMsg OUTPUT
+		, @ErrCode	= @ErrCode	OUTPUT
+		, @ErrMsg	= @ErrMsg	OUTPUT
 
 	IF @ErrCode > 0
 		RETURN
@@ -129,12 +129,12 @@ BEGIN
 			,IsAutoMasterPT
 			,AutoMasterPT
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, MasterPT TINYINT
-			, IsAutoMasterPT BIT
-			, AutoMasterPT TINYINT
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, MasterPT			TINYINT
+			, IsAutoMasterPT	BIT
+			, AutoMasterPT		TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc
@@ -190,7 +190,7 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @PT_XML = @PT_XML
+						, @PT_XML		= @PT_XML
 						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT

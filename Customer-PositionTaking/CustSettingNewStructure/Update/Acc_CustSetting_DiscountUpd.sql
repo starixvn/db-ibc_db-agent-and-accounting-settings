@@ -11,7 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd]
 	, @UserID				INT
 	, @IP					VARCHAR(50)		= ''
 	, @Language				VARCHAR(20)		= 'E'
-	, @ErrCode				INT				= 0	OUTPUT
+	, @ErrCode				INT				= 0		OUTPUT
 	, @ErrMsg				NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*

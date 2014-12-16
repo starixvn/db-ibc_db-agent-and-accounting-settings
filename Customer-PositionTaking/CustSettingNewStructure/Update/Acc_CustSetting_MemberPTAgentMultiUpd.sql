@@ -36,51 +36,51 @@ BEGIN
 	SET NOCOUNT ON
 	SET NOCOUNT ON
 
-	DECLARE @startRun DATETIME
-		, @endRun DATETIME
-		, @duration INT
+	DECLARE @startRun	DATETIME
+		, @endRun		DATETIME
+		, @duration		INT
 		
 	DECLARE @AdjustedPT_XML VARCHAR(MAX)=NULL
 		
-	DECLARE @ErrType	NVARCHAR(4000)
-		, @AgentID INT
-		, @MasterID INT
-		, @SuperID INT
-		, @RepresentCustID INT
-		, @RoleID INT
-		, @TotalCount DECIMAL = 0
-		, @DiffCount INT = 0
-		, @MoveToIndv BIT = 0
+	DECLARE @ErrType		NVARCHAR(4000)
+		, @AgentID			INT
+		, @MasterID			INT
+		, @SuperID			INT
+		, @RepresentCustID	INT
+		, @RoleID			INT
+		, @TotalCount		DECIMAL = 0
+		, @DiffCount		INT		= 0
+		, @MoveToIndv		BIT		= 0
 	
 	DECLARE @Old_PT_XML VARCHAR(MAX)
 		
 	DECLARE @tblCust TABLE (CustID INT)
 	
 	DECLARE @NewPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, ISLive BIT
-		, AgentPT TINYINT
-		, AgentPT_Max TINYINT
-		, AgentAPT_Max TINYINT
-		, SuperPT TINYINT
-		, MasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
+		SportType			SMALLINT
+		, BetType			SMALLINT
+		, ISLive			BIT
+		, AgentPT			TINYINT
+		, AgentPT_Max		TINYINT
+		, AgentAPT_Max		TINYINT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
 		)
 	DECLARE @OldPTTble TABLE (
-		SportType SMALLINT
-		, BetType SMALLINT
-		, IsLive BIT
-		, SuperPT TINYINT
-		, AgentPT TINYINT
-		, MasterPT TINYINT
-		, IsAutoSuperPT BIT
-		, AutoSuperPT TINYINT
-		, IsAutoMasterPT TINYINT
-		, AutoMasterPT TINYINT
+		SportType			SMALLINT
+		, BetType			SMALLINT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, AgentPT			TINYINT
+		, MasterPT			TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
+		, IsAutoMasterPT	TINYINT
+		, AutoMasterPT		TINYINT
 		)
 
 	--Check if XML is null or empty
@@ -129,10 +129,10 @@ BEGIN
 	SELECT SportType,BetType,IsLive,AgentPT,0,0
 			,0,0,0,0,0,0
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, AgentPT TINYINT
+			SportType	SMALLINT
+			, BetType	SMALLINT
+			, IsLive	BIT
+			, AgentPT	TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc

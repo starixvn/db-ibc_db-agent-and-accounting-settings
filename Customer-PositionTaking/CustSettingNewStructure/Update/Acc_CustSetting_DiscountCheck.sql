@@ -36,7 +36,7 @@ BEGIN
 	SET NOCOUNT ON
 
 	DECLARE @NewDiscountTbl TABLE (
-		SportType	SMALLINT
+		  SportType	SMALLINT
 		, BetType	SMALLINT
 		, Discount	DECIMAL(9, 8)
 		)
