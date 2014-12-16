@@ -1176,7 +1176,7 @@ SET NOCOUNT ON
 						grpt.AutoSuperPT
 				FROM @tblCust cust
 				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1229,7 +1229,7 @@ SET NOCOUNT ON
 						grpt.AutoSuperPT
 				FROM @RemainCustTbl cust
 				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1291,7 +1291,7 @@ SET NOCOUNT ON
 						grpt.AutoSuperPT
 				FROM @tblCust cust
 				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
@@ -1346,7 +1346,7 @@ SET NOCOUNT ON
 						grpt.AutoSuperPT
 				FROM @RemainCustTbl cust
 				CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-				LEFT JOIN dbo.CustPTSetting3rd_Member mempt WITH(NOLOCK)
+				LEFT JOIN dbo.CustPTSetting3rd_Member mempt
 				ON cust.CustID=mempt.CustID
 				AND grpt.SportType=mempt.SportType
 				AND grpt.BetType=mempt.BetType
