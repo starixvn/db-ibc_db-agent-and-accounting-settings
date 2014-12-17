@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTUpdCheck] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTCheck] 
 	  @CustID			INT 
 	, @RoleID			INT
 	, @AgentID			INT

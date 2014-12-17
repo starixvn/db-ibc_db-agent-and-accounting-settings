@@ -5,7 +5,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTMasterMultiUpd] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterPTOnMemberMultiUpd] 
 	  @CustIDList		VARCHAR(MAX)
 	, @PT_XML			VARCHAR(MAX)
 	, @SubAccID			INT				= 0
