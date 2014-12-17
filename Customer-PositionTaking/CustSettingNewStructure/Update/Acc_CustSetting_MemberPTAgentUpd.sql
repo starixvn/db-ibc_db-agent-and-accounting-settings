@@ -80,7 +80,9 @@ BEGIN
 		, IsAutoMasterPT	TINYINT
 		, AutoMasterPT		TINYINT
 		)
-
+	
+	DECLARE @SettingMode BIT = 0
+	
 	--Check if XML is null or empty
 	IF @PT_XML IS NULL
 		OR @PT_XML = ''
@@ -135,40 +137,92 @@ BEGIN
 	FROM custinfo ci WITH(NOLOCK)
 	WHERE ci.custid = @CustID
 	
+	--get stting mode
+	SELECT @SettingMode = IsGrouped
+	FROM dbo.CustSettingMode3rd
+	WHERE CustID= @CustID
+		
 	--Get member's setting to be adjusted
-	UPDATE main
-	SET  main.SuperPT = cs.SuperPT
-		, main.MasterPT = cs.MasterPT
-		, main.IsAutoSuperPT =cs.IsAutoSuperPT
-		, main.AutoSuperPT = cs.AutoSuperPT
-		, main.IsAutoMasterPT = cs.IsAutoMasterPT
-		, main.AutoMasterPT = cs.AutoMasterPT
-	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
-	ON cs.SportType=main.SportType
-			AND cs.BetType=main.BetType
-			AND cs.IsLive=main.IsLive
-			AND cs.CustID=@CustID
+	IF ISNULL(@SettingMode,0)=0
+	BEGIN
+		--individual setting
+		UPDATE main
+		SET  main.SuperPT = cs.SuperPT
+			, main.MasterPT = cs.MasterPT
+			, main.IsAutoSuperPT =cs.IsAutoSuperPT
+			, main.AutoSuperPT = cs.AutoSuperPT
+			, main.IsAutoMasterPT = cs.IsAutoMasterPT
+			, main.AutoMasterPT = cs.AutoMasterPT
+		FROM @NewPTTble main
+		JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
+		ON cs.SportType=main.SportType
+				AND cs.BetType=main.BetType
+				AND cs.IsLive=main.IsLive
+				AND cs.CustID=@CustID
+	END
+	ELSE
+	BEGIN
+		--individual setting
+		UPDATE main
+		SET  main.SuperPT = cs.SuperPT
+			, main.MasterPT = cs.MasterPT
+			, main.IsAutoSuperPT =cs.IsAutoSuperPT
+			, main.AutoSuperPT = cs.AutoSuperPT
+			, main.IsAutoMasterPT = cs.IsAutoMasterPT
+			, main.AutoMasterPT = cs.AutoMasterPT
+		FROM @NewPTTble main
+		JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
+		ON cs.SportType=main.SportType
+				AND cs.BetType=main.BetType
+				AND cs.IsLive=main.IsLive
+				AND cs.AgentID=@AgentID
+	END
 			
 	--Get old settings for logs
-	INSERT @OldPTTble
-	SELECT 
-			cs.SportType 
-			, cs.BetType 
-			, cs.IsLive 
-			, cs.SuperPT 
-			, cs.AgentPT 
-			, cs.MasterPT 
-			, cs.IsAutoSuperPT 
-			, cs.AutoSuperPT 
-			, cs.IsAutoMasterPT 
-			, cs.AutoMasterPT 
-	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
-	ON cs.SportType=main.SportType
-			AND cs.BetType=main.BetType
-			AND cs.IsLive=main.IsLive
-			AND cs.CustID=@CustID	
+	IF ISNULL(@SettingMode,0)=0
+	BEGIN
+		--Individual Setting
+		INSERT @OldPTTble
+		SELECT 
+				cs.SportType 
+				, cs.BetType 
+				, cs.IsLive 
+				, cs.SuperPT 
+				, cs.AgentPT 
+				, cs.MasterPT 
+				, cs.IsAutoSuperPT 
+				, cs.AutoSuperPT 
+				, cs.IsAutoMasterPT 
+				, cs.AutoMasterPT 
+		FROM @NewPTTble main
+		JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
+		ON cs.SportType=main.SportType
+				AND cs.BetType=main.BetType
+				AND cs.IsLive=main.IsLive
+				AND cs.CustID=@CustID	
+	END
+	ELSE
+	BEGIN
+		--Group setting
+		INSERT @OldPTTble
+		SELECT 
+				cs.SportType 
+				, cs.BetType 
+				, cs.IsLive 
+				, cs.SuperPT 
+				, cs.AgentPT 
+				, cs.MasterPT 
+				, cs.IsAutoSuperPT 
+				, cs.AutoSuperPT 
+				, cs.IsAutoMasterPT 
+				, cs.AutoMasterPT 
+		FROM @NewPTTble main
+		JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
+		ON cs.SportType=main.SportType
+				AND cs.BetType=main.BetType
+				AND cs.IsLive=main.IsLive
+				AND cs.AgentID=@AgentID	
+	END
 			
 	--Check error		
 	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 

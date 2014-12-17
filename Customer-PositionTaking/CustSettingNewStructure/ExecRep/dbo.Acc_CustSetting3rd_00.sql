@@ -1119,22 +1119,52 @@ BEGIN
 		AutoSuperPT TINYINT
 	)
 	
+	DECLARE @SettingMode BIT = 0
+	
+	--get stting mode
+	SELECT @SettingMode = IsGrouped
+	FROM dbo.CustSettingMode3rd
+	WHERE CustID= @CustID
+		
 	--get current setting
-	INSERT @CorredPTTbl
-	SELECT
-			mpt.CustID,
-			mpt.SportType ,
-			mpt.BetType ,
-			mpt.IsLive,
-			mpt.SuperPT ,
-			mpt.MasterPT ,
-			mpt.AgentPT ,
-			mpt.IsAutoMasterPT ,
-			mpt.AutoMasterPT ,
-			mpt.IsAutoSuperPT ,
-			mpt.AutoSuperPT 
-	FROM CustPTSetting3rd_Member mpt WITH (NOLOCK)
-	WHERE mpt.CustID = @CustID
+	IF ISNULL(@SettingMode,0) = 0
+	BEGIN
+		--Individual settings
+		INSERT @CorredPTTbl
+		SELECT
+				mpt.CustID,
+				mpt.SportType ,
+				mpt.BetType ,
+				mpt.IsLive,
+				mpt.SuperPT ,
+				mpt.MasterPT ,
+				mpt.AgentPT ,
+				mpt.IsAutoMasterPT ,
+				mpt.AutoMasterPT ,
+				mpt.IsAutoSuperPT ,
+				mpt.AutoSuperPT 
+		FROM CustPTSetting3rd_Member mpt WITH (NOLOCK)
+		WHERE mpt.CustID = @CustID
+	END
+	ELSE
+	BEGIN
+		--Group setting
+		INSERT @CorredPTTbl
+		SELECT
+			@recommend 
+			, gpt.SportType 
+			, gpt.BetType 
+			, gpt.IsLive 
+			, gpt.SuperPT 
+			, gpt.MasterPT 
+			, gpt.AgentPT 
+			, gpt.IsAutoMasterPT 
+			, gpt.AutoMasterPT 
+			, gpt.IsAutoSuperPT 
+			, gpt.AutoSuperPT 
+		FROM dbo.CustPTGroupSetting3rd_Member  gpt  WITH(NOLOCK)
+		WHERE gpt.AgentID=@recommend
+	END
 	
 	--Correct PT on temp table
 	
@@ -1325,21 +1355,40 @@ BEGIN
 
 
 	--update main table
-	UPDATE main
-	SET
-		main.SuperPT = tmp.SuperPT,
-		main.MasterPT = tmp.MasterPT,
-		main.AgentPT = tmp.AgentPT
-	FROM CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
-	JOIN @CorredPTTbl tmp
-	ON tmp.SportType = main.SportType
-		AND tmp.BetType = main.BetType
-		AND tmp.IsLive = main.IsLive
-		AND tmp.CustID = main.CustID
-	WHERE main.SuperPT <> tmp.SuperPT
-	OR main.MasterPT <> tmp.MasterPT
-	OR main.AgentPT <> tmp.AgentPT	
-		
+	IF ISNULL(@SettingMode,0) = 0
+	BEGIN
+		UPDATE main
+		SET
+			main.SuperPT = tmp.SuperPT,
+			main.MasterPT = tmp.MasterPT,
+			main.AgentPT = tmp.AgentPT
+		FROM CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
+		JOIN @CorredPTTbl tmp
+		ON tmp.SportType = main.SportType
+			AND tmp.BetType = main.BetType
+			AND tmp.IsLive = main.IsLive
+			AND tmp.CustID = main.CustID
+		WHERE main.SuperPT <> tmp.SuperPT
+		OR main.MasterPT <> tmp.MasterPT
+		OR main.AgentPT <> tmp.AgentPT	
+	END
+	ELSE
+	BEGIN
+		UPDATE main
+		SET
+			main.SuperPT = tmp.SuperPT,
+			main.MasterPT = tmp.MasterPT,
+			main.AgentPT = tmp.AgentPT
+		FROM CustPTGroupSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
+		JOIN @CorredPTTbl tmp
+		ON tmp.SportType = main.SportType
+			AND tmp.BetType = main.BetType
+			AND tmp.IsLive = main.IsLive
+			AND tmp.CustID = main.AgentID
+		WHERE main.SuperPT <> tmp.SuperPT
+		OR main.MasterPT <> tmp.MasterPT
+		OR main.AgentPT <> tmp.AgentPT	
+	END	
 END
 /*DOMINIC-CUSTOMER RENOVATION-END*/
 
