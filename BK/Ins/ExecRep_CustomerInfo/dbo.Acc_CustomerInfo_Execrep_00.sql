@@ -764,6 +764,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	
 	@UplineSyncLiveCasino BIT = 0,
 	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	@MemberPT_XML VARCHAR(MAX) = NULL,
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
+	
 	@ErrCode INT = 0 OUTPUT
 	
  AS
@@ -784,6 +788,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 			- 20140318@Elodie: Add CustSettingGame for Keno [Redmine:#13156]
 			- 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+			- 20141217@Dominic: Add logic for new customer setting structure
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -795,6 +800,22 @@ SET NOCOUNT ON
 			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
 
 	if @IsExistTables <> 7 RETURN
+	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN (
+				'CustPTSetting3rd_Agent',
+				'CustPTSetting3rd_Member',
+				'CustPTGroupSetting3rd_Member',
+				'CustSettingMode3rd',
+				'CustBetSetting3rd_Agent',
+				'CustBetSetting3rd_Member',
+				'CustDiscount3rd_Agent',
+				'CustDiscount3rd_Member')
+			AND xtype = 'U'
+			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
+	if @IsExistTables <> 8  RETURN
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	
 	IF @roleid = 4
 	BEGIN					

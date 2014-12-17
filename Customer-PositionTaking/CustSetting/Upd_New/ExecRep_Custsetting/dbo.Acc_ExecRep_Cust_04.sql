@@ -14,6 +14,9 @@
 	@BingoStatus BIT = 0,
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	@IsDisabled_XML VARCHAR(MAX) = NULL,
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	@rowcount INT = 0 OUTPUT
 AS 
 /*
@@ -29,6 +32,7 @@ Revisions:
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
 	- 20140228@Bobby: Update Keno status [Redmine:#12474]
 	- 20140320@Bobby: remove Keno disable
+	- 20141217@Dominic: add logic for new customer setting structure
 	
 Param's Explanation:
 	@Action: 
@@ -52,6 +56,11 @@ SET NOCOUNT ON
 IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
 	AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
 	RETURN
+	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustProductStatus') AND type = 'U') < 1
+		RETURN
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	
 if @action = 'VirtualMultiplier'
 BEGIN
@@ -343,7 +352,101 @@ begin
 			AND Recommend = @CustID
 	END
 end
-
+/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+ELSE IF @Action = 'Others'
+BEGIN
+	--Check if XML is null or empty
+	IF @IsDisabled_XML IS NULL OR @IsDisabled_XML='' RETURN
+	
+	DECLARE @NewDisableStatTbl TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT,
+				IsDisabled BIT,
+				IsDisabledDownline BIT
+			)
+	--Parse XML		
+	DECLARE @iDoc INT
+	EXEC sp_xml_preparedocument @iDoc OUTPUT, @IsDisabled_XML
+	
+	INSERT @NewDisableStatTbl
+	SELECT *
+	FROM OPENXML (@iDoc, '/ROOT/ProductStatus',1) 
+	WITH(SportType smallint, BetType smallint, IsDisabled BIT,IsDisabledDownline BIT)	
+	
+	EXEC sp_xml_removedocument @iDoc
+		
+		
+	IF @RoleID=4
+	BEGIN
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsDisabled=tmp.IsDisabled
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+		AND ci.srecommend=@CustID AND ci.roleid<>4
+			
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsHidden=0
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+			AND ci.srecommend=@CustID AND ci.roleid<>4
+		WHERE stt.IsHidden=1 AND tmp.IsDisabled=0
+	END
+	ELSE IF @RoleID=3
+	BEGIN
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsDisabled=tmp.IsDisabled
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+		AND ci.mrecommend=@CustID AND ci.roleid<>3
+			
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsHidden=0
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+			AND ci.mrecommend=@CustID AND ci.roleid<>3
+		WHERE stt.IsHidden=1 AND tmp.IsDisabled=0
+	END
+	ELSE IF @RoleID=2
+	BEGIN
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsDisabled=tmp.IsDisabled
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+		AND ci.recommend=@CustID AND ci.roleid<>2
+			
+		UPDATE stt WITH(UPDLOCK,ROWLOCK) 
+		SET 
+			stt.IsHidden=0
+		FROM dbo.CustProductStatus stt
+		JOIN @NewDisableStatTbl tmp 
+			ON tmp.SportType=stt.SportType
+			AND tmp.BetType=stt.BetType
+		JOIN dbo.custInfo ci WITH(NOLOCK) ON ci.custid=stt.CustID
+			AND ci.recommend=@CustID AND ci.roleid<>2
+		WHERE stt.IsHidden=1 AND tmp.IsDisabled=0
+	END
+END
+/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 GO
 GRANT EXECUTE ON [dbo].[Acc_ExecRep_Cust_04] TO [bodbAdminNet] AS [dbo]
 GO
