@@ -56,7 +56,7 @@ AS
         - 20140227@Elodie: Add Keno sport [Redmine:#11658]
         - 20140729@Logan:   1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
                             2.Code aligning on modified parts
-        - 20141217@Dominic: Add logic for new customer setting structure
+        - 20141217@Dominic: Add logic for new customer setting structure - Redmine:Feature #26274
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game

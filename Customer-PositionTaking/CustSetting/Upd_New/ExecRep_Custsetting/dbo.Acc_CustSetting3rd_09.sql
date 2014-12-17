@@ -157,7 +157,7 @@
 			- 20140220@Johnson: Merge code correct pt on members after update auto pt for number game[RedmineID: #11562]
 			- 20140313@Johnson: Merge code correct pt on members after update auto pt for racing [RedmineID: #11562]
 			- 20140424@Johnson: fix bug number game correct super pt on member after master update auto pt on member
-			- 20141217@Dominic: add logic for new customer setting structure
+			- 20141217@Dominic: add logic for new customer setting structure - Redmine:Feature #26274
 		Parameter's Explanation:
 	*/
 BEGIN

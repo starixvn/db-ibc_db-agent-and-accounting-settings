@@ -23,7 +23,7 @@ Original: Acc_CustomerUpdMemberHR_MinPositiontaking,
 
 Revisions:
 	- 20140314@Elodie: Add Keno product [Redmine:#13326]
-	- 20141217@Dominic: Add new logic for new customer setting structure
+	- 20141217@Dominic: Add new logic for new customer setting structure - Redmine:Feature #26274
 Param's Explanation:
 * @mode:
     = 'horse': Horse racing

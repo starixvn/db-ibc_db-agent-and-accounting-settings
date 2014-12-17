@@ -110,7 +110,7 @@ AS
 			- 20131104@Johnson: Add live casino, racing
 			- 20140221@Johnson: merge code correct pt after update pt on member for number game [RedmineId: #11562]
 			- 20140313@Johnson: merge code correct pt after update pt on member for racing
-			- 20141217@Dominic: add logic for new customer setting structure
+			- 20141217@Dominic: add logic for new customer setting structure - Redmine:Feature #26274
 		Parameter's Explanation:
 	*/ 
 BEGIN

@@ -32,7 +32,7 @@ Revisions:
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
 	- 20140228@Bobby: Update Keno status [Redmine:#12474]
 	- 20140320@Bobby: remove Keno disable
-	- 20141217@Dominic: add logic for new customer setting structure
+	- 20141217@Dominic: add logic for new customer setting structure - Redmine:Feature #26274
 	
 Param's Explanation:
 	@Action: 
