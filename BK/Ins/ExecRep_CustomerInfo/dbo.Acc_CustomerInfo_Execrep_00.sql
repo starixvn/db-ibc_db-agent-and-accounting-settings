@@ -1204,6 +1204,114 @@ SET NOCOUNT ON
 		END
 
 		--end keno
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+		--POSTION TAKING
+		INSERT INTO [dbo].[CustPTSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[IsLive]
+           ,[SuperPT]
+           ,[MasterPT]
+           ,[AgentPT]
+           ,[IsAutoMasterPT]
+           ,[AutoMasterPT]
+           ,[IsAutoSuperPT]
+           ,[AutoSuperPT]
+           ,[MinPT]
+           ,[MaxPT])
+		SELECT 
+		@custid,SportType,BetType,IsLive,
+			0,0,0,0,0,0,0,0,MaxPT
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		WHERE dtl.SettingType = 1
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode = 301
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			
+			RETURN
+		END
+		--BET LIMIT
+		INSERT INTO [dbo].[CustBetSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[MinBet]
+           ,[MaxBet]
+           ,[MaxPerMatch])
+		SELECT
+		@custid,SportType,BetType,0,0,0
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		WHERE dtl.SettingType = 2
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode = 302
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			
+			RETURN
+		END
+		
+		--DISCOUNT
+		INSERT INTO [dbo].[CustDiscount3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[Discount])
+		SELECT 
+		@CustID,SportType,BetType,0
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
+		WHERE SettingType = 3
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode = 303
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE [dbo].[CustDiscount3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid 
+			
+			RETURN
+		END
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	END--end roleid = 4
 	ELSE IF @roleid = 3
 	BEGIN			
@@ -1664,7 +1772,114 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
-		     
+		 
+		 /*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+		--POSITION TAKING
+		INSERT INTO [dbo].[CustPTSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[IsLive]
+           ,[SuperPT]
+           ,[MasterPT]
+           ,[AgentPT]
+           ,[IsAutoMasterPT]
+           ,[AutoMasterPT]
+           ,[IsAutoSuperPT]
+           ,[AutoSuperPT]
+           ,[MinPT]
+           ,[MaxPT])
+		SELECT 
+		@custid,SportType,BetType,IsLive,
+			0,0,0,0,0,0,0,0,MaxPT
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		WHERE dtl.SettingType = 1
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 304
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+									
+			RETURN
+		END
+		--BET LIMIT
+		INSERT INTO [dbo].[CustBetSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[MinBet]
+           ,[MaxBet]
+           ,[MaxPerMatch])
+		SELECT
+		@custid,SportType,BetType,MinBet,MaxBet,MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent WITH (NOLOCK)
+		WHERE custid=@srecommend
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 305
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+									
+			RETURN
+		END
+		--DISCOUNT
+		INSERT INTO [dbo].[CustDiscount3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[Discount])
+		SELECT 
+		@CustID,SportType,BetType,0
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
+		WHERE SettingType = 3
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 306
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+			DELETE [dbo].[CustDiscount3rd_Agent] WITH(ROWLOCK) WHERE custid = @custid
+									
+			RETURN
+		END
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/    
 	END--end roleid =3
 	ELSE IF @roleid = 2
 	BEGIN				
@@ -2115,7 +2330,130 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+		
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+		--POSITION TAKING 
+		INSERT INTO [dbo].[CustPTSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[IsLive]
+           ,[SuperPT]
+           ,[MasterPT]
+           ,[AgentPT]
+           ,[IsAutoMasterPT]
+           ,[AutoMasterPT]
+           ,[IsAutoSuperPT]
+           ,[AutoSuperPT]
+           ,[MinPT]
+           ,[MaxPT])
+		SELECT 
+		@custid,SportType,BetType,IsLive,
+			0,0,0,0,0,0,0,0,MaxPT
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		WHERE dtl.SettingType = 1
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 307
+				
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
 
+			RETURN
+		END
+		--BET LIMIT
+		DECLARE @BetlimitAgent TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT,
+				MinBet MONEY,
+				MaxBet MONEY,
+				MaxPerMatch MONEY
+			)
+		INSERT INTO @BetlimitAgent
+		SELECT SportType,BetType,
+				 Max(case when MinBet = 0 then NULL else MinBet end) MinBet,
+				 Min(case when MaxBet = 0 then NULL else MaxBet end) MaxBet,
+				 Min(case when MaxPerMatch = 0 then NULL else MaxPerMatch end) MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent smcs WITH (NOLOCK)
+		WHERE smcs.custid=@srecommend OR smcs.custid=@mrecommend
+		GROUP BY SportType,BetType
+		
+		INSERT INTO [dbo].[CustBetSetting3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[MinBet]
+           ,[MaxBet]
+           ,[MaxPerMatch])
+		SELECT
+		@CustID,SportType,BetType,ISNULL(MinBet,0),ISNULL(MaxBet,0),ISNULL(MaxPerMatch,0)
+		FROM @BetlimitAgent
+
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 308
+				
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
+
+			RETURN
+		END
+		--DISCOUNT
+		INSERT INTO [dbo].[CustDiscount3rd_Agent]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[Discount])
+		SELECT 
+		@CustID,SportType,BetType,0
+		FROM dbo.ProductSettingDetail WITH (NOLOCK)
+		WHERE SettingType = 3
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 309
+				
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustPTSetting3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustBetSetting3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustDiscount3rd_Agent] WITH (ROWLOCK) WHERE custId = @custid
+
+			RETURN
+		END
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/ 
 	END--end roleid =2
 	ELSE IF @roleid = 1
 	BEGIN
@@ -2434,6 +2772,298 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+		--BET LIMIT
+		DECLARE @BetlimitMember TABLE(
+				SportType SMALLINT,
+				BetType SMALLINT,
+				MinBet MONEY,
+				MaxBet MONEY,
+				MaxPerMatch MONEY
+			)
+		INSERT INTO @BetlimitMember
+		SELECT SportType,BetType,
+				 Max(case when MinBet = 0 then NULL else MinBet end) MinBet,
+				 Min(case when MaxBet = 0 then NULL else MaxBet end) MaxBet,
+				 Min(case when MaxPerMatch = 0 then NULL else MaxPerMatch end) MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Agent  WITH (NOLOCK)
+		WHERE custid=@srecommend 
+				OR custid=@mrecommend
+				OR custid=@recommend
+		GROUP BY SportType,BetType
+		
+		INSERT INTO [dbo].[CustBetSetting3rd_Member]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[MinBet]
+           ,[MaxBet]
+           ,[MaxPerMatch])
+		SELECT
+		@CustID,SportType,BetType,ISNULL(MinBet,0),ISNULL(MaxBet,0),ISNULL(MaxPerMatch,0)
+		FROM @BetlimitMember
+
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 310
+				
+			-- ROLLBACK MANUALLY
+			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid					
+				
+			RETURN
+		END
+		--DISCOUNT
+		INSERT INTO [dbo].[CustDiscount3rd_Member]
+           ([CustID]
+           ,[SportType]
+           ,[BetType]
+           ,[PlayerDiscount]
+           ,[AgentDiscount]
+           ,[MasterDiscount]
+           ,[SuperDiscount])
+		SELECT 
+		@CustID,acs.SportType,acs.BetType,0,acs.Discount,mcs.Discount,scs.Discount
+		FROM dbo.CustDiscount3rd_Agent acs WITH (NOLOCK)
+		JOIN dbo.CustDiscount3rd_Agent mcs WITH (NOLOCK)
+					ON acs.sporttype = mcs.sporttype
+					AND acs.bettype = mcs.bettype
+					AND mcs.custid = @mrecommend
+		JOIN dbo.CustDiscount3rd_Agent scs WITH (NOLOCK)
+					ON acs.sporttype = scs.sporttype
+					AND acs.bettype = scs.bettype
+					AND scs.custid = @srecommend
+		WHERE acs.custid=@recommend
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 311
+				
+			-- ROLLBACK MANUALLY
+			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid				
+				
+			RETURN
+		END
+		--POSITION TAKING
+		IF @MemberPT_XML IS NOT NULL AND @MemberPT_XML <> ''
+		BEGIN
+			DECLARE @iDoc INT
+			DECLARE @memberPTTbl TABLE (
+				SportType	SMALLINT
+				,BetType	SMALLINT
+				,Islive		BIT
+				,SuperPT	TINYINT
+				,MasterPT	TINYINT
+				,AgentPT	TINYINT
+				,IsAutoMPT	BIT
+				,AutoMPT	TINYINT
+				,IsAutoSPT	BIT
+				,AutoSPT	TINYINT
+			)
+			
+			EXEC sp_xml_preparedocument @iDoc OUTPUT, @MemberPT_XML	
+			
+			INSERT @memberPTTbl
+			SELECT *
+			FROM OPENXML (@iDoc, '/ROOT/PositionTaking',1) 
+			WITH(SportType smallint, BetType smallint, Islive bit, SuperPT tinyint, 
+			MasterPT tinyint, AgentPT tinyint, IsAutoMPT bit,AutoMPT tinyint,IsAutoSPT bit,AutoSPT tinyint)	
+			
+			EXEC sp_xml_removedocument @iDoc
+			
+			--If this is the first member,insert into Group Setting
+			INSERT INTO [dbo].[CustPTGroupSetting3rd_Member]
+			   ([AgentID]
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsLive]
+			   ,[SuperPT]
+			   ,[MasterPT]
+			   ,[AgentPT]
+			   ,[IsAutoMasterPT]
+			   ,[AutoMasterPT]
+			   ,[IsAutoSuperPT]
+			   ,[AutoSuperPT])
+			SELECT 
+				@recommend,SportType,BetType,Islive,
+				SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsAutoSPT,AutoSPT
+			FROM @memberPTTbl
+			WHERE NOT EXISTS(SELECT TOP 1 1 FROM dbo.CustPTGroupSetting3rd_Member WHERE AgentID=@recommend)
+			
+			IF @@error <> 0
+			BEGIN
+				--Error occur
+				SET @ErrCode = 312
+					
+				-- ROLLBACK MANUALLY
+				Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+				Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+				DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid	
+				DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+				DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+				DELETE [dbo].[CustPTGroupSetting3rd_Member] WITH (ROWLOCK) WHERE AgentID = @recommend		
+					
+				RETURN
+			END
+			ELSE IF @@ROWCOUNT<>0
+			BEGIN
+				--It this is the fist member,just insert IsgroupedPT=1
+				INSERT INTO dbo.CustSettingMode3rd(CustID,IsGrouped)
+				SELECT @CustID,1
+				
+				IF @@error <> 0
+				BEGIN
+					--Error occur
+					SET @ErrCode = 313
+						
+					-- ROLLBACK MANUALLY
+					Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+					Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+					DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+					DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+					DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+					DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid	
+					DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+					DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+					DELETE [dbo].[CustPTGroupSetting3rd_Member] WITH (ROWLOCK) WHERE AgentID = @recommend	
+					DELETE dbo.CustSettingMode3rd WITH (ROWLOCK) WHERE CustID = @CustID		
+						
+					RETURN
+				END
+			END
+			ELSE
+			BEGIN
+				IF EXISTS(SELECT TOP 1 1
+						FROM dbo.CustPTGroupSetting3rd_Member grp
+						JOIN @memberPTTbl tmp ON tmp.SportType = grp.SportType
+												AND tmp.BetType = grp.BetType
+												AND tmp.Islive = grp.Islive
+						WHERE grp.AgentID = @recommend
+						AND (
+							tmp.SuperPT <> grp.SuperPT
+							OR
+							tmp.MasterPT <> grp.MasterPT
+							OR
+							tmp.AgentPT <> grp.AgentPT
+							OR
+							tmp.IsAutoMPT <> grp.IsAutoMasterPT
+							OR
+							tmp.AutoMPT <> grp.AutoMasterPT
+							OR
+							tmp.IsAutoSPT <> grp.IsAutoSuperPT
+							OR
+							tmp.AutoSPT <> grp.AutoSuperPT
+						))
+				BEGIN
+					--If this member's PT setting are diffrent from Group PT Setting
+					INSERT INTO [dbo].[CustPTSetting3rd_Member]
+						   ([CustID]
+						   ,[SportType]
+						   ,[BetType]
+						   ,[IsLive]
+						   ,[SuperPT]
+						   ,[MasterPT]
+						   ,[AgentPT]
+						   ,[IsAutoMasterPT]
+						   ,[AutoMasterPT]
+						   ,[IsAutoSuperPT]
+						   ,[AutoSuperPT])
+					SELECT 
+					@CustID,SportType,BetType,Islive,
+						SuperPT,MasterPT,AgentPT,IsAutoMPT,AutoMPT,IsAutoSPT,AutoSPT
+					FROM @memberPTTbl
+					
+					IF @@error <> 0
+					BEGIN
+						--Error occur
+						SET @ErrCode = 314
+							
+						-- ROLLBACK MANUALLY
+						Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+						Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+						DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustPTGroupSetting3rd_Member] WITH (ROWLOCK) WHERE AgentID = @recommend
+						DELETE [dbo].[CustPTSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid
+							
+						RETURN
+					END
+					
+					INSERT INTO dbo.CustSettingMode3rd(CustID,IsGrouped)
+					SELECT @CustID,0
+					
+					IF @@error <> 0
+					BEGIN
+						--Error occur
+						SET @ErrCode = 315
+							
+						-- ROLLBACK MANUALLY
+						Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+						Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+						DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustPTGroupSetting3rd_Member] WITH (ROWLOCK) WHERE AgentID = @recommend
+						DELETE [dbo].[CustPTSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.CustSettingMode3rd WITH (ROWLOCK) WHERE custId = @custid
+							
+						RETURN
+					END
+				END
+				ELSE
+				BEGIN
+					INSERT INTO dbo.CustSettingMode3rd(CustID,IsGrouped)
+					SELECT @CustID,1
+					
+					IF @@error <> 0
+					BEGIN
+						--Error occur
+						SET @ErrCode = 316
+							
+						-- ROLLBACK MANUALLY
+						Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+						Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+						DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+						DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustBetSetting3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustDiscount3rd_Member] WITH (ROWLOCK) WHERE custId = @custid	
+						DELETE [dbo].[CustPTGroupSetting3rd_Member] WITH (ROWLOCK) WHERE AgentID = @recommend	
+						DELETE dbo.CustSettingMode3rd WITH (ROWLOCK) WHERE custId = @custid	
+							
+						RETURN
+					END
+				END
+			END
+		END
+		
+		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	END
 
 END
