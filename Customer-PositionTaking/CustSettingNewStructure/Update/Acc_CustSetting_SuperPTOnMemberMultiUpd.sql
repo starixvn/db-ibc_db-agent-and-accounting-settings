@@ -28,7 +28,7 @@ AS
 							SportType="1" 
 							BetType="1" 
 							IsLive="1" 
-							MasterPT="10" 
+							SuperPT="10" 
 							IsAutoSuperPT="1" 
 							AutoSuperPT="10" 
 						/>
@@ -41,8 +41,6 @@ BEGIN
 	DECLARE @startRun DATETIME
 		, @endRun DATETIME
 		, @duration INT
-		
-	DECLARE @AdjustedPT_XML VARCHAR(MAX)=NULL
 		
 	DECLARE 
 		 @ErrType			NVARCHAR(4000)
@@ -84,14 +82,8 @@ BEGIN
 		, AutoMasterPT		TINYINT
 		)
 	
-	DECLARE @mpos		SMALLMONEY
-			, @apos		SMALLMONEY
-			, @spos		SMALLMONEY
-			, @mapos1	SMALLMONEY
-			, @mapos2	SMALLMONEY
-			, @mapos	SMALLMONEY
-			, @maxspos	SMALLMONEY
-			, @maxmapos SMALLMONEY
+	DECLARE @CorrectedPT_XML VARCHAR(MAX)
+			,@AdjustedPT_XML VARCHAR(MAX)
 	
 	DECLARE @RemainCustTbl TABLE (CustID INT)
 			
@@ -230,290 +222,72 @@ BEGIN
 	
 	
 	--**START CORRECTING PT**
-	--if is3|is1 then s1 = min(s4-m1-a1,is1=1?us1:us3)	
-	Update main
-	SET main.SuperPT = CASE 
-			WHEN spt.SuperPT - main.MasterPT - main.AgentPT > (
-					CASE 
-						WHEN main.IsAutoSuperPT = 1
-							THEN main.AutoSuperPT
-						ELSE mpt.AutoSuperPT
-						END
-					)
-				THEN (
-						CASE 
-							WHEN main.IsAutoSuperPT = 1
-								THEN main.AutoSuperPT
-							ELSE mpt.AutoSuperPT
-							END
-						)
-			ELSE spt.SuperPT - main.MasterPT - main.AgentPT
-			END
-	FROM @NewPTTble main
-	INNER JOIN CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-		ON mpt.SportType = main.SportType
-			AND mpt.BetType = main.BetType
-			AND mpt.IsLive = main.IsLive
-			AND mpt.CustID = @MasterID
-	INNER JOIN CustPTSetting3rd_Agent spt WITH(NOLOCK)
-		ON spt.SportType = main.SportType
-			AND spt.BetType = main.BetType
-			AND spt.IsLive = main.IsLive
-			AND spt.CustID = @SuperID
-	where (main.IsAutoSuperPT=1 or mpt.IsAutoSuperPT=1)
-	
-	--if a1<n2 then a1 = n2,m1 = max(m3-n2,m1)
-	UPDATE main
-	SET main.AgentPT = apt.MinPT
-		, main.MasterPT = CASE 
-			WHEN main.MasterPT + apt.MinPT > mpt.MasterPT
-				THEN mpt.MasterPT - apt.MinPT
-			ELSE main.MasterPT
-			END
-	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-		ON mpt.SportType=main.SportType
-				AND mpt.BetType=main.BetType
-				AND mpt.IsLive=main.IsLive
-				AND mpt.CustID=@MasterID
-	JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
-		ON apt.SportType=main.SportType
-				AND apt.BetType=main.BetType
-				AND apt.IsLive=main.IsLive
-				AND apt.CustID=@AgentID
-	WHERE main.AgentPT < apt.MinPT
+	SELECT @AdjustedPT_XML = (
+			SELECT 
+				SportType 
+				, BetType 
+				, IsLive 
+				, SuperPT 
+				, MasterPT 
+				, AgentPT 
+				, IsAutoMasterPT 
+				, AutoMasterPT 
+				, IsAutoSuperPT 
+				, AutoSuperPT 
+			FROM @NewPTTble
+			FOR XML RAW('PT')
+			)
 
+	SELECT @AdjustedPT_XML = '<ROOT>' + @AdjustedPT_XML + '</ROOT>'		
 	
-	--if a1>l2 then a1=l2
-	UPDATE main
-	SET main.AgentPT = apt.MaxPT
-	FROM @NewPTTble main
-	INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
-		ON apt.SportType = main.SportType
-			AND apt.BetType = main.BetType
-			AND apt.IsLive = main.IsLive
-			AND apt.CustID = @AgentID
-	WHERE main.AgentPT > apt.MaxPT
+	EXEC dbo.Acc_CustSetting_MemberPTCorrect @AgentID = @AgentID
+								, @MasterID = @MasterID
+								, @SuperID = @SuperID
+								, @PT_XML = @AdjustedPT_XML
+								, @CorrectedPT_XML = @CorrectedPT_XML OUTPUT
+			
+								
+	DELETE FROM @NewPTTble
 	
-	--if im1|im2 then m1=min(min(m3,m4)-a1,(im1?um1,um2))
-	UPDATE main
-	SET main.MasterPT = CASE 
-			WHEN spt.MasterPT > mpt.MasterPT
-				THEN CASE 
-						WHEN mpt.MasterPT - main.AgentPT > (
-								CASE 
-									WHEN main.IsAutoMasterPT = 1
-										THEN main.AutoMasterPT
-									ELSE apt.AutoMasterPT
-									END
-								)
-							THEN (
-									CASE 
-										WHEN main.IsAutoMasterPT = 1
-											THEN main.AutoMasterPT
-										ELSE apt.AutoMasterPT
-										END
-									)
-						ELSE mpt.MasterPT - main.AgentPT
-						END
-			ELSE CASE 
-					WHEN spt.MasterPT - main.AgentPT > (
-							CASE 
-								WHEN main.IsAutoMasterPT = 1
-									THEN main.AutoMasterPT
-								ELSE apt.AutoMasterPT
-								END
-							)
-						THEN (
-								CASE 
-									WHEN main.IsAutoMasterPT = 1
-										THEN main.AutoMasterPT
-									ELSE apt.AutoMasterPT
-									END
-								)
-					ELSE spt.MasterPT - main.AgentPT
-					END
-			END
-	FROM @NewPTTble main
-	INNER JOIN CustPTSetting3rd_Agent apt WITH (NOLOCK)
-		ON apt.SportType = main.SportType
-			AND apt.BetType = main.BetType
-			AND apt.IsLive = main.IsLive
-			AND apt.CustID = @AgentID
-	INNER JOIN CustPTSetting3rd_Agent mpt WITH (NOLOCK)
-		ON mpt.SportType = main.SportType
-			AND mpt.BetType = main.BetType
-			AND mpt.IsLive = main.IsLive
-			AND mpt.CustID = @MasterID
-	INNER JOIN CustPTSetting3rd_Agent spt WITH (NOLOCK)
-		ON spt.SportType = main.SportType
-			AND spt.BetType = main.BetType
-			AND spt.IsLive = main.IsLive
-			AND spt.CustID = @SuperID
-	WHERE apt.IsAutoMasterPT = 1
-		OR main.IsAutoMasterPT = 1
-	
-	
-	--if a1+m1<n3 then m1=n3-a1
-	UPDATE main
-	SET main.MasterPT = mpt.MinPT - main.AgentPT
-	FROM @NewPTTble main
-	JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-					ON mpt.SportType=main.SportType
-							AND mpt.BetType=main.BetType
-							AND mpt.IsLive=main.IsLive
-							AND mpt.CustID=@MasterID
-	WHERE main.AgentPT + main.MasterPT < mpt.MinPT
-	
-	--if a1+m1>l3 then
-	--m1=if(min(m3,l3)-a1<0,0,min(m3,l3)-a1)
-	--a1=if(a1+m1>min(m3,l3),min(m3,l3)-m1,a1)
-	UPDATE main
-	SET @maxmapos = CASE 
-			WHEN mpt.MasterPT > mpt.MaxPT
-				THEN mpt.MaxPT
-			ELSE mpt.MasterPT
-			END
-		, @mpos = CASE 
-			WHEN @maxmapos - main.AgentPT < 0
-				THEN 0
-			ELSE @maxmapos - main.AgentPT
-			END
-		, main.MasterPT = @mpos
-		, @apos = CASE 
-			WHEN main.AgentPT + @mpos > @maxmapos
-				THEN @maxmapos - @mpos
-			ELSE main.AgentPT
-			END
-		, main.AgentPT = CASE 
-			WHEN @apos < apt.MinPT
-				THEN apt.MinPT
-			ELSE @apos
-			END
-	FROM @NewPTTble main
-	INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-		ON mpt.SportType = main.SportType
-			AND mpt.BetType = main.BetType
-			AND mpt.IsLive = main.IsLive
-			AND mpt.CustID = @MasterID
-	INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
-		ON apt.SportType = main.SportType
-			AND apt.BetType = main.BetType
-			AND apt.IsLive = main.IsLive
-			AND apt.CustID = @AgentID
-	WHERE main.AgentPT + main.MasterPT > mpt.MaxPT
-	
-	--if is1|is3 then s1 = min(s4-m1-a1,is1=1?us1:us3)
-	Update main
-	SET main.SuperPT = CASE 
-			WHEN spt.SuperPT - main.MasterPT - main.AgentPT > (
-					CASE 
-						WHEN main.IsAutoSuperPT = 1
-							THEN main.AutoSuperPT
-						ELSE mpt.AutoSuperPT
-						END
-					)
-				THEN (
-						CASE 
-							WHEN main.IsAutoSuperPT = 1
-								THEN main.AutoSuperPT
-							ELSE mpt.AutoSuperPT
-							END
-						)
-			ELSE spt.SuperPT - main.MasterPT - main.AgentPT
-			END
-	FROM @NewPTTble main
-	INNER JOIN CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-		ON mpt.SportType = main.SportType
-			AND mpt.BetType = main.BetType
-			AND mpt.IsLive = main.IsLive
-			AND mpt.CustID = @MasterID
-	INNER JOIN CustPTSetting3rd_Agent spt WITH(NOLOCK)
-		ON spt.SportType = main.SportType
-			AND spt.BetType = main.BetType
-			AND spt.IsLive = main.IsLive
-			AND spt.CustID = @SuperID
-	where (main.IsAutoSuperPT=1 or mpt.IsAutoSuperPT=1)
-	
-	--if s1+m1+a1<n4  then s1 = n4-m1-a1
-	UPDATE main
-	SET main.SuperPT = spt.MinPT - main.MasterPT - main.AgentPT
-	FROM @NewPTTble main
-	INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
-		ON spt.SportType = main.SportType
-			AND spt.BetType = main.BetType
-			AND spt.IsLive = main.IsLive
-			AND spt.CustID = @SuperID
-	WHERE main.AgentPT + main.MasterPT + main.SuperPT < spt.MinPT
-	
-	--if s1+m1+a1>s4 then
-	--s1=max(0,s4-m1-a1)
-	--@mapos1=iif(s1_new+m1+a1>s4,s4-s1_new,m1+a1)
-	--@maxmapos=min(m3,l3)
-	--@mapos2=min(@mapos1,@maxmapos)
-	--@mapos=max(@mapos2,n3)
-	--m1=max(0,@mapos-a1)
-	--a1=MAX(iif(m1_new+a1>@mapos,@mapos-m1_new,a1), n2)
-	UPDATE main
-	SET @spos = CASE 
-			WHEN spt.SuperPT - main.MasterPT - main.AgentPT < 0
-				THEN 0
-			ELSE spt.SuperPT - main.MasterPT - main.AgentPT
-			END
-		, main.SuperPT = @spos
-		, @mapos1 = CASE 
-			WHEN @spos + main.MasterPT + main.AgentPT > spt.SuperPT
-				THEN spt.SuperPT - @spos
-			ELSE main.MasterPT + main.AgentPT
-			END
-		, @maxmapos = CASE 
-			WHEN mpt.MasterPT > mpt.maxPT
-				THEN mpt.maxPT
-			ELSE mpt.MasterPT
-			END
-		, @mapos2 = CASE 
-			WHEN @mapos1 > @maxmapos
-				THEN @maxmapos
-			ELSE @mapos1
-			END
-		, @mapos = CASE 
-			WHEN @mapos2 < mpt.MinPT
-				THEN mpt.MinPT
-			ELSE @mapos2
-			END
-		, @mpos = CASE 
-			WHEN @mapos - main.AgentPT < 0
-				THEN 0
-			ELSE @mapos - main.AgentPT
-			END
-		, main.MasterPT = @mpos
-		, @apos = CASE 
-			WHEN main.AgentPT + @mpos > @mapos
-				THEN @mapos - @mpos
-			ELSE main.AgentPT
-			END
-		, main.AgentPT = CASE 
-			WHEN @apos < apt.MinPT
-				THEN apt.MinPT
-			ELSE @apos
-			END
-	FROM @NewPTTble main
-	INNER JOIN dbo.CustPTSetting3rd_Agent spt WITH(NOLOCK)
-		ON spt.SportType = main.SportType
-			AND spt.BetType = main.BetType
-			AND spt.IsLive = main.IsLive
-			AND spt.CustID = @SuperID
-	INNER JOIN dbo.CustPTSetting3rd_Agent mpt WITH(NOLOCK)
-		ON mpt.SportType = main.SportType
-			AND mpt.BetType = main.BetType
-			AND mpt.IsLive = main.IsLive
-			AND mpt.CustID = @MasterID
-	INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH(NOLOCK)
-		ON apt.SportType = main.SportType
-			AND apt.BetType = main.BetType
-			AND apt.IsLive = main.IsLive
-			AND apt.CustID = @AgentID
-	WHERE main.SuperPT + main.MasterPT + main.AgentPT > spt.SuperPT	
+	EXEC sp_xml_preparedocument @iDoc OUTPUT
+		, @PT_XML
+
+	INSERT @NewPTTble
+			(SportType 
+			, BetType 
+			, IsLive 
+			, SuperPT 
+			, MasterPT 
+			, AgentPT 
+			, IsAutoMasterPT 
+			, AutoMasterPT 
+			, IsAutoSuperPT 
+			, AutoSuperPT )
+	SELECT 
+			SportType 
+			, BetType 
+			, IsLive 
+			, SuperPT 
+			, MasterPT 
+			, AgentPT 
+			, IsAutoMasterPT 
+			, AutoMasterPT 
+			, IsAutoSuperPT 
+			, AutoSuperPT
+	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
+			SportType SMALLINT
+			, BetType SMALLINT
+			, IsLive BIT
+			, SuperPT TINYINT
+			, MasterPT TINYINT
+			, AgentPT TINYINT
+			, IsAutoMasterPT TINYINT
+			, AutoMasterPT TINYINT
+			, IsAutoSuperPT BIT
+			, AutoSuperPT TINYINT
+			)
+
+	EXEC sp_xml_removedocument @iDoc
 	
 	
 	
