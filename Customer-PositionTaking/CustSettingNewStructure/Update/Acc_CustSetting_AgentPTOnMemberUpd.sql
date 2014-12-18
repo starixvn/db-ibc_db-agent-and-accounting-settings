@@ -55,28 +55,28 @@ BEGIN
 	DECLARE @NewPTTble TABLE (
 		  SportType			SMALLINT
 		, BetType			SMALLINT
-		, ISLive			BIT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
 		, AgentPT			TINYINT
 		, AgentPT_Max		TINYINT
 		, AgentAPT_Max		TINYINT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
 		, IsAutoMasterPT	TINYINT
 		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
 		)
 	DECLARE @OldPTTble TABLE (
 		SportType			SMALLINT
 		, BetType			SMALLINT
 		, IsLive			BIT
 		, SuperPT			TINYINT
-		, AgentPT			TINYINT
 		, MasterPT			TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
+		, AgentPT			TINYINT
 		, IsAutoMasterPT	TINYINT
 		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
 		)
 	
 	DECLARE @SettingMode BIT = 0
@@ -120,8 +120,18 @@ BEGIN
 		, @PT_XML
 
 	INSERT @NewPTTble
-	SELECT SportType,BetType,IsLive,AgentPT,0,0
-			,0,0,0,0,0,0
+	SELECT SportType
+			, BetType
+			, IsLive
+			, 0
+			, 0
+			, AgentPT
+			, 0
+			, 0
+			, 0
+			, 0
+			, 0
+			, 0
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
 			SportType	SMALLINT
 			, BetType	SMALLINT
@@ -189,12 +199,12 @@ BEGIN
 				, cs.BetType 
 				, cs.IsLive 
 				, cs.SuperPT 
-				, cs.AgentPT 
-				, cs.MasterPT 
-				, cs.IsAutoSuperPT 
-				, cs.AutoSuperPT 
+				, cs.MasterPT
+				, cs.AgentPT  
 				, cs.IsAutoMasterPT 
 				, cs.AutoMasterPT 
+				, cs.IsAutoSuperPT 
+				, cs.AutoSuperPT 
 		FROM @NewPTTble main
 		JOIN dbo.CustPTSetting3rd_Member cs WITH (NOLOCK)
 		ON cs.SportType=main.SportType
@@ -211,12 +221,12 @@ BEGIN
 				, cs.BetType 
 				, cs.IsLive 
 				, cs.SuperPT 
-				, cs.AgentPT 
-				, cs.MasterPT 
-				, cs.IsAutoSuperPT 
-				, cs.AutoSuperPT 
+				, cs.MasterPT
+				, cs.AgentPT  
 				, cs.IsAutoMasterPT 
 				, cs.AutoMasterPT 
+				, cs.IsAutoSuperPT 
+				, cs.AutoSuperPT 
 		FROM @NewPTTble main
 		JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 		ON cs.SportType=main.SportType

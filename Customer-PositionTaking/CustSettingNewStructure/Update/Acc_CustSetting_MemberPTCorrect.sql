@@ -16,11 +16,10 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTCorrect]
 							SuperPT="10"
 							MasterPT="10"
 							AgentPT="10" 
-							IsAutoSuperPT="1"
-							AutoSuperPT="10"
 							IsAutoMasterPT="1"
 							AutoMasterPT="10"
-			                                        
+							IsAutoSuperPT="1"
+							AutoSuperPT="10"                     
 					/>
 			</ROOT>  
 	    

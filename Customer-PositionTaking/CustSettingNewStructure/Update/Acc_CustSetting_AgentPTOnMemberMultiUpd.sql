@@ -55,30 +55,30 @@ BEGIN
 	DECLARE @tblCust TABLE (CustID INT)
 	
 	DECLARE @NewPTTble TABLE (
-		SportType			SMALLINT
+		  SportType			SMALLINT
 		, BetType			SMALLINT
-		, ISLive			BIT
+		, IsLive			BIT
+		, SuperPT			TINYINT
+		, MasterPT			TINYINT
 		, AgentPT			TINYINT
 		, AgentPT_Max		TINYINT
 		, AgentAPT_Max		TINYINT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
 		, IsAutoMasterPT	TINYINT
 		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
 		)
 	DECLARE @OldPTTble TABLE (
 		SportType			SMALLINT
 		, BetType			SMALLINT
 		, IsLive			BIT
 		, SuperPT			TINYINT
-		, AgentPT			TINYINT
 		, MasterPT			TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
+		, AgentPT			TINYINT
 		, IsAutoMasterPT	TINYINT
 		, AutoMasterPT		TINYINT
+		, IsAutoSuperPT		BIT
+		, AutoSuperPT		TINYINT
 		)
 	DECLARE @CorrectedPT_XML VARCHAR(MAX)
 			,@AdjustedPT_XML VARCHAR(MAX)
@@ -171,12 +171,12 @@ BEGIN
 			, cs.BetType 
 			, cs.IsLive 
 			, cs.SuperPT 
-			, cs.AgentPT 
-			, cs.MasterPT 
-			, cs.IsAutoSuperPT 
-			, cs.AutoSuperPT 
+			, cs.MasterPT
+			, cs.AgentPT  
 			, cs.IsAutoMasterPT 
 			, cs.AutoMasterPT 
+			, cs.IsAutoSuperPT 
+			, cs.AutoSuperPT
 	FROM @NewPTTble main
 	JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 	ON cs.SportType=main.SportType
