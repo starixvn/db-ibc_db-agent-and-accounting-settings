@@ -2878,7 +2878,7 @@ SET NOCOUNT ON
 			
 			INSERT @memberPTTbl
 			SELECT *
-			FROM OPENXML (@iDoc, '/ROOT/PositionTaking',1) 
+			FROM OPENXML (@iDoc, '/ROOT/PT',1) 
 			WITH(SportType smallint, BetType smallint, Islive bit, SuperPT tinyint, 
 			MasterPT tinyint, AgentPT tinyint, IsAutoMPT bit,AutoMPT tinyint,IsAutoSPT bit,AutoSPT tinyint)	
 			

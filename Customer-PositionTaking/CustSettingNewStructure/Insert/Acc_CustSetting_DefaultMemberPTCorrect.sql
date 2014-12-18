@@ -20,7 +20,7 @@ AS
 	• @CustID: Member ID
 	• @CorrectedPT_XML: Corrected PT setting of a member
 					<ROOT>
-							<PositionTaking 
+							<PT 
 									SportType="1" 
 									BetType="1" 
 									IsLive="1" 
@@ -353,7 +353,7 @@ BEGIN
 	SELECT @CorrectedPT_XML = (
 			SELECT *
 			FROM @memberPTTbl
-			FOR XML RAW('PositionTaking')
+			FOR XML RAW('PT')
 			)
 
 	SELECT @CorrectedPT_XML = '<ROOT>' + @CorrectedPT_XML + '</ROOT>'
