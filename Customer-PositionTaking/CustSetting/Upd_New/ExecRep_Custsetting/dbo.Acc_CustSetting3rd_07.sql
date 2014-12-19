@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_07    Script Date: 8/21/2014 3:12:20 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_07    Script Date: 8/21/2014 2:58:14 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_07] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_07] 
     @srecommend INT= 0,
     @mrecommend iNT = 0,
     @recommend INT = 0,
@@ -994,8 +994,19 @@ BEGIN
             --recal autopos
             -- s1=min(s4-m1-a1,u)
             UPDATE cs 
-                SET spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
-                                        (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+                SET SuperPT = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT >
+																			(CASE WHEN cs.IsAutoSuperPT=1 
+																						THEN cs.AutoSuperPT 
+																						ELSE mcs.AutoSuperPT 
+																					END
+																			) 
+										THEN (CASE WHEN cs.IsAutoSuperPT=1 
+														THEN cs.AutoSuperPT 
+														ELSE mcs.AutoSuperPT 
+													END
+											) 
+										ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT 
+									END 
             FROM
                 CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.custid = c.custid 
@@ -1010,13 +1021,24 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
+            WHERE (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)                
             
             --grouped settings
             UPDATE cs 
-                SET spositiontaking = case when scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking >
-                                        (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) then (case when cs.isautopositiontaking=1 then cs.autopositiontaking else mcs.autopositiontaking end) else scs.spositiontaking-cs.mpositiontaking-cs.apositiontaking end 
+                SET SuperPT = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT >
+																			(CASE WHEN cs.IsAutoSuperPT=1 
+																						THEN cs.AutoSuperPT 
+																						ELSE mcs.AutoSuperPT 
+																					END
+																			) 
+										THEN (CASE WHEN cs.IsAutoSuperPT=1 
+														THEN cs.AutoSuperPT 
+														ELSE mcs.AutoSuperPT 
+													END
+											) 
+										ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT 
+									END 
             FROM
                 CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo AS c WITH (NOLOCK) ON cs.AgentID = c.custid 
@@ -1031,7 +1053,7 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
+            WHERE (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
                 AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
             
             --check super min/max when a1+m1+s1<n4
@@ -1055,7 +1077,7 @@ BEGIN
               UPDATE cs
                 SET SuperPT = scs.MinPT - cs.MasterPT - cs.AgentPT
             FROM 
-                CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
+                CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.AgentID = mb.custid 
 															AND mb.mrecommend=@mrecommend 
 															AND mb.roleid=2 

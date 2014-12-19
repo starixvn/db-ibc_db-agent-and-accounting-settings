@@ -365,7 +365,7 @@ BEGIN
 		INSERT INTO @tmpPTGroup(custid)
 		SELECT TOP 100 c.custid
 		FROM custinfo c WITH(NOLOCK) 
-			INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
+			INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON cs.AgentID = c.custid
 			INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
 									AND cs.bettype = b.bettype
 									AND cs.IsLive = b.IsLive
@@ -373,7 +373,7 @@ BEGIN
 		   AND c.roleid     = 2
 		   AND c.Enabled    = 1
 		   AND cs.AgentPT > b.AgentPT
-		GROUP BY username
+		GROUP BY c.custid
 		
 		SELECT TOP 100 @ErrAcc = @ErrAcc + username + ', '
 		 FROM custinfo c WITH(NOLOCK)

@@ -134,7 +134,7 @@ BEGIN
 	 --log old data
 	SET @xml =(
 		SELECT @custid AS '@ci'
-				,f_GetSubUsername(@SubAccID) AS '@su'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 				,@userid AS '@ui'
 				,@language AS '@l'
 				,@IP AS '@Ip'
@@ -269,7 +269,7 @@ BEGIN
 	IF @UpdatePresetPT = 1
 	BEGIN
 		EXEC dbo.Acc_CustSetting3rd_05
-            ,@mrecommend = @mrecommend
+            @mrecommend = @mrecommend
 			,@recommend = @custid
 			,@roleid = 2
 			,@mode = 'Others'
@@ -289,7 +289,7 @@ BEGIN
 	 -- Write log after update
 	SET @xml = (
 			SELECT @custid AS '@ci'
-				,f_GetSubUsername(@SubAccID) AS '@su'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 				,@userid AS '@ui'
 				,@language AS '@l'
 				,@IP AS '@Ip'
@@ -301,10 +301,11 @@ BEGIN
 						,cs.isLive AS '@i'
 						,cs.MasterPT AS '@m2'
 						,cs.isAutoMasterPT AS '@im2'
-						,cs.AutoMasaterPT AS '@um2'	
+						,cs.AutoMasterPT AS '@um2'	
 						,cs.AgentPT AS '@a2'										
-						,cs.MinPT AS '@n2'
+						,cs.AgentMinPT AS '@n2'
 					FROM @tblPT cs	
+					FOR XML PATH('pt'),TYPE
 					)
 			FOR XML PATH('r'),TYPE				
 	)
@@ -316,7 +317,7 @@ BEGIN
 	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
 						
 	BEGIN TRY
-		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 454,
@@ -325,7 +326,7 @@ BEGIN
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
-		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 454,

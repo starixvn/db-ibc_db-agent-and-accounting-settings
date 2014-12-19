@@ -92,8 +92,8 @@ BEGIN
 		AND (t.AgentPT < 0 OR t.MasterPT < 0 
 			OR t.AgentPT + t.MasterPT > ps.MaxPT
 			OR t.MasterPT > ps.MaxPT			
-			OR t.AutoSuperPT < 0 
-			OR t.AutoSuperPT > ps.MaxPT								
+			OR t.AutoMasterPT < 0 
+			OR t.AutoMasterPT > ps.MaxPT								
 		)
 	
 	IF @ErrType <> ''		
@@ -120,11 +120,11 @@ BEGIN
 			  INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
 										AND mcs.bettype = b.bettype        
 										AND mcs.isLive = b.isLive
-			  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON t.bettype = bt.typeid
-			  INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON t.sporttype = s.sporttype										
+			  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			  INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype										
 		 WHERE c.custid = @mrecommend
 			 AND mcs.MaxPT < b.AgentMinPT
-		 GROUP BY b.SportType, b.BetType        
+		 GROUP BY s.SportName, bt.typenamee       
 		         
 		 IF @ErrType<>''        
 		 BEGIN          
@@ -144,7 +144,7 @@ BEGIN
 			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON t.bettype = bt.typeid        
 			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON t.sporttype = s.sporttype       															
 		WHERE t.AgentPT < t.AgentMinPT
-		GROUP BY b.SportType, b.BetType  
+		GROUP BY s.SportName, bt.typenamee
 		
 		IF @ErrType <> ''        
 		 BEGIN          
@@ -170,8 +170,8 @@ BEGIN
 			INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
 									AND mcs.bettype = b.bettype        
 									AND mcs.isLive = b.isLive
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON t.bettype = bt.typeid
-			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON t.sporttype = s.sporttype										
+			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
+			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype										
 		WHERE mcs.custid = @mrecommend
 			AND b.IsAutoMasterPT = 0
 			AND b.MasterPT > mcs.MasterPT

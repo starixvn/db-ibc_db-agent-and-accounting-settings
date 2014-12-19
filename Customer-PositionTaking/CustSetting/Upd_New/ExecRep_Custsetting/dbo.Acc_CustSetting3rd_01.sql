@@ -54,11 +54,17 @@ Param's Explanation:
 --if @IsExistTables <> 3 RETURN
 IF @mode = 'Others'
 BEGIN
-	(SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustPTSetting3rd_Agent', 'CustPTSetting3rd_Member','CustPTGroupSetting3rd_Member') AND type = 'U') <> 4
+	IF (
+		SELECT COUNT(1) 
+		FROM sysobjects 
+		WHERE Name IN ('custinfo','CustPTSetting3rd_Agent', 'CustPTSetting3rd_Member','CustPTGroupSetting3rd_Member') 
+			AND type = 'U'
+	) <> 4
+	RETURN
 END
-ELSE IF 
+ELSE  
 BEGIN
-	((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'U') <> 3
+	IF ((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'U') <> 3
 		AND (SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'V') <> 3) 
 	RETURN
 END
@@ -301,15 +307,23 @@ BEGIN
 	
 	----------------------------------------------------------------------------
     --s1=min(s1,s4-m3) if i=0
-    update cs
-	    set cs.SuperPT = scs.SuperPT - mcs.MasterPT
-    from 
-	    CustPTSetting3rd_Member as cs with (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo as mb with (NOLOCK) on cs.custid = mb.custid and mb.srecommend = @srecommend and mb.roleid=1
-	    INNER JOIN CustPTSetting3rd_Agent as mcs with (NOLOCK) on mcs.custid = mb.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype AND mcs.isLive = cs.isLive
-	    INNER JOIN CustPTSetting3rd_Agent as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+    UPDATE cs
+	    SET cs.SuperPT = scs.SuperPT - mcs.MasterPT
+    FROM 
+	    CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid 
+													AND mb.srecommend = @srecommend 
+													AND mb.roleid=1
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend 
+																	AND mcs.sporttype=cs.sporttype 
+																	AND mcs.bettype=cs.bettype 
+																	AND mcs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend 
+																	AND scs.sporttype=cs.sporttype 
+																	AND scs.bettype=cs.bettype 
+																	AND scs.isLive = cs.isLive
     WHERE cs.IsAutoSuperPT=0 
-	    and mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT
+	    AND mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT
 	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
     ----------------------------------------------------------------------------
 
@@ -334,10 +348,21 @@ BEGIN
 		    AgentPT = CASE WHEN @apos<aco.MinPT THEN aco.MinPT ELSE @apos END
     FROM 
 	    CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid AND mb.srecommend=@srecommend AND mb.roleid=1
-	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
-	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
-	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid 
+													AND mb.srecommend=@srecommend 
+													AND mb.roleid=1
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  
+																	AND scs.sporttype=cs.sporttype 
+																	AND scs.bettype=cs.bettype 
+																	AND scs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  
+																	AND mcs.sporttype=cs.sporttype 
+																	AND mcs.bettype=cs.bettype	
+																	AND mcs.isLive = cs.isLive    
+	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  
+																	AND aco.sporttype=cs.sporttype 
+																	AND aco.bettype=cs.bettype 
+																	AND aco.isLive = cs.isLive
     WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
 	
@@ -347,9 +372,17 @@ BEGIN
 	    SET cs.SuperPT = scs.SuperPT - mcs.MasterPT
     FROM 
 	    CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid AND mb.srecommend = @srecommend AND mb.roleid=2
-	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype AND mcs.isLive = cs.isLive
-	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.AgentID = mb.custid 
+													AND mb.srecommend = @srecommend 
+													AND mb.roleid=2
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend 
+																	AND mcs.sporttype=cs.sporttype 
+																	AND mcs.bettype=cs.bettype 
+																	AND mcs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend 
+																	AND scs.sporttype=cs.sporttype 
+																	AND scs.bettype=cs.bettype 
+																	AND scs.isLive = cs.isLive
     WHERE cs.IsAutoSuperPT=0 
 	    AND mcs.IsAutoSuperPT=0 AND scs.SuperPT - mcs.MasterPT<cs.SuperPT
 	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
@@ -376,10 +409,21 @@ BEGIN
 		    AgentPT = CASE WHEN @apos<aco.MinPT THEN aco.MinPT ELSE @apos END
     FROM 
 	    CustPTGroupSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.AgentID = mb.custid AND mb.srecommend=@srecommend AND mb.roleid=2
-	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  AND scs.sporttype=cs.sporttype AND scs.bettype=cs.bettype AND scs.isLive = cs.isLive
-	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  AND mcs.sporttype=cs.sporttype AND mcs.bettype=cs.bettype	AND mcs.isLive = cs.isLive    
-	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  AND aco.sporttype=cs.sporttype AND aco.bettype=cs.bettype AND aco.isLive = cs.isLive
+	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.AgentID = mb.custid 
+													AND mb.srecommend=@srecommend 
+													AND mb.roleid=2
+	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  
+																	AND scs.sporttype=cs.sporttype 
+																	AND scs.bettype=cs.bettype 
+																	AND scs.isLive = cs.isLive
+	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend  
+																	AND mcs.sporttype=cs.sporttype 
+																	AND mcs.bettype=cs.bettype	
+																	AND mcs.isLive = cs.isLive    
+	    INNER JOIN CustPTSetting3rd_Agent AS aco WITH (NOLOCK) ON aco.custid = mb.recommend  
+																	AND aco.sporttype=cs.sporttype 
+																	AND aco.bettype=cs.bettype 
+																	AND aco.isLive = cs.isLive
     WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
     

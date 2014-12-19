@@ -115,11 +115,12 @@ BEGIN
         SELECT @ErrAcc = ''        
         SELECT top 100 @ErrAcc = @ErrAcc + username + ', '
         FROM 
-            CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend
-            INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
-										AND cs.bettype = b.bettype
-										AND cs.isLive = b.isLive
-        WHERE c.custid = @custid 
+            CustPTSetting3rd_Agent AS scs WITH (NOLOCK) 
+			INNER JOIN custInfo ci WITH(NOLOCK) ON scs.CustID = ci.custid
+            INNER JOIN @tblPT AS b ON scs.sporttype=b.sporttype 
+										AND scs.bettype = b.bettype
+										AND scs.isLive = b.isLive
+        WHERE scs.custid = @srecommend 
 			AND (b.MasterPT < b.MasterMinPT OR scs.MasterPT < b.MasterMinPT)
         GROUP BY username
         
@@ -397,7 +398,7 @@ BEGIN
        WHERE scs.custid = @srecommend 
             AND (b.IsAutoSuperPT >0 
 				AND b.AutoSuperPT < CASE WHEN scs.MinPT - scs.MasterPT > 0 
-											THEN scs.MinPT - cs.MasterPT ELSE 0 END
+											THEN scs.MinPT - scs.MasterPT ELSE 0 END
 				)
         
         IF @ErrType <>''

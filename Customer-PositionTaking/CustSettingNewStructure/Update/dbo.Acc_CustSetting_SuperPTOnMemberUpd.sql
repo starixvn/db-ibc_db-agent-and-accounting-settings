@@ -1,4 +1,4 @@
-﻿  ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTOnMemberUpd]
+﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTOnMemberUpd]
 	@custid		INT,
 	
 	@PT			VARCHAR(MAX),
@@ -31,6 +31,7 @@ BEGIN
 	DECLARE @startRun		DATETIME  
 			,@endRun		DATETIME  	
 			,@duration		INT  
+			,@roleid		TINYINT
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
 			,@PT_Adjusted	VARCHAR(5000)
@@ -178,7 +179,7 @@ BEGIN
 		 --log old data
 		SET @xml =(
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@language AS '@l'
 					,@IP AS '@Ip'					
@@ -243,7 +244,7 @@ BEGIN
 		 --log old data
 		SET @xml =(
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@language AS '@l'
 					,@IP AS '@Ip'					
@@ -269,7 +270,7 @@ BEGIN
 	
 	SET @xml =(
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@language AS '@l'
 					,@IP AS '@Ip'					
@@ -300,7 +301,7 @@ BEGIN
 		RETURN--no pt change
 	
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 				@CustID = @CustID
 				, @RoleID		= 4
 				, @AgentID		= @recommend
@@ -518,7 +519,7 @@ BEGIN
 	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
 						
 	BEGIN TRY
-		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 455,
@@ -527,7 +528,7 @@ BEGIN
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
-		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 455,
@@ -544,3 +545,5 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberUpd] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberUpd] TO [bodbExtAccNet] AS [dbo]
+
+

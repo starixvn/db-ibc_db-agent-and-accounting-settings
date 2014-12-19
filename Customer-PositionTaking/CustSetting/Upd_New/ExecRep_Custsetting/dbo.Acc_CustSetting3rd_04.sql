@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 2:58:09 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -1848,7 +1848,7 @@ BEGIN
                SET AgentPT = aco.MinPT
                  , cs.MasterPT =
                      CASE
-                       WHEN cs.MasterPT + aco.MinPT > mcs.MasterPT THEN mcs.MaterPT - aco.MinPT
+                       WHEN cs.MasterPT + aco.MinPT > mcs.MasterPT THEN mcs.MasterPT - aco.MinPT
                        ELSE cs.MasterPT
                      END
               FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
@@ -1872,7 +1872,7 @@ BEGIN
                SET AgentPT = aco.MinPT
                  , cs.MasterPT =
                      CASE
-                       WHEN cs.MasterPT + aco.MinPT > mcs.MasterPT THEN mcs.MaterPT - aco.MinPT
+                       WHEN cs.MasterPT + aco.MinPT > mcs.MasterPT THEN mcs.MasterPT - aco.MinPT
                        ELSE cs.MasterPT
                      END
               FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
@@ -1972,7 +1972,7 @@ BEGIN
                               END
                        ELSE mcs.MasterPT - cs.AgentPT
                      END
-              FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
+              FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
         INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid
         INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = c.mrecommend
                                                   AND mcs.sporttype = cs.sporttype
@@ -2189,7 +2189,7 @@ BEGIN
              --grouped settings
              UPDATE cs
                SET SuperPT = sco.MinPT - cs.MasterPT - cs.AgentPT
-              FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
+              FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
         INNER JOIN custinfo mb WITH(NOLOCK) ON cs.AgentID = mb.custid
                                            AND mb.srecommend = @srecommend
                                            AND mb.roleid = 2
@@ -4274,7 +4274,7 @@ BEGIN
                  , @mpos =
                      CASE
                        WHEN @maxmapos - cs.AgentPT < 0 THEN 0
-                       ELSE @maxmapos - cs3.AgentPT
+                       ELSE @maxmapos - cs.AgentPT
                      END
                  , MasterPT = @mpos
                  , @apos =
@@ -4284,7 +4284,7 @@ BEGIN
                      END
                  , AgentPT =
                      CASE
-                       WHEN @apos < acs.MinPT THEN aco.MinPT
+                       WHEN @apos < acs.MinPT THEN acs.MinPT
                        ELSE @apos
                      END
               FROM CustPTSetting3rd_Member cs
@@ -4303,6 +4303,7 @@ BEGIN
              WHERE cs.AgentPT + cs.MasterPT > mcs.MaxPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
              
+			 --grouped settings
              UPDATE cs WITH(ROWLOCK, UPDLOCK)
                SET @maxmapos =
                      CASE
@@ -4312,7 +4313,7 @@ BEGIN
                  , @mpos =
                      CASE
                        WHEN @maxmapos - cs.AgentPT < 0 THEN 0
-                       ELSE @maxmapos - cs3.AgentPT
+                       ELSE @maxmapos - cs.AgentPT
                      END
                  , MasterPT = @mpos
                  , @apos =
@@ -4322,10 +4323,10 @@ BEGIN
                      END
                  , AgentPT =
                      CASE
-                       WHEN @apos < acs.MinPT THEN aco.MinPT
+                       WHEN @apos < acs.MinPT THEN acs.MinPT
                        ELSE @apos
                      END
-              FROM CustPTSetting3rd_Member cs
+              FROM CustPTGroupSetting3rd_Member cs
         INNER JOIN custinfo mb WITH(NOLOCK) ON cs.AgentID = mb.custid
                                            AND mb.mrecommend = @mrecommend
                                            AND mb.roleid = 2
@@ -4414,7 +4415,7 @@ BEGIN
             --check super min/max WHEN a1+m1+s1<n4
             -- s1=n4-m1-a1
             UPDATE cs
-               SET SuperPT = sco.MinPT - cs.MasterPT - cs.AgentPT
+               SET SuperPT = scs.MinPT - cs.MasterPT - cs.AgentPT
               FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
         INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid
                                            AND mb.mrecommend = @mrecommend
@@ -4429,7 +4430,7 @@ BEGIN
              
              -- grouped settings
             UPDATE cs
-               SET SuperPT = sco.MinPT - cs.MasterPT - cs.AgentPT
+               SET SuperPT = scs.MinPT - cs.MasterPT - cs.AgentPT
               FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
         INNER JOIN custinfo mb WITH(NOLOCK) ON cs.AgentID = mb.custid
                                            AND mb.mrecommend = @mrecommend
@@ -5375,7 +5376,7 @@ BEGIN
             SET AgentPT = acs.MaxPT
             FROM   
                 CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)                    
-                INNER JOIN CustPTSetting3rd_Agent acs WITH(NOLOCK) ON acs.custid = cs.AgentIT  
+                INNER JOIN CustPTSetting3rd_Agent acs WITH(NOLOCK) ON acs.custid = cs.AgentID  
 																		AND acs.sporttype=cs.sporttype 
 																		AND acs.bettype=cs.bettype  
 																		AND acs.isLive = cs.isLive
@@ -5609,7 +5610,7 @@ BEGIN
             --a1=iif(m1_new+a1>@mapos,@mapos-m1_new,a1)  
             UPDATE cs  
             SET @spos = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT<0 THEN 0 
-									ELSE scs.SupePT-cs.MasterPT-cs.AgentPT 
+									ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT 
 								END,  
                 SuperPT = @spos,  
                 @mapos1 = CASE WHEN @spos+cs.MasterPT+cs.AgentPT>scs.SuperPT 
@@ -5658,7 +5659,7 @@ BEGIN
             --grouped settings
             UPDATE cs  
             SET @spos = CASE WHEN scs.SuperPT-cs.MasterPT-cs.AgentPT<0 THEN 0 
-									ELSE scs.SupePT-cs.MasterPT-cs.AgentPT 
+									ELSE scs.SuperPT-cs.MasterPT-cs.AgentPT 
 								END,  
                 SuperPT = @spos,  
                 @mapos1 = CASE WHEN @spos+cs.MasterPT+cs.AgentPT>scs.SuperPT 

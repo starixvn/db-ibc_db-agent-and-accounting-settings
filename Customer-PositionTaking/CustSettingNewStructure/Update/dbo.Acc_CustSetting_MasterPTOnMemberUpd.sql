@@ -31,6 +31,7 @@ BEGIN
 	DECLARE @startRun		DATETIME  
 			,@endRun		DATETIME  	
 			,@duration		INT  
+			,@roleid		INT
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
 			,@PT_Adjusted	VARCHAR(5000)
@@ -174,7 +175,7 @@ BEGIN
 		 --log old data
 		SET @xml =(
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@language AS '@l'
 					,@IP AS '@Ip'					
@@ -240,7 +241,7 @@ BEGIN
 		 --log old data
 		SET @xml =(
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
 					,@language AS '@l'
 					,@IP AS '@Ip'					
@@ -255,7 +256,7 @@ BEGIN
 							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 													AND cs.bettype = t.BetType 
 													AND cs.isLive = t.IsLive
-						WHERE custid = @custid
+						WHERE cs.AgentID = @custid
 						FOR XML PATH('pt'), TYPE
 					)
 			FOR XML PATH('r'), TYPE
@@ -267,7 +268,7 @@ BEGIN
 	 --log old data
 	SET @xml =(
 		SELECT @custid AS '@ci'
-				,f_GetSubUsername(@SubAccID) AS '@su'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 				,@userid AS '@ui'
 				,@language AS '@l'
 				,@IP AS '@Ip'					
@@ -297,7 +298,7 @@ BEGIN
 		RETURN--no pt change
 		
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 				@CustID = @CustID
 				, @RoleID		= 3
 				, @AgentID		= @recommend
@@ -641,7 +642,7 @@ BEGIN
 	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
 						
 	BEGIN TRY
-		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 456,
@@ -650,7 +651,7 @@ BEGIN
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
-		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 456,

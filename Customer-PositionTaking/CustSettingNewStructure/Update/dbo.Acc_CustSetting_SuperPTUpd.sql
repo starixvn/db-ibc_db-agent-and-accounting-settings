@@ -131,7 +131,7 @@ BEGIN
 	SET @xml =(
 		SELECT @custid AS '@ci'
 				,@userid AS '@ui'
-				,@langue AS '@l'
+				,@language AS '@l'
 				,@IP AS '@Ip'
 				,(
 					SELECT cs.sporttype AS '@s'
@@ -249,7 +249,7 @@ BEGIN
     IF @UpdateMinPT = 1
     BEGIN
 		EXEC dbo.Acc_CustSetting3rd_04 
-			@srecommend = @srecommend
+			@srecommend = @custid
 			,@roleid = 4
 			,@mode = 'Others'
 			,@sports = @sports 
@@ -259,7 +259,7 @@ BEGIN
 	SET @xml = (
 			SELECT @custid AS '@ci'
 					,@userid AS '@ui'
-					,@langue AS '@l'
+					,@language AS '@l'
 					,@IP AS '@Ip'
 					,(
 						SELECT cs.sporttype AS '@s'
@@ -283,7 +283,7 @@ BEGIN
 						
 	
 	BEGIN TRY
-		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 448,
@@ -292,7 +292,7 @@ BEGIN
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
-		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 448,

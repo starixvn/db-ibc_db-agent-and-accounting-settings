@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_05    Script Date: 8/21/2014 3:12:20 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_05    Script Date: 8/21/2014 2:58:13 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_05]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05]
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -408,13 +408,10 @@ BEGIN
 						,isUpdateAutoPT BIT
 						)    
 	
-	DECLARE @sporttype SMALLINT
-			,@bettype SMALLINT
-			,@isLive BIT
-			,@isAutoSuperPT BIT
-			,@isAutoSuperPTOld BIT
-			,@AutoSuperPT SMALLINT
-			,@isUpdateAutoPT BIT					            
+	DECLARE @AutoSuperPT SMALLINT
+			,@isUpdateAutoPT BIT
+				-- For read xml
+			,@DocHandler INT  					            
 			
     --UPDATE min/max pt ON master
     IF @roleid = 3
@@ -1682,10 +1679,7 @@ BEGIN
         END --end Keno
         ELSE IF @mode = 'Others'
         BEGIN
-			-- For read xml
-			DECLARE @DocHandler INT    
-			
-			-- For read xml					
+		   -- For read xml					
 			EXEC sp_xml_preparedocument @DocHandler OUTPUT, @AutoPT
 			
 			INSERT INTO @tblPT(
@@ -1728,8 +1722,8 @@ BEGIN
 				UPDATE cs
 				SET cs.SuperPT =
 						CASE
-						WHEN scs.SuperPT - cs.MasterPT - cs.AgetntPT > b.AutoSuperPT THEN b.AutoSuperPT
-						ELSE scs.SuperPT - cs.MasterPT - cs.AgetntPT
+						WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT > b.AutoSuperPT THEN b.AutoSuperPT
+						ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
 						END
 				FROM CustPTSetting3rd_Member cs WITH(UPDLOCK,ROWLOCK)
 					INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
@@ -1751,8 +1745,8 @@ BEGIN
 				UPDATE cs
 				SET cs.SuperPT =
 						CASE
-						WHEN scs.SuperPT - cs.MasterPT - cs.AgetntPT > b.AutoSuperPT THEN b.AutoSuperPT
-						ELSE scs.SuperPT - cs.MasterPT - cs.AgetntPT
+						WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT > b.AutoSuperPT THEN b.AutoSuperPT
+						ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
 						END
 				FROM CustPTGroupSetting3rd_Member cs WITH(UPDLOCK,ROWLOCK)
 					INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.AgentID = ci.custid 
@@ -2685,10 +2679,7 @@ BEGIN
     END--end mode = 'Keno'
     ELSE IF @mode = 'Others'
     BEGIN
-		-- For read xml
-		DECLARE @DocHandler INT    
-		
-		-- For read xml					
+	  -- For read xml					
 		EXEC sp_xml_preparedocument @DocHandler OUTPUT, @AutoPT
 		
 		INSERT INTO @tblPT(
@@ -2732,8 +2723,8 @@ BEGIN
 			UPDATE cs       
 			SET MasterPT =
 					CASE
-						WHEN mcs.MasterPT - AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
-						ELSE mcs.MasterPT - AgentPT
+						WHEN mcs.MasterPT - cs.AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
+						ELSE mcs.MasterPT - cs.AgentPT
 					END        
 			FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)        
 				INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid 
@@ -2753,8 +2744,8 @@ BEGIN
 			UPDATE cs       
 			SET MasterPT =
 					CASE
-						WHEN mcs.MasterPT - AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
-						ELSE mcs.MasterPT - AgentPT
+						WHEN mcs.MasterPT - cs.AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
+						ELSE mcs.MasterPT - cs.AgentPT
 					END        
 			FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)        
 				INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid 

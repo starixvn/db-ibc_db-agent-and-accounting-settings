@@ -133,7 +133,7 @@ BEGIN
    --log old data
 	SET @xml =(
 		SELECT @custid AS '@ci'
-				,f_GetSubUsername(@SubAccID) AS '@su'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 				,@userid AS '@ui'
 				,@language AS '@l'
 				,@IP AS '@Ip'
@@ -208,7 +208,7 @@ BEGIN
 								AND cs.bettype = t.BetType 
 								AND cs.isLive = t.IsLive
 	WHERE custid = @custid
-		AND cs.MinPT <> t.SuperMinPT			
+		AND cs.MinPT <> t.MasterMinPT			
 	)
 	BEGIN
 		SELECT @UpdateMinPT = 1
@@ -278,7 +278,7 @@ BEGIN
             @newspositiontaking = @newSuperPT
             
          EXEC dbo.Acc_CustSetting3rd_07
-            ,@srecommend = @srecommend
+            @srecommend = @srecommend
             ,@mrecommend = @custid
             ,@roleid = 3
             ,@mode = 'Others'
@@ -288,9 +288,9 @@ BEGIN
 	 -- Write log after update
 	SET @xml = (
 			SELECT @custid AS '@ci'
-					,f_GetSubUsername(@SubAccID) AS '@su'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
 					,@userid AS '@ui'
-					,@langue AS '@l'
+					,@language AS '@l'
 					,@IP AS '@Ip'
 					,@updateallmembers AS '@ua'
 					,@newSuperPT AS '@s1'
@@ -302,7 +302,7 @@ BEGIN
 							,cs.isAutoSuperPT AS '@is3'
 							,cs.AutoSuperPT AS '@us3'
 							,cs.MasterPT AS '@m3'						
-							,cs.MinPT AS '@n3'						
+							,cs.MasterMinPT AS '@n3'						
 						FROM @tblPT	cs							
 						FOR XML PATH('pt'), Type
 					)
@@ -317,7 +317,7 @@ BEGIN
 	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
 						
 	BEGIN TRY
-		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 449,
@@ -326,7 +326,7 @@ BEGIN
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
-		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
 			@ActionID = 449,
