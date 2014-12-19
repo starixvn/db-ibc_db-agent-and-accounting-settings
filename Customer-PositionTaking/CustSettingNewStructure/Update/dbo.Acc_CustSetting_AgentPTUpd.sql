@@ -146,7 +146,7 @@ BEGIN
 						,cs.isLive AS '@i'
 						,cs.MasterPT AS '@m2'
 						,cs.isAutoMasterPT AS '@im2'
-						,cs.AutoMasaterPT AS '@um2'	
+						,cs.AutoMasterPT AS '@um2'	
 						,cs.AgentPT AS '@a2'										
 						,cs.MinPT AS '@n2'
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
@@ -319,7 +319,7 @@ BEGIN
 		DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 450,
+			@ActionID = 454,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @logSPDataOld,
 			@duration = @duration
@@ -328,7 +328,7 @@ BEGIN
 		bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 450,
+			@ActionID = 454,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @logSPDataOld,
 			@duration = @duration
