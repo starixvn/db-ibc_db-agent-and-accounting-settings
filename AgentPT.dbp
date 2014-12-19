@@ -637,6 +637,7 @@ Begin DataProject = "AgentPT"
             Script = "dbo.Acc_CustSetting_MasterPTOnMemberUpd.sql"
             Script = "dbo.Acc_CustSetting_MasterPTUpd.sql"
             Script = "dbo.Acc_CustSetting_SuperPTCheck.sql"
+            Script = "dbo.Acc_CustSetting_SuperPTOnMemberUpd.sql"
             Script = "dbo.Acc_CustSetting_SuperPTUpd.sql"
          End
       End
