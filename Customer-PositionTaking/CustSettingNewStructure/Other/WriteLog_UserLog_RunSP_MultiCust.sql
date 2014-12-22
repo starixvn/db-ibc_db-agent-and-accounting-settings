@@ -168,3 +168,10 @@ BEGIN
 		, @Duration
 	FROM @tblCust tmp
 END
+
+GO
+GRANT EXECUTE ON [dbo].[WriteLog_UserLog_RunSP_MultiCust] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[WriteLog_UserLog_RunSP_MultiCust] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[WriteLog_UserLog_RunSP_MultiCust] TO [bodbExtAccNet]

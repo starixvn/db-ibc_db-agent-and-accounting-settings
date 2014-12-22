@@ -151,3 +151,10 @@ BEGIN
 			, @ErrCode = 101
 	END
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DisableStatCheck] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DisableStatCheck] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DisableStatCheck] TO [bodbExtAccNet]

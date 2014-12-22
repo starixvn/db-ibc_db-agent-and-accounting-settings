@@ -1231,3 +1231,10 @@ BEGIN
 		END
 	END
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberPTCheck] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberPTCheck] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberPTCheck] TO [bodbExtAccNet]

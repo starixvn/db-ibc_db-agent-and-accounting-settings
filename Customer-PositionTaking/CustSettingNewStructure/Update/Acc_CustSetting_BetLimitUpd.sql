@@ -275,3 +275,10 @@ BEGIN
 						, @duration			= @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_BetLimitUpd] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_BetLimitUpd] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_BetLimitUpd] TO [bodbExtAccNet]

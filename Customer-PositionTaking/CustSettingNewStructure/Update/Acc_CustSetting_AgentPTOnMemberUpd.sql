@@ -587,3 +587,10 @@ BEGIN
 						, @duration			= @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentPTOnMemberUpd] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentPTOnMemberUpd] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentPTOnMemberUpd] TO [bodbExtAccNet]

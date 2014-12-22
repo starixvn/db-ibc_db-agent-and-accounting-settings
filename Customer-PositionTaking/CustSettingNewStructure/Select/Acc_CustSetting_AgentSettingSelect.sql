@@ -187,3 +187,10 @@ BEGIN
 	WHERE pdt.ProductID = @ProductID
 		AND pdt.SettingType = 4
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentSettingSelect] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentSettingSelect] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_AgentSettingSelect] TO [bodbExtAccNet]

@@ -358,3 +358,10 @@ BEGIN
 
 	SELECT @CorrectedPT_XML = '<ROOT>' + @CorrectedPT_XML + '</ROOT>'
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DefaultMemberPTCorrect] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DefaultMemberPTCorrect] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DefaultMemberPTCorrect] TO [bodbExtAccNet]

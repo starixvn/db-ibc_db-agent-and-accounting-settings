@@ -475,3 +475,10 @@ BEGIN
 			, @duration			= @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberMultiUpd] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberMultiUpd] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberMultiUpd] TO [bodbExtAccNet]

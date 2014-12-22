@@ -42,3 +42,10 @@ BEGIN
 		RETURN
 	END
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MultiCustEnableCheck] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MultiCustEnableCheck] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MultiCustEnableCheck] TO [bodbExtAccNet]

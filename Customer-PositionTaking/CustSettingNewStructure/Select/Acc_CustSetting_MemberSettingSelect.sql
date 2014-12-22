@@ -579,3 +579,10 @@ BEGIN
 			AND pdt.SettingType = 4
 	END
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberSettingSelect] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberSettingSelect] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberSettingSelect] TO [bodbExtAccNet]

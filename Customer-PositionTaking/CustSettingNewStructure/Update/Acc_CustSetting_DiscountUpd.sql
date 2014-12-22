@@ -295,3 +295,10 @@ BEGIN
 			, @duration			= @duration
 	END CATCH
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DiscountUpd] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DiscountUpd] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DiscountUpd] TO [bodbExtAccNet]
