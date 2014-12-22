@@ -274,7 +274,7 @@ BEGIN
 			,@roleid = 2
 			,@mode = 'Others'
             
-            ,@PT = @AutoPT
+            ,@AutoPT = @AutoPT
                                         
             ,@updateallmembers = @updateallmembers
             ,@newmpositiontaking = @newMasterPT

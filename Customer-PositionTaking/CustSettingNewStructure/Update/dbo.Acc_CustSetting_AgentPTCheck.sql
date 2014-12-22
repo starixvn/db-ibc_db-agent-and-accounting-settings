@@ -342,10 +342,10 @@ BEGIN
 																	AND mcs.isLive = b.IsLive															        
 			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid        
 			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype        
-		WHERE b.AgentPT + b.MasterPT > CASE WHEN mcs.MasterPT < scs.MasterPT 
+		WHERE b.AgentPT + b.MasterPT > (CASE WHEN mcs.MasterPT < scs.MasterPT 
 												THEN mcs.MasterPT 
 												ELSE scs.MasterPT 
-										END
+										END)
 			
 		IF @ErrType <>''        
 		BEGIN
@@ -381,10 +381,10 @@ BEGIN
 			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid        
 			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype        
 		WHERE b.IsAutoMasterPT = 1
-			AND b.AutoMasterPT > CASE WHEN mcs.MasterPT < mcs.MaxPT
+			AND b.AutoMasterPT > (CASE WHEN mcs.MasterPT < mcs.MaxPT
 										 THEN CASE WHEN mcs.MasterPT < scs.MasterPT THEN mcs.MasterPT ELSE scs.MasterPT END
 										ELSE CASE WHEN mcs.MaxPT < scs.MasterPT THEN mcs.MaxPT ELSE scs.MasterPT END
-									END
+									END)
 
 		IF @ErrType <>''        
 		BEGIN        
@@ -416,8 +416,8 @@ BEGIN
 			INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype         
 		WHERE mcs.custid = @mrecommend 
 			AND b.IsAutoMasterPT = 1         
-			AND b.AutoMasterPT < CASE WHEN mcs.MinPT - scs.AgentPT > 0 
-										THEN mcs.MinPT - scs.AgentPT ELSE 0 END        
+			AND b.AutoMasterPT < (CASE WHEN mcs.MinPT - scs.AgentPT > 0 
+										THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
 	
 		IF @ErrType <>''        
 		BEGIN 
@@ -454,10 +454,10 @@ BEGIN
 			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid        
 			INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype        
 		WHERE b.IsAutoMasterPT = 0
-			AND b.MasterPT > CASE WHEN mcs.MasterPT < mcs.MaxPT
+			AND b.MasterPT > (CASE WHEN mcs.MasterPT < mcs.MaxPT
 										 THEN CASE WHEN mcs.MasterPT < scs.MasterPT THEN mcs.MasterPT ELSE scs.MasterPT END
 										ELSE CASE WHEN mcs.MaxPT < scs.MasterPT THEN mcs.MaxPT ELSE scs.MasterPT END
-									END
+									END)
        
 		IF @ErrType <>''        
 		BEGIN        			       
@@ -489,8 +489,8 @@ BEGIN
 			INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype         
 		WHERE mcs.custid = @mrecommend 
 			AND b.IsAutoMasterPT = 0         
-			AND b.MasterPT < CASE WHEN mcs.MinPT - scs.AgentPT > 0 
-										THEN mcs.MinPT - scs.AgentPT ELSE 0 END        
+			AND b.MasterPT < (CASE WHEN mcs.MinPT - scs.AgentPT > 0 
+										THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
 	       
 		IF @ErrType <>''        
 		BEGIN      

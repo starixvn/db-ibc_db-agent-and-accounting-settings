@@ -272,7 +272,7 @@ BEGIN
             @roleid = 3,
             @mode = 'Others',
             
-            @PT = @AutoPT,
+            @AutoPT = @AutoPT,
                             
             @updateallmembers = @updateallmembers,
             @newspositiontaking = @newSuperPT
