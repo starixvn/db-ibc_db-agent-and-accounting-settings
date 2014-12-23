@@ -11,7 +11,7 @@ AS
 /*
 	Created: 20141104@Dominic
 	Task : Get all Super'setting values of a product
-	DB: DBTXN/CustDB
+	DB: DBAGE/bodb02
 	Original:
 
 	Param's Explanation:
