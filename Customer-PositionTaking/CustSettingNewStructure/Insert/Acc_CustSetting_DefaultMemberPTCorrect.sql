@@ -86,6 +86,103 @@ BEGIN
 			AND mcs.custid = @MasterID
 	WHERE acs.custid = @AgentID
 
+
+	--**ADJUST PT**--
+	--if im1=1 or im2=1 then then m1=min(m4-a1,m3-a1, im1?um1:um2)
+	UPDATE main
+	SET main.MasterPT = CASE 
+			WHEN spt.masterPT > mpt.masterPT
+				THEN CASE 
+						WHEN mpt.masterPT - main.AgentPT > (
+								CASE 
+									WHEN main.IsAutoMPT = 1
+										THEN main.AutoMPT
+									ELSE apt.AutoMasterPT
+									END
+								)
+							THEN (
+									CASE 
+										WHEN main.IsAutoMPT = 1
+											THEN main.AutoMPT
+										ELSE apt.AutoMasterPT
+										END
+									)
+						ELSE mpt.masterPT - main.AgentPT
+						END
+			ELSE CASE 
+					WHEN spt.masterPT - main.AgentPT > (
+							CASE 
+								WHEN main.IsAutoMPT = 1
+									THEN main.AutoMPT
+								ELSE apt.AutoMasterPT
+								END
+							)
+						THEN (
+								CASE 
+									WHEN main.IsAutoMPT = 1
+										THEN main.AutoMPT
+									ELSE apt.AutoMasterPT
+									END
+								)
+					ELSE spt.masterPT - main.AgentPT
+					END
+			END
+	FROM @memberPTTbl main
+	INNER JOIN dbo.CustPTSetting3rd_Agent AS mpt WITH (NOLOCK)
+		ON mpt.custid = @MasterID
+			AND mpt.sporttype = main.sporttype
+			AND mpt.bettype = main.bettype
+			AND mpt.islive = main.Islive
+	INNER JOIN dbo.CustPTSetting3rd_Agent AS spt WITH (NOLOCK)
+		ON spt.custid = @SuperID
+			AND spt.sporttype = main.sporttype
+			AND spt.bettype = main.bettype
+			AND spt.islive = main.Islive
+	INNER JOIN dbo.CustPTSetting3rd_Agent AS apt WITH (NOLOCK)
+		ON apt.custid = @AgentID
+			AND apt.sporttype = main.sporttype
+			AND apt.bettype = main.bettype
+			AND apt.islive = main.Islive
+	WHERE (
+			apt.IsAutoMasterPT = 1
+			OR main.IsAutoMPT = 1
+			)
+	--if is1 = 1 or is3=1 then s1=min(s4-m1-a1, is1?us1:us3)
+	UPDATE main
+	SET main.SuperPT = CASE 
+			WHEN spt.superPT - main.masterPT - main.agentPT > (
+					CASE 
+						WHEN main.IsAutoSPT = 1
+							THEN main.AutoSPT
+						ELSE mpt.AutoSuperPT
+						END
+					)
+				THEN (
+						CASE 
+							WHEN main.IsAutoSPT = 1
+								THEN main.autoSPT
+							ELSE mpt.AutoSuperPT
+							END
+						)
+			ELSE spt.superPT - main.masterPT - main.agentPT
+			END
+	FROM @memberPTTbl main
+	INNER JOIN dbo.CustPTSetting3rd_Agent AS mpt WITH (NOLOCK)
+		ON mpt.custid = @MasterID
+			AND mpt.sporttype = main.sporttype
+			AND mpt.bettype = main.bettype
+			AND mpt.islive = main.Islive
+	INNER JOIN dbo.CustPTSetting3rd_Agent AS spt WITH (NOLOCK)
+		ON spt.custid = @SuperID
+			AND spt.sporttype = main.sporttype
+			AND spt.bettype = main.bettype
+			AND spt.islive = main.Islive
+	WHERE (
+			main.IsAutoSPT = 1
+			OR mpt.IsAutoSuperPT = 1
+			)
+					
+	--**CORRECT PT**--
 	--if n2 > a1 then a1 = n2
 	--if n2 > a1 then m1=min(m1, m3-n2)
 	UPDATE main
