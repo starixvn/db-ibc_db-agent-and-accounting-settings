@@ -374,7 +374,7 @@ Revisions:
 	- 20140318@Patrick: Modify log for Keno status
 	- 20140612@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
 	- 20140822@Logan:   Add status for Esports [Redmine: #20531]
-					
+	- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -716,7 +716,9 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@Disable152_51 = @Disable152_51,
 	@Disable153_51 = @Disable153_51,
 	@matchlimit = 1,
-	@virtualmultiplier = 1,	
+	--@Johnson: Disable virtual rate status as default
+	@virtualmultiplier = 0,	
+	
 	@DisableFinancial = @DisableFinancial,
 	@DisableBingo = @DisableBingo,
 	@DisableNumber = @DisableNumber,

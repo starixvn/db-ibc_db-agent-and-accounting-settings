@@ -803,6 +803,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
                                 + MaxBet & MaxPerMatch = MIN(AllUpline)
                                 + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
 			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
+			- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -1212,8 +1213,72 @@ SET NOCOUNT ON
 			
 			RETURN
 		END
-
 		--end keno
+		
+		--Virtual rate
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMutiplier])		
+		SELECT @custid,
+			t.sporttype,
+			t.bettype,
+			b.isLive,
+			1 as virtualMutiplier
+		FROM (
+			SELECT 1 as sporttype, 1 as bettype
+			UNION 
+			SELECT 1 as sporttype, 2 as bettype
+			UNION 
+			SELECT 1 as sporttype, 3 as bettype
+			UNION 
+			SELECT 1 as sporttype, 7 as bettype
+			UNION 
+			SELECT 1 as sporttype, 8 as bettype
+			UNION 
+			SELECT 1 as sporttype, 12 as bettype
+			UNION 
+			SELECT 99 as sporttype, 1 as bettype
+			UNION 
+			SELECT 99 as sporttype, 2 as bettype
+			UNION 
+			SELECT 99 as sporttype, 3 as bettype
+			UNION 
+			SELECT 99 as sporttype, 7 as bettype
+			UNION 
+			SELECT 99 as sporttype, 8 as bettype
+			UNION 
+			SELECT 99 as sporttype, 12 as bettype 
+			) t
+			CROSS APPLY (
+			SELECT 0 as isLive
+			UNION 
+			SELECT 1 as isLive
+			)b
+			
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode = 157
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE dbo.CustVirtualRate WITH(ROWLOCK) WHERE custid = @custid 
+			
+			RETURN
+		END
+		--end virtual rate
+			    
 	END--end roleid = 4
 	ELSE IF @roleid = 3
 	BEGIN			
@@ -1701,6 +1766,42 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+		
+		--Virtual rate
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMutiplier])		
+		SELECT @custid,
+			sporttype,
+			bettype,
+			isLive,
+			virtualMutiplier
+		FROM CustVirtualRate WITH(NOLOCK)
+		WHERE custid = @srecommend
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 157
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustVirtualRate WITH(ROWLOCK) WHERE custid = @custid
+												
+			RETURN
+		END
+		--End Virtual rate
 		     
 	END--end roleid =3
 	ELSE IF @roleid = 2
@@ -2200,6 +2301,42 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+		
+		--Virtual rate
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMutiplier])		
+		SELECT @custid,
+			sporttype,
+			bettype,
+			isLive,
+			virtualMutiplier
+		FROM CustVirtualRate WITH(NOLOCK)
+		WHERE custid = @mrecommend
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 157
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustVirtualRate WITH(ROWLOCK) WHERE custid = @custid
+												
+			RETURN
+		END
+		--End Virtual rate
 
 	END--end roleid =2
 	ELSE IF @roleid = 1
@@ -2575,6 +2712,42 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+		
+		--Virtual rate
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMutiplier])		
+		SELECT @custid,
+			sporttype,
+			bettype,
+			isLive,
+			virtualMutiplier
+		FROM CustVirtualRate WITH(NOLOCK)
+		WHERE custid = @recommend
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SET @ErrCode = 157
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
+			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
+			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustVirtualRate WITH(ROWLOCK) WHERE custid = @custid
+												
+			RETURN
+		END
+		--End Virtual rate
 	END
 END
 GO
