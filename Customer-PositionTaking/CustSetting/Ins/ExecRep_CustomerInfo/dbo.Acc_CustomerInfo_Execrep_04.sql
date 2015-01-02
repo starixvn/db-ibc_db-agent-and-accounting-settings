@@ -1,9 +1,9 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_04]
+﻿
+ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_04]
 	@custid int,
 	@roleid tinyint,
 	@action varchar(30) = '',
-	@DisableVirtualrate BIT = 0,
-	@virtualmultiplier VARCHAR(MAX) = '',
+	@virtualmultiplier smallmoney = 0,
 	@Suspended	BIT =0,
 	@Closed		BIT =0,
 	@disabledCS BIT =0,
@@ -25,7 +25,7 @@ DB: DBTXN/CustDB
 Original: Acc_ExecRep_Cust_04
 
 Revisions:
-	- 20141230@Johnson: separate virtual rate by sporttype and bettype
+	
 Param's Explanation:
 	@Action: 
 		+ 'VirtualMultiplier': Virtual Rate [@virtualmultiplier]
@@ -51,126 +51,25 @@ IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND t
 	
 if @action = 'VirtualMultiplier'
 BEGIN
-	DECLARE @tblVirtualrate TABLE (
-									SportType INT
-									,BetType INT
-									,IsLive	BIT
-									,VirtualMultiplier SMALLMONEY	
-								)
-								
-	DECLARE @DocHandler INT, 
-			@DisableVirtualrateOld BIT
-	-- For read xml					
-	EXEC sp_xml_preparedocument @DocHandler OUTPUT, @virtualmultiplier
-
-	INSERT INTO @tblVirtualrate(
-				SportType,
-				BetType,
-				IsLive,
-				VirtualMultiplier
-			)
-	SELECT
-		Data.SportType,
-		Data.BetType,
-		Data.IsLive,
-		Data.VirtualMultiplier
-	FROM OPENXML (@DocHandler, '/ROOT/Rate',1) 
-	WITH (
-		SportType	SMALLINT,
-		BetType		SMALLINT,
-		IsLive		BIT,
-		VirtualMultiplier SMALLMONEY	
-	) AS Data
-
-	EXEC sp_xml_removedocument @DocHandler
-	-- end read xml	
-	
-	SELECT @DisableVirtualrateOld = virtualmultiplier
-	FROM CustInfo WITH(NOLOCK)
-	WHERE custid = @custid
-	
 	if @roleid = 4
 	BEGIN
-		IF @DisableVirtualrateOld <> @DisableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @DisableVirtualrate
-			where srecommend = @custid
-		END
-		
-		IF @DisableVirtualrate = 0		
-		BEGIN
-			UPDATE cs
-			SET virtualmultiplier = t.VirtualMultiplier
-			FROM CustVirtualrate cs WITH(UPDLOCK,ROWLOCK)
-				INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-				INNER JOIN @tblVirtualrate t ON cs.sporttype = t.SportType 
-												AND cs.bettype = t.BetType
-												AND cs.isLive = t.IsLive
-			WHERE ci.srecommend = @custid
-				AND t.VirtualMultiplier <> cs.VirtualMultiplier
-		END
+		update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @virtualmultiplier
+		where srecommend = @custid
 	END
 	else if @roleid = 3
 	BEGIN
-		IF @DisableVirtualrateOld <> @DisableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @DisableVirtualrate
-			where mrecommend = @custid
-		END
-		
-		IF @DisableVirtualrate = 0		
-		BEGIN
-			UPDATE cs
-			SET virtualmultiplier = t.VirtualMultiplier
-			FROM CustVirtualrate cs WITH(UPDLOCK,ROWLOCK)
-				INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-				INNER JOIN @tblVirtualrate t ON cs.sporttype = t.SportType 
-												AND cs.bettype = t.BetType
-												AND cs.isLive = t.IsLive
-			WHERE ci.mrecommend = @custid
-				AND t.VirtualMultiplier <> cs.VirtualMultiplier
-		END
+		update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @virtualmultiplier
+		where mrecommend = @custid
 	END
 	else if @roleid = 2
 	BEGIN
-		IF @DisableVirtualrateOld <> @DisableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @DisableVirtualrate
-			where recommend = @custid
-		END
-		
-		IF @DisableVirtualrate = 0		 
-		BEGIN
-			UPDATE cs
-			SET virtualmultiplier = t.VirtualMultiplier
-			FROM CustVirtualrate cs WITH(UPDLOCK,ROWLOCK)
-				INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
-				INNER JOIN @tblVirtualrate t ON cs.sporttype = t.SportType 
-												AND cs.bettype = t.BetType
-												AND cs.isLive = t.IsLive
-			WHERE ci.recommend = @custid
-				AND t.VirtualMultiplier <> cs.VirtualMultiplier
-		END
+		update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @virtualmultiplier
+		where recommend = @custid
 	END
 	else if @roleid = 1
 	BEGIN
-		IF @DisableVirtualrateOld <> @DisableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @DisableVirtualrate
-			where custid = @custid
-		END
-		
-		IF @DisableVirtualrate = 0		
-		BEGIN
-			UPDATE cs
-			SET virtualmultiplier = t.VirtualMultiplier
-			FROM CustVirtualrate cs WITH(UPDLOCK,ROWLOCK)				
-				INNER JOIN @tblVirtualrate t ON cs.sporttype = t.SportType 
-												AND cs.bettype = t.BetType
-												AND cs.isLive = t.IsLive
-			WHERE custid = @custid
-				AND t.VirtualMultiplier <> cs.VirtualMultiplier
-		END
+		update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @virtualmultiplier
+		where custid = @custid
 	END
 END
 ELSE IF @Action ='Suspended'
