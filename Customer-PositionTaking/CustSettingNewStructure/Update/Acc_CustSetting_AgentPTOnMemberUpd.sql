@@ -236,7 +236,7 @@ BEGIN
 	END
 			
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @CustID
 						, @RoleID		= 2
 						, @AgentID		= @AgentID

@@ -185,7 +185,7 @@ BEGIN
 			AND cs.AgentID=@AgentID	
 			
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @RepresentCustID
 						, @RoleID		= 2
 						, @AgentID		= @AgentID
