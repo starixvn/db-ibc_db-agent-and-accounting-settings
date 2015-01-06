@@ -6,7 +6,6 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect] 
 	  @CustID		INT
-	, @SuperID		INT
 	, @ProductID	TINYINT
 AS
 /*
@@ -34,6 +33,12 @@ BEGIN
 			ELSE 0
 			END
 
+	DECLARE @SuperID INT
+	
+	SELECT @SuperID=ci.srecommend
+	FROM dbo.custInfo ci WITH(NOLOCK)
+	WHERE ci.custid=@CustID
+	
 	--Disable auto master PT
 	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
 	FROM CustMaster(NOLOCK)

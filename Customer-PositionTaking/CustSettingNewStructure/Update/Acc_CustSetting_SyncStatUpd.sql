@@ -176,7 +176,7 @@ BEGIN
 		SELECT @ErrMsg = CASE @Language
 				WHEN 'E'
 					THEN 'Cannot synchronize this product because this account''s upline not synchronize setting.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](6032, @Language)
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](60032, @Language)
 				END 
 				+ 
 				CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END

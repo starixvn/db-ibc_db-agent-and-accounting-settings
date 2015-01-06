@@ -6,9 +6,6 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect] 
 	  @CustID		INT
-	, @AgentID		INT
-	, @MasterID		INT
-	, @SuperID		INT
 	, @ProductID	TINYINT
 	, @RoleID		INT
 AS
@@ -44,6 +41,12 @@ BEGIN
 		, UM1			TINYINT
 		)
 
+	DECLARE @SuperID INT, @MasterID INT, @AgentID	INT
+	
+	SELECT @SuperID=ci.srecommend, @MasterID=ci.mrecommend , @AgentID = ci.recommend
+	FROM dbo.custInfo ci WITH(NOLOCK)
+	WHERE ci.custid=@CustID
+	
 	--Get member setting from Group OR Individual Settings	
 	INSERT INTO @MemberPT
 	SELECT pdt.SportType

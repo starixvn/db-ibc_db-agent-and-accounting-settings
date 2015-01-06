@@ -435,6 +435,7 @@ BEGIN
 		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.MasterPT < 0 OR mempt.MasterPT > pdt.MaxPT
+			OR mempt.AutoMasterPT < 0 OR mempt.AutoMasterPT > pdt.MaxPT
 			
 		IF @@ROWCOUNT > 0
 		BEGIN
@@ -863,6 +864,7 @@ BEGIN
 		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
 		WHERE mempt.SuperPT < 0 OR mempt.SuperPT > pdt.MaxPT
+			OR mempt.AutoSuperPT < 0 OR mempt.AutoSuperPT > pdt.MaxPT
 			
 		IF @@ROWCOUNT > 0
 		BEGIN
@@ -923,7 +925,7 @@ BEGIN
 			return
 		END
 			
-		--us1<=s4
+		--if is1=1 then us1<=s4
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType 
 			+CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
@@ -954,7 +956,7 @@ BEGIN
 				AND pdt.SettingType = 1		
 		JOIN bodb02.dbo.Products p WITH (NOLOCK)
 			ON p.ProductID = pdt.ProductID
-		WHERE mempt.AutoSuperPT > spt.SuperPT
+		WHERE mempt.IsAutoSuperPT = 1 AND mempt.AutoSuperPT > spt.SuperPT 
 		
 		IF @@ROWCOUNT > 0
 		BEGIN
