@@ -30,15 +30,16 @@ BEGIN
 	DECLARE @MemberPT TABLE (
 		  SportType		SMALLINT
 		, BetType		SMALLINT
+		, SettingType	SMALLINT
 		, IsLive		BIT
 		, IsGroupedPT	BIT
-		, S1			TINYINT
-		, M1			TINYINT
-		, A1			TINYINT
+		, S1			INT
+		, M1			INT
+		, A1			INT
 		, IS1			BIT
-		, US1			TINYINT
+		, US1			INT
 		, IM1			BIT
-		, UM1			TINYINT
+		, UM1			INT
 		)
 
 	DECLARE @SuperID INT, @MasterID INT, @AgentID	INT
@@ -51,6 +52,7 @@ BEGIN
 	INSERT INTO @MemberPT
 	SELECT pdt.SportType
 		, pdt.BetType
+		, pdt.SettingType
 		, pdt.IsLive
 		, mode.IsGrouped
 		, CASE 
@@ -107,20 +109,25 @@ BEGIN
 	IF @RoleID = 4
 	BEGIN
 		--Cusinfo
-		SELECT c.username
-			, c.username2
-			, c.firstname
-			, c.lastname
-			, c.phone
-			, c.mobilephone
-			, c.email
-			, c.fax
-			, c.roleid
+		SELECT c.username AS UserName
+			, c.username2 AS UserName2
+			, c.firstname AS FirstName
+			, c.lastname AS LastName
+			, c.phone AS Phone
+			, c.mobilephone AS MobilePhone
+			, c.email AS Email
+			, c.fax AS Fax
+			, c.roleid AS RoleID
 		FROM Customer c WITH (NOLOCK)
 		WHERE c.custID = @CustID
 
 		--PT SETTING
-		SELECT mb.IsGroupedPT
+		SELECT
+			mb.SportType
+			, mb.BetType
+			, mb.SettingType 
+			, mb.IsLive
+			, mb.IsGroupedPT
 			, mb.A1
 			, mb.M1
 			, mb.S1
@@ -136,14 +143,14 @@ BEGIN
 				WHEN superpt.SuperPT - masterpt.MasterPT > superpt.MinPT - (mb.M1 + mb.A1)
 					THEN superpt.SuperPT - masterpt.MasterPT
 				ELSE superpt.MinPT - (mb.M1 + mb.A1)
-				END AS S1_MAX
+				END AS S1_Max
 			,
 			-- s1_min = Max(0, N4-M1-A1)
 			CASE 
 				WHEN superpt.MinPT - (mb.M1 + mb.A1) < 0
 					THEN 0
 				ELSE superpt.MinPT - (mb.M1 + mb.A1)
-				END AS S1_MIN
+				END AS S1_Min
 		FROM @MemberPT mb
 		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
 			ON mb.SportType = masterpt.sporttype
@@ -177,7 +184,7 @@ BEGIN
 			, pdt.BetType
 			, pdt.SettingType
 			, pdt.IsLive
-			, dc.PlayerDiscount
+			, dc.PlayerDiscount AS Discount
 			, dc.AgentDiscount
 			, dc.MasterDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
@@ -213,8 +220,8 @@ BEGIN
 			SportType SMALLINT
 			, BetType SMALLINT
 			, IsLive BIT
-			, M1_Max TINYINT
-			, M1_Min TINYINT
+			, M1_Max INT
+			, M1_Min INT
 			)
 
 		--Get Min/Max of presets
@@ -253,20 +260,25 @@ BEGIN
 			AND pdt.SettingType = 1
 
 		--Cusinfo
-		SELECT c.username
-			, c.username2
-			, c.firstname
-			, c.lastname
-			, c.phone
-			, c.mobilephone
-			, c.email
-			, c.fax
+		SELECT c.username AS UserName
+			, c.username2 AS UserName2
+			, c.firstname AS FirstName
+			, c.lastname AS LastName
+			, c.phone AS Phone
+			, c.mobilephone AS MobilePhone
+			, c.email AS Email
+			, c.fax AS Fax
 			, @DisableAutoMPT AS DisableAutoMPT
 		FROM Customer c WITH (NOLOCK)
 		WHERE c.custID = @CustID
 
 		--PT SETTING
-		SELECT mb.IsGroupedPT
+		SELECT
+			mb.SportType
+			, mb.BetType
+			, mb.SettingType  
+			, mb.IsLive
+			, mb.IsGroupedPT
 			, mb.A1
 			, mb.M1
 			, agentpt.IsAutoMasterPT IM2
@@ -278,17 +290,17 @@ BEGIN
 				WHEN mpt.M1_Min - mb.A1 < 0
 					THEN 0
 				ELSE mpt.M1_Min - mb.A1
-				END AS M1_MIN
+				END AS M1_Min
 			,
 			-- um1_min = [Max(0, N3-A1)
 			CASE 
 				WHEN mpt.M1_Min - mb.A1 < 0
 					THEN 0
 				ELSE mpt.M1_Min - mb.A1
-				END AS UM1_MIN
+				END AS UM1_Min
 			,
 			--um1_max =  Min(M3, M4)
-			ISNULL(mpt.M1_Max, 0) AS UM1_MAX
+			ISNULL(mpt.M1_Max, 0) AS UM1_Max
 		FROM @MemberPT mb
 		INNER JOIN @MasterMaxPT mpt
 			ON mb.SportType = mpt.sporttype
@@ -321,7 +333,7 @@ BEGIN
 			, pdt.BetType
 			, pdt.SettingType
 			, pdt.IsLive
-			, dc.PlayerDiscount
+			, dc.PlayerDiscount AS Discount
 			, dc.AgentDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
@@ -351,14 +363,14 @@ BEGIN
 			SportType SMALLINT
 			, BetType SMALLINT
 			, IsLive BIT
-			, A1_Max TINYINT
-			, A1_Min TINYINT
+			, A1_Max INT
+			, A1_Min INT
 			)
 		DECLARE @AgentMaxPTWithAuto TABLE (
 			SportType SMALLINT
 			, BetType SMALLINT
 			, IsLive BIT
-			, A1_Max TINYINT
+			, A1_Max INT
 			)
 
 		--Get Min/Max of presets
@@ -446,19 +458,24 @@ BEGIN
 			AND pdt.SettingType = 1
 
 		--Cusinfo
-		SELECT c.username
-			, c.username2
-			, c.firstname
-			, c.lastname
-			, c.phone
-			, c.mobilephone
-			, c.email
-			, c.fax
+		SELECT c.username AS UserName
+			, c.username2 AS UserName2
+			, c.firstname AS FirstName
+			, c.lastname AS LastName
+			, c.phone AS Phone
+			, c.mobilephone AS MobilePhone
+			, c.email AS Email
+			, c.fax AS Fax
 		FROM Customer c WITH (NOLOCK)
 		WHERE c.custID = @CustID
 
 		--PT Setting
-		SELECT mb.IsGroupedPT
+		SELECT
+			mb.SportType
+			, mb.BetType
+			, mb.SettingType  
+			, mb.IsLive
+			, mb.IsGroupedPT
 			, mb.A1
 			, apt.A1_Min
 			, CASE 
@@ -547,8 +564,8 @@ BEGIN
 		SELECT pdt.SportType
 			, pdt.BetType
 			, pdt.SettingType
-			, dc.PlayerDiscount
-			, adc.Discount AS maxDiscount
+			, dc.PlayerDiscount AS Discount
+			, adc.Discount AS MaxDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
 			ON pdt.SportType = dc.sporttype

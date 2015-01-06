@@ -46,14 +46,14 @@ BEGIN
 	WHERE CustID = @MasterID
 
 	--Cusinfo
-	SELECT c.username
-		, c.username2
-		, c.firstname
-		, c.lastname
-		, c.phone
-		, c.mobilephone
-		, c.email
-		, c.fax
+	SELECT c.username AS UserName
+			, c.username2 AS UserName2
+			, c.firstname AS FirstName
+			, c.lastname AS LastName
+			, c.phone AS Phone
+			, c.mobilephone AS MobilePhone
+			, c.email AS Email
+			, c.fax AS Fax
 		, @DisableAutoMPT AS DisableAutoMPT
 	FROM Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID

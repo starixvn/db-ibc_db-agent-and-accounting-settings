@@ -33,14 +33,14 @@ BEGIN
 			END
 
 	--Cusinfo
-	SELECT c.username
-		, c.username2
-		, c.firstname
-		, c.lastname
-		, c.phone
-		, c.mobilephone
-		, c.email
-		, c.fax
+	SELECT c.username AS UserName
+			, c.username2 AS UserName2
+			, c.firstname AS FirstName
+			, c.lastname AS LastName
+			, c.phone AS Phone
+			, c.mobilephone AS MobilePhone
+			, c.email AS Email
+			, c.fax AS Fax
 	FROM dbo.Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID
 
@@ -54,7 +54,7 @@ BEGIN
 		, pt.AgentPT	AS A4
 		, pt.MinPT		AS N4
 		, pt.MaxPT		AS L4
-		, pdt.MaxPT		AS DefaullMaxPT
+		, pdt.MaxPT		AS DefaultMaxPT
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
 		ON pdt.SportType = pt.sporttype
