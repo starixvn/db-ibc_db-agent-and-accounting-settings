@@ -178,11 +178,11 @@ BEGIN
 		GROUP BY bl.SportType
 			, bl.BetType
 	END
-
+	
 	--Get 1 error row
 	INSERT INTO @ErrorSportTypeTbl
-	SELECT ISNULL(ubl.SportType, 0)
-		,ISNULL(ubl.BetType, 0)
+	SELECT tmp.SportType
+		, tmp.BetType
 		, tmp.MinBet
 		, tmp.MaxBet
 		, tmp.MaxPerMatch

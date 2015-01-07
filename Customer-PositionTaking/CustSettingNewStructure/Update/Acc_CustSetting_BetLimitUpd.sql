@@ -83,19 +83,6 @@ BEGIN
 		RETURN
 	
 
-	--Check RoleID
-	IF @RoleID NOT IN (1, 2, 3, 4)
-	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Invalid user!'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](40002, @Language)
-				END
-			, @ErrCode = 101
-
-		RETURN
-	END
-
 	--Get line information
 	SELECT @AgentID = recommend
 		, @MasterID = mrecommend
@@ -103,6 +90,7 @@ BEGIN
 		, @RoleID	= RoleID
 	FROM dbo.custInfo WITH (NOLOCK)
 	WHERE custid = @CustID
+
 
 	--Parse XML	
 	DECLARE @iDoc INT
