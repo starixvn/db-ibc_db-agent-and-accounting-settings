@@ -1565,17 +1565,13 @@ BEGIN
 		END
 		ELSE IF @RoleID=1
 		BEGIN
-			--update agent
-			UPDATE main
-			SET main.PlayerDiscount = CASE WHEN tmp.Discount < dca.Discount THEN tmp.Discount ELSE dca.Discount END
-			FROM dbo.CustDiscount3rd_Member main WITH(ROWLOCK, UPDLOCK)
-			JOIN @NewDiscountTbl tmp 
-				ON tmp.SportType=main.SportType
-					AND tmp.BetType=main.BetType
-			JOIN dbo.CustDiscount3rd_Agent dca WITH(NOLOCK)
-				ON tmp.SportType=dca.SportType
-					AND tmp.BetType=dca.BetType
-			WHERE main.CustID=@CustID
+		   UPDATE main  
+		   SET main.PlayerDiscount = tmp.Discount
+		   FROM dbo.CustDiscount3rd_Member main WITH(ROWLOCK, UPDLOCK)  
+		   JOIN @NewDiscountTbl tmp   
+			ON tmp.SportType=main.SportType  
+			 AND tmp.BetType=main.BetType 
+		   WHERE main.CustID=@CustID  
 		END
     END
     /*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
