@@ -39,10 +39,10 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)
 	WHERE ci.custid=@CustID
 	
-	--Disable auto master PT
-	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
-	FROM CustMaster(NOLOCK)
-	WHERE CustID = @CustID
+	----Disable auto master PT
+	--SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
+	--FROM CustMaster(NOLOCK)
+	--WHERE CustID = @CustID
 
 	--Cusinfo
 	SELECT c.username AS UserName
@@ -53,7 +53,7 @@ BEGIN
 			, c.mobilephone AS MobilePhone
 			, c.email AS Email
 			, c.fax AS Fax
-		, @DisableAutoMPT DisableAutoMPT
+		--, @DisableAutoMPT DisableAutoMPT
 	FROM Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID
 

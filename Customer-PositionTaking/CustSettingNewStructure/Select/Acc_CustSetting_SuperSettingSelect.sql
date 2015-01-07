@@ -53,7 +53,7 @@ BEGIN
 		, pt.MasterPT	AS M4
 		, pt.AgentPT	AS A4
 		, pt.MinPT		AS N4
-		, pt.MaxPT		AS L4
+		--, pt.MaxPT		AS L4
 		, pdt.MaxPT		AS DefaultMaxPT
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
