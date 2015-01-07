@@ -117,7 +117,6 @@ BEGIN
 			, c.mobilephone AS MobilePhone
 			, c.email AS Email
 			, c.fax AS Fax
-			, c.roleid AS RoleID
 		FROM Customer c WITH (NOLOCK)
 		WHERE c.custID = @CustID
 
@@ -133,24 +132,26 @@ BEGIN
 			, mb.S1
 			, mb.IS1
 			, mb.US1
-			, masterpt.IsAutoSuperPT AS IS3
+			--, masterpt.IsAutoSuperPT AS IS3
 			,
 			-- us1_max=S4
-			superpt.SuperPT AS US1_Max
-			,
-			-- s1_max= Max(N4-M1-A1, S4-M3)
-			CASE 
-				WHEN superpt.SuperPT - masterpt.MasterPT > superpt.MinPT - (mb.M1 + mb.A1)
-					THEN superpt.SuperPT - masterpt.MasterPT
-				ELSE superpt.MinPT - (mb.M1 + mb.A1)
-				END AS S1_Max
-			,
-			-- s1_min = Max(0, N4-M1-A1)
-			CASE 
-				WHEN superpt.MinPT - (mb.M1 + mb.A1) < 0
-					THEN 0
-				ELSE superpt.MinPT - (mb.M1 + mb.A1)
-				END AS S1_Min
+			  superpt.SuperPT AS S4
+			, superpt.MinPT AS N4
+			, masterpt.MasterPT AS M3
+			--,
+			---- s1_max= Max(N4-M1-A1, S4-M3)
+			--CASE 
+			--	WHEN superpt.SuperPT - masterpt.MasterPT > superpt.MinPT - (mb.M1 + mb.A1)
+			--		THEN superpt.SuperPT - masterpt.MasterPT
+			--	ELSE superpt.MinPT - (mb.M1 + mb.A1)
+			--	END AS S1_Max
+			--,
+			---- s1_min = Max(0, N4-M1-A1)
+			--CASE 
+			--	WHEN superpt.MinPT - (mb.M1 + mb.A1) < 0
+			--		THEN 0
+			--	ELSE superpt.MinPT - (mb.M1 + mb.A1)
+			--	END AS S1_Min
 		FROM @MemberPT mb
 		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
 			ON mb.SportType = masterpt.sporttype
@@ -216,48 +217,48 @@ BEGIN
 		FROM CustMaster WITH (NOLOCK)
 		WHERE CustID = @MasterID
 
-		DECLARE @MasterMaxPT TABLE (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, M1_Max INT
-			, M1_Min INT
-			)
+		--DECLARE @MasterMaxPT TABLE (
+		--	SportType SMALLINT
+		--	, BetType SMALLINT
+		--	, IsLive BIT
+		--	, M1_Max INT
+		--	, M1_Min INT
+		--	)
 
-		--Get Min/Max of presets
-		INSERT INTO @MasterMaxPT
-		SELECT pdt.SportType
-			, pdt.BetType
-			, pdt.IsLive
-			,
-			--min(m3,l3,m4)
-			CASE 
-				WHEN masterpt.MasterPT < masterpt.MaxPT
-					THEN CASE 
-							WHEN masterpt.MasterPT < superpt.MasterPT
-								THEN masterpt.MasterPT
-							ELSE superpt.MasterPT
-							END
-				ELSE CASE 
-						WHEN masterpt.MaxPT < superpt.MasterPT
-							THEN masterpt.MaxPT
-						ELSE superpt.MasterPT
-						END
-				END
-			, masterpt.MinPT
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
-			ON pdt.SportType = masterpt.sporttype
-				AND pdt.BetType = masterpt.bettype
-				AND pdt.IsLive = masterpt.islive
-				AND masterpt.custid = @MasterID
-		INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-			ON pdt.SportType = superpt.sporttype
-				AND pdt.BetType = superpt.bettype
-				AND pdt.IsLive = superpt.islive
-				AND superpt.custid = @SuperID
-		WHERE pdt.ProductID = @ProductID
-			AND pdt.SettingType = 1
+		----Get Min/Max of presets
+		--INSERT INTO @MasterMaxPT
+		--SELECT pdt.SportType
+		--	, pdt.BetType
+		--	, pdt.IsLive
+		--	,
+		--	--min(m3,l3,m4)
+		--	CASE 
+		--		WHEN masterpt.MasterPT < masterpt.MaxPT
+		--			THEN CASE 
+		--					WHEN masterpt.MasterPT < superpt.MasterPT
+		--						THEN masterpt.MasterPT
+		--					ELSE superpt.MasterPT
+		--					END
+		--		ELSE CASE 
+		--				WHEN masterpt.MaxPT < superpt.MasterPT
+		--					THEN masterpt.MaxPT
+		--				ELSE superpt.MasterPT
+		--				END
+		--		END
+		--	, masterpt.MinPT
+		--FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		--INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+		--	ON pdt.SportType = masterpt.sporttype
+		--		AND pdt.BetType = masterpt.bettype
+		--		AND pdt.IsLive = masterpt.islive
+		--		AND masterpt.custid = @MasterID
+		--INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+		--	ON pdt.SportType = superpt.sporttype
+		--		AND pdt.BetType = superpt.bettype
+		--		AND pdt.IsLive = superpt.islive
+		--		AND superpt.custid = @SuperID
+		--WHERE pdt.ProductID = @ProductID
+		--	AND pdt.SettingType = 1
 
 		--Cusinfo
 		SELECT c.username AS UserName
@@ -281,36 +282,43 @@ BEGIN
 			, mb.IsGroupedPT
 			, mb.A1
 			, mb.M1
-			, agentpt.IsAutoMasterPT IM2
+			--, agentpt.IsAutoMasterPT IM2
 			, mb.IM1
 			, mb.UM1
-			, mpt.M1_Max - mb.A1 AS M1_Max
-			, --min(m3,l3,m4)-a1
-			CASE 
-				WHEN mpt.M1_Min - mb.A1 < 0
-					THEN 0
-				ELSE mpt.M1_Min - mb.A1
-				END AS M1_Min
-			,
-			-- um1_min = [Max(0, N3-A1)
-			CASE 
-				WHEN mpt.M1_Min - mb.A1 < 0
-					THEN 0
-				ELSE mpt.M1_Min - mb.A1
-				END AS UM1_Min
-			,
-			--um1_max =  Min(M3, M4)
-			ISNULL(mpt.M1_Max, 0) AS UM1_Max
+			, masterpt.MasterPT AS M3
+			, masterpt.MinPT AS N3
+			--, mpt.M1_Max - mb.A1 AS M1_Max
+			--, --min(m3,l3,m4)-a1
+			--CASE 
+			--	WHEN mpt.M1_Min - mb.A1 < 0
+			--		THEN 0
+			--	ELSE mpt.M1_Min - mb.A1
+			--	END AS M1_Min
+			--,
+			---- um1_min = [Max(0, N3-A1)
+			--CASE 
+			--	WHEN mpt.M1_Min - mb.A1 < 0
+			--		THEN 0
+			--	ELSE mpt.M1_Min - mb.A1
+			--	END AS UM1_Min
+			--,
+			----um1_max =  Min(M3, M4)
+			--ISNULL(mpt.M1_Max, 0) AS UM1_Max
 		FROM @MemberPT mb
-		INNER JOIN @MasterMaxPT mpt
-			ON mb.SportType = mpt.sporttype
-				AND mb.BetType = mpt.bettype
-				AND mb.IsLive = mpt.islive
-		INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-			ON mb.SportType = agentpt.sporttype
-				AND mb.BetType = agentpt.bettype
-				AND mb.IsLive = agentpt.islive
-				AND agentpt.custid = @AgentID
+		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+			ON mb.SportType = masterpt.sporttype
+				AND mb.BetType = masterpt.bettype
+				AND mb.IsLive = masterpt.islive
+				AND masterpt.custid = @MasterID
+		--INNER JOIN @MasterMaxPT mpt
+		--	ON mb.SportType = mpt.sporttype
+		--		AND mb.BetType = mpt.bettype
+		--		AND mb.IsLive = mpt.islive
+		--INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+		--	ON mb.SportType = agentpt.sporttype
+		--		AND mb.BetType = agentpt.bettype
+		--		AND mb.IsLive = agentpt.islive
+		--		AND agentpt.custid = @AgentID
 
 		--Bet Limit Setting
 		SELECT pdt.SportType
@@ -359,103 +367,103 @@ BEGIN
 	END
 	ELSE IF @RoleID = 2
 	BEGIN
-		DECLARE @AgentMaxPT TABLE (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, A1_Max INT
-			, A1_Min INT
-			)
-		DECLARE @AgentMaxPTWithAuto TABLE (
-			SportType SMALLINT
-			, BetType SMALLINT
-			, IsLive BIT
-			, A1_Max INT
-			)
+		--DECLARE @AgentMaxPT TABLE (
+		--	SportType SMALLINT
+		--	, BetType SMALLINT
+		--	, IsLive BIT
+		--	, A1_Max INT
+		--	, A1_Min INT
+		--	)
+		--DECLARE @AgentMaxPTWithAuto TABLE (
+		--	SportType SMALLINT
+		--	, BetType SMALLINT
+		--	, IsLive BIT
+		--	, A1_Max INT
+		--	)
 
-		--Get Min/Max of presets
-		INSERT INTO @AgentMaxPT
-		SELECT pdt.SportType
-			, pdt.BetType
-			, pdt.IsLive
-			,
-			--min(a2,l2,a4)
-			CASE 
-				WHEN agentpt.agentPT < agentpt.maxPT
-					THEN CASE 
-							WHEN agentpt.agentPT < superpt.agentPT
-								THEN agentpt.agentPT
-							ELSE superpt.agentPT
-							END
-				ELSE CASE 
-						WHEN agentpt.maxPT < superpt.agentPT
-							THEN agentpt.maxPT
-						ELSE superpt.agentPT
-						END
-				END
-			, agentpt.MinPT
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-			ON pdt.SportType = agentpt.sporttype
-				AND pdt.BetType = agentpt.bettype
-				AND pdt.IsLive = agentpt.islive
-				AND agentpt.custid = @AgentID
-		INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-			ON pdt.SportType = superpt.sporttype
-				AND pdt.BetType = superpt.bettype
-				AND pdt.IsLive = superpt.islive
-				AND superpt.custid = @SuperID
-		WHERE pdt.ProductID = @ProductID
-			AND pdt.SettingType = 1
+		----Get Min/Max of presets
+		--INSERT INTO @AgentMaxPT
+		--SELECT pdt.SportType
+		--	, pdt.BetType
+		--	, pdt.IsLive
+		--	,
+		--	--min(a2,l2,a4)
+		--	CASE 
+		--		WHEN agentpt.agentPT < agentpt.maxPT
+		--			THEN CASE 
+		--					WHEN agentpt.agentPT < superpt.agentPT
+		--						THEN agentpt.agentPT
+		--					ELSE superpt.agentPT
+		--					END
+		--		ELSE CASE 
+		--				WHEN agentpt.maxPT < superpt.agentPT
+		--					THEN agentpt.maxPT
+		--				ELSE superpt.agentPT
+		--				END
+		--		END
+		--	, agentpt.MinPT
+		--FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		--INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+		--	ON pdt.SportType = agentpt.sporttype
+		--		AND pdt.BetType = agentpt.bettype
+		--		AND pdt.IsLive = agentpt.islive
+		--		AND agentpt.custid = @AgentID
+		--INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+		--	ON pdt.SportType = superpt.sporttype
+		--		AND pdt.BetType = superpt.bettype
+		--		AND pdt.IsLive = superpt.islive
+		--		AND superpt.custid = @SuperID
+		--WHERE pdt.ProductID = @ProductID
+		--	AND pdt.SettingType = 1
 
-		--Get Min/Max base on autoPT settings
-		INSERT INTO @AgentMaxPTWithAuto
-		SELECT pdt.SportType
-			, pdt.BetType
-			, pdt.IsLive
-			,
-			--iif(im=1,a2,iif(i1|i3,m3-m1,min(m3-m1,s4-m1-s1)
-			CASE 
-				WHEN (
-						agentPT.IsAutoMasterPT = 1
-						OR IM1 = 1
-						)
-					THEN agentPT.agentPT
-				ELSE CASE 
-						WHEN NOT (
-								IS1 = 0
-								AND masterpt.IsAutoSuperPT = 0
-								)
-							THEN masterpt.masterPT - M1
-						ELSE CASE 
-								WHEN masterpt.masterPT - M1 <= superpt.superPT - S1 - M1
-									THEN masterpt.masterPT - M1
-								ELSE superpt.superPT - S1 - M1
-								END
-						END
-				END
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
-			ON pdt.SportType = agentpt.sporttype
-				AND pdt.BetType = agentpt.bettype
-				AND pdt.IsLive = agentpt.islive
-				AND agentpt.custid = @AgentID
-		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
-			ON pdt.SportType = masterpt.sporttype
-				AND pdt.BetType = masterpt.bettype
-				AND pdt.IsLive = masterpt.islive
-				AND masterpt.custid = @MasterID
-		INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
-			ON pdt.SportType = superpt.sporttype
-				AND pdt.BetType = superpt.bettype
-				AND pdt.IsLive = superpt.islive
-				AND superpt.custid = @SuperID
-		INNER JOIN @MemberPT mb
-			ON pdt.SportType = mb.sporttype
-				AND pdt.BetType = mb.bettype
-				AND pdt.IsLive = mb.islive
-		WHERE pdt.ProductID = @ProductID
-			AND pdt.SettingType = 1
+		----Get Min/Max base on autoPT settings
+		--INSERT INTO @AgentMaxPTWithAuto
+		--SELECT pdt.SportType
+		--	, pdt.BetType
+		--	, pdt.IsLive
+		--	,
+		--	--iif(im=1,a2,iif(i1|i3,m3-m1,min(m3-m1,s4-m1-s1)
+		--	CASE 
+		--		WHEN (
+		--				agentPT.IsAutoMasterPT = 1
+		--				OR IM1 = 1
+		--				)
+		--			THEN agentPT.agentPT
+		--		ELSE CASE 
+		--				WHEN NOT (
+		--						IS1 = 0
+		--						AND masterpt.IsAutoSuperPT = 0
+		--						)
+		--					THEN masterpt.masterPT - M1
+		--				ELSE CASE 
+		--						WHEN masterpt.masterPT - M1 <= superpt.superPT - S1 - M1
+		--							THEN masterpt.masterPT - M1
+		--						ELSE superpt.superPT - S1 - M1
+		--						END
+		--				END
+		--		END
+		--FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		--INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+		--	ON pdt.SportType = agentpt.sporttype
+		--		AND pdt.BetType = agentpt.bettype
+		--		AND pdt.IsLive = agentpt.islive
+		--		AND agentpt.custid = @AgentID
+		--INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
+		--	ON pdt.SportType = masterpt.sporttype
+		--		AND pdt.BetType = masterpt.bettype
+		--		AND pdt.IsLive = masterpt.islive
+		--		AND masterpt.custid = @MasterID
+		--INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)
+		--	ON pdt.SportType = superpt.sporttype
+		--		AND pdt.BetType = superpt.bettype
+		--		AND pdt.IsLive = superpt.islive
+		--		AND superpt.custid = @SuperID
+		--INNER JOIN @MemberPT mb
+		--	ON pdt.SportType = mb.sporttype
+		--		AND pdt.BetType = mb.bettype
+		--		AND pdt.IsLive = mb.islive
+		--WHERE pdt.ProductID = @ProductID
+		--	AND pdt.SettingType = 1
 
 		--Cusinfo
 		SELECT c.username AS UserName
@@ -477,21 +485,28 @@ BEGIN
 			, mb.IsLive
 			, mb.IsGroupedPT
 			, mb.A1
-			, apt.A1_Min
-			, CASE 
-				WHEN apt.A1_Max <= apt_auto.A1_Max
-					THEN apt.A1_Max
-				ELSE apt_auto.A1_Max
-				END AS A1_Max
+			, agentpt.AgentPT AS A2
+			, agentpt.MinPT AS N2
+			--, apt.A1_Min
+			--, CASE 
+			--	WHEN apt.A1_Max <= apt_auto.A1_Max
+			--		THEN apt.A1_Max
+			--	ELSE apt_auto.A1_Max
+			--	END AS A1_Max
 		FROM @MemberPT mb
-		INNER JOIN @AgentMaxPT apt
-			ON mb.SportType = apt.sporttype
-				AND mb.BetType = apt.bettype
-				AND mb.IsLive = apt.islive
-		INNER JOIN @AgentMaxPTWithAuto apt_auto
-			ON mb.SportType = apt_auto.sporttype
-				AND mb.BetType = apt_auto.bettype
-				AND mb.IsLive = apt_auto.islive
+		INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)
+			ON mb.SportType = agentpt.sporttype
+				AND mb.BetType = agentpt.bettype
+				AND mb.IsLive = agentpt.islive
+				AND agentpt.custid = @AgentID
+		--INNER JOIN @AgentMaxPT apt
+		--	ON mb.SportType = apt.sporttype
+		--		AND mb.BetType = apt.bettype
+		--		AND mb.IsLive = apt.islive
+		--INNER JOIN @AgentMaxPTWithAuto apt_auto
+		--	ON mb.SportType = apt_auto.sporttype
+		--		AND mb.BetType = apt_auto.bettype
+		--		AND mb.IsLive = apt_auto.islive
 
 		--Bet Limit Setting
 		SELECT pdt.SportType
@@ -519,26 +534,22 @@ BEGIN
 					THEN pdt.Min_MinBet
 				END AS MinBet_Min
 			, CASE 
-				WHEN sbl.maxbet <= mbl.maxbet
-					AND sbl.maxbet <= abl.maxbet
+				WHEN ((sbl.maxbet <= mbl.maxbet OR mbl.maxbet=0)
+					AND (sbl.maxbet <= abl.maxbet OR abl.maxbet=0)) AND sbl.maxbet <> 0
 					THEN sbl.maxbet
-				WHEN mbl.maxbet <= sbl.maxbet
-					AND mbl.maxbet <= abl.maxbet
+				WHEN ((mbl.maxbet <= sbl.maxbet OR sbl.maxbet=0)
+					AND (mbl.maxbet <= abl.maxbet OR abl.maxbet=0)) AND mbl.maxbet <> 0
 					THEN mbl.maxbet
-				WHEN abl.maxbet <= sbl.maxbet
-					AND abl.maxbet <= mbl.maxbet
-					THEN abl.maxbet
+				ELSE abl.maxbet
 				END AS MaxBet_Max
 			, CASE 
-				WHEN sbl.maxpermatch <= mbl.maxpermatch
-					AND sbl.maxpermatch <= abl.maxpermatch
+				WHEN ((sbl.maxpermatch <= mbl.maxpermatch OR mbl.maxpermatch=0)
+					AND (sbl.maxpermatch <= abl.maxpermatch OR abl.maxpermatch=0)) AND sbl.maxpermatch <> 0
 					THEN sbl.maxpermatch
-				WHEN mbl.maxpermatch <= sbl.maxpermatch
-					AND mbl.maxpermatch <= abl.maxpermatch
+				WHEN ((mbl.maxpermatch <= sbl.maxpermatch OR sbl.maxpermatch=0)
+					AND (mbl.maxpermatch <= abl.maxpermatch OR abl.maxpermatch=0)) AND mbl.maxpermatch <> 0
 					THEN mbl.maxpermatch
-				WHEN abl.maxpermatch <= sbl.maxpermatch
-					AND abl.maxpermatch <= mbl.maxpermatch
-					THEN abl.maxpermatch
+				ELSE abl.maxpermatch
 				END AS MaxPerMatch_Max
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)

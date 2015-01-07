@@ -74,8 +74,8 @@ BEGIN
 			ELSE masterpt.maxPT
 			END AS M3
 		, masterpt.minPT AS N3
-		, superpt.MasterPT AS M4
-		, superpt.agentPT AS A4
+		--, superpt.MasterPT AS M4
+		--, superpt.agentPT AS A4
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)
 		ON pdt.SportType = pt.sporttype
@@ -114,12 +114,12 @@ BEGIN
 				THEN pdt.Min_MinBet
 			END AS MinBet_Min
 		, CASE 
-			WHEN sbl.maxbet < mbl.maxbet
+			WHEN (sbl.maxbet < mbl.maxbet OR mbl.maxbet = 0) AND sbl.maxbet <> 0
 				THEN sbl.maxbet
 			ELSE mbl.maxbet
 			END AS MaxBet_Max
 		, CASE 
-			WHEN sbl.MaxPerMatch < mbl.MaxPerMatch
+			WHEN (sbl.MaxPerMatch < mbl.MaxPerMatch OR mbl.MaxPerMatch = 0) AND sbl.MaxPerMatch <> 0
 				THEN sbl.MaxPerMatch
 			ELSE mbl.MaxPerMatch
 			END AS MaxPerMatch_Max
