@@ -83,18 +83,13 @@ BEGIN
 		RETURN
 	
 
-	--Check RoleID
-	IF @RoleID NOT IN (1, 2, 3, 4)
-	BEGIN
-		SELECT @ErrMsg = CASE @Language
-						WHEN 'E'
-							THEN 'Invalid user!'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](40002, @Language)
-					END
-			,	@ErrCode = 101
-
-		RETURN
-	END
+	--Get line information
+	SELECT @AgentID = recommend
+		, @MasterID = mrecommend
+		, @SuperID = srecommend
+		, @RoleID = RoleID
+	FROM dbo.custInfo WITH (NOLOCK)
+	WHERE custid = @CustID
 
 	--Check Allowed downlines	
 	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines 
@@ -107,15 +102,7 @@ BEGIN
 
 	IF @ErrCode > 0
 		RETURN
-	
 
-	--Get line information
-	SELECT @AgentID = recommend
-		, @MasterID = mrecommend
-		, @SuperID = srecommend
-		, @RoleID = RoleID
-	FROM dbo.custInfo WITH (NOLOCK)
-	WHERE custid = @CustID
 
 	--Parse XML
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
