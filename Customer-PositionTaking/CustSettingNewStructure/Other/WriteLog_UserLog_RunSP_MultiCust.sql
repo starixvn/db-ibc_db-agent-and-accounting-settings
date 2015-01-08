@@ -48,7 +48,7 @@ BEGIN
 	--Parse affected Customer
 	INSERT INTO @tblCust (CustID)
 	SELECT CONVERT(INT, val)
-	FROM dbo.strSplit(@CustIDList, ',')
+	FROM CustDB.dbo.strSplit(@CustIDList, ',')
 
 	DECLARE @iDoc INT
 
@@ -100,7 +100,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustIDList AS '@c'
 				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
+				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP AS '@i'
 				, @Language AS '@l'
 				, (
@@ -125,7 +125,7 @@ BEGIN
 	SET @xml = (
 			SELECT @CustIDList AS '@c'
 				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
+				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@sc'
 				, @IP AS '@i'
 				, @Language AS '@l'
 				, (

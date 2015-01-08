@@ -13,7 +13,6 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTOnMemberUpd]
 	, @IP			VARCHAR(50)		= ''
 	, @UserID		INT				= 0
 	, @Language		VARCHAR(20)		= 'E'
-	, @Username		VARCHAR(30)		= ''
 	, @ErrCode		INT				= 0		OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
@@ -98,7 +97,6 @@ BEGIN
 	-- ***Check Downline Belonging***
 	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging @SessionCustID = @Userid
 		, @Custid = @custid
-		, @Username = @Username OUTPUT
 		, @roleid = @roleid OUTPUT
 
 	IF (@roleid = 0)
@@ -402,6 +400,7 @@ BEGIN
 
 	SELECT @AdjustedPT_XML = '<ROOT>' + @AdjustedPT_XML + '</ROOT>'		
 	
+	
 	EXEC dbo.Acc_CustSetting_MemberPTCorrect @AgentID = @AgentID
 								, @MasterID = @MasterID
 								, @SuperID = @SuperID
@@ -412,7 +411,7 @@ BEGIN
 	DELETE FROM @NewPTTble
 	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @CorrectedPT_XML
 
 	INSERT @NewPTTble
 			(SportType 

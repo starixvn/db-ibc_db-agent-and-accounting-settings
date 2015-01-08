@@ -104,7 +104,7 @@ BEGIN
 	FROM dbo.strSplit(@CustIDList, ',')
 
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging_MultiCust @SessionCustID = @Userid
+	EXEC dbo.Acc_CustSetting_BelongingMultiCustCheck @SessionCustID = @Userid
 		, @Custid = @CustIDList
 		, @roleid = @roleid OUTPUT
 
@@ -113,7 +113,7 @@ BEGIN
 
 			
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
+	EXEC dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
 		, @ErrCode = @ErrCode OUTPUT
 		, @ErrMsg = @ErrMsg OUTPUT
 
@@ -128,8 +128,10 @@ BEGIN
 		, @PT_XML
 
 	INSERT @NewPTTble
-	SELECT SportType,BetType,IsLive,AgentPT,0,0
-			,0,0,0,0,0,0
+	SELECT SportType
+			,BetType
+			,IsLive
+			,0,0,AgentPT,0,0,0,0,0,0
 	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
 			SportType	SMALLINT
 			, BetType	SMALLINT
@@ -163,7 +165,7 @@ BEGIN
 			AND cs.BetType=main.BetType
 			AND cs.IsLive=main.IsLive
 			AND cs.AgentID=@AgentID
-			
+	
 	--Get old settings for logs
 	INSERT @OldPTTble
 	SELECT 
@@ -359,7 +361,7 @@ BEGIN
 	DELETE FROM @NewPTTble
 	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @CorrectedPT_XML
 
 	INSERT @NewPTTble
 			(SportType 
@@ -398,13 +400,14 @@ BEGIN
 
 	EXEC sp_xml_removedocument @iDoc	
 	
-	
+
 	--**START UPDATING DB**--	
 	--Get total members that belong to Group
 	SELECT @TotalCount = ISNULL(COUNT(1),0)
 	FROM dbo.CustSettingMode3rd mode WITH (NOLOCK)
 	JOIN dbo.CustInfo ci WITH (NOLOCK) ON ci.CustID=mode.CustID
 	WHERE ci.recommend=@AgentID AND mode.IsGrouped=1
+	
 	
 	--Get total members that are different from group
 	IF EXISTS (SELECT TOP 1 1

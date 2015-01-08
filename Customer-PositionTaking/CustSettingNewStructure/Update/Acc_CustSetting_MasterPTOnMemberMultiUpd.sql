@@ -105,10 +105,19 @@ BEGIN
 	FROM dbo.strSplit(@CustIDList, ',')
 
 			
+	-- ***Check Downline Belonging***
+	EXEC dbo.Acc_CustSetting_BelongingMultiCustCheck @SessionCustID = @Userid
+		, @Custid = @CustIDList
+		, @roleid = @roleid OUTPUT
+
+	IF (@roleid = 0)
+		RETURN
+
+			
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
-		, @ErrCode	= @ErrCode	OUTPUT
-		, @ErrMsg	= @ErrMsg	OUTPUT
+	EXEC dbo.Acc_CustSetting_MultiCustEnableCheck @CustIDList = @CustIDList
+		, @ErrCode = @ErrCode OUTPUT
+		, @ErrMsg = @ErrMsg OUTPUT
 
 	IF @ErrCode > 0
 		RETURN
@@ -118,7 +127,7 @@ BEGIN
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @CorrectedPT_XML
 
 	INSERT @NewPTTble
 	SELECT SportType
