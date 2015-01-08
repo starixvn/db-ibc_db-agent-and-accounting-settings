@@ -50,7 +50,7 @@ BEGIN
 		, @maxmapos SMALLMONEY
 	--Parse XML	
 	DECLARE @iDoc INT
-
+	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
 		, @PT_XML
 
@@ -71,6 +71,7 @@ BEGIN
 
 	EXEC sp_xml_removedocument @iDoc
 
+	
 	--if a1<n2 then a1 = n2,
 	--m1 = max(m3-n2,m1)
 	UPDATE main

@@ -146,7 +146,7 @@ BEGIN
 			, IsLive		BIT
 			, SuperPT		TINYINT
 			, IsAutoSuperPT BIT
-			, AutoSUperPT	TINYINT
+			, AutoSuperPT	TINYINT
 			)
 
 	EXEC sp_xml_removedocument @iDoc
@@ -196,7 +196,7 @@ BEGIN
 			
 			
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @RepresentCustID
 						, @RoleID		= 4
 						, @AgentID		= @AgentID

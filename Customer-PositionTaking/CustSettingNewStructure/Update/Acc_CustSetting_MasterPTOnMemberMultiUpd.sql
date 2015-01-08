@@ -127,7 +127,7 @@ BEGIN
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @CorrectedPT_XML
+		, @PT_XML
 
 	INSERT @NewPTTble
 	SELECT SportType
@@ -150,7 +150,7 @@ BEGIN
 			)
 
 	EXEC sp_xml_removedocument @iDoc
-			
+		
 	--get line infor
 	SELECT TOP 1 @RepresentCustID=CustID
 	FROM @tblCust
@@ -196,7 +196,7 @@ BEGIN
 			
 			
 	--Check error		
-	EXEC [dbo].Acc_CustSetting_MemberPTUpdCheck 
+	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @RepresentCustID
 						, @RoleID		= 3
 						, @AgentID		= @AgentID
