@@ -372,7 +372,7 @@ BEGIN
 	DELETE FROM @NewPTTble
 	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @CorrectedPT_XML
 
 	INSERT @NewPTTble
 	SELECT *
