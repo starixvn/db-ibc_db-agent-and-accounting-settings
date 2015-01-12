@@ -66,7 +66,7 @@ BEGIN
 	--PT Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, pdt.IsLive
 		, pt.masterPT AS M2
 		, pt.agentPT AS A2
@@ -103,7 +103,7 @@ BEGIN
 	--Bet Limit Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, bl.MinBet
 		, bl.MaxBet
 		, bl.MaxPerMatch
@@ -151,7 +151,7 @@ BEGIN
 	--Discount Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, dc.Discount
 		, mdc.Discount AS MaxDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
@@ -169,7 +169,7 @@ BEGIN
 	--Product Status
 	SELECT stt.SportType
 		, stt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, ISNULL(stt.IsDisabled, 0) IsDisabled
 		, ISNULL(stt.IsHidden, 0) IsHidden
 		, ISNULL(stt.IsSync, 0) IsSync
