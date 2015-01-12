@@ -39,10 +39,11 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)
 	WHERE ci.custid=@CustID
 	
-	----Disable auto master PT
-	--SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
-	--FROM CustMaster(NOLOCK)
-	--WHERE CustID = @CustID
+	DECLARE @Currency TINYINT
+	
+	SELECT @Currency = Currency
+	FROM dbo.Customer c
+	WHERE c.custID = @CustID
 
 	--Cusinfo
 	SELECT c.username AS UserName
@@ -92,7 +93,7 @@ BEGIN
 		, bl.MaxBet
 		, bl.MaxPerMatch
 		, CASE 
-			WHEN sbl.minbet > pdt.Min_MinBet
+			WHEN sbl.minbet > pbs.MinBet
 				THEN sbl.minbet
 			ELSE pdt.Min_MinBet
 			END AS MinBet_Min
@@ -103,6 +104,10 @@ BEGIN
 		ON pdt.SportType = bl.sporttype
 			AND pdt.BetType = bl.bettype
 			AND bl.custid = @CustID
+	INNER JOIN dbo.ProductBetSetting pbs
+		ON pbs.SportType = bl.sporttype
+			AND pbs.BetType = bl.bettype
+			AND pbs.Currency = @Currency		
 	INNER JOIN dbo.CustBetSetting3rd_Agent sbl WITH (NOLOCK)
 		ON pdt.SportType = sbl.sporttype
 			AND pdt.BetType = sbl.bettype

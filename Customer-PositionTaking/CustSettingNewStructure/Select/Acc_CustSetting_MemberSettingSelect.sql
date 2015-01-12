@@ -48,6 +48,12 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)
 	WHERE ci.custid=@CustID
 	
+	DECLARE @Currency TINYINT
+	
+	SELECT @Currency = Currency
+	FROM dbo.Customer c
+	WHERE c.custID = @CustID
+	
 	--Get member setting from Group OR Individual Settings	
 	INSERT INTO @MemberPT
 	SELECT pdt.SportType
@@ -530,20 +536,20 @@ BEGIN
 			, CASE 
 				WHEN sbl.minbet >= mbl.minbet
 					AND sbl.minbet >= abl.minbet
-					AND sbl.minbet >= pdt.Min_MinBet
+					AND sbl.minbet >= pbs.MinBet
 					THEN sbl.minbet
 				WHEN mbl.minbet >= sbl.minbet
 					AND mbl.minbet >= abl.minbet
-					AND mbl.minbet >= pdt.Min_MinBet
+					AND mbl.minbet >= pbs.MinBet
 					THEN mbl.minbet
 				WHEN abl.minbet >= sbl.minbet
 					AND abl.minbet >= mbl.minbet
-					AND abl.minbet >= pdt.Min_MinBet
+					AND abl.minbet >= pbs.MinBet
 					THEN abl.minbet
-				WHEN pdt.Min_MinBet >= sbl.minbet
-					AND pdt.Min_MinBet >= mbl.minbet
-					AND pdt.Min_MinBet >= abl.minbet
-					THEN pdt.Min_MinBet
+				WHEN pbs.MinBet >= sbl.minbet
+					AND pbs.MinBet >= mbl.minbet
+					AND pbs.MinBet >= abl.minbet
+					THEN pbs.MinBet
 				END AS MinBet_Min
 			, CASE 
 				WHEN ((sbl.maxbet <= mbl.maxbet OR mbl.maxbet=0)
@@ -568,6 +574,10 @@ BEGIN
 			ON pdt.SportType = bl.sporttype
 				AND pdt.BetType = bl.bettype
 				AND bl.custid = @CustID
+		INNER JOIN dbo.ProductBetSetting pbs
+			ON pbs.SportType = bl.sporttype
+				AND pbs.BetType = bl.bettype
+				AND pbs.Currency = @Currency
 		INNER JOIN dbo.CustBetSetting3rd_Agent abl WITH (NOLOCK)
 			ON pdt.SportType = abl.sporttype
 				AND pdt.BetType = abl.bettype
