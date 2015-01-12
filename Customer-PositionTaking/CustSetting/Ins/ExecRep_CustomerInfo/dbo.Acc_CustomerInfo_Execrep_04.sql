@@ -93,15 +93,35 @@ BEGIN
 	FROM CustInfo WITH(NOLOCK)
 	WHERE custid = @custid
 	
-	if @roleid = 4
+	IF @EnableVirtualrateOld <> @EnableVirtualrate
 	BEGIN
-		IF @EnableVirtualrateOld <> @EnableVirtualrate
-		BEGIN
+		if @roleid = 4
+		BEGIN			
 			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
 			where srecommend = @custid
+			
 		END
-		
-		IF @EnableVirtualrate = 1		
+		else if @roleid = 3
+		BEGIN			
+			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
+			where mrecommend = @custid			
+		END
+		else if @roleid = 2
+		BEGIN			
+			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
+			where recommend = @custid			
+		END
+		else if @roleid = 1
+		BEGIN			
+			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
+			where custid = @custid			
+		END
+	END
+	
+	IF @EnableVirtualrate = 1	
+		AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('CustVirtualrate') AND type = 'U') = 1
+	BEGIN
+		if @roleid = 4
 		BEGIN
 			UPDATE cs
 			SET virtualmultiplier = t.VirtualMultiplier
@@ -113,16 +133,7 @@ BEGIN
 			WHERE ci.srecommend = @custid
 				AND t.VirtualMultiplier <> cs.VirtualMultiplier
 		END
-	END
-	else if @roleid = 3
-	BEGIN
-		IF @EnableVirtualrateOld <> @EnableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
-			where mrecommend = @custid
-		END
-		
-		IF @EnableVirtualrate = 1	
+		ELSE IF @roleid = 3
 		BEGIN
 			UPDATE cs
 			SET virtualmultiplier = t.VirtualMultiplier
@@ -134,16 +145,7 @@ BEGIN
 			WHERE ci.mrecommend = @custid
 				AND t.VirtualMultiplier <> cs.VirtualMultiplier
 		END
-	END
-	else if @roleid = 2
-	BEGIN
-		IF @EnableVirtualrateOld <> @EnableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
-			where recommend = @custid
-		END
-		
-		IF @EnableVirtualrate = 1		 
+		ELSE IF @roleid = 2
 		BEGIN
 			UPDATE cs
 			SET virtualmultiplier = t.VirtualMultiplier
@@ -155,16 +157,7 @@ BEGIN
 			WHERE ci.recommend = @custid
 				AND t.VirtualMultiplier <> cs.VirtualMultiplier
 		END
-	END
-	else if @roleid = 1
-	BEGIN
-		IF @EnableVirtualrateOld <> @EnableVirtualrate
-		BEGIN
-			update custinfo with (ROWLOCK, UPDLOCK) set virtualmultiplier = @EnableVirtualrate
-			where custid = @custid
-		END
-		
-		IF @EnableVirtualrate = 1		
+		ELSE IF @roleid = 1
 		BEGIN
 			UPDATE cs
 			SET virtualmultiplier = t.VirtualMultiplier
@@ -176,6 +169,7 @@ BEGIN
 				AND t.VirtualMultiplier <> cs.VirtualMultiplier
 		END
 	END
+	
 END
 ELSE IF @Action ='Suspended'
 BEGIN

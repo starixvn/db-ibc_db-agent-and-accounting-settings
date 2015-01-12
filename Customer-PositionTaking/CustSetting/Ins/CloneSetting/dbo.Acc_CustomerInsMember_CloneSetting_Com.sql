@@ -41,6 +41,7 @@ AS
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
 	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
+	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -430,10 +431,51 @@ BEGIN
 		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
 		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
-		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
-		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID									
+							
 		RETURN	
 	END CATCH
+	
+	BEGIN TRY
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMultiplier])
+		SELECT @custid
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMultiplier]
+        FROM [dbo].[CustVirtualRate] WITH(NOLOCK)
+        WHERE custid = @ExistingCustid           
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+							
+		RETURN	
+	END CATCH
+	
 	
 	SET @endRun=GETDATE()
 	SET @duration=datediff(millisecond,@startRun,@endRun)
