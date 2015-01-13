@@ -39,6 +39,11 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)
 	WHERE ci.custid=@CustID
 	
+	DECLARE @Currency TINYINT
+	
+	SELECT @Currency = Currency
+	FROM dbo.Customer c
+	WHERE c.custID = @CustID
 	
 	--Disable auto master PT
 	SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
@@ -61,7 +66,7 @@ BEGIN
 	--PT Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, pdt.IsLive
 		, pt.masterPT AS M2
 		, pt.agentPT AS A2
@@ -98,20 +103,20 @@ BEGIN
 	--Bet Limit Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, bl.MinBet
 		, bl.MaxBet
 		, bl.MaxPerMatch
 		, CASE 
 			WHEN sbl.minbet >= mbl.minbet
-				AND sbl.minbet >= pdt.Min_MinBet
+				AND sbl.minbet >= pbs.MinBet
 				THEN sbl.minbet
 			WHEN mbl.minbet >= sbl.minbet
-				AND mbl.minbet >= pdt.Min_MinBet
+				AND mbl.minbet >= pbs.MinBet
 				THEN mbl.minbet
-			WHEN pdt.Min_MinBet >= sbl.minbet
-				AND pdt.Min_MinBet >= mbl.minbet
-				THEN pdt.Min_MinBet
+			WHEN pbs.MinBet >= sbl.minbet
+				AND pbs.MinBet >= mbl.minbet
+				THEN pbs.MinBet
 			END AS MinBet_Min
 		, CASE 
 			WHEN (sbl.maxbet < mbl.maxbet OR mbl.maxbet = 0) AND sbl.maxbet <> 0
@@ -128,6 +133,10 @@ BEGIN
 		ON pdt.SportType = bl.sporttype
 			AND pdt.BetType = bl.bettype
 			AND bl.custid = @CustID
+	INNER JOIN dbo.ProductBetSetting pbs
+		ON pbs.SportType = bl.sporttype
+			AND pbs.BetType = bl.bettype
+			AND pbs.Currency = @Currency	
 	INNER JOIN dbo.CustBetSetting3rd_Agent mbl WITH (NOLOCK)
 		ON pdt.SportType = mbl.sporttype
 			AND pdt.BetType = mbl.bettype
@@ -142,7 +151,7 @@ BEGIN
 	--Discount Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, dc.Discount
 		, mdc.Discount AS MaxDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
@@ -160,7 +169,7 @@ BEGIN
 	--Product Status
 	SELECT stt.SportType
 		, stt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, ISNULL(stt.IsDisabled, 0) IsDisabled
 		, ISNULL(stt.IsHidden, 0) IsHidden
 		, ISNULL(stt.IsSync, 0) IsSync

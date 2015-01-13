@@ -13,7 +13,7 @@ ALTER PROCEDURE [dbo].[WriteLog_UserLog_RunSP_MultiCust]
 	
 	/* Created: 2014-12-09@Dominic 
     Task: Write log for SMA multiple upd grouped member's PT settings 
-    DB: bodb_CustomerLog  
+    DB: DBLOG/bodb_CustomerLog  
 	*/
 AS
 BEGIN

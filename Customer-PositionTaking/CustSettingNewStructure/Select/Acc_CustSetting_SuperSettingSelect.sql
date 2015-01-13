@@ -31,7 +31,13 @@ BEGIN
 				THEN 1
 			ELSE 0
 			END
-
+	
+	DECLARE @Currency TINYINT
+	
+	SELECT @Currency = Currency
+	FROM dbo.Customer c
+	WHERE c.custID = @CustID
+	
 	--Cusinfo
 	SELECT c.username AS UserName
 			, c.username2 AS UserName2
@@ -47,7 +53,7 @@ BEGIN
 	--PT Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, pdt.IsLive
 		, pt.SuperPT	AS S4
 		, pt.MasterPT	AS M4
@@ -67,23 +73,27 @@ BEGIN
 	--Bet Limit Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, bl.MinBet
 		, bl.MaxBet
 		, bl.MaxPerMatch
-		, pdt.Min_MinBet AS MinBet_Min
+		, pbs.MinBet AS MinBet_Min
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		ON pdt.SportType = bl.sporttype
 			AND pdt.BetType = bl.bettype
 			AND bl.custid = @CustID
+	INNER JOIN dbo.ProductBetSetting pbs
+		ON pbs.SportType = bl.sporttype
+			AND pbs.BetType = bl.bettype
+			AND pbs.Currency = @Currency
 	WHERE pdt.ProductID = @ProductID
 		AND pdt.SettingType = 2
 
 	--Discount Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, dc.Discount
 		, ISNULL(pdt.MaxDiscount, 0) MaxDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
@@ -97,7 +107,7 @@ BEGIN
 	--Product Status
 	SELECT stt.SportType
 		, stt.BetType
-		, pdt.SettingType
+		--, pdt.SettingType
 		, ISNULL(stt.IsDisabled, 0) IsDisabled
 		, ISNULL(stt.IsHidden, 0) IsHidden
 		, ISNULL(stt.IsSync, 0) IsSync
