@@ -54,14 +54,12 @@ BEGIN
 			, c.mobilephone AS MobilePhone
 			, c.email AS Email
 			, c.fax AS Fax
-		--, @DisableAutoMPT DisableAutoMPT
 	FROM Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID
 
 	--PT Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		--, pdt.SettingType
 		, pdt.IsLive
 		, pt.superPT		AS S3
 		, pt.masterPT		AS M3
@@ -88,14 +86,13 @@ BEGIN
 	--Bet Limit Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		--, pdt.SettingType
 		, bl.MinBet
 		, bl.MaxBet
 		, bl.MaxPerMatch
 		, CASE 
 			WHEN sbl.minbet > pbs.MinBet
 				THEN sbl.minbet
-			ELSE pdt.Min_MinBet
+			ELSE pbs.MinBet
 			END AS MinBet_Min
 		, sbl.maxbet AS MaxBet_Max
 		, sbl.maxpermatch AS MaxPerMatch_Max
@@ -118,9 +115,8 @@ BEGIN
 	--Discount Setting
 	SELECT pdt.SportType
 		, pdt.BetType
-		--, pdt.SettingType
-		, dc.Discount
-		, sdc.Discount AS MaxDiscount
+		, dc.Discount AS MasterDiscount
+		, sdc.Discount AS SuperDiscount
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
 		ON pdt.SportType = dc.sporttype

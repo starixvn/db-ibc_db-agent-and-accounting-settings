@@ -224,37 +224,38 @@ BEGIN
 
 	--START LOGGING		
 	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID AS '@CustID'
+				, @UserID AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, Discount AS '@Discount'
 					FROM @oldDiscountTbl
-					FOR XML PATH('x')
+					FOR XML PATH('Discount')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_DiscountUpd')
 				, TYPE
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID AS '@CustID'
+				, @UserID AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, Discount AS '@d'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, Discount AS '@Discount'
 					FROM @NewDiscountTbl
-					FOR XML PATH('x')
+					FOR XML PATH('Discount')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_DiscountUpd')
 				, TYPE
 			)
 	SET @logSpData	= REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')

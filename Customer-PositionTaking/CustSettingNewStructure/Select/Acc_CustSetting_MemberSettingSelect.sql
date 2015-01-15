@@ -30,9 +30,7 @@ BEGIN
 	DECLARE @MemberPT TABLE (
 		  SportType		SMALLINT
 		, BetType		SMALLINT
-		--, SettingType	SMALLINT
 		, IsLive		BIT
-		, IsGroupedPT	BIT
 		, S1			INT
 		, M1			INT
 		, A1			INT
@@ -58,9 +56,7 @@ BEGIN
 	INSERT INTO @MemberPT
 	SELECT pdt.SportType
 		, pdt.BetType
-		--, pdt.SettingType
 		, pdt.IsLive
-		, mode.IsGrouped
 		, CASE 
 			WHEN mode.IsGrouped = 0
 				THEN pt.SuperPT
@@ -130,34 +126,15 @@ BEGIN
 		SELECT
 			mb.SportType
 			, mb.BetType
-			--, mb.SettingType 
 			, mb.IsLive
-			, mb.IsGroupedPT
 			, mb.A1
 			, mb.M1
 			, mb.S1
 			, mb.IS1
 			, mb.US1
-			--, masterpt.IsAutoSuperPT AS IS3
-			,
-			-- us1_max=S4
-			  superpt.SuperPT AS S4
+			, superpt.SuperPT AS S4
 			, superpt.MinPT AS N4
 			, masterpt.MasterPT AS M3
-			--,
-			---- s1_max= Max(N4-M1-A1, S4-M3)
-			--CASE 
-			--	WHEN superpt.SuperPT - masterpt.MasterPT > superpt.MinPT - (mb.M1 + mb.A1)
-			--		THEN superpt.SuperPT - masterpt.MasterPT
-			--	ELSE superpt.MinPT - (mb.M1 + mb.A1)
-			--	END AS S1_Max
-			--,
-			---- s1_min = Max(0, N4-M1-A1)
-			--CASE 
-			--	WHEN superpt.MinPT - (mb.M1 + mb.A1) < 0
-			--		THEN 0
-			--	ELSE superpt.MinPT - (mb.M1 + mb.A1)
-			--	END AS S1_Min
 		FROM @MemberPT mb
 		INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)
 			ON mb.SportType = masterpt.sporttype
@@ -173,8 +150,6 @@ BEGIN
 		--Bet Limit Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
-			, pdt.IsLive
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
@@ -189,9 +164,7 @@ BEGIN
 		--Discount Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
-			, pdt.IsLive
-			, dc.PlayerDiscount AS Discount
+			, dc.PlayerDiscount AS PlayerDiscount
 			, dc.AgentDiscount
 			, dc.MasterDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
@@ -205,7 +178,6 @@ BEGIN
 		--Product Status
 		SELECT stt.SportType
 			, stt.BetType
-			--, pdt.SettingType
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync
@@ -245,13 +217,10 @@ BEGIN
 		--PT SETTING
 		SELECT
 			mb.SportType
-			, mb.BetType
-			--, mb.SettingType  
+			, mb.BetType  
 			, mb.IsLive
-			, mb.IsGroupedPT
 			, mb.A1
 			, mb.M1
-			--, agentpt.IsAutoMasterPT IM2
 			, mb.IM1
 			, mb.UM1
 			, masterpt.MasterPT AS M3
@@ -266,8 +235,6 @@ BEGIN
 		--Bet Limit Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
-			, pdt.IsLive
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
@@ -282,9 +249,7 @@ BEGIN
 		--Discount Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
-			, pdt.IsLive
-			, dc.PlayerDiscount AS Discount
+			, dc.PlayerDiscount AS PlayerDiscount
 			, dc.AgentDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
@@ -297,7 +262,6 @@ BEGIN
 		--Product Status
 		SELECT stt.SportType
 			, stt.BetType
-			--, pdt.SettingType
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync
@@ -332,9 +296,7 @@ BEGIN
 		SELECT
 			mb.SportType
 			, mb.BetType
-			--, mb.SettingType  
 			, mb.IsLive
-			, mb.IsGroupedPT
 			, mb.A1
 			, agentpt.AgentPT AS A2
 			, agentpt.MinPT AS N2
@@ -348,7 +310,6 @@ BEGIN
 		--Bet Limit Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
@@ -415,9 +376,8 @@ BEGIN
 		--Discount Setting
 		SELECT pdt.SportType
 			, pdt.BetType
-			--, pdt.SettingType
-			, dc.PlayerDiscount AS Discount
-			, adc.Discount AS MaxDiscount
+			, dc.PlayerDiscount AS PlayerDiscount
+			, adc.Discount AS AgentDiscount
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustDiscount3rd_Member dc WITH (NOLOCK)
 			ON pdt.SportType = dc.sporttype
@@ -433,7 +393,6 @@ BEGIN
 		--Product Status
 		SELECT stt.SportType
 			, stt.BetType
-			--, pdt.SettingType
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync

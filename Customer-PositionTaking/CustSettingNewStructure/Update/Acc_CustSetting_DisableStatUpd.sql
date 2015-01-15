@@ -229,39 +229,40 @@ BEGIN
 
 	--START LOGGING		
 	SET @xml = (
-			SELECT @CustID	AS '@c'
-				, @UserID	AS '@u'
-				, @IP		AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID	AS '@CustID'
+				, @UserID	AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP		AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType	AS '@s'
-						, BetType		AS '@b'
-						, IsDisabled	AS '@i'
-						, NULL			AS '@d'
+					SELECT SportType	AS '@SportType'
+						, BetType		AS '@BetType'
+						, IsDisabled	AS '@IsDisabled'
+						, NULL			AS '@IsDisabledDownline'
 					FROM @OldDisableStatTbl
-					FOR XML PATH('x')
+					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd')
 				, TYPE
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustID	AS '@c'
-				, @UserID	AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP		AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID	AS '@CustID'
+				, @UserID	AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP		AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType			AS '@s'
-						, BetType				AS '@b'
-						, IsDisabled			AS '@i'
-						, IsDisabledDownline	AS '@d'
+					SELECT SportType	AS '@SportType'
+						, BetType		AS '@BetType'
+						, IsDisabled	AS '@IsDisabled'
+						, IsDisabledDownline			AS '@IsDisabledDownline'
 					FROM @NewDisableStatTbl
-					FOR XML PATH('x')
+					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd')
 				, TYPE
 			)
 	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')

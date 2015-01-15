@@ -528,40 +528,40 @@ BEGIN
 				
 	--**START LOGGING**		
 	SET @xml = (
-			SELECT @CustID		AS '@c'
-				, @UserID		AS '@u'
-				, @IP			AS '@i'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @Language		AS '@l'
+			SELECT @CustID		AS '@CustID'
+				, @UserID		AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP			AS '@IP'
+				, @Language		AS '@Language'
 				, (
-					SELECT SportType	AS '@s'
-						, BetType		AS '@b'
-						, IsLive		AS '@i'
-						, AgentPT		AS '@apt'
+					SELECT SportType	AS '@SportType'
+						, BetType		AS '@BetType'
+						, IsLive		AS '@IsLive'
+						, AgentPT		AS '@AgentPT'
 					FROM @OldPTTble
-					FOR XML PATH('x')
+					FOR XML PATH('PT')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_AgentPTOnMemberUpd')
 				, TYPE
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustID		AS '@c'
-				, @UserID		AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP			AS '@i'
-				, @Language		AS '@l'
+			SELECT @CustID		AS '@CustID'
+				, @UserID		AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP			AS '@IP'
+				, @Language		AS '@Language'
 				, (
-					SELECT SportType	AS '@s'
-						, BetType		AS '@b'
-						, IsLive		AS '@i'
-						, AgentPT		AS '@apt'
+					SELECT SportType	AS '@SportType'
+						, BetType		AS '@BetType'
+						, IsLive		AS '@IsLive'
+						, AgentPT		AS '@AgentPT'
 					FROM @NewPTTble
-					FOR XML PATH('x')
+					FOR XML PATH('PT')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_AgentPTOnMemberUpd')
 				, TYPE
 			)
 	SET @logSpData	= REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
