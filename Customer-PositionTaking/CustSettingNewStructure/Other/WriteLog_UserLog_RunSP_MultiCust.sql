@@ -98,24 +98,24 @@ BEGIN
 
 	--START LOGGING		
 	SET @xml = (
-			SELECT @CustIDList AS '@c'
-				, @UserID AS '@u'
-				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustIDList AS '@CustIDList'
+				, @UserID AS '@UserID'
+				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, IsLive AS '@i'
-						, SuperPT AS '@spt'
-						, MasterPT AS '@mpt'
-						, AgentPT AS '@apt'
-						, IsAutoMasterPT AS '@iam'
-						, AutoMasterPT AS '@am'
-						, IsAutoSuperPT AS '@ias'
-						, AutoSuperPT AS '@as'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, IsLive AS '@IsLive'
+						, SuperPT AS '@SuperPT'
+						, MasterPT AS '@MasterPT'
+						, AgentPT AS '@AgentPT'
+						, IsAutoMasterPT AS '@IsAutoMasterPT'
+						, AutoMasterPT AS '@AutoMasterPT'
+						, IsAutoSuperPT AS '@IsAutoSuperPT'
+						, AutoSuperPT AS '@AutoSuperPT'
 					FROM @OldPTTble
-					FOR XML PATH('x')
+					FOR XML PATH('PT')
 						, TYPE
 					)
 			FOR XML PATH('r')
@@ -123,24 +123,24 @@ BEGIN
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustIDList AS '@c'
-				, @UserID AS '@u'
-				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustIDList AS '@CustIDList'
+				, @UserID AS '@UserID'
+				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, IsLive AS '@i'
-						, SuperPT AS '@spt'
-						, MasterPT AS '@mpt'
-						, AgentPT AS '@apt'
-						, IsAutoMasterPT AS '@iam'
-						, AutoMasterPT AS '@am'
-						, IsAutoSuperPT AS '@ias'
-						, AutoSuperPT AS '@as'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, IsLive AS '@IsLive'
+						, SuperPT AS '@SuperPT'
+						, MasterPT AS '@MasterPT'
+						, AgentPT AS '@AgentPT'
+						, IsAutoMasterPT AS '@IsAutoMasterPT'
+						, AutoMasterPT AS '@AutoMasterPT'
+						, IsAutoSuperPT AS '@IsAutoSuperPT'
+						, AutoSuperPT AS '@AutoSuperPT'
 					FROM @NewPTTble
-					FOR XML PATH('x')
+					FOR XML PATH('PT')
 						, TYPE
 					)
 			FOR XML PATH('r')

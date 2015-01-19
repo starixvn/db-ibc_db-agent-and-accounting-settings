@@ -214,38 +214,38 @@ BEGIN
 
 	--START LOGGING		
 	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID AS '@CustID'
+				, @UserID AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, OldSync AS '@i'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, OldSync AS '@IsSync'
 					FROM @SyncStatusTbl
-					FOR XML PATH('x')
+					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_SyncStatUpd')
 				, TYPE
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	SET @xml = (
-			SELECT @CustID AS '@c'
-				, @UserID AS '@u'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@sc'
-				, @IP AS '@i'
-				, @Language AS '@l'
+			SELECT @CustID AS '@CustID'
+				, @UserID AS '@UserID'
+				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+				, @IP AS '@IP'
+				, @Language AS '@Language'
 				, (
-					SELECT SportType AS '@s'
-						, BetType AS '@b'
-						, IsSync AS '@i'
+					SELECT SportType AS '@SportType'
+						, BetType AS '@BetType'
+						, IsSync AS '@IsSync'
 					FROM @SyncStatusTbl
-					FOR XML PATH('x')
+					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
-			FOR XML PATH('r')
+			FOR XML PATH('Acc_CustSetting_SyncStatUpd')
 				, TYPE
 			)
 	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
