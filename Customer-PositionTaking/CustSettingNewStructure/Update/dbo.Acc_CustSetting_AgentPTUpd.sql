@@ -133,22 +133,22 @@ BEGIN
 	
 	 --log old data
 	SET @xml =(
-		SELECT @custid AS '@ci'
-				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-				,@userid AS '@ui'
-				,@language AS '@l'
+		SELECT @custid AS '@custid'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
+				,@userid AS '@userid'
+				,@language AS '@language'
 				,@IP AS '@Ip'
-				,@updateallmembers AS '@ua'
-				,@newMasterPT AS '@m1'
+				,@updateallmembers AS '@updaetAllMembers'
+				,@newMasterPT AS '@newMasterPT'
 				,(
-					SELECT cs.sporttype AS '@s'
-						,cs.bettype AS '@b'
-						,cs.isLive AS '@i'
-						,cs.MasterPT AS '@m2'
-						,cs.isAutoMasterPT AS '@im2'
-						,cs.AutoMasterPT AS '@um2'	
-						,cs.AgentPT AS '@a2'										
-						,cs.MinPT AS '@n2'
+					SELECT cs.sporttype
+						,cs.bettype 
+						,cs.isLive 
+						,cs.MasterPT 
+						,cs.isAutoMasterPT 
+						,cs.AutoMasterPT 	
+						,cs.AgentPT 									
+						,cs.MinPT 
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 												AND cs.bettype = t.BetType 
@@ -288,22 +288,22 @@ BEGIN
 	
 	 -- Write log after update
 	SET @xml = (
-			SELECT @custid AS '@ci'
-				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-				,@userid AS '@ui'
-				,@language AS '@l'
+			SELECT @custid AS '@custid'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
+				,@userid AS '@userid'
+				,@language AS '@language'
 				,@IP AS '@Ip'
-				,@updateallmembers AS '@ua'
-				,@newMasterPT AS '@m1'
+				,@updateallmembers AS '@updateAllMembers'
+				,@newMasterPT AS '@newMasterPT'
 				,(
-					SELECT cs.sporttype AS '@s'
-						,cs.bettype AS '@b'
-						,cs.isLive AS '@i'
-						,cs.MasterPT AS '@m2'
-						,cs.isAutoMasterPT AS '@im2'
-						,cs.AutoMasterPT AS '@um2'	
-						,cs.AgentPT AS '@a2'										
-						,cs.AgentMinPT AS '@n2'
+					SELECT cs.sporttype 
+						,cs.bettype
+						,cs.isLive 
+						,cs.MasterPT 
+						,cs.isAutoMasterPT 
+						,cs.AutoMasterPT 
+						,cs.AgentPT									
+						,cs.AgentMinPT 
 					FROM @tblPT cs	
 					FOR XML PATH('pt'),TYPE
 					)

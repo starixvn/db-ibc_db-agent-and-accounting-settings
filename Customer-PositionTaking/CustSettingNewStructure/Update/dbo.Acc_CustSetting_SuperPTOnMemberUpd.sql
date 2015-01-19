@@ -180,7 +180,7 @@ BEGIN
 		SET @xml =(
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-					,@userid AS '@username'
+					,@userid AS '@userid'
 					,@language AS '@language'
 					,@IP AS '@Ip'					
 					,(
@@ -243,18 +243,18 @@ BEGIN
 				
 		 --log old data
 		SET @xml =(
-			SELECT @custid AS '@ci'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-					,@userid AS '@ui'
-					,@language AS '@l'
+			SELECT @custid AS '@custid'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+					,@userid AS '@userid'
+					,@language AS '@language'
 					,@IP AS '@Ip'					
 					,(
-						SELECT cs.sporttype AS '@s'
-							,cs.bettype AS '@b'
-							,cs.isLive AS '@i'
-							,cs.SuperPT AS '@s1'
-							,cs.isAutoSuperPT AS '@is1'
-							,cs.AutoSuperPT AS '@us1'								
+						SELECT cs.sporttype 
+							,cs.bettype
+							,cs.isLive 
+							,cs.SuperPT
+							,cs.isAutoSuperPT 
+							,cs.AutoSuperPT 							
 						FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK)
 							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 													AND cs.bettype = t.BetType 
@@ -269,18 +269,18 @@ BEGIN
 	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)  
 	
 	SET @xml =(
-			SELECT @custid AS '@ci'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-					,@userid AS '@ui'
-					,@language AS '@l'
+			SELECT @custid AS '@custid'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
+					,@userid AS '@userid'
+					,@language AS '@language'
 					,@IP AS '@Ip'					
 					,(
-						SELECT cs.sporttype AS '@s'
-							,cs.bettype AS '@b'
-							,cs.isLive AS '@i'
-							,cs.SuperPT AS '@s1'
-							,cs.isAutoSuperPT AS '@is1'
-							,cs.AutoSuperPT AS '@us1'								
+						SELECT cs.sporttype 
+							,cs.bettype 
+							,cs.isLive 
+							,cs.SuperPT 
+							,cs.isAutoSuperPT 
+							,cs.AutoSuperPT								
 						FROM @tblPT cs						
 						FOR XML PATH('pt'), TYPE
 					)

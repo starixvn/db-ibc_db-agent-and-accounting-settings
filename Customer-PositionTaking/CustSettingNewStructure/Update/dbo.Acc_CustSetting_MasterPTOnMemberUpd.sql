@@ -174,18 +174,18 @@ BEGIN
 			
 		 --log old data
 		SET @xml =(
-			SELECT @custid AS '@ci'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-					,@userid AS '@ui'
-					,@language AS '@l'
+			SELECT @custid AS '@custid'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
+					,@userid AS '@userid'
+					,@language AS '@language'
 					,@IP AS '@Ip'					
 					,(
-						SELECT cs.sporttype AS '@s'
-							,cs.bettype AS '@b'
-							,cs.isLive AS '@i'
-							,cs.MasterPT AS '@m1'
-							,cs.isAutoMasterPT AS '@im1'
-							,cs.AutoMasterPT AS '@um1'								
+						SELECT cs.sporttype
+							,cs.bettype 
+							,cs.isLive 
+							,cs.MasterPT
+							,cs.isAutoMasterPT 
+							,cs.AutoMasterPT 							
 						FROM CustPTSetting3rd_Member cs WITH(NOLOCK)
 							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 													AND cs.bettype = t.BetType 
@@ -240,18 +240,18 @@ BEGIN
 			
 		 --log old data
 		SET @xml =(
-			SELECT @custid AS '@ci'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-					,@userid AS '@ui'
-					,@language AS '@l'
+			SELECT @custid AS '@custid'
+					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
+					,@userid AS '@userid'
+					,@language AS '@language'
 					,@IP AS '@Ip'					
 					,(
-						SELECT cs.sporttype AS '@s'
-							,cs.bettype AS '@b'
-							,cs.isLive AS '@i'
-							,cs.MasterPT AS '@m1'
-							,cs.isAutoMasterPT AS '@im1'
-							,cs.AutoMasterPT AS '@um1'								
+						SELECT cs.sporttype 
+							,cs.bettype 
+							,cs.isLive 
+							,cs.MasterPT 
+							,cs.isAutoMasterPT
+							,cs.AutoMasterPT 							
 						FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK)
 							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 													AND cs.bettype = t.BetType 
@@ -267,18 +267,18 @@ BEGIN
 	
 	 --log old data
 	SET @xml =(
-		SELECT @custid AS '@ci'
-				,dbo.f_GetSubUsername(@SubAccID) AS '@su'
-				,@userid AS '@ui'
-				,@language AS '@l'
+		SELECT @custid AS '@custid'
+				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
+				,@userid AS '@userid'
+				,@language AS '@language'
 				,@IP AS '@Ip'					
 				,(
-					SELECT cs.sporttype AS '@s'
-						,cs.bettype AS '@b'
-						,cs.isLive AS '@i'
-						,cs.MasterPT AS '@m1'
-						,cs.isAutoMasterPT AS '@im1'
-						,cs.AutoMasterPT AS '@um1'								
+					SELECT cs.sporttype
+						,cs.bettype
+						,cs.isLive 
+						,cs.MasterPT
+						,cs.isAutoMasterPT
+						,cs.AutoMasterPT 						
 					FROM @tblPT cs 					
 					FOR XML PATH('pt'), TYPE
 				)
@@ -664,8 +664,8 @@ END
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberUpd] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTOnMemberUpd] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberUpd] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTOnMemberUpd] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperPTOnMemberUpd] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_MasterPTOnMemberUpd] TO [bodbExtAccNet] AS [dbo]
