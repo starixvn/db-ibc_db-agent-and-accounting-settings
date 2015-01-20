@@ -338,6 +338,7 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustomerSyncUpd.proc.sql"
                Script = "dbo.Acc_CustomerUpdDisableHR.proc.sql"
             End
+            Script = "dbo.Acc_CustomerSettingsCloneFromRealAccount.sql"
             Script = "dbo.Acc_CustomerUpdAgent_All.proc.sql"
             Script = "dbo.Acc_CustomerUpdAgent_AutoPositiontaking.proc.sql"
             Script = "dbo.Acc_CustomerUpdAgent_Commission.proc.sql"
