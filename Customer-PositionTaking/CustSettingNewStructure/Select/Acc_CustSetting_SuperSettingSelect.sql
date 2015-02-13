@@ -128,6 +128,25 @@ BEGIN
 			AND stt.CustID = @CustID
 	WHERE pdt.ProductID = @ProductID
 		AND pdt.SettingType = 4
+		
+	--SettingLevel
+	SELECT [1] AS PositionTakingLevel
+			,[2] AS BetLimitLevel
+			,[3] AS DiscountLevel
+			,[4] AS StatusLevel
+	FROM
+	(
+		SELECT DISTINCT SettingType, SettingLevel
+		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)	
+		WHERE pdt.ProductID = @ProductID
+	) result
+	PIVOT
+	(
+				MAX([SettingLevel]) FOR SettingType IN (
+							[1],[2],[3],[4]
+							)
+	) AS pvt1
+		
 END
 
 GO
