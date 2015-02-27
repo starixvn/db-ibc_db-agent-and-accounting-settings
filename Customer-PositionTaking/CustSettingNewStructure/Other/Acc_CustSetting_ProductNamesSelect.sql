@@ -35,3 +35,10 @@ BEGIN
   WHERE @ProductID IS NULL OR [ProductID]=@ProductID
   ORDER BY [ProductID]
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbExtAccNet]
