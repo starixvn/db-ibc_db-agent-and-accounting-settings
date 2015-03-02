@@ -1,6 +1,8 @@
 ﻿ALTER PROCEDURE [dbo].[Age_CustomerSelCheckBelonging_ByUsername]
 	@uplineID INT, --user who is logging
 	@userName NVARCHAR(50) = NULL, --userName to check belong
+	@subAccountID INT = 0,
+	@isActive BIT = 0 OUTPUT,
 	@custID INT OUTPUT, -- return custID of @userName, -1 = not valid
 	@isSubAcc BIT OUTPUT, -- return 1 if @userName is sub account
 	@roleID INT = NULL OUTPUT
@@ -17,6 +19,7 @@ Revisions:
     - 20120731@Johnson: Expand length of param username
     - 20130121@Dan: change linked server DB06 to DBARC
     - 20130719@Elodie: Correct link server DBACC instead of DBARC
+    - 20150226@Johnson: add sub-accountID and check user is active or not
 Param's Explanation:
 • @uplineID: user who is logging.
 • @userName: userName to check belong.
@@ -68,6 +71,22 @@ BEGIN
 	SELECT @roleID = ISNULL(@roleID, 0)
 	SELECT @custID = ISNULL(@custID, -1)
 END
+
+--check user do this action is active or not
+if @SubAccountID <> 0
+BEGIN
+	SELECT @isActive = CASE WHEN closed = 0 THEN 1 ELSE 0 END 
+	FROM dbo.custSub WITH(NOLOCK) 
+	WHERE subaccID = @SubAccountID AND custid = @uplineID
+END
+ELSE 
+BEGIN
+	SELECT @isActive = CASE WHEN closed = 1 OR Enabled = 0 THEN 0 ELSE 1 END
+	FROM dbo.custinfo WITH(NOLOCK) 
+	WHERE custid = @uplineID	
+END 
+
+SELECT @isActive = ISNULL(@isActive,0) 
 
 GO
 GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging_ByUsername] TO [bodbAdminNet]

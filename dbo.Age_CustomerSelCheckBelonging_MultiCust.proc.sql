@@ -1,5 +1,7 @@
 ﻿ALTER PROCEDURE [dbo].[Age_CustomerSelCheckBelonging_MultiCust]
 	@SessionCustID INT, --uplineID	
+	@subAccountID INT = 0,
+	@isActive BIT = 1 OUTPUT,
 	@custid VARCHAR(4000),
 	@roleid TINYINT OUTPUT --0: not belonged to
 AS
@@ -10,7 +12,7 @@ DB: DB053.bodb02
 Original: [Age_CustomerSelCheckBelonging]
 	
 Revisions:
-   
+   - 20150225@Lukas: add subaccountID 
 */
 SET NOCOUNT ON
 DECLARE @tblCust TABLE (CustID INT )
@@ -34,7 +36,21 @@ GROUP BY c.roleid
 IF (@Cust_DO <> @Cust_UP) OR @Cust_UP IS NULL
 	SET @roleid = 0
 
-SELECT @roleid = ISNULL(@roleid, 0)
+if @SubAccountID <> 0
+BEGIN
+	SELECT @isActive = CASE WHEN closed = 0 THEN 1 ELSE 0 END 
+	FROM dbo.custSub WITH(NOLOCK) 
+	WHERE subaccID = @SubAccountID AND custid = @SessionCustID
+END
+ELSE 
+BEGIN
+	SELECT @isActive = CASE WHEN closed = 1 OR Enabled = 0 THEN 0 ELSE 1 END
+	FROM dbo.custinfo WITH(NOLOCK) 
+	WHERE custid = @SessionCustID
+END 
+
+SELECT	@roleid = ISNULL(@roleid, 0),
+		@isActive = ISNULL(@isActive,0)
 
 GO
 GRANT EXECUTE ON [dbo].[Age_CustomerSelCheckBelonging_MultiCust] TO [bodbAdminNet]
