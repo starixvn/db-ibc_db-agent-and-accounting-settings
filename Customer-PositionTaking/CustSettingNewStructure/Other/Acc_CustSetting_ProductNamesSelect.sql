@@ -31,7 +31,7 @@ BEGIN
       ,[ProductNameEL]
       ,[ProductNameRU]
       ,[ProductNameID]
-  FROM [bodb02].[dbo].[Products]
+  FROM [dbo].[Products]
   WHERE @ProductID IS NULL OR [ProductID]=@ProductID
   ORDER BY [ProductID]
 END
