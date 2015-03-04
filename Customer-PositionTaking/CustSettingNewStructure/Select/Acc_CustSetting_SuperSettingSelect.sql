@@ -74,7 +74,7 @@ BEGIN
 		, bl.MinBet
 		, bl.MaxBet
 		, bl.MaxPerMatch
-		, pbs.MinBet AS MinBet_Min
+		, pbs.MinBet AS MinBetMin
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)
 		ON pdt.SportType = bl.sporttype
