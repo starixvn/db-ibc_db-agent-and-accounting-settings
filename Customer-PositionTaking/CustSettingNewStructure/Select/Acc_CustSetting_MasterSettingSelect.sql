@@ -150,8 +150,8 @@ BEGIN
 						WHERE mrecommend = @CustID
 							AND roleid = 2
 						), 0)
-			END AS DisableDownlines
-		, ISNULL(Superstt.IsDisabled, 0) AS DisableUpline
+			END AS IsDisabledDownline
+		, ISNULL(Superstt.IsDisabled, 0) AS IsDisabledUpline
 	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 	INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 		ON stt.SportType = pdt.SportType

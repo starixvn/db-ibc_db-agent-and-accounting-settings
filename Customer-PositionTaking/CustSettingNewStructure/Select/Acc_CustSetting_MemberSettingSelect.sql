@@ -181,7 +181,7 @@ BEGIN
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync
-			, ISNULL(Agentstt.IsDisabled, 0) AS DisableUpline
+			, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON stt.SportType = pdt.SportType
@@ -265,7 +265,7 @@ BEGIN
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync
-			, ISNULL(Agentstt.IsDisabled, 0) AS DisableUpline
+			, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON stt.SportType = pdt.SportType
@@ -396,7 +396,7 @@ BEGIN
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
 			, ISNULL(stt.IsHidden, 0) IsHidden
 			, ISNULL(stt.IsSync, 0) IsSync
-			, ISNULL(Agentstt.IsDisabled, 0) AS DisableUpline
+			, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 			ON stt.SportType = pdt.SportType
