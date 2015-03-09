@@ -28,8 +28,8 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbadminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SettingDetailSelect] TO [bodbadminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SettingDetailSelect] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_ProductNamesSelect] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_SettingDetailSelect] TO [bodbExtAccNet]
