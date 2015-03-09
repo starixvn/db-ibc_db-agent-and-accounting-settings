@@ -34,6 +34,10 @@
 	@MaxBetv99 MONEY,
 	@MaxPerMatchv99 MONEY,	
 	
+	@MinBetv154 MONEY,
+	@MaxBetv154 MONEY,
+	@MaxPerMatchv154 MONEY,
+
 	@MinBetv99MP MONEY,
 	@MaxBetv99MP MONEY,
 	@MaxPerMatchv99MP MONEY,	
@@ -115,6 +119,7 @@
 	@v99spositiontaking_3 SMALLMONEY,
 	@v99spositiontaking_9 SMALLMONEY,
 	@v99spositiontaking_20 SMALLMONEY,
+	@v154spositiontaking_20 SMALLMONEY,
 	
 	--v161
 	@v161spositiontaking_81 SMALLMONEY,
@@ -194,6 +199,7 @@
 	@v99mpositiontaking_3 SMALLMONEY,
 	@v99mpositiontaking_9 SMALLMONEY,
 	@v99mpositiontaking_20 SMALLMONEY,
+	@v154mpositiontaking_20 SMALLMONEY,
 	
 	--v161
 	@v161mpositiontaking_81 SMALLMONEY,
@@ -273,6 +279,7 @@
 	@v99apositiontaking_3 SMALLMONEY,
 	@v99apositiontaking_9 SMALLMONEY,
 	@v99apositiontaking_20 SMALLMONEY,
+	@v154apositiontaking_20 SMALLMONEY,
 	
 	--v161
 	@v161apositiontaking_81 SMALLMONEY,
@@ -323,6 +330,10 @@
 	--Virtual Sports----------------
 	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 
+	--Virtual Sports----------------
+	@KenoList VARCHAR(4000)='', 
+	@UpdateAll tinyINT = 0,
+
 	@UserID INT = 0,	
 	@Language VARCHAR(2) = 'E',
 	@IP VARCHAR(15)='',
@@ -342,6 +353,9 @@ Revisions:
 	- 20131014@Francis: Support updating virtual sports with settings via XML param
 	- 20131119@Francis: Update 3rd product commission of super will not impact 3rd product commission of its downline members anymore
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sports, bettype by link database)	
+	- 20140505@Florent: Add new sport HRFO
+	- 20140509@Florent: Add new sport: 202 Keno
+	- 20140605@Florent: Remove checking for Super
 	    
 Param's Explanation:
 • @ErrCode:
@@ -350,8 +364,28 @@ Param's Explanation:
   
 • @ErrMsg: Error description.
 • @VirtualSportList: VirtualSport Settings XML param.
+• @UpdateAll :  0 - default - Update only Super
+				1 - Allow update all line
 */
 
+--Update all line feature
+IF @UpdateAll = 1
+BEGIN
+	IF NOT EXISTS ( SELECT top 1 1  FROM custinfo WITH (NOLOCK)
+					WHERE srecommend = @custid
+						AND mrecommend NOT IN (
+							SELECT custid
+							FROM custInfo cus WITH (NOLOCK)
+							WHERE srecommend =@custid
+								AND cus.roleid = 3
+								AND cus.username LIKE '%ACC%'
+							)
+						AND roleid = 1)
+		set @UpdateAll =1
+	ELSE
+		set @UpdateAll =0
+END
+-- end 
 
 --------Parse xml string into table
 DECLARE @iDoc int
@@ -447,6 +481,39 @@ WHERE SportType = 186
 DROP TABLE #input
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+--------Parse xml string into table -- Keno
+DECLARE @xmlDoc int
+EXEC sp_xml_preparedocument @xmlDoc OUTPUT, @KenoList
+
+SELECT *
+INTO #data
+FROM OPENXML (@xmlDoc, '/products/product',1) WITH(BetType INT, MaxBet money, MinBet money, MaxPerMatch money, 
+sPositionTaking smallmoney, mPositionTaking smallmoney, aPositionTaking smallmoney,isDisable BIT)
+
+EXEC sp_xml_removedocument @xmlDoc
+--backup old data
+CREATE Table #data_old 
+	(	Custid INT,
+		Sporttype INT,
+		Bettype INT,
+		islive tinyINT,
+		MinB	Money,
+		MaxB	Money,
+		MPM		Money,
+		MPB		Money,
+		spt		Money,
+		mpt		Money,
+		apt		Money,
+		SupRBDiscount Money,
+		MastRBDiscount Money,
+		AgRBDiscount Money
+	)
+	INSERT INTO #data_old (Custid,Sporttype,Bettype ,islive,MinB,MaxB,MPM,MPB,spt,mpt,apt,SupRBDiscount,MastRBDiscount,	AgRBDiscount)
+	EXEC dbo.Acc_Dep_CustomerSelInfo @Custid
+	 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 DECLARE @startRun DATETIME
 DECLARE @endRun DATETIME
@@ -492,7 +559,10 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@MinBetv99					= @MinBetv99,
 			@MaxBetv99					= @MaxBetv99,
 			@MaxPerMatchv99				= @MaxPerMatchv99,
-			
+
+			@MinBetv154					= @MinBetv154,
+			@MaxBetv154					= @MaxBetv154,
+			@MaxPerMatchv154			= @MaxPerMatchv154,			
 			--Mix Parlay mix sports
 			@MinBetv99MP				= @MinBetv99MP,
 			@MaxBetv99MP				= @MaxBetv99MP,
@@ -574,6 +644,7 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v99spositiontaking_3		= @v99spositiontaking_3,
 			@v99spositiontaking_9		= @v99spositiontaking_9,
 			@v99spositiontaking_20		= @v99spositiontaking_20,
+			@v154spositiontaking_20		= @v154spositiontaking_20,
 			
 			--Racing PT
 			@v151spositiontaking_31		= @v151spositiontaking_31,
@@ -647,6 +718,7 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v99mpositiontaking_3		= @v99mpositiontaking_3,
 			@v99mpositiontaking_9		= @v99mpositiontaking_9,
 			@v99mpositiontaking_20		= @v99mpositiontaking_20,
+			@v154mpositiontaking_20		= @v154mpositiontaking_20,
 			
 			--Racing
 			@v151mpositiontaking_31		= @v151mpositiontaking_31,
@@ -720,6 +792,7 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v99apositiontaking_3		= @v99apositiontaking_3,
 			@v99apositiontaking_9		= @v99apositiontaking_9,
 			@v99apositiontaking_20		= @v99apositiontaking_20,
+			@v154apositiontaking_20		= @v154apositiontaking_20,
 			
 			--Racing
 			@v151apositiontaking_31		= @v151apositiontaking_31,
@@ -831,6 +904,7 @@ from
 			union all select 	99 as sporttype, 3 as bettype, @v99spositiontaking_3 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 9 as bettype, @v99spositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 20 as bettype, @v99spositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
+			union all select 	154 as sporttype, 20 as bettype, @v154spositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
 			
 			
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
@@ -839,7 +913,7 @@ where c.srecommend = @custid and c.roleid = 3 and (
 							(cs.mpositiontaking > b.maxpositiontaking  and cs.islive = 0) or 
 							((b.sporttype=1) and (b.bettype in (1,3,7,8)) and (cs.islive=1) and (cs.spositiontaking + cs.mpositiontaking > b.maxlivepositiontaking)) or
 							((b.sporttype=1) and (b.bettype in (1,3,7,8)) and (cs.islive=1) and (cs.mpositiontaking > b.maxpositiontaking))
-						)
+						) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -872,7 +946,7 @@ where c.srecommend = @custid and c.roleid = 3 and (
 						(cs.mpositiontaking>b.maxpositiontaking  and cs.islive = 0) or 
 						((b.sporttype=161) and (b.bettype in (85,86,87,89)) and (cs.islive = 1) and (cs.spositiontaking + cs.mpositiontaking > b.maxlivepositiontaking)) or
 						((b.sporttype=161) and (b.bettype in (85,86,87,89)) and (cs.islive = 1) and (cs.mpositiontaking>b.maxlivepositiontaking))
-						)
+						) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -937,12 +1011,13 @@ from
 			union all select 	99 as sporttype, 3 as bettype, @v99spositiontaking_3 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 9 as bettype, @v99spositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 20 as bettype, @v99spositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
+			union all select 	154 as sporttype, 20 as bettype, @v154spositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
 			
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
 where c.srecommend = @custid and c.roleid = 1 and (
 			(cs.spositiontaking + cs.mpositiontaking+cs.apositiontaking>b.maxpositiontaking AND  cs.islive = 0 ) or 
 			(b.sporttype=1 and b.bettype in (1,3,7,8) AND cs.islive=1 and cs.spositiontaking+ cs.apositiontaking+cs.mpositiontaking>b.maxlivepositiontaking)
-			)
+			) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -974,7 +1049,7 @@ where c.srecommend = @custid and c.roleid = 1 and (
 			or 
 			(
 				b.sporttype=161 and b.bettype in (85,86,87,89) and cs.islive=1 and cs.mpositiontaking+ cs.apositiontaking>b.maxlivepositiontaking)   
-			)
+			) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -1038,12 +1113,13 @@ from
 			union all select 	99 as sporttype, 3 as bettype, @v99apositiontaking_3 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 9 as bettype, @v99apositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
 			union all select 	99 as sporttype, 20 as bettype, @v99apositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
+			union all select 	154 as sporttype, 20 as bettype, @v154apositiontaking_20 as maxpositiontaking,  0 as maxlivepositiontaking
 			
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
 where c.srecommend = @custid and c.roleid = 1 and 
 											(
 												(cs.apositiontaking>b.maxpositiontaking AND cs.islive = 0) or (b.sporttype=1 and b.bettype in (1,3,7,8) and cs.islive = 1 and cs.apositiontaking > b.maxlivepositiontaking)   
-											)
+											) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -1075,7 +1151,7 @@ where c.srecommend = @custid and c.roleid = 1 and (
 				(cs.apositiontaking>b.maxpositiontaking AND cs.islive = 0)   
 				or 
 				(b.sporttype=161 and b.bettype in (85,86,87,89) and cs.islive = 1 and cs.apositiontaking > b.maxlivepositiontaking)   
-			)
+			) AND @UpdateAll = 0 -- check only case update 1 supper
 group by username
 if @ErrAcc<>''
 BEGIN
@@ -1101,6 +1177,7 @@ from bodb02.dbo.sports WITH (NOLOCK) inner join
 	UNION all	SELECT 10 AS sporttype,0 AS MP, @MinBetv10 AS MinBet, @MaxBetv10 AS MaxBet, @MaxPerMatchv10 AS MaxPerMatch
 	UNION all	SELECT 11 AS sporttype,0 AS MP, @MinBetv11 AS MinBet, @MaxBetv11 AS MaxBet, @MaxPerMatchv11 AS MaxPerMatch
 	UNION all	SELECT 99 AS sporttype,0 AS MP, @MinBetv99 AS MinBet, @MaxBetv99 AS MaxBet, @MaxPerMatchv99 AS MaxPerMatch	 
+	UNION all	SELECT 154 AS sporttype,0 AS MP, @MinBetv154 AS MinBet, @MaxBetv154 AS MaxBet, @MaxPerMatchv154 AS MaxPerMatch	 
 	UNION all	SELECT 99 AS sporttype,1 AS MP, @MinBetv99MP AS MinBet, @MaxBetv99MP AS MaxBet, @MaxPerMatchv99MP AS MaxPerMatch	 
 	UNION all	SELECT 161 AS sporttype,0 AS MP, @MinBetv161 AS MinBet, @MaxBetv161 AS MaxBet, @MaxPerMatchv161 AS MaxPerMatch	 
 ) AS b ON sports.sporttype = b.sporttype
@@ -1142,7 +1219,7 @@ from
 where c.srecommend = @custid and c.roleid = 3 and (
 						((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or 
 						((cs.mpositiontaking>b.maxpositiontaking))
-					)
+					)  
 group by username, t.typenamee
 
 if @ErrAcc<>''
@@ -1272,6 +1349,7 @@ set
 	MaxPerMatch10 = @MaxPerMatchv10,
 	MaxPerMatch11 = @MaxPerMatchv11,
 	MaxPerMatch99 = @MaxPerMatchv99,
+	MaxPerMatch154 = @MaxPerMatchv154,
 	MaxPerMatch99MP = @MaxPerMatchv99MP,
 	MaxPerMatch161 = @MaxPerMatchv161,
 	MaxPerBall161 = @MaxPerBallv161,
@@ -1297,8 +1375,8 @@ UPDATE Customer Setting
 
 UPDATE Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET	
-	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end) else MinBet end,
-	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end)  else MaxBet end,
+	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end) when 154 then @MinBetv154 else MinBet end,
+	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end) when 154 then @MaxBetv154  else MaxBet end,
 	apositiontaking = CASE
 						WHEN sporttype = 1 and bettype = 1 and islive = 0 THEN @v1apositiontaking_1
 						WHEN sporttype = 1 and bettype = 2 and islive = 0 THEN @v1apositiontaking_2
@@ -1350,7 +1428,7 @@ SET
 						WHEN sporttype = 99 and bettype = 3 THEN @v99apositiontaking_3 
 						WHEN sporttype = 99 and bettype = 9 THEN @v99apositiontaking_9 
 						WHEN sporttype = 99 and bettype = 20 THEN @v99apositiontaking_20
-
+						WHEN sporttype = 154 and bettype = 20 THEN @v154apositiontaking_20
 					  ELSE
 						apositiontaking
 					  END,--End Agent PT
@@ -1406,6 +1484,7 @@ SET
 						WHEN sporttype = 99 and bettype = 3 THEN @v99mpositiontaking_3 
 						WHEN sporttype = 99 and bettype = 9 THEN @v99mpositiontaking_9 
 						WHEN sporttype = 99 and bettype = 20 THEN @v99mpositiontaking_20
+						WHEN sporttype = 154 and bettype = 20 THEN @v154mpositiontaking_20
 
 					  ELSE
 						mpositiontaking
@@ -1461,6 +1540,7 @@ SET
 						WHEN sporttype = 99 and bettype = 3 THEN @v99spositiontaking_3 
 						WHEN sporttype = 99 and bettype = 9 THEN @v99spositiontaking_9 
 						WHEN sporttype = 99 and bettype = 20 THEN @v99spositiontaking_20
+						WHEN sporttype = 154 and bettype = 20 THEN @v154spositiontaking_20
 
 					  ELSE
 						spositiontaking
@@ -2038,12 +2118,596 @@ EXEC Acc_Dep_CustomerUpdMemberVirtualSports_Com
 IF @ErrCode <> 0 
 	RETURN 
 
+--Keno
+--Check PT
+--SELECT isnull(a.Bettype,0) Bettype,isnull(a.MaxPositiontaking,0) MaxPositiontaking,
+--	   isnull(a.Maxsdiscount,0) Maxsdiscount,isnull(b.MinBet,0) MinBet
+--INTO #MinMax_upline
+--FROM dbo.ProductGlobalSetting a INNER JOIN dbo.ProductBetSetting b 
+--on a.Bettype=b.Bettype
+--WHERE b.Sporttype=202 AND b.Currency=@currency
+
+--DECLARE @Bet MONEY
+--IF EXISTS (SELECT TOP 1 1 
+--			FROM #data a INNER JOIN #MinMax_upline b ON a.Bettype = b.Bettype 
+--			WHERE a.Minbet < b.MinBet)
+--BEGIN
+--	SELECT @Bet=b.MinBet FROM #data a INNER JOIN #MinMax_upline b ON a.Bettype = b.Bettype 
+--			WHERE a.Minbet < b.MinBet
+--			ORDER BY a.bettype DESC
+--	SELECT @ErrCode = 3,
+--				@ErrMsg = CASE @Language 
+--							WHEN 'E' THEN 'Min Bet must be greater than or equal '+coalesce(cast(@Bet as varchar(50)),space(1)) + '.'
+--							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language)
+--						  END
+--		RETURN
+--END
+
+--Update PT
+UPDATE c SET
+	c.spositiontaking=d.sPositionTaking,
+	c.mpositiontaking=d.mPositionTaking,
+	c.apositiontaking=d.aPositionTaking
+FROM dbo.CustSettingGame c WITH (ROWLOCK, UPDLOCK) INNER JOIN #data d ON c.Bettype=d.Bettype
+WHERE c.CustID=@custid AND c.Sporttype=202 AND d.Bettype=1501
+--UPdate BetLimit
+--UPDATE dbo.CustGameType SET MinBet=
+update g set g.MinBet = d.MinBet
+	  ,g.MaxBet = d.MaxBet
+	 ,g.MaxPerGameType = d.MaxPerMatch	
+FROM CustGameType g WITH (ROWLOCK, UPDLOCK) INNER JOIN bodb02.dbo.gametype gt WITH (ROWLOCK, UPDLOCK) on g.GameTypeID=gt.GameTypeID
+	 INNER JOIN #data d ON d.Bettype=gt.IBCBetTypeID
+where CustID=@custID 
+IF (@@error <> 0)
+BEGIN
+	
+	SELECT @ErrMsg = CASE @Language 
+						WHEN 'E' THEN 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					END	, @ErrCode = 104 
+	RETURN
+END
+
+
+--Update All 
+--check exists real member
+IF @UpdateAll = 1
+BEGIN	
+	CREATE TABLE #listUpdate (rowID INT primary key IDENTITY(1,1) NOT NULL, roleid int, SuperID INT,MasterID INT,AgentID INT)
+
+	INSERT into #listUpdate (roleid,SuperID,MasterID,AgentID)
+	SELECT roleid,srecommend,mrecommend,recommend 
+	FROM custInfo WITH (NOLOCK)
+	WHERE srecommend=@custid and roleid IN (3,2) and CHARINDEX('ACC',username) =0
+	ORDER BY roleid DESC
+	--use cursor
+
+	DECLARE @MasterID INT,@AgentID INT,@RoleID tinyINT,@rownum INT,@k INT = 1
+	SELECT @rownum = count(1) from #listUpdate
+	
+	WHILE (@k <= @rownum)
+		BEGIN	
+			select @MasterID=MasterID, @AgentID =AgentID, @RoleID=roleid  FROM #listUpdate where rowID=@k		
+			IF @RoleID = 3
+				BEGIN
+					--update Master
+					exec dbo.Acc_Dep_CustomerUpdMember_SAg
+					@custid  = @MasterID ,
+					@UserID  = @UserID ,
+					@minbetv1  = @minbetv1 ,
+					@maxbetv1  = @maxbetv1 ,
+					@maxpermatchv1  = @maxpermatchv1 ,
+					@minbetv2  = @minbetv2 ,
+					@maxbetv2  = @maxbetv2 ,
+					@maxpermatchv2  = @maxpermatchv2 ,
+					@minbetv3  = @minbetv3 ,
+					@maxbetv3  = @maxbetv3 ,
+					@maxpermatchv3  = @maxpermatchv3 ,
+					@minbetv5  = @minbetv5 ,
+					@maxbetv5  = @maxbetv5 ,
+					@maxpermatchv5  = @maxpermatchv5 ,
+					@minbetv8  = @minbetv8 ,
+					@maxbetv8  = @maxbetv8 ,
+					@maxpermatchv8  = @maxpermatchv8 ,
+					@minbetv10  = @minbetv10 ,
+					@maxbetv10  = @maxbetv10 ,
+					@maxpermatchv10  = @maxpermatchv10 ,
+					@minbetv11  = @minbetv11 ,
+					@maxbetv11  = @maxbetv11 ,
+					@maxpermatchv11  = @maxpermatchv11 ,
+					@minbetv99  = @minbetv99 ,
+					@maxbetv99  = @maxbetv99 ,
+					@maxpermatchv99  = @maxpermatchv99 ,
+					@minbetv154  = @minbetv154 ,
+					@maxbetv154  = @maxbetv154 ,
+					@maxpermatchv154  = @maxpermatchv154 ,
+					@minbetv99mp  = @minbetv99mp ,
+					@maxbetv99mp  = @maxbetv99mp ,
+					@maxpermatchv99mp  = @maxpermatchv99mp ,
+					@minbetv161  = @minbetv161 ,
+					@maxbetv161  = @maxbetv161 ,
+					@maxpermatchv161  = @maxpermatchv161 ,
+					@maxperballv161  = @maxperballv161 ,
+					@v151minbet_31			 = @v151minbet_31,	
+					@v151maxbet_31			 = @v151maxbet_31,	
+					@v151maxpermatch_31		 = @v151maxbet_31,	
+
+					@v151minbet_41			= @v151minbet_41,		
+					@v151maxbet_41			= @v151maxbet_41,		
+					@v151maxpermatch_41		= @v151maxpermatch_41,		
+	
+					@v151minbet_51			 = @v151minbet_51,
+					@v151maxbet_51			 = @v151maxbet_51,
+					@v151maxpermatch_51		 = @v151maxpermatch_51,
+
+					@v152minbet_41		 = @v152minbet_41,
+					@v152maxbet_41		 = @v152maxbet_41,
+					@v152maxpermatch_41  = @v152maxpermatch_41 ,
+	
+					@v152minbet_51		 = @v152minbet_51,
+					@v152maxbet_51		 = @v152maxbet_51,
+					@v152maxpermatch_51  = @v152maxpermatch_51 ,
+	
+					@v153minbet_51		 = @v153minbet_51,
+					@v153maxbet_51		 = @v153maxbet_51,
+					@v153maxpermatch_51  = @v153maxpermatch_51 ,
+
+					@v1spositiontaking_1  = @v1spositiontaking_1 ,
+					@v1spositiontaking_2  = @v1spositiontaking_2 ,
+					@v1spositiontaking_3  = @v1spositiontaking_3 ,
+					@v1spositiontaking_4  = @v1spositiontaking_4 ,
+					@v1spositiontaking_5  = @v1spositiontaking_5 ,
+					@v1spositiontaking_6  = @v1spositiontaking_6 ,
+					@v1spositiontaking_7  = @v1spositiontaking_7 ,
+					@v1spositiontaking_8  = @v1spositiontaking_8 ,
+					@v1spositiontaking_9  = @v1spositiontaking_9 ,
+					@v1spositiontaking_10  = @v1spositiontaking_10 ,
+					@v1slivepositiontaking_1  = @v1slivepositiontaking_1 ,
+					@v1slivepositiontaking_3  = @v1slivepositiontaking_3 ,
+					@v1slivepositiontaking_7  = @v1slivepositiontaking_7 ,
+					@v1slivepositiontaking_8  = @v1slivepositiontaking_8 ,
+	
+					@v2spositiontaking_1  = @v2spositiontaking_1 ,
+					@v2spositiontaking_2  = @v2spositiontaking_2 ,
+					@v2spositiontaking_3  = @v2spositiontaking_3 ,
+					@v2spositiontaking_7  = @v2spositiontaking_7 ,
+					@v2spositiontaking_8  = @v2spositiontaking_8 ,
+					@v2spositiontaking_20  = @v2spositiontaking_20 ,
+	
+					@v3spositiontaking_1  = @v3spositiontaking_1 ,
+					@v3spositiontaking_2  = @v3spositiontaking_2 ,
+					@v3spositiontaking_3  = @v3spositiontaking_3 ,
+					@v3spositiontaking_20  = @v3spositiontaking_20 ,
+	
+					@v5spositiontaking_1  = @v5spositiontaking_1 ,
+					@v5spositiontaking_2  = @v5spositiontaking_2 ,
+					@v5spositiontaking_3  = @v5spositiontaking_3 ,
+					@v5spositiontaking_20  = @v5spositiontaking_20 ,
+
+					@v8spositiontaking_1  = @v8spositiontaking_1 ,
+					@v8spositiontaking_3  = @v8spositiontaking_3 ,
+					@v8spositiontaking_20  = @v8spositiontaking_20 ,
+
+					@v10spositiontaking_1  = @v10spositiontaking_1 ,
+					@v10spositiontaking_2  = @v10spositiontaking_2 ,
+					@v10spositiontaking_3  = @v10spositiontaking_3 ,
+					@v10spositiontaking_20  = @v10spositiontaking_20 ,
+
+					@v11spositiontaking_1  = @v11spositiontaking_1 ,
+					@v11spositiontaking_20  = @v11spositiontaking_20 ,
+
+					@v99spositiontaking_1  = @v99spositiontaking_1 ,
+					@v99spositiontaking_2  = @v99spositiontaking_2 ,
+					@v99spositiontaking_3  = @v99spositiontaking_3 ,
+					@v99spositiontaking_20  = @v99spositiontaking_20 ,
+					@v154spositiontaking_20  = @v154spositiontaking_20 ,
+
+					@v99spositiontaking_9  = @v99spositiontaking_9 ,
+
+					@v161spositiontaking_81  = @v161spositiontaking_81 ,
+					@v161spositiontaking_83  = @v161spositiontaking_83 ,
+					@v161spositiontaking_86  = @v161spositiontaking_86 ,
+					@v161spositiontaking_88  = @v161spositiontaking_88 ,
+
+					@v161slivepositiontaking_85  = @v161slivepositiontaking_85 ,
+					@v161slivepositiontaking_86  = @v161slivepositiontaking_86 ,
+					@v161slivepositiontaking_87	 = @v161slivepositiontaking_87,
+					@v161slivepositiontaking_89	 = @v161slivepositiontaking_89,
+					@v161slivepositiontaking_90	 = @v161slivepositiontaking_90,
+
+					@v151spositiontaking_31  = @v151spositiontaking_31 ,
+					@v151spositiontaking_32  = @v151spositiontaking_32 ,
+					@v151spositiontaking_41  = @v151spositiontaking_41 ,
+					@v151spositiontaking_42  = @v151spositiontaking_42 ,
+	
+					@v151spositiontaking_51  = @v151spositiontaking_51 ,
+					@v151spositiontaking_52  = @v151spositiontaking_52 ,
+
+					@v152spositiontaking_41  = @v152spositiontaking_41 ,
+					@v152spositiontaking_42  = @v152spositiontaking_42 ,
+					@v152spositiontaking_51  = @v152spositiontaking_51 ,
+					@v152spositiontaking_52  = @v152spositiontaking_52 ,
+
+					@v153spositiontaking_51  = @v153spositiontaking_51 ,
+					@v153spositiontaking_52  = @v153spositiontaking_52 ,
+
+					@v1mpositiontaking_1  = @v1mpositiontaking_1 ,
+					@v1mpositiontaking_2  = @v1mpositiontaking_2 ,
+					@v1mpositiontaking_3  = @v1mpositiontaking_3 ,
+					@v1mpositiontaking_4  = @v1mpositiontaking_4 ,
+					@v1mpositiontaking_5  = @v1mpositiontaking_5 ,
+					@v1mpositiontaking_6  = @v1mpositiontaking_6 ,
+					@v1mpositiontaking_7  = @v1mpositiontaking_7 ,
+					@v1mpositiontaking_8  = @v1mpositiontaking_8 ,
+					@v1mpositiontaking_9  = @v1mpositiontaking_9 ,
+					@v1mpositiontaking_10  = @v1mpositiontaking_10 ,
+					@v1mlivepositiontaking_1  = @v1mlivepositiontaking_1 ,
+					@v1mlivepositiontaking_3  = @v1mlivepositiontaking_3 ,
+					@v1mlivepositiontaking_7  = @v1mlivepositiontaking_7 ,
+					@v1mlivepositiontaking_8  = @v1mlivepositiontaking_8 ,
+
+					@v2mpositiontaking_1  = @v2mpositiontaking_1 ,
+					@v2mpositiontaking_2  = @v2mpositiontaking_2 ,
+					@v2mpositiontaking_3  = @v2mpositiontaking_3 ,
+					@v2mpositiontaking_7  = @v2mpositiontaking_7 ,
+					@v2mpositiontaking_8  = @v2mpositiontaking_8 ,
+					@v2mpositiontaking_20  = @v2mpositiontaking_20 ,
+
+					@v3mpositiontaking_1  = @v3mpositiontaking_1 ,
+					@v3mpositiontaking_2  = @v3mpositiontaking_2 ,
+					@v3mpositiontaking_3  = @v3mpositiontaking_3 ,
+					@v3mpositiontaking_20  = @v3mpositiontaking_20 ,
+
+					@v5mpositiontaking_1  = @v5mpositiontaking_1 ,
+					@v5mpositiontaking_2  = @v5mpositiontaking_2 ,
+					@v5mpositiontaking_3  = @v5mpositiontaking_3 ,
+					@v5mpositiontaking_20  = @v5mpositiontaking_20 ,
+
+					@v8mpositiontaking_1  = @v8mpositiontaking_1 ,
+					@v8mpositiontaking_3  = @v8mpositiontaking_3 ,
+					@v8mpositiontaking_20  = @v8mpositiontaking_20 ,
+
+					@v10mpositiontaking_1  = @v10mpositiontaking_1 ,
+					@v10mpositiontaking_2  = @v10mpositiontaking_2 ,
+					@v10mpositiontaking_3  = @v10mpositiontaking_3 ,
+					@v10mpositiontaking_20  = @v10mpositiontaking_20 ,
+
+					@v11mpositiontaking_1  = @v11mpositiontaking_1 ,
+					@v11mpositiontaking_20  = @v11mpositiontaking_20 ,
+
+					@v99mpositiontaking_1  = @v99mpositiontaking_1 ,
+					@v99mpositiontaking_2  = @v99mpositiontaking_2 ,
+					@v99mpositiontaking_3  = @v99mpositiontaking_3 ,
+					@v99mpositiontaking_20  = @v99mpositiontaking_20 ,
+					@v154mpositiontaking_20  = @v154mpositiontaking_20 ,
+
+					@v99mpositiontaking_9  = @v99mpositiontaking_9 ,
+
+					@v161mpositiontaking_81  = @v161mpositiontaking_81 ,
+					@v161mpositiontaking_83  = @v161mpositiontaking_83 ,
+					@v161mpositiontaking_86  = @v161mpositiontaking_86 ,
+					@v161mpositiontaking_88  = @v161mpositiontaking_88 ,
+
+					@v161mlivepositiontaking_85  = @v161mlivepositiontaking_85 ,
+					@v161mlivepositiontaking_86  = @v161mlivepositiontaking_86 ,
+					@v161mlivepositiontaking_87  = @v161mlivepositiontaking_87 ,
+					@v161mlivepositiontaking_89  = @v161mlivepositiontaking_89 ,
+					@v161mlivepositiontaking_90  = @v161mlivepositiontaking_90 ,
+
+					@v151mpositiontaking_31  = @v151mpositiontaking_31 ,
+					@v151mpositiontaking_32  = @v151mpositiontaking_32 ,
+					@v151mpositiontaking_41  = @v151mpositiontaking_41 ,
+					@v151mpositiontaking_42  = @v151mpositiontaking_42 ,
+
+					@v151mpositiontaking_51  = @v151mpositiontaking_51 ,
+					@v151mpositiontaking_52  = @v151mpositiontaking_52 ,
+
+					@v152mpositiontaking_41  = @v152mpositiontaking_41 ,
+					@v152mpositiontaking_42  = @v152mpositiontaking_42 ,
+					@v152mpositiontaking_51  = @v152mpositiontaking_51 ,
+					@v152mpositiontaking_52  = @v152mpositiontaking_52 ,
+
+					@v153mpositiontaking_51  = @v153mpositiontaking_51 ,
+					@v153mpositiontaking_52  = @v153mpositiontaking_52 ,
+
+					@v151discount_31  = @v151discount_31 ,
+					@v151discount_41  = @v151discount_41 ,
+
+					@v151discount_51  = @v151discount_51 ,
+					@v152discount_41  = @v152discount_41 ,
+					@v152discount_51  = @v152discount_51 ,
+					@v153discount_51  = @v153discount_51 ,
+
+					--Virtual  = --Virtual ,
+					@VirtualSportList  = @VirtualSportList ,
+
+					@KenoList  = @KenoList ,
+		
+					@Language  = @Language ,
+					@IP  = @IP ,
+					@ErrCode  = @ErrCode ,
+					@ErrMsg  = @ErrMsg 
+				END 
+			IF @RoleID = 2 -- update Agent
+				BEGIN					
+					exec dbo.Acc_Dep_CustomerUpdMember_MAg
+					@custid  = @AgentID ,
+					@UserID  = @UserID ,
+
+					@minbetv1  = @minbetv1 ,
+					@maxbetv1  = @maxbetv1 ,
+					@maxpermatchv1  = @maxpermatchv1 ,
+					@minbetv2  = @minbetv2 ,
+					@maxbetv2  = @maxbetv2 ,
+					@maxpermatchv2  = @maxpermatchv2 ,
+					@minbetv3  = @minbetv3 ,
+					@maxbetv3  = @maxbetv3 ,
+					@maxpermatchv3  = @maxpermatchv3 ,
+					@minbetv5  = @minbetv5 ,
+					@maxbetv5  = @maxbetv5 ,
+					@maxpermatchv5  = @maxpermatchv5 ,
+					@minbetv8  = @minbetv8 ,
+					@maxbetv8  = @maxbetv8 ,
+					@maxpermatchv8  = @maxpermatchv8 ,
+					@minbetv10  = @minbetv10 ,
+					@maxbetv10  = @maxbetv10 ,
+					@maxpermatchv10  = @maxpermatchv10 ,
+					@minbetv11  = @minbetv11 ,
+					@maxbetv11  = @maxbetv11 ,
+					@maxpermatchv11  = @maxpermatchv11 ,
+					@minbetv99  = @minbetv99 ,
+					@maxbetv99  = @maxbetv99 ,
+					@maxpermatchv99  = @maxpermatchv99 ,
+					@minbetv154  = @minbetv154 ,
+					@maxbetv154  = @maxbetv154 ,
+					@maxpermatchv154  = @maxpermatchv154 ,
+					@minbetv99mp  = @minbetv99mp ,
+					@maxbetv99mp  = @maxbetv99mp ,
+					@maxpermatchv99mp  = @maxpermatchv99mp ,
+					@minbetv161  = @minbetv161 ,
+					@maxbetv161  = @maxbetv161 ,
+					@maxpermatchv161  = @maxpermatchv161 ,
+					@maxperballv161  = @maxperballv161 ,
+					@v151minbet_31			 = @v151minbet_31,	
+					@v151maxbet_31			 = @v151maxbet_31,	
+					@v151maxpermatch_31		 = @v151maxbet_31,	
+
+					@v151minbet_41			= @v151minbet_41,		
+					@v151maxbet_41			= @v151maxbet_41,		
+					@v151maxpermatch_41		= @v151maxpermatch_41,		
+	
+					@v151minbet_51			 = @v151minbet_51,
+					@v151maxbet_51			 = @v151maxbet_51,
+					@v151maxpermatch_51		 = @v151maxpermatch_51,
+
+					@v152minbet_41		 = @v152minbet_41,
+					@v152maxbet_41		 = @v152maxbet_41,
+					@v152maxpermatch_41  = @v152maxpermatch_41 ,
+	
+					@v152minbet_51		 = @v152minbet_51,
+					@v152maxbet_51		 = @v152maxbet_51,
+					@v152maxpermatch_51  = @v152maxpermatch_51 ,
+	
+					@v153minbet_51		 = @v153minbet_51,
+					@v153maxbet_51		 = @v153maxbet_51,
+					@v153maxpermatch_51  = @v153maxpermatch_51 ,
+
+					@v1apositiontaking_1  = @v1apositiontaking_1 ,
+					@v1apositiontaking_2  = @v1apositiontaking_2 ,
+					@v1apositiontaking_3  = @v1apositiontaking_3 ,
+					@v1apositiontaking_4  = @v1apositiontaking_4 ,
+					@v1apositiontaking_5  = @v1apositiontaking_5 ,
+					@v1apositiontaking_6  = @v1apositiontaking_6 ,
+					@v1apositiontaking_7  = @v1apositiontaking_7 ,
+					@v1apositiontaking_8  = @v1apositiontaking_8 ,
+					@v1apositiontaking_9  = @v1apositiontaking_9 ,
+					@v1apositiontaking_10  = @v1apositiontaking_10 ,
+
+					@v1alivepositiontaking_1  = @v1alivepositiontaking_1 ,
+					@v1alivepositiontaking_3  = @v1alivepositiontaking_3 ,
+					@v1alivepositiontaking_7  = @v1alivepositiontaking_7 ,
+					@v1alivepositiontaking_8  = @v1alivepositiontaking_8 ,
+	
+					@v2apositiontaking_1  = @v2apositiontaking_1 ,
+					@v2apositiontaking_2  = @v2apositiontaking_2 ,
+					@v2apositiontaking_3  = @v2apositiontaking_3 ,
+					@v2apositiontaking_7  = @v2apositiontaking_7 ,
+					@v2apositiontaking_8  = @v2apositiontaking_8 ,
+					@v2apositiontaking_20  = @v2apositiontaking_20 ,
+	
+					@v3apositiontaking_1  = @v3apositiontaking_1 ,
+					@v3apositiontaking_2  = @v3apositiontaking_2 ,
+					@v3apositiontaking_3  = @v3apositiontaking_3 ,
+					@v3apositiontaking_20  = @v3apositiontaking_20 ,
+	
+					@v5apositiontaking_1  = @v5apositiontaking_1 ,
+					@v5apositiontaking_2  = @v5apositiontaking_2 ,
+					@v5apositiontaking_3  = @v5apositiontaking_3 ,
+					@v5apositiontaking_20  = @v5apositiontaking_20 ,
+
+					@v8apositiontaking_1  = @v8apositiontaking_1 ,
+					@v8apositiontaking_3  = @v8apositiontaking_3 ,
+					@v8apositiontaking_20  = @v8apositiontaking_20 ,
+
+					@v10apositiontaking_1  = @v10apositiontaking_1 ,
+					@v10apositiontaking_2  = @v10apositiontaking_2 ,
+					@v10apositiontaking_3  = @v10apositiontaking_3 ,
+					@v10apositiontaking_20  = @v10apositiontaking_20 ,
+
+					@v11apositiontaking_1  = @v11apositiontaking_1 ,
+					@v11apositiontaking_20  = @v11apositiontaking_20 ,
+
+					@v99apositiontaking_1  = @v99apositiontaking_1 ,
+					@v99apositiontaking_2  = @v99apositiontaking_2 ,
+					@v99apositiontaking_3  = @v99apositiontaking_3 ,
+					@v99apositiontaking_20  = @v99apositiontaking_20 ,
+					@v154apositiontaking_20  = @v154apositiontaking_20 ,
+
+					@v99apositiontaking_9  = @v99apositiontaking_9 ,
+
+					@v161apositiontaking_81  = @v161apositiontaking_81 ,
+					@v161apositiontaking_83  = @v161apositiontaking_83 ,
+					@v161apositiontaking_86  = @v161apositiontaking_86 ,
+					@v161apositiontaking_88  = @v161apositiontaking_88 ,
+
+					@v161alivepositiontaking_85  = @v161alivepositiontaking_85 ,
+					@v161alivepositiontaking_86  = @v161alivepositiontaking_86 ,
+					@v161alivepositiontaking_87	 = @v161alivepositiontaking_87,
+					@v161alivepositiontaking_89	 = @v161alivepositiontaking_89,
+					@v161alivepositiontaking_90	 = @v161alivepositiontaking_90,
+
+					@v151apositiontaking_31  = @v151apositiontaking_31 ,
+					@v151apositiontaking_32  = @v151apositiontaking_32 ,
+					@v151apositiontaking_41  = @v151apositiontaking_41 ,
+					@v151apositiontaking_42  = @v151apositiontaking_42 ,
+	
+					@v151apositiontaking_51  = @v151apositiontaking_51 ,
+					@v151apositiontaking_52  = @v151apositiontaking_52 ,
+
+					@v152apositiontaking_41  = @v152apositiontaking_41 ,
+					@v152apositiontaking_42  = @v152apositiontaking_42 ,
+					@v152apositiontaking_51  = @v152apositiontaking_51 ,
+					@v152apositiontaking_52  = @v152apositiontaking_52 ,
+
+					@v153apositiontaking_51  = @v153apositiontaking_51 ,
+					@v153apositiontaking_52  = @v153apositiontaking_52 ,
+
+					@v1mpositiontaking_1  = @v1mpositiontaking_1 ,
+					@v1mpositiontaking_2  = @v1mpositiontaking_2 ,
+					@v1mpositiontaking_3  = @v1mpositiontaking_3 ,
+					@v1mpositiontaking_4  = @v1mpositiontaking_4 ,
+					@v1mpositiontaking_5  = @v1mpositiontaking_5 ,
+					@v1mpositiontaking_6  = @v1mpositiontaking_6 ,
+					@v1mpositiontaking_7  = @v1mpositiontaking_7 ,
+					@v1mpositiontaking_8  = @v1mpositiontaking_8 ,
+					@v1mpositiontaking_9  = @v1mpositiontaking_9 ,
+					@v1mpositiontaking_10  = @v1mpositiontaking_10 ,
+					@v1mlivepositiontaking_1  = @v1mlivepositiontaking_1 ,
+					@v1mlivepositiontaking_3  = @v1mlivepositiontaking_3 ,
+					@v1mlivepositiontaking_7  = @v1mlivepositiontaking_7 ,
+					@v1mlivepositiontaking_8  = @v1mlivepositiontaking_8 ,
+
+					@v2mpositiontaking_1  = @v2mpositiontaking_1 ,
+					@v2mpositiontaking_2  = @v2mpositiontaking_2 ,
+					@v2mpositiontaking_3  = @v2mpositiontaking_3 ,
+					@v2mpositiontaking_7  = @v2mpositiontaking_7 ,
+					@v2mpositiontaking_8  = @v2mpositiontaking_8 ,
+					@v2mpositiontaking_20  = @v2mpositiontaking_20 ,
+
+					@v3mpositiontaking_1  = @v3mpositiontaking_1 ,
+					@v3mpositiontaking_2  = @v3mpositiontaking_2 ,
+					@v3mpositiontaking_3  = @v3mpositiontaking_3 ,
+					@v3mpositiontaking_20  = @v3mpositiontaking_20 ,
+
+					@v5mpositiontaking_1  = @v5mpositiontaking_1 ,
+					@v5mpositiontaking_2  = @v5mpositiontaking_2 ,
+					@v5mpositiontaking_3  = @v5mpositiontaking_3 ,
+					@v5mpositiontaking_20  = @v5mpositiontaking_20 ,
+
+					@v8mpositiontaking_1  = @v8mpositiontaking_1 ,
+					@v8mpositiontaking_3  = @v8mpositiontaking_3 ,
+					@v8mpositiontaking_20  = @v8mpositiontaking_20 ,
+
+					@v10mpositiontaking_1  = @v10mpositiontaking_1 ,
+					@v10mpositiontaking_2  = @v10mpositiontaking_2 ,
+					@v10mpositiontaking_3  = @v10mpositiontaking_3 ,
+					@v10mpositiontaking_20  = @v10mpositiontaking_20 ,
+
+					@v11mpositiontaking_1  = @v11mpositiontaking_1 ,
+					@v11mpositiontaking_20  = @v11mpositiontaking_20 ,
+
+					@v99mpositiontaking_1  = @v99mpositiontaking_1 ,
+					@v99mpositiontaking_2  = @v99mpositiontaking_2 ,
+					@v99mpositiontaking_3  = @v99mpositiontaking_3 ,
+					@v99mpositiontaking_20  = @v99mpositiontaking_20 ,
+					@v154mpositiontaking_20  = @v154mpositiontaking_20 ,
+
+					@v99mpositiontaking_9  = @v99mpositiontaking_9 ,
+
+					@v161mpositiontaking_81  = @v161mpositiontaking_81 ,
+					@v161mpositiontaking_83  = @v161mpositiontaking_83 ,
+					@v161mpositiontaking_86  = @v161mpositiontaking_86 ,
+					@v161mpositiontaking_88  = @v161mpositiontaking_88 ,
+
+					@v161mlivepositiontaking_85  = @v161mlivepositiontaking_85 ,
+					@v161mlivepositiontaking_86  = @v161mlivepositiontaking_86 ,
+					@v161mlivepositiontaking_87  = @v161mlivepositiontaking_87 ,
+					@v161mlivepositiontaking_89  = @v161mlivepositiontaking_89 ,
+					@v161mlivepositiontaking_90  = @v161mlivepositiontaking_90 ,
+
+					@v151mpositiontaking_31  = @v151mpositiontaking_31 ,
+					@v151mpositiontaking_32  = @v151mpositiontaking_32 ,
+					@v151mpositiontaking_41  = @v151mpositiontaking_41 ,
+					@v151mpositiontaking_42  = @v151mpositiontaking_42 ,
+
+					@v151mpositiontaking_51  = @v151mpositiontaking_51 ,
+					@v151mpositiontaking_52  = @v151mpositiontaking_52 ,
+
+					@v152mpositiontaking_41  = @v152mpositiontaking_41 ,
+					@v152mpositiontaking_42  = @v152mpositiontaking_42 ,
+					@v152mpositiontaking_51  = @v152mpositiontaking_51 ,
+					@v152mpositiontaking_52  = @v152mpositiontaking_52 ,
+
+					@v153mpositiontaking_51  = @v153mpositiontaking_51 ,
+					@v153mpositiontaking_52  = @v153mpositiontaking_52 ,
+
+					@v151discount_31  = @v151discount_31 ,
+					@v151discount_41  = @v151discount_41 ,
+
+					@v151discount_51  = @v151discount_51 ,
+					@v152discount_41  = @v152discount_41 ,
+					@v152discount_51  = @v152discount_51 ,
+					@v153discount_51  = @v153discount_51 ,
+
+					--Virtual  = --Virtual ,
+					@VirtualSportList  = @VirtualSportList ,
+
+					@KenoList  = @KenoList ,
+		
+					@Language  = @Language ,
+					@IP  = @IP ,
+					@ErrCode  = @ErrCode ,
+					@ErrMsg  = @ErrMsg 
+				END
+			set @k=@k+1
+		END		
+	DROP TABLE #listUpdate
+END 
+
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
 -- Write log
-Declare @LogSPData varchar(5000)
+Declare @LogSPData varchar(Max)
+Declare @LogSPData2 varchar(Max)
 
-Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+--Write log
+--write log keno
+DECLARE @str_bet varchar(1000)='',
+		@str_spt varchar(1000)='',
+		@str_mpt varchar(1000)='',
+		@str_apt varchar(1000)='',
+		@i INT=1501,
+		@j INT=(select max(bettype) from #data)
+WHILE (@i<=@j)
+BEGIN
+	select @str_bet=@str_bet+ 'MinBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MinBet AS VARCHAR(50))+'" '
+							+ 'MaxBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MaxBet AS VARCHAR(50))+'" '
+							+ 'MPMv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MaxPerMatch AS VARCHAR(50))+'" ',
+		   @str_spt=@str_spt + 'v202spt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(sPositionTaking AS VARCHAR(50))+'" ',
+		   @str_mpt=@str_mpt + 'v202mpt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(mPositionTaking AS VARCHAR(50))+'" ',
+		   @str_apt=@str_apt + 'v202apt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(aPositionTaking AS VARCHAR(50))+'" '
+	from #data where Bettype=@i
+	set @i=@i+1
+END
+
+Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com> ' +
+'<SportsBook custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
+'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
+'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" ' +
+
 'MinBv1="'+ coalesce(cast(@MinBetv1 as varchar(50)),space(1))+ '" ' +
 'MaxBv1="'+ coalesce(cast(@MaxBetv1 as varchar(50)),space(1))+ '" ' +
 'MPMv1="'+ coalesce(cast(@MaxPerMatchv1 as varchar(50)),space(1))+ '" ' +
@@ -2068,13 +2732,18 @@ Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@cus
 'MinBv99="'+ coalesce(cast(@MinBetv99 as varchar(50)),space(1))+ '" ' +
 'MaxBv99="'+ coalesce(cast(@MaxBetv99 as varchar(50)),space(1))+ '" ' +
 'MPMv99="'+ coalesce(cast(@MaxPerMatchv99 as varchar(50)),space(1))+ '" ' +
-'MinBv99MP="'+ coalesce(cast(@MinBetv99MP as varchar(50)),space(1))+ '" ' +
-'MaxBv99MP="'+ coalesce(cast(@MaxBetv99MP as varchar(50)),space(1))+ '" ' +
-'MPMv99MP="'+ coalesce(cast(@MaxPerMatchv99MP as varchar(50)),space(1))+ '" ' +
+
+'MinBv154="'+ coalesce(cast(@MinBetv154 as varchar(50)),space(1))+ '" ' +
+'MaxBv154="'+ coalesce(cast(@MaxBetv154 as varchar(50)),space(1))+ '" ' +
+'MPMv154="'+ coalesce(cast(@MaxPerMatchv154 as varchar(50)),space(1))+ '" ' +
+
 'MinBv161="'+ coalesce(cast(@MinBetv161 as varchar(50)),space(1))+ '" ' +
 'MaxBv161="'+ coalesce(cast(@MaxBetv161 as varchar(50)),space(1))+ '" ' +
 'MPMv161="'+ coalesce(cast(@MaxPerMatchv161 as varchar(50)),space(1))+ '" ' +
 'MPBv161="' + coalesce(cast(@MaxPerBallv161 as varchar(50)),space(1)) + '" ' +
+'MinBv99MP="'+ coalesce(cast(@MinBetv99MP as varchar(50)),space(1))+ '" ' +
+'MaxBv99MP="'+ coalesce(cast(@MaxBetv99MP as varchar(50)),space(1))+ '" ' +
+'MPMv99MP="'+ coalesce(cast(@MaxPerMatchv99MP as varchar(50)),space(1))+ '" ' +
 'v151MinB_31="'+ coalesce(cast(@v151MinBet_31 as varchar(50)),space(1)) + '" ' +
 'v151MaxB_31="'+ coalesce(cast(@v151MaxBet_31 as varchar(50)),space(1)) + '" ' +
 'v151MPM_31="'+ coalesce(cast(@v151MaxPerMatch_31 as varchar(50)),space(1)) + '" ' +
@@ -2093,7 +2762,8 @@ Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@cus
 'v153MinB_51="'+ coalesce(cast(@v153MinBet_51 as varchar(50)),space(1)) + '" ' +
 'v153MaxB_51="'+ coalesce(cast(@v153MaxBet_51 as varchar(50)),space(1)) + '" ' +
 'v153MPM_51="'+ coalesce(cast(@v153MaxPerMatch_51 as varchar(50)),space(1)) + '" ' +
-
+'/>'+
+'<VirtualSports ' +
 'v180MinB="'+ coalesce(cast(@v180MinBet as varchar(50)),space(1)) + '" ' +
 'v180MaxB="'+ coalesce(cast(@v180MaxBet as varchar(50)),space(1)) + '" ' +
 'v180MPM="'+ coalesce(cast(@v180MaxPerMatch as varchar(50)),space(1)) + '" ' +
@@ -2121,18 +2791,83 @@ Select @LogSPData ='<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@cus
 'v186MinB="'+ coalesce(cast(@v186MinBet as varchar(50)),space(1)) + '" ' +
 'v186MaxB="'+ coalesce(cast(@v186MaxBet as varchar(50)),space(1)) + '" ' +
 'v186MPM="'+ coalesce(cast(@v186MaxPerMatch as varchar(50)),space(1)) + '" ' +
+'/>' +
+'<Keno '+
+@str_bet+
+'/>' +
+'</Acc_Dep_CustomerUpdMember_Com>'
 
-'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
-'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
-'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
-'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
+--SELECT TOP 1 @LogSPData2=ISNULL(TrackingValue,0) 
+--FROM DBLOG.bodb_CustomerLog.dbo.UserLog_RunSP WITH (NOLOCK)
+--WHERE Custid=@CustID AND ActionID=2012
+--ORDER BY logid DESC
+
+--IF @LogSPData2 IS NULL
+BEGIN
+	DECLARE @sql varchar (MAX)
+	DECLARE @TEXT varchar (4000) =''
+	SELECT @sql='<Acc_Dep_CustomerUpdMember_Com> ' +
+		'<SportsBook custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+					'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+					'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+					'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
+					'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
+					'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" ' 
+	Select @TEXT= @TEXT +
+				'MinBv'+ cast(Sporttype as varchar(10))+'="'+ coalesce(cast(MinB as varchar(50)),space(1))+ '" ' +
+				'MaxBv'+ cast(Sporttype as varchar(10))+'="'+ coalesce(cast(MaxB as varchar(50)),space(1))+ '" ' +
+				'MPMv' + cast(Sporttype as varchar(10))+'="'+ coalesce(cast(MPM  as varchar(50)),space(1))+ '" ' +	
+				CASE WHEN Sporttype=161 THEN 'MPBv161="'+ coalesce(cast(MPB as varchar(50)),space(1))+ '" ' ELSE '' END
+		FROM #data_old
+		WHERE (Sporttype <=100 OR Sporttype in (154,161))  AND islive=0
+		GROUP BY Custid,Sporttype,MinB,MaxB,MPM,MPB
+	Select @TEXT= @TEXT +
+				'MinBv'+ cast(Sporttype as varchar(10))+'MP="'+ coalesce(cast(MinB as varchar(50)),space(1))+ '" ' +
+				'MaxBv'+ cast(Sporttype as varchar(10))+'MP="'+ coalesce(cast(MaxB as varchar(50)),space(1))+ '" ' +
+				'MPMv' + cast(Sporttype as varchar(10))+'MP="'+ coalesce(cast(MPM  as varchar(50)),space(1))+ '" ' 	
+		FROM #data_old
+		WHERE (Sporttype= 99 and Bettype=9)
+		GROUP BY Custid,Sporttype,MinB,MaxB,MPM
+	select @sql=@sql+@TEXT
+	SET @TEXT=''
+	Select @TEXT= @TEXT +
+				'v'+cast(Sporttype as varchar(10))+ 'MinB_'+ cast(Bettype as varchar(10))+'="'+ coalesce(cast(MinB as varchar(50)),space(1))+ '" ' +
+				'v'+cast(Sporttype as varchar(10))+ 'MaxB_'+ cast(Bettype as varchar(10))+'="'+ coalesce(cast(MaxB as varchar(50)),space(1))+ '" ' +
+				'v'+cast(Sporttype as varchar(10))+ 'MPM_' + cast(Bettype as varchar(10))+'="'+ coalesce(cast(MPM  as varchar(50)),space(1))+ '" ' 	
+		FROM #data_old
+		WHERE Sporttype >100 AND Sporttype <154 and islive=0
+		GROUP BY Custid,Sporttype,Bettype,MinB,MaxB,MPM
+	select @sql=@sql+@TEXT + '/>'
+	SELECT @TEXT=''
+	SELECT @TEXT=@TEXT + '<VirtualSports '
+	Select @TEXT= @TEXT +
+				'v'+cast(Sporttype as varchar(10))+ 'MinB'+'="'+ coalesce(cast(MinB as varchar(50)),space(1))+ '" ' +
+				'v'+cast(Sporttype as varchar(10))+ 'MaxB'+'="'+ coalesce(cast(MaxB as varchar(50)),space(1))+ '" ' +
+				'v'+cast(Sporttype as varchar(10))+ 'MPM' ++'="'+ coalesce(cast(MPM  as varchar(50)),space(1))+ '" ' 	
+		FROM #data_old
+		WHERE Sporttype >=180 AND Sporttype <=186 and islive=0
+		GROUP BY Custid,Sporttype,Bettype,MinB,MaxB,MPM
+	select @sql=@sql+@TEXT + '/>'
+	select @TEXT=''
+	SELECT @TEXT=@TEXT + '<Keno '
+	Select @TEXT= @TEXT +
+				'MinBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MinB AS VARCHAR(50))+'" ' +
+				'MaxBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MaxB AS VARCHAR(50))+'" ' +
+				'MPMv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MPM AS VARCHAR(50))+'" '
+		FROM #data_old
+		WHERE Bettype >=1501 AND Bettype <=@j and islive=0
+		GROUP BY Custid,Sporttype,Bettype,MinB,MaxB,MPM
+	select @sql = @sql + @TEXT + '/>'
+	select @sql = @sql + '</Acc_Dep_CustomerUpdMember_Com>'
+	SET @LogSPData2=@sql
+END
 
 EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 	@UserID = @UserID,
 	@CustID = @CustID,
 	@ActionID = 2012,
 	@TrackingValue = @LogSPData,
+	@TrackingValue2 = @LogSPData2,
 	@duration = @duration
 
 --Write PT log
@@ -2193,6 +2928,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v99spt_9="'+ COALESCE(CAST(@v99spositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99spt_20="'+ COALESCE(CAST(@v99spositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'v154spt_20="'+ COALESCE(CAST(@v154spositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'v161spt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_81,2),SPACE(1)) + '" ' +
 'v161spt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_83,2),SPACE(1)) + '" ' +
 'v161spt_86="'+ COALESCE(CONVERT(VARCHAR(50),@v161spositiontaking_86,2),SPACE(1)) + '" ' +
@@ -2202,7 +2939,7 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161slivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161slivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161slivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_90,2),SPACE(1)) +'" ' +
-
+@str_spt+
 'v180spt="'+ COALESCE(CAST(@v180sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
 'v181spt="'+ COALESCE(CAST(@v181sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
 'v182spt="'+ COALESCE(CAST(@v182sPositionTaking AS VARCHAR(50)),SPACE(1)) +'" ' +
@@ -2261,6 +2998,7 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v99mpt_3="'+ COALESCE(CAST(@v99mpositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_9="'+ COALESCE(CAST(@v99mpositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_20="'+ COALESCE(CAST(@v99mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v154mpt_20="'+ COALESCE(CAST(@v154mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
 'v161mpt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_81,2),SPACE(1)) + '" ' +
 'v161mpt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161mpositiontaking_83,2),SPACE(1)) + '" ' +
@@ -2271,7 +3009,7 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
-
+@str_mpt+
 'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' + 
 'v181mpt="'+ COALESCE(CAST(@v181mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v182mpt="'+ COALESCE(CAST(@v182mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2330,6 +3068,7 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v99apt_3="'+ COALESCE(CAST(@v99apositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99apt_9="'+ COALESCE(CAST(@v99apositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99apt_20="'+ COALESCE(CAST(@v99apositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v154apt_20="'+ COALESCE(CAST(@v154apositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
 'v161apt_81="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_81,2),SPACE(1)) + '" ' +
 'v161apt_83="'+ COALESCE(CONVERT(VARCHAR(50),@v161apositiontaking_83,2),SPACE(1)) + '" ' +
@@ -2340,7 +3079,7 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
-
+@str_apt+
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v182apt="'+ COALESCE(CAST(@v182aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2348,59 +3087,251 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v184apt="'+ COALESCE(CAST(@v184aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v185apt="'+ COALESCE(CAST(@v185aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v186apt="'+ COALESCE(CAST(@v186aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" />' +
-
-'<s v151spt_31="'+ coalesce(cast(@v151spositiontaking_31 as varchar(50)),space(1)) + '" ' +
-'v151spt_32="'+ coalesce(cast(@v151spositiontaking_32 as varchar(50)),space(1)) + '" ' +
-'v151spt_41="'+ coalesce(cast(@v151spositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v151spt_42="'+ coalesce(cast(@v151spositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v151spt_51="'+ coalesce(cast(@v151spositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v151spt_52="'+ coalesce(cast(@v151spositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v152spt_41="'+ coalesce(cast(@v152spositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v152spt_42="'+ coalesce(cast(@v152spositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v152spt_51="'+ coalesce(cast(@v152spositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v152spt_52="'+ coalesce(cast(@v152spositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v153spt_51="'+ coalesce(cast(@v153spositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v153spt_52="'+ coalesce(cast(@v153spositiontaking_52 as varchar(50)),space(1)) + '" />' +
-
-'<m v151mpt_31="'+ coalesce(cast(@v151mpositiontaking_31 as varchar(50)),space(1)) + '" ' +
-'v151mpt_32="'+ coalesce(cast(@v151mpositiontaking_32 as varchar(50)),space(1)) + '" ' +
-'v151mpt_41="'+ coalesce(cast(@v151mpositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v151mpt_42="'+ coalesce(cast(@v151mpositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v151mpt_51="'+ coalesce(cast(@v151mpositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v151mpt_52="'+ coalesce(cast(@v151mpositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v152mpt_41="'+ coalesce(cast(@v152mpositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v152mpt_42="'+ coalesce(cast(@v152mpositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v152mpt_51="'+ coalesce(cast(@v152mpositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v152mpt_52="'+ coalesce(cast(@v152mpositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v153mpt_51="'+ coalesce(cast(@v153mpositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v153mpt_52="'+ coalesce(cast(@v153mpositiontaking_52 as varchar(50)),space(1)) + '" />' +
-
-'<ag v151apt_31="'+ coalesce(cast(@v151apositiontaking_31 as varchar(50)),space(1)) + '" ' +
-'v151apt_32="'+ coalesce(cast(@v151apositiontaking_32 as varchar(50)),space(1)) + '" ' +
-'v151apt_41="'+ coalesce(cast(@v151apositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v151apt_42="'+ coalesce(cast(@v151apositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v151apt_51="'+ coalesce(cast(@v151apositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v151apt_52="'+ coalesce(cast(@v151apositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v152apt_41="'+ coalesce(cast(@v152apositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v152apt_42="'+ coalesce(cast(@v152apositiontaking_42 as varchar(50)),space(1)) + '" ' +
-'v152apt_51="'+ coalesce(cast(@v152apositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v152apt_52="'+ coalesce(cast(@v152apositiontaking_52 as varchar(50)),space(1)) + '" ' +
-'v153apt_51="'+ coalesce(cast(@v153apositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v153apt_52="'+ coalesce(cast(@v153apositiontaking_52 as varchar(50)),space(1)) + '" />' +
-
-'<ibcpt v151IBCpt_31="'+ coalesce(cast(@v151IBCPositiontaking_31 as varchar(50)),space(1)) + '" ' +
-'v151IBCpt_41="' + coalesce(cast(@v151IBCPositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v151IBCpt_51="' + coalesce(cast(@v151IBCPositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v152IBCpt_41="' + coalesce(cast(@v152IBCPositiontaking_41 as varchar(50)),space(1)) + '" ' +
-'v152IBCpt_51="' + coalesce(cast(@v152IBCPositiontaking_51 as varchar(50)),space(1)) + '" ' +
-'v153IBCpt_51="' + coalesce(cast(@v153IBCPositiontaking_51 as varchar(50)),space(1)) + '" />' +
 '</Acc_Dep_CustomerUpdMember_Com>' 
+
+--tracking value old
+DECLARE @pt_SB smallMoney,@pt_NG smallmoney,@pt_VS smallmoney,@pt_KN smallmoney
+select top 1 @pt_SB=spt FROM #data_old where Sporttype=1 AND Bettype =1 and islive =0
+select top 1 @pt_NG=spt FROM #data_old where Sporttype=161 AND Bettype =81 and islive =0
+select top 1 @pt_VS=spt FROM #data_old where Sporttype=180 AND  islive =0
+select top 1 @pt_KN=spt FROM #data_old where Sporttype=202 AND Bettype =1501 and islive =0
+--write log keno
+DECLARE @str_spt_ varchar(1000)='',
+		@str_mpt_ varchar(1000)='',
+		@str_apt_ varchar(1000)=''
+set @i =1501
+WHILE (@i<=@j)
+BEGIN
+	select @str_spt_=@str_spt_ + 'v202spt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(@pt_KN AS VARCHAR(50))+'" ',
+		   @str_mpt_=@str_mpt_ + 'v202mpt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(@pt_KN AS VARCHAR(50))+'" ',
+		   @str_apt_=@str_apt_ + 'v202apt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(@pt_KN AS VARCHAR(50))+'" '
+	from #data where Bettype=@i
+	set @i=@i+1
+END
+SELECT @LogSPData2 = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
+'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
+'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +
+'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
+'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />' +
+
+'<s spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_4="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_5="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_6="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'spt_10="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'slivept_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'slivept_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'slivept_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'slivept_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v2spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2spt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2spt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v3spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v5spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v8spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v10spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v11spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v11spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v99spt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99spt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99spt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99spt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v154spt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v161spt_81="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161spt_83="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161spt_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161spt_88="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161slivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161slivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161slivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161slivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161slivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) +'" ' +
+--old
+@str_spt_ + 
+'v180spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v181spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v182spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v183spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v184spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v185spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" ' +
+'v186spt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +'" />' +
+
+'<m mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_4="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_5="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_6="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mpt_10="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mlivept_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mlivept_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mlivept_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'mlivept_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v2mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2mpt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2mpt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v3mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v5mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v8mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v10mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v11mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v11mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v99mpt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99mpt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99mpt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99mpt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v154mpt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v161mpt_81="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mpt_83="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mpt_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mpt_88="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mlivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mlivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+@str_mpt_+
+'v180mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' + 
+'v181mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) +
+'" />' +
+
+'<ag apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_4="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_5="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_6="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'apt_10="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' + 
+'alivept_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'alivept_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'alivept_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'alivept_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v2apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2apt_7="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2apt_8="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v2apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v3apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v3apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v5apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v5apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v8apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v8apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v10apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v10apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v11apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v11apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v99apt_1="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99apt_2="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99apt_3="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99apt_9="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v99apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v154apt_20="'+ COALESCE(CAST(@pt_SB AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v161apt_81="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161apt_83="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161apt_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161apt_88="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161alivept_85="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161alivept_86="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+@str_apt_+
+'v180apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v181apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v182apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v183apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v184apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v185apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
+'v186apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" />' +
+'</Acc_Dep_CustomerUpdMember_Com>'
 
 EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 	@UserID = @UserID,
 	@CustID = @CustID,
 	@ActionID = 2709,
 	@TrackingValue = @LogSPData,
+	@TrackingValue2 = @LogSPData2,
 	@duration = @duration
 
 Select @LogSPData = '<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
@@ -2416,16 +3347,43 @@ Select @LogSPData = '<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@cu
 'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
 'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
 
+DECLARE @v151discount_31_ decimal(9,8) = 0,	
+		@v151discount_41_ decimal(9,8) = 0,
+		@v151discount_51_ decimal(9,8) = 0,
+		@v152discount_41_ decimal(9,8) = 0,
+		@v152discount_51_ decimal(9,8) = 0,
+		@v153discount_51_ decimal(9,8) = 0
+select @v151discount_31_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 151 AND bettype =31
+select @v151discount_41_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 151 AND bettype =41
+select @v151discount_51_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 151 AND bettype =51
+select @v152discount_41_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 152 AND bettype =41
+select @v152discount_51_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 152 AND bettype =51
+select @v153discount_51_=SupRBDiscount FROM #data_old WHERE custid=@custID and sporttype = 153 AND bettype =51
+
+Select @LogSPData2 = '<Acc_Dep_CustomerUpdMember_Com custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
+'v151discount_31="'+ coalesce(cast(@v151discount_31_ as varchar(50)),space(1)) + '" ' +
+'v151discount_41="'+ coalesce(cast(@v151discount_41_ as varchar(50)),space(1)) + '" ' +
+'v151discount_51="'+ coalesce(cast(@v151discount_51_ as varchar(50)),space(1)) + '" ' +
+'v152discount_41="'+ coalesce(cast(@v152discount_41_ as varchar(50)),space(1)) + '" ' +
+'v152discount_51="'+ coalesce(cast(@v152discount_51_ as varchar(50)),space(1)) + '" ' +
+'v153discount_51="'+ coalesce(cast(@v153discount_51_ as varchar(50)),space(1)) + '" ' +
+'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" ' +
+'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +
+'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +
+'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
+'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
+
 EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 	@UserID = @UserID,
 	@CustID = @CustID,
 	@ActionID = 2606,
 	@TrackingValue = @LogSPData,
+	@TrackingValue2 = @LogSPData2,
 	@duration = @duration
 
-
-
-
+DROP TABLE #data
+--DROP TABLE #MinMax_upline
+drop TABLE #data_old
 GO
 GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbAdminNet] AS [dbo]
 GO

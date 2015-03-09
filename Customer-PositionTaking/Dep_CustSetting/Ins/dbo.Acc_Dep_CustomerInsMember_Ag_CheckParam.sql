@@ -31,7 +31,11 @@
 
 	@MinBetv99 money,
 	@MaxBetv99 money,
-	@MaxPerMatchv99 money,	
+	@MaxPerMatchv99 money,
+	
+	@MinBetv154 money,
+	@MaxBetv154 money,
+	@MaxPerMatchv154 money,	
 	
 	--Mix Parlay mix sports
 	@MinBetv99MP money,
@@ -93,6 +97,8 @@
 	@v99apositiontaking_3 smallmoney,
 	@v99apositiontaking_9 smallmoney,
 	@v99apositiontaking_20 smallmoney,
+
+	@v154apositiontaking_20 smallmoney,
 	
 	--Racing
 	@v151apositiontaking_31 smallmoney,
@@ -145,6 +151,7 @@ Original:
 Revisions:
    - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
    - 20130912@Don: Extend value range for Number Game PT from 0.9 to 1
+   - 20140505@Florent: Add Sport HRFO
 
 Param's Explanation:
 • @ErrCode:
@@ -192,6 +199,10 @@ if
 	or @MinBetv99 <0
 	or @MaxBetv99 <0
 	or @MaxPerMatchv99 <0
+
+	or @MinBetv154 <0
+	or @MaxBetv154 <0
+	or @MaxPerMatchv154 <0
 		
 	--Mix Parlay mix sports
 	or @MinBetv99MP <0
@@ -289,7 +300,7 @@ if
 	or @v99apositiontaking_3  <0
 	or @v99apositiontaking_9 <0
 	or @v99apositiontaking_20  <0
-	
+	or @v154apositiontaking_20  <0
 	
 	
 	
@@ -376,9 +387,6 @@ BEGIN
 END
 	
 return
-
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag_CheckParam] TO [bodbAdminNet] AS [dbo]
 GO
