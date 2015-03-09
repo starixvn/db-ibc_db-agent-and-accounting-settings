@@ -46,7 +46,11 @@
 	@MinBetv99 money,
 	@MaxBetv99 money,
 	@MaxPerMatchv99 money,
-	
+	--HRFO
+	@MinBetv154 money,
+	@MaxBetv154 money,
+	@MaxPerMatchv154 money,
+
 	-- mix parlay of mixed sports
 	@MinBetv99mp money,
 	@MaxBetv99mp money,
@@ -135,6 +139,8 @@
 	@v99apositiontaking_2 smallmoney,
 	@v99apositiontaking_3 smallmoney,
 	@v99apositiontaking_20 smallmoney,
+	--HRFO
+	@v154apositiontaking_20 smallmoney,
 	
 	-- mix parlay of mixed sports	
 	@v99apositiontaking_9 smallmoney, 
@@ -179,6 +185,10 @@
 	
 	--Virtual Sports----------------
 	@VirtualSportList VARCHAR(4000)='', -- repalace all old params
+	--Keno
+	@KenoList VARCHAR(4000)='',
+	@DisableKeno BIT = 0,
+	--------------------------------
 	
 
 	@IP										varchar(15)='',
@@ -202,7 +212,9 @@ Revisions:
 	- 20130919@Don: Supporting save log of Number Game PT with format such as "0.995", "0.925", ...
 	- 20131014@Francis: Support adding new virtual sports with settings via XML param
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Insert Task_Cust_CheckBalance_Exception by link database)	
-    
+	- 20140505@Florent: Add sport HR Fix Odds
+	- 20140512@Florent: Add new sport: 202 Keno
+    - 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
 Param's Explanation:
 • @ErrCode:
     = 0: Create member successfully.
@@ -308,8 +320,29 @@ WHERE SportType = 186
 
 
 DROP TABLE #input
-
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--------Parse xml string into table -- Keno
+DECLARE @xmlDoc int
+EXEC sp_xml_preparedocument @xmlDoc OUTPUT, @KenoList
+
+SELECT *
+INTO #data
+FROM OPENXML (@xmlDoc, '/products/product',1) WITH(Bettype int, MaxBet money, MinBet money, MaxPerMatch money, 
+sPositionTaking smallmoney, mPositionTaking smallmoney, aPositionTaking smallmoney,IsDisable BIT)
+
+EXEC sp_xml_removedocument @xmlDoc
+
+
+SELECT @DisableKeno = 1
+IF EXISTS (SELECT * FROM #data WHERE isDisable = 0 )
+BEGIN 
+	SELECT @DisableKeno = 0
+END
+--Rollback
+DECLARE @Rollback nvarchar(1000)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 select @v161alivepositiontaking_90 = 0
 
@@ -335,6 +368,8 @@ declare
 	@UplineSyncLiveCasino bit,
 	@DisableCasinoBonus BIT,
 	
+	@DisableHRFO bit,
+
 	@v1mpositiontaking_1 smallmoney,
 	@v1mpositiontaking_2 smallmoney,
 	@v1mpositiontaking_3 smallmoney,
@@ -384,6 +419,8 @@ declare
 	@v99mpositiontaking_2 smallmoney,
 	@v99mpositiontaking_3 smallmoney,
 	@v99mpositiontaking_20 smallmoney,
+	--HRFO
+	@v154mpositiontaking_20 smallmoney,
 	
 	--Racing
 	@v151mpositiontaking_31 smallmoney ,
@@ -468,6 +505,8 @@ declare
 	@v99spositiontaking_2 smallmoney,
 	@v99spositiontaking_3 smallmoney,	
 	@v99spositiontaking_20 smallmoney,	
+	--HRFO
+	@v154spositiontaking_20 smallmoney,
 	
 	@v99spositiontaking_9 smallmoney,
 
@@ -545,7 +584,8 @@ select
 	@DisableOutright = DisableOutright,
 	@DisableVirtualSport = ci.DisableVirtualSports,
 	@DisableCasinoBonus = 1,
-	@DisableNumber = case when DisableNumber = 1 then 1 else @DisableNumber end
+	@DisableNumber = case when DisableNumber = 1 then 1 else @DisableNumber end,
+	@DisableHRFO= ci.DisableHRFixedOdds
 from CustInfo as ci with (NOLOCK) 
 where CustID = @recommend
 
@@ -594,6 +634,8 @@ SELECT @v1mpositiontaking_1 = CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 AND 
 	@v99mpositiontaking_2 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 2 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	@v99mpositiontaking_3 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	@v99mpositiontaking_20 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
+	
+	@v154mpositiontaking_20 = CASE WHEN cs.sporttype = 154 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 
 	@v99mpositiontaking_9 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 9 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	--Racing
@@ -681,6 +723,8 @@ SELECT @v1spositiontaking_1 = CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 AND 
 	@v99spositiontaking_2 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 2 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	@v99spositiontaking_3 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	@v99spositiontaking_20 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
+
+	@v154spositiontaking_20 = CASE WHEN cs.sporttype = 154 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 
 	@v99spositiontaking_9 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 9 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	--Racing
@@ -788,6 +832,10 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 	@MaxBetv99				=@MaxBetv99,
 	@MaxPerMatchv99			=@MaxPerMatchv99,	
 	
+	@MinBetv154				=@MinBetv154,
+	@MaxBetv154				=@MaxBetv154,
+	@MaxPerMatchv154		=@MaxPerMatchv154,
+
 	--Mix Parlay mix sports
 	@MinBetv99MP			= @MinBetv99MP,
 	@MaxBetv99MP			= @MaxBetv99MP,
@@ -848,6 +896,8 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 	@v99apositiontaking_3		= @v99apositiontaking_3,
 	@v99apositiontaking_9		= @v99apositiontaking_9,
 	@v99apositiontaking_20		= @v99apositiontaking_20,
+
+	@v154apositiontaking_20		= @v154apositiontaking_20,
 								
 	--Racing					= --Racing
 	@v151apositiontaking_31		= @v151apositiontaking_31,
@@ -937,7 +987,9 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@DisableVirtualSports = @DisableVirtualSport,
 	@DisableCasinoBonus = @DisableCasinoBonus,
 	@matchlimit = @matchlimit,
-	@virtualmultiplier = 1,
+
+	--20150309@Johnson: disable virtual rate as default
+	@virtualmultiplier = 0,
 	@DisableFinancial = 0,
 	@DisableCasino = 0,
 	@IsInternal = 0,
@@ -951,6 +1003,8 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@MaxPerMatchv10 = @MaxPerMatchv10,
 	@MaxPerMatchv11 = @MaxPerMatchv11,
 	@MaxPerMatchv99 = @MaxPerMatchv99,
+	@MaxPerMatchv154 = @MaxPerMatchv154,
+	@DisableHRFO	=  @DisableHRFO,
 
 	@MaxPerMatchv99MP = @MaxPerMatchv99MP,
 	@MaxPerMatchv161 = @MaxPerMatchv161,	
@@ -977,6 +1031,8 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	--v153
 	@MaxPerMatchv153_51 = @v153maxpermatch_51,
 
+	@hidekeno=@DisableKeno,
+
 	@credit = 0,
 	@maxcredit = 0,
 	@DisableP2P = 1,
@@ -989,6 +1045,16 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 
 if @ErrCode <> 0
 	return
+
+
+SELECT @Rollback= ' DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId ='+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
+				 ' DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  ='+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
+				 ' DELETE FROM Dep_CustSuper WITH(ROWLOCK) WHERE custId = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
+			 	 ' DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  ='+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
+				 ' DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  ='+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
+				 ' DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))	+
+				 ' DELETE CustGameType WITH(ROWLOCK) WHERE custid = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))	+
+				 ' EXEC Acc_CustomerInsUserInfo_Rollback @CustID = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))
 
 
 INSERT INTO [dbo].[Dep_CustSetting]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [Minbet], [Maxbet],[islive])
@@ -1052,6 +1118,8 @@ UNION ALL	SELECT @custid, 1, 99, @v99apositiontaking_1, @v99mpositiontaking_1, @
 UNION ALL	SELECT @custid, 2, 99, @v99apositiontaking_2, @v99mpositiontaking_2, @v99spositiontaking_2, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
 UNION ALL	SELECT @custid, 3, 99, @v99apositiontaking_3, @v99mpositiontaking_3, @v99spositiontaking_3, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
 UNION ALL	SELECT @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
+
+UNION ALL	SELECT @custid, 20, 154, @v154apositiontaking_20, @v154mpositiontaking_20, @v154spositiontaking_20, 0, 0, 0, 0, @MinBetv154, @MaxBetv154, 0
 --Mix Sports Parlay
 UNION ALL	SELECT @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, @v99spositiontaking_9, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0
 
@@ -1225,7 +1293,244 @@ BEGIN
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	RETURN
 END
+--Keno
 
+/**********************************
+* Keno validate Min/Max Bet & MaxPerMatch
+**********************************/
+DECLARE @Bet money
+IF EXISTS (SELECT top 1 1 FROM #data WHERE (MinBet > Maxbet))
+BEGIN	
+	SELECT top 1 @Bet=Maxbet FROM #data WHERE (MinBet > Maxbet) ORDER BY bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Min Bet must be less than '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Bet).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103	
+	--EXEC sp_executesql @Rollback 	
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+
+IF EXISTS (SELECT top 1 1 FROM #data WHERE (MinBet > MaxPerMatch))
+BEGIN	
+	SELECT top 1 @Bet=MaxPerMatch FROM #data WHERE (MinBet > MaxPerMatch) ORDER BY bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Min Bet must be less than '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Per Match).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103	
+	--EXEC sp_executesql @Rollback 	
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+
+
+
+IF EXISTS (SELECT top 1 1 FROM #data WHERE (MaxBet > MaxPerMatch))
+BEGIN	
+	SELECT top 1 @Bet=MaxPerMatch FROM #data WHERE (MaxBet > MaxPerMatch) ORDER BY bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Max Bet must be less than '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Per Match).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103	
+	--EXEC sp_executesql @Rollback 	
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+
+--check minBet maxBet PT Upline
+SELECT  gt.IBCBetTypeID Bettype ,
+		isnull(cgt.minbet,0) AS MinBetMin, 
+		isnull(cgt.maxbet,0) AS MaxbetMax, 
+		isnull(csg.mpositiontaking,0) AS MaxPT,
+		isnull(cgt.MaxPerGameType,0) AS MaxPerMarchMax
+INTO #MinMaxUpline
+FROM dbo.CustGameType cgt WITH(NOLOCK)
+	INNER JOIN CustSettingGame csg ON cgt.custid = csg.custid
+	INNER JOIN bodb02.dbo.GameType gt with (nolock) ON cgt.GameTypeID = gt.GameTypeID
+WHERE cgt.custid = @recommend
+	AND csg.sporttype = 202	
+
+IF EXISTS (SELECT top 1 1 
+			FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MinBet < m.MinBetMin) and d.MinBet > 0) 
+BEGIN	
+	SELECT top 1 @Bet=MinBetMin FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MinBet < m.MinBetMin) ORDER BY d.bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Min Bet must be greater than or equal '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Per Match).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103		
+	--EXEC sp_executesql @Rollback 
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+IF EXISTS (SELECT top 1 1 
+			FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MaxBet > m.MaxbetMax) and d.MaxBet > 0) 
+BEGIN	
+	SELECT top 1 @Bet=MaxbetMax FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MaxBet > m.MaxbetMax) ORDER BY d.bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Max Bet must be less than or equal '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Per Match).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103	
+	--EXEC sp_executesql @Rollback 	
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+IF EXISTS (SELECT top 1 1 
+			FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MaxPerMatch > m.MaxPerMarchMax) and d.MaxPerMatch >0 )
+BEGIN	
+	SELECT top 1 @Bet=MaxPerMarchMax FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.MaxPerMatch > m.MaxPerMarchMax) ORDER BY d.bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Max Per Match must be less than or equal '+COALESCE(CAST(@Bet AS VARCHAR(50)),SPACE(1))+' (Max Per Match).'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103	
+	--EXEC sp_executesql @Rollback 	
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+
+--check PT
+IF EXISTS (SELECT top 1 1 
+			FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.mPositionTaking > m.MaxPT) and d.mPositionTaking >0)
+BEGIN	
+	SELECT top 1 @Bet=MaxPerMarchMax FROM #data d INNER JOIN #MinMaxUpline m on d.bettype=m.bettype
+			WHERE (d.mPositionTaking > m.MaxPT) ORDER BY d.bettype DESC
+	SELECT
+		@ErrMsg =	case @Language 
+							when 'E' then 'Keno Position Taking is invalid.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language)
+					end
+										
+	Select @ErrCode = 103
+	--EXEC sp_executesql @Rollback 		
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END
+
+--insert
+INSERT INTO CustSettingGame([CustID]
+	       ,[Bettype]
+           ,[Sporttype]
+           ,[apositiontaking]
+           ,[mpositiontaking]
+           ,[spositiontaking]
+           ,[playerdiscount]
+           ,[discount]
+           ,[adiscount]
+           ,[sdiscount]
+           ,[autopositiontaking]
+           ,[isautopositiontaking]
+           ,[autompositiontaking]
+           ,[isautompositiontaking])
+SELECT @custid , Bettype, 202, ISNULL(aPositionTaking,0), 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0
+FROM #data
+WHERE Bettype=1501
+
+INSERT INTO dbo.CustGameType(CustID,GameTypeID,StakeLevelList,MaxPerGameType,MinBet,MaxBet,IsDisabled)
+SELECT @custid,gt.GameTypeID,'',MaxPerMatch,MinBet,MaxBet,d.IsDisable 
+FROM #data d INNER JOIN bodb02.dbo.GameType gt with(nolock) ON d.bettype=gt.IBCBetTypeID
+
+IF @@ERROR <> 0
+BEGIN
+	--Error Occurs
+	SELECT @ErrMsg = CASE @Language 
+							when 'E' then 'Create customer fail. Please try again'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+						END	
+			, @ErrCode=116
+	
+	-- ROLLBACK MANUALLY
+	--EXEC sp_executesql @Rollback 
+	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustGameType WITH(ROWLOCK) WHERE custid =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	RETURN
+END 
 
 
 ---------------------------------------=VIRTUAL SPORT=----------------------------------------
@@ -1295,7 +1600,25 @@ END
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
 
-Declare @LogSPData varchar(4000)
+--write log keno
+DECLARE @str_bet varchar(1000)='',
+		@str_spt varchar(1000)='',
+		@str_mpt varchar(1000)='',
+		@str_apt varchar(1000)='',
+		@i INT=1501
+WHILE (@i<=(select max(bettype) from #data))
+BEGIN
+	select @str_bet=@str_bet+ 'MinBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MinBet AS VARCHAR(50))+'" '
+							+ 'MaxBv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MaxBet AS VARCHAR(50))+'" '
+							+ 'MPMv202_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(MaxPerMatch AS VARCHAR(50))+'" ',
+		   @str_spt=@str_spt + 'v202spt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(sPositionTaking AS VARCHAR(50))+'" ',
+		   @str_mpt=@str_mpt + 'v202mpt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(mPositionTaking AS VARCHAR(50))+'" ',
+		   @str_apt=@str_apt + 'v202apt_' +CAST(Bettype AS VARCHAR(50))+'="'+CAST(aPositionTaking AS VARCHAR(50))+'" '
+	from #data where Bettype=@i
+	set @i=@i+1
+END
+
+Declare @LogSPData varchar(MAX)
 --Log customer info
 Select @LogSPData = '<Acc_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'creator="'+ coalesce(cast(@creator as varchar(50)),space(1)) + '" ' +
@@ -1354,6 +1677,11 @@ Select @LogSPData = '<Acc_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@cus
 'MinBv99="'+ coalesce(cast(@minbetv99 as varchar(50)),space(1)) + '" ' +
 'MaxBv99="'+ coalesce(cast(@maxbetv99 as varchar(50)),space(1)) + '" ' +
 'MPMv99="'+ coalesce(cast(@maxpermatchv99 as varchar(50)),space(1)) + '" ' +
+
+'MinBv154="'+ coalesce(cast(@minbetv154 as varchar(50)),space(1)) + '" ' +
+'MaxBv154="'+ coalesce(cast(@maxbetv154 as varchar(50)),space(1)) + '" ' +
+'MPMv154="'+ coalesce(cast(@maxpermatchv154 as varchar(50)),space(1)) + '" ' +
+
 'MinBv99MP="'+ coalesce(cast(@minbetv99mp as varchar(50)),space(1)) + '" ' +
 'MaxBv99MP="'+ coalesce(cast(@maxbetv99mp as varchar(50)),space(1)) + '" ' +
 'MPM99MP="'+ coalesce(cast(@maxpermatchv99mp as varchar(50)),space(1)) + '" ' +
@@ -1379,6 +1707,8 @@ Select @LogSPData = '<Acc_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@cus
 'MinBv153_51="'+ COALESCE(CAST(@v153minbet_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MaxBv153_51="'+ COALESCE(CAST(@v153maxbet_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPMv153_51="'+ COALESCE(CAST(@v153maxpermatch_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+@str_bet+
 
 'MinBv180="'+ COALESCE(CAST(@v180MinBet AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MaxBv180="'+ COALESCE(CAST(@v180MaxBet AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1495,6 +1825,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v161slivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161slivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161slivepositiontaking_90,2),SPACE(1)) + '" ' +
 
+@str_spt+
+
 'v151spt_31="'+ COALESCE(CAST(@v151spositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151spt_32="'+ COALESCE(CAST(@v151spositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151spt_41="'+ COALESCE(CAST(@v151spositiontaking_41 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1568,6 +1900,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" ' +
+
+@str_mpt+
 
 'v151mpt_31="'+ COALESCE(CAST(@v151mpositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151mpt_32="'+ COALESCE(CAST(@v151mpositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1643,6 +1977,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
 
+@str_apt+
+
 'v151apt_31="'+ COALESCE(CAST(@v151apositiontaking_31 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151apt_32="'+ COALESCE(CAST(@v151apositiontaking_32 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v151apt_41="'+ COALESCE(CAST(@v151apositiontaking_41 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1655,6 +1991,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 'v152apt_52="'+ COALESCE(CAST(@v152apositiontaking_52 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v153apt_51="'+ COALESCE(CAST(@v153apositiontaking_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v153apt_52="'+ COALESCE(CAST(@v153apositiontaking_52 AS VARCHAR(50)),SPACE(1)) + '" '+
+
+
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
 'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
 'v182apt="'+ COALESCE(CAST(@v182aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
@@ -1671,6 +2009,9 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 	@ActionID = 2704,
 	@TrackingValue = @LogSPData,
 	@duration = @duration
+
+DROP TABLE #data
+DROP TABLE #MinMaxUpline
 	
 
 
