@@ -1,11 +1,11 @@
 ﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTUpd]
 	@custid		INT,
 	@PT			VARCHAR(MAX),
-	@UserID		INT = 0,    
-    @Language	VARCHAR(2) = 'E',
+	@UserID		INT = 0,       
     @IP			VARCHAR(15)='',
     @ErrCode	INT = 0 OUTPUT,
-    @ErrMsg		NVARCHAR(4000) = '' OUTPUT
+    @MsgType	INT = 0 OUTPUT,
+    @ErrMsg		NVARCHAR(MAX) = '' OUTPUT
 AS
 	/*
 		Created: Johnson
@@ -53,7 +53,10 @@ BEGIN
 		,@ErrMsg	= @ErrMsg OUTPUT
 		
 	IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
 		RETURN
+	END
 	--end
 	
 	---- Checking total downlines before UPDATEs 
@@ -67,7 +70,10 @@ BEGIN
         ,@ErrMsg		= @ErrMsg OUTPUT
         ,@ErrCode		= @ErrCode OUTPUT
     IF    @ErrCode <> 0 
+    BEGIN
+		SELECT @MsgType = 101
 		RETURN 
+	END
     ----------
     
     IF @PT = '' RETURN 
@@ -130,8 +136,7 @@ BEGIN
 	--log old data
 	SET @xml =(
 		SELECT @custid AS '@custid'
-				,@userid AS '@userid'
-				,@language AS '@language'
+				,@userid AS '@userid'				
 				,@IP AS '@Ip'
 				,(
 					SELECT cs.sporttype 
@@ -194,8 +199,7 @@ BEGIN
 			@custid		= @custid,
 			@username	= @username,
 			@PT			= @PT,	
-			@UpdatePresetPT = @UpdatePresetPT,
-			@Language	= @Language,
+			@UpdatePresetPT = @UpdatePresetPT,			
 			@ErrCode	= @ErrCode OUTPUT,
 			@ErrMsg		= @ErrMsg OUTPUT
 	
@@ -223,12 +227,9 @@ BEGIN
 	
 	IF (@@ERROR <> 0)
     BEGIN
-        SELECT @ErrMsg = @UserName + ': '+
-                        CASE @Language 
-                            WHEN 'E' THEN 'Update process is unsuccessful !'
-                            ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-                        END    , @ErrCode = 109                    
-        
+        SELECT @ErrMsg = '<Root MsgID="90001" Msg="Update process is unsuccessful !" />'
+                        , @ErrCode = 109                    
+						, @MsgType = 100--just return msgID
         RETURN
     END
     
@@ -258,8 +259,7 @@ BEGIN
     -- Write log after update
 	SET @xml = (
 			SELECT @custid AS '@custid'
-					,@userid AS '@userid'
-					,@language AS '@language'
+					,@userid AS '@userid'					
 					,@IP AS '@Ip'
 					,(
 						SELECT cs.sporttype 
