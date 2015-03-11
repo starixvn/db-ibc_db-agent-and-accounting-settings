@@ -234,10 +234,10 @@ BEGIN
 	SELECT @CorrectedDiscount_XML = '<ROOT>' + @CorrectedDiscount_XML + '</ROOT>'
 
 	--execrept to update commission
-	EXEC dbo.Acc_CustSetting3rd_06 
+	EXEC dbo.Acc_CustSetting3rd_06_renovation 
 			@CustId			= @custid
 			, @RoleId		= @RoleId
-			, @Discount = @CorrectedDiscount_XML
+			, @Discount_XML = @CorrectedDiscount_XML
 			, @mode			= 'Others'
 
 	--START LOGGING		

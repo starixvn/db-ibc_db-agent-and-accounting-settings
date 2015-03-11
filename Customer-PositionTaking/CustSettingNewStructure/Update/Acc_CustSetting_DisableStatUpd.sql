@@ -204,7 +204,7 @@ BEGIN
 						AND IsDisabledDownline	= 0
 					)
 			)
-	EXEC dbo.[Acc_ExecRep_Cust_04] @CustID = @CustID
+	EXEC dbo.[Acc_ExecRep_Cust_04_Renovation] @CustID = @CustID
 						, @RoleID			= @RoleID
 						, @Action			= 'Others'
 						, @IsDisabled	= @IsDisabled

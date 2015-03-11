@@ -48,6 +48,7 @@ BEGIN
 			, MaxMaxPerMatch	MONEY
 		)
 	DECLARE @xml		XML
+	DECLARE @Currency INT
 	DECLARE @UplineLimitTbl TABLE (
 			SportType		SMALLINT
 			, BetType		SMALLINT
@@ -89,6 +90,11 @@ BEGIN
 
 	EXEC sp_xml_removedocument @iDoc
 
+	--Get currency of member
+	SELECT @Currency = ci.currency
+	FROM dbo.custInfo ci WITH(NOLOCK)
+	WHERE ci.custid=@CustID
+	
 	IF @RoleID = 3
 	BEGIN
 		--Get super 's bet limit
@@ -194,9 +200,26 @@ BEGIN
 	LEFT JOIN @UplineLimitTbl ubl
 		ON tmp.SportType	= ubl.SportType
 			AND tmp.BetType = ubl.BetType
+	LEFT JOIN dbo.ProductBetSetting pb
+		ON pb.Sporttype = tmp.SportType
+			AND pb.Bettype = tmp.BetType
+			AND pb.Currency = @Currency
 	WHERE	tmp.MinBet		< 0
 		OR tmp.MaxBet		< 0
 		OR tmp.MaxPerMatch	< 0
+		OR (
+				(
+					tmp.MinBet	<> 0
+					OR tmp.MaxBet	<> 0
+					OR tmp.MaxPerMatch	<> 0
+				)
+				AND
+				(
+					tmp.MinBet		< ISNULL(pb.MinBet,0)
+					OR tmp.MaxBet		< ISNULL(pb.MinBet,0)
+					OR tmp.MaxPerMatch	< ISNULL(pb.MinBet,0)
+				)
+			)
 		OR (
 			(
 					tmp.MinBet	<> 0
@@ -244,9 +267,26 @@ BEGIN
 	--Check all setting >=0
 	IF EXISTS(SELECT TOP 1 1 
 			FROM @ErrorSportTypeTbl tmp
-								WHERE	tmp.MinBet		< 0
-									OR tmp.MaxBet		< 0
-									OR tmp.MaxPerMatch	< 0)
+			LEFT JOIN dbo.ProductBetSetting pb
+				ON pb.Sporttype = tmp.SportType
+					AND pb.Bettype = tmp.BetType
+					AND pb.Currency = @Currency
+			WHERE	tmp.MinBet		< 0
+				OR tmp.MaxBet		< 0
+				OR tmp.MaxPerMatch	< 0
+				OR (
+						(
+							tmp.MinBet	<> 0
+							OR tmp.MaxBet	<> 0
+							OR tmp.MaxPerMatch	<> 0
+						)
+						AND
+						(
+							tmp.MinBet		< ISNULL(pb.MinBet,0)
+							OR tmp.MaxBet		< ISNULL(pb.MinBet,0)
+							OR tmp.MaxPerMatch	< ISNULL(pb.MinBet,0)
+						)
+					))
 	BEGIN
 		SET @xml = (
 				SELECT 10003 AS '@MsgID'
@@ -255,9 +295,26 @@ BEGIN
 						SELECT tmp.SportType AS '@SportType'
 							, tmp.BetType AS '@BetType'
 						FROM @ErrorSportTypeTbl tmp
-								WHERE	tmp.MinBet		< 0
-									OR tmp.MaxBet		< 0
-									OR tmp.MaxPerMatch	< 0
+						LEFT JOIN dbo.ProductBetSetting pb
+							ON pb.Sporttype = tmp.SportType
+								AND pb.Bettype = tmp.BetType
+								AND pb.Currency = @Currency
+						WHERE	tmp.MinBet		< 0
+							OR tmp.MaxBet		< 0
+							OR tmp.MaxPerMatch	< 0
+							OR (
+									(
+										tmp.MinBet	<> 0
+										OR tmp.MaxBet	<> 0
+										OR tmp.MaxPerMatch	<> 0
+									)
+									AND
+									(
+										tmp.MinBet		< ISNULL(pb.MinBet,0)
+										OR tmp.MaxBet		< ISNULL(pb.MinBet,0)
+										OR tmp.MaxPerMatch	< ISNULL(pb.MinBet,0)
+									)
+								)
 						FOR XML PATH('Row')
 							, TYPE
 						)
