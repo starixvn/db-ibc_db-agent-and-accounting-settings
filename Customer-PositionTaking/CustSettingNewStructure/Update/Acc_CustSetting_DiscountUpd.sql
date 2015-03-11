@@ -6,13 +6,13 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd] 
 	  @CustID				INT
-	, @Discount_XML			VARCHAR(MAX)
+	, @Discount			VARCHAR(MAX)
 	, @SubAccID				INT				= 0
 	, @UserID				INT
 	, @IP					VARCHAR(50)		= ''
-	, @Language				VARCHAR(20)		= 'E'
-	, @ErrCode				INT				= 0		OUTPUT
-	, @ErrMsg				NVARCHAR(4000)	= ''	OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(200)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
@@ -21,7 +21,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @Discount_XML:
+	• @Discount:
 		<ROOT>
 				<Discount 
 						SportType="1" 
@@ -64,11 +64,12 @@ BEGIN
 		)
 
 	--Check if XML is null or empty
-	IF @Discount_XML IS NULL
-		OR @Discount_XML = ''
+	IF @Discount IS NULL
+		OR @Discount = ''
 		RETURN
 
-	SELECT	@ErrCode		= 0
+	SELECT	@ErrCode	= 0
+		,	@MsgType	= 0
 		,	@ErrMsg			= ''
 
 	SET @startRun = GETDATE()
@@ -80,8 +81,23 @@ BEGIN
 									,	@ErrMsg		= @ErrMsg OUTPUT
 
 	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
 		RETURN
+	END
 	
+	--Check belonging
+	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+		@SessionCustID	= @Userid 
+		,@Custid		= @custid		
+		,@roleid		= @roleid OUTPUT
+	IF (@roleid = 0)
+	BEGIN
+		SET @MsgType = 101
+		SET @ErrCode = 101
+		SET @ErrMsg = 'Users are not in the same line!'
+		RETURN
+	END
 
 	--Get line information
 	SELECT @AgentID = recommend
@@ -96,17 +112,19 @@ BEGIN
 												@custid		= @custid
 											,	@roleid		= @roleid
 											,	@isExecRep	= 1
-											,	@Language	= @Language
+											,	@Language	= 'E'
 											,	@ErrCode	= @ErrCode	OUTPUT
 											,	@ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
 		RETURN
-
+	END
 
 	--Parse XML
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @Discount_XML
+		, @Discount
 
 	INSERT @NewDiscountTbl
 	SELECT SportType
@@ -126,9 +144,9 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @Discount_XML = @Discount_XML
-						, @Language		= @Language
+						, @Discount		= @Discount
 						, @ErrCode		= @ErrCode	OUTPUT
+						, @MsgType		= @MsgType  OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode <> 0
@@ -219,7 +237,7 @@ BEGIN
 	EXEC dbo.Acc_CustSetting3rd_06 
 			@CustId			= @custid
 			, @RoleId		= @RoleId
-			, @Discount_XML = @CorrectedDiscount_XML
+			, @Discount = @CorrectedDiscount_XML
 			, @mode			= 'Others'
 
 	--START LOGGING		
@@ -228,7 +246,6 @@ BEGIN
 				, @UserID AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType AS '@SportType'
 						, BetType AS '@BetType'
@@ -246,7 +263,6 @@ BEGIN
 				, @UserID AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType AS '@SportType'
 						, BetType AS '@BetType'

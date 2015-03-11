@@ -6,13 +6,13 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd] 
 	  @CustID			INT
-	, @IsDisabled_XML	VARCHAR(MAX)
+	, @IsDisabled	VARCHAR(MAX)
 	, @SubAccID			INT				= 0
 	, @UserID			INT
 	, @IP				VARCHAR(50)		= ''
-	, @Language			VARCHAR(20)		= 'E'
 	, @ErrCode			INT				= 0		OUTPUT
-	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(200)	= ''	OUTPUT
 AS
 /*
 	Created: 20141110@Dominic
@@ -21,7 +21,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @IsDisabled_XML
+	• @IsDisabled
 		<ROOT>
 				<ProductStatus
 						SportType="1" 
@@ -60,23 +60,28 @@ BEGIN
 		, IsDisabled	BIT
 		)
 
-	SELECT @ErrCode		= 0
-		, @ErrMsg		= ''
+	SELECT	@ErrCode	= 0
+		,	@MsgType	= 0
+		,	@ErrMsg			= ''
 
 	--Check if XML is null or empty
-	IF @IsDisabled_XML IS NULL
-		OR @IsDisabled_XML = ''
+	IF @IsDisabled IS NULL
+		OR @IsDisabled = ''
 		RETURN
 
 	SET @startRun = GETDATE()
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-								, @ErrCode	= @ErrCode	OUTPUT
-								, @ErrMsg	= @ErrMsg	OUTPUT
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+										@custid		= @custid
+									,	@ErrCode	= @ErrCode OUTPUT
+									,	@ErrMsg		= @ErrMsg OUTPUT
 
 	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
 		RETURN
+	END
 	
 
 	--Get line information
@@ -86,12 +91,41 @@ BEGIN
 		, @RoleID	= RoleID
 	FROM dbo.custInfo WITH (NOLOCK)
 	WHERE custid = @CustID
+	
+	
+	--Check belonging
+	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+		@SessionCustID	= @Userid 
+		,@Custid		= @custid		
+		,@roleid		= @roleid OUTPUT
+	IF (@roleid = 0)
+	BEGIN
+		SET @MsgType = 101
+		SET @ErrCode = 101
+		SET @ErrMsg = 'Users are not in the same line!'
+		RETURN
+	END
+	
+	--Check Allowed downlines	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines 
+												@custid		= @custid
+											,	@roleid		= @roleid
+											,	@isExecRep	= 1
+											,	@Language	= 'E'
+											,	@ErrCode	= @ErrCode	OUTPUT
+											,	@ErrMsg		= @ErrMsg	OUTPUT
+
+	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
+		RETURN
+	END
 
 	--Parse XML
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @IsDisabled_XML
+		, @IsDisabled
 
 	INSERT @NewDisableStatTbl
 	SELECT *
@@ -105,13 +139,14 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 
 	--Validate new disabled status
-	EXEC [dbo].[Acc_CustSetting_DisableStatCheck] @IsDisabled_XML = @IsDisabled_XML
+	EXEC [dbo].[Acc_CustSetting_DisableStatCheck] @IsDisabled = @IsDisabled
 		, @RoleID	= @RoleID
 		, @AgentID	= @AgentID
 		, @MasterID = @MasterID
 		, @SuperID	= @SuperID
-		, @ErrCode	= @ErrCode	OUTPUT
-		, @ErrMsg	= @ErrMsg	OUTPUT
+		, @ErrCode		= @ErrCode	OUTPUT
+		, @MsgType		= @MsgType  OUTPUT
+		, @ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode <> 0
 		RETURN
@@ -138,29 +173,6 @@ BEGIN
 			)
 		RETURN
 
-	--Check Allowed downlines	
-	IF EXISTS (
-			SELECT TOP 1 1
-			FROM @NewDisableStatTbl
-			WHERE IsDisabled = 1
-				OR (
-					IsDisabled = 0
-					AND IsDisabledDownline = 0
-					)
-			)
-	BEGIN
-		EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
-			, @roleid		= @roleid
-			, @isExecRep	= 1
-			, @Language		= @Language
-			, @ErrCode		= @ErrCode OUTPUT
-			, @ErrMsg		= @ErrMsg OUTPUT
-
-		IF @ErrCode > 0
-			RETURN
-		
-	END
-
 	--Update main table
 	UPDATE stt
 	SET stt.IsDisabled = tmp.IsDisabled
@@ -181,17 +193,6 @@ BEGIN
 		AND stt.IsHidden	= 1
 		AND tmp.IsDisabled	= 0
 
-	IF (@@error <> 0)
-	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Update process is unsuccessful.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-				END
-			, @ErrCode = 102
-
-		RETURN
-	END
 
 	--call execrept to update downline
 	IF EXISTS (
@@ -203,29 +204,11 @@ BEGIN
 						AND IsDisabledDownline	= 0
 					)
 			)
-	BEGIN TRY
-		EXEC dbo.[Acc_ExecRep_Cust_04] @CustID = @CustID
+	EXEC dbo.[Acc_ExecRep_Cust_04] @CustID = @CustID
 						, @RoleID			= @RoleID
 						, @Action			= 'Others'
-						, @IsDisabled_XML	= @IsDisabled_XML
-	END TRY
-
-	BEGIN CATCH
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Update process is unsuccessful.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-				END
-
-		IF @RoleID = 4
-			SELECT @ErrCode = 103
-		ELSE IF @RoleID = 3
-			SELECT @ErrCode = 104
-		ELSE IF @RoleID = 2
-			SELECT @ErrCode = 105
-
-		RETURN
-	END CATCH
+						, @IsDisabled	= @IsDisabled
+	
 
 	--START LOGGING		
 	SET @xml = (
@@ -233,7 +216,6 @@ BEGIN
 				, @UserID	AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP		AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'
@@ -252,7 +234,6 @@ BEGIN
 				, @UserID	AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP		AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'

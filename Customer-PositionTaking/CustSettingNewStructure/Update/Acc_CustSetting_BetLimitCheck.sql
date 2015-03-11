@@ -10,10 +10,10 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitCheck]
 	, @AgentID		INT
 	, @MasterID		INT
 	, @SuperID		INT
-	, @BetLimit_XML VARCHAR(MAX)
-	, @Language		VARCHAR(2)		= 'E'
-	, @ErrCode		INT				= 0		OUTPUT
-	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
+	, @BetLimit VARCHAR(MAX)
+	, @ErrCode			INT				= 0		OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(MAX)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
@@ -22,7 +22,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @BetLimit_XML:
+	• @BetLimit:
 		<ROOT>
 				<BetLimit 
 						SportType="1" 
@@ -47,7 +47,7 @@ BEGIN
 			, MaxMaxBet			MONEY
 			, MaxMaxPerMatch	MONEY
 		)
-	DECLARE @ErrSport VARCHAR(4000) = ''
+	DECLARE @xml		XML
 	DECLARE @UplineLimitTbl TABLE (
 			SportType		SMALLINT
 			, BetType		SMALLINT
@@ -62,19 +62,20 @@ BEGIN
 			, MaxBet		MONEY
 			, MaxPerMatch	MONEY
 		)
-
-	IF @BetLimit_XML IS NULL
-		OR @BetLimit_XML = ''
+	
+	IF @BetLimit IS NULL
+		OR @BetLimit = ''
 		RETURN
 
-	SELECT @ErrCode = 0
-		, @ErrMsg = ''
+	SELECT	@ErrCode	= 0
+		,	@MsgType	= 0
+		,	@ErrMsg		= ''
 
 	--Parse XML data
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @BetLimit_XML
+		, @BetLimit
 
 	INSERT @NewBetLimitTbl
 	SELECT *
@@ -241,264 +242,214 @@ BEGIN
 		RETURN
 
 	--Check all setting >=0
-	SELECT @ErrSport = @ErrSport 
-					+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						WHEN pdt.ErrMsgLevel = 2
-								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
-						WHEN pdt.ErrMsgLevel = 3
-								THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-						WHEN pdt.ErrMsgLevel = 4
-								THEN p.ProductName + ','
-						WHEN pdt.ErrMsgLevel = 5
-								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-									+ ' - '
-									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-					END
-	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		ON pdt.SportType = tmp.SportType
-			AND pdt.BetType = tmp.BetType
-			AND pdt.IsLive = 0
-			AND pdt.SettingType = 2
-	JOIN bodb02.dbo.Products p WITH (NOLOCK)
-		ON p.ProductID = pdt.ProductID
-	WHERE		tmp.MinBet	< 0
-		OR tmp.MaxBet		< 0
-		OR tmp.MaxPerMatch	< 0
-
-	IF @@ROWCOUNT > 0
+	IF EXISTS(SELECT TOP 1 1 
+			FROM @ErrorSportTypeTbl tmp
+								WHERE	tmp.MinBet		< 0
+									OR tmp.MaxBet		< 0
+									OR tmp.MaxPerMatch	< 0)
 	BEGIN
-		IF @ErrSport <> ''
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Wrong Min bet/ Max bet/ Max per match.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10003, @Language)
-				END 
-				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-			, @ErrCode = 101
-
+		SET @xml = (
+				SELECT 10003 AS '@MsgID'
+					, 'Wrong Min bet/ Max bet/ Max per match.' AS '@Msg'
+					, (
+						SELECT tmp.SportType AS '@SportType'
+							, tmp.BetType AS '@BetType'
+						FROM @ErrorSportTypeTbl tmp
+								WHERE	tmp.MinBet		< 0
+									OR tmp.MaxBet		< 0
+									OR tmp.MaxPerMatch	< 0
+						FOR XML PATH('Row')
+							, TYPE
+						)
+				FOR XML PATH('Root')
+					, TYPE
+				)		
+		SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		SET @MsgType = 51
+		SET @ErrCode = 101
+		
 		RETURN
 	END
+	
 
 	--Check MinBet<=MaxBet<=MaxPerMatch	
-	SELECT @ErrSport = @ErrSport 
-							+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-									WHEN pdt.ErrMsgLevel = 2
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
-									WHEN pdt.ErrMsgLevel = 3
-											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-									WHEN pdt.ErrMsgLevel = 4
-											THEN p.ProductName + ','
-									WHEN pdt.ErrMsgLevel = 5
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-												+ ' - '
-												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-								END
-	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		ON pdt.SportType = tmp.SportType
-			AND pdt.BetType = tmp.BetType
-			AND pdt.IsLive = 0
-			AND pdt.SettingType = 2
-	JOIN bodb02.dbo.Products p WITH (NOLOCK)
-		ON p.ProductID = pdt.ProductID
-	WHERE (
-			(
-					tmp.MinBet	<> 0
-				OR tmp.MaxBet	<> 0
-				)
-			AND tmp.MinBet > tmp.MaxBet
-			)
-		OR (
-			(
-					tmp.MaxBet		<> 0
-				OR tmp.MaxPerMatch	<> 0
-				)
-			AND tmp.MaxBet > tmp.MaxPerMatch
-			)
-		OR (
-			(
-					tmp.MinBet		<> 0
-				OR tmp.MaxPerMatch	<> 0
-				)
-			AND tmp.MinBet > tmp.MaxPerMatch
-			)
-	
-	IF @@ROWCOUNT > 0
+	IF EXISTS(SELECT TOP 1 1
+			FROM @ErrorSportTypeTbl tmp
+			WHERE (
+					(
+							tmp.MinBet	<> 0
+						OR tmp.MaxBet	<> 0
+						)
+					AND tmp.MinBet > tmp.MaxBet
+					)
+				OR (
+					(
+							tmp.MaxBet		<> 0
+						OR tmp.MaxPerMatch	<> 0
+						)
+					AND tmp.MaxBet > tmp.MaxPerMatch
+					)
+				OR (
+					(
+							tmp.MinBet		<> 0
+						OR tmp.MaxPerMatch	<> 0
+						)
+					AND tmp.MinBet > tmp.MaxPerMatch
+					))
 	BEGIN
-		IF @ErrSport <> ''
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E'
-					THEN 'Min bet must be less than max bet and max bet must be less than max bet per match.'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10005, @Language)
-				END 
-				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-			, @ErrCode = 102
-
+		SET @xml = (
+				SELECT 10005 AS '@MsgID'
+					, 'Min bet must be less than max bet and max bet must be less than max bet per match.' AS '@Msg'
+					, (
+						SELECT tmp.SportType AS '@SportType'
+							, tmp.BetType AS '@BetType'
+						FROM @ErrorSportTypeTbl tmp
+						WHERE (
+								(
+										tmp.MinBet	<> 0
+									OR tmp.MaxBet	<> 0
+									)
+								AND tmp.MinBet > tmp.MaxBet
+								)
+							OR (
+								(
+										tmp.MaxBet		<> 0
+									OR tmp.MaxPerMatch	<> 0
+									)
+								AND tmp.MaxBet > tmp.MaxPerMatch
+								)
+							OR (
+								(
+										tmp.MinBet		<> 0
+									OR tmp.MaxPerMatch	<> 0
+									)
+								AND tmp.MinBet > tmp.MaxPerMatch
+								)
+						FOR XML PATH('Row')
+							, TYPE
+						)
+				FOR XML PATH('Root')
+					, TYPE
+				)		
+		SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		SET @MsgType = 71
+		SET @ErrCode = 102
+		
 		RETURN
 	END
 
 	IF @RoleID IN (1, 2, 3)
 	BEGIN
 		--Check if MAX(upper.minbet) > 0 and minbet>0 then minbet>=MAX(upper.minbet)
-		SELECT @ErrSport = @ErrSport 
-								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-									WHEN pdt.ErrMsgLevel = 2
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-									WHEN pdt.ErrMsgLevel = 3
-											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-									WHEN pdt.ErrMsgLevel = 4
-											THEN p.ProductName 
-									WHEN pdt.ErrMsgLevel = 5
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-												+ ' - '
-												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-								END 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MinMinBet) 
-								+ ','
-		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-			ON pdt.SportType = tmp.SportType
-				AND pdt.BetType = tmp.BetType
-				AND pdt.IsLive = 0
-				AND pdt.SettingType = 2
-		JOIN bodb02.dbo.Products p WITH (NOLOCK)
-			ON p.ProductID = pdt.ProductID
-		WHERE tmp.MinMinBet > 0
-			AND tmp.MinBet	> 0
-			AND tmp.MinBet	< tmp.MinMinBet
-
-		IF @@ROWCOUNT > 0
+		IF EXISTS(SELECT TOP 1 1
+				FROM @ErrorSportTypeTbl tmp
+				WHERE tmp.MinMinBet > 0
+					AND tmp.MinBet	> 0
+					AND tmp.MinBet	< tmp.MinMinBet)
 		BEGIN
-			IF @ErrSport <> ''
-				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN CASE 
+			SET @xml = (
+					SELECT CASE 
+								WHEN @RoleID = 3
+									THEN 10016
+								WHEN @RoleID = 2
+									THEN 10019
+								WHEN @RoleID = 1
+									THEN 10006
+								END 
+							AS '@MsgID'
+						, CASE 
 								WHEN @RoleID = 3
 									THEN 'Min bet must be equal to or greater than Super Agent min bet'
 								WHEN @RoleID = 2
 									THEN 'Min bet must be equal to or greater than Master Agent min bet'
 								WHEN @RoleID = 1
 									THEN 'Min bet must be equal to or greater than Agent min bet'
-								END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](CASE 
-								WHEN @RoleID = 3
-									THEN 10016
-								WHEN @RoleID = 2
-									THEN 10019
-								WHEN @RoleID = 2
-									THEN 10006
-								END, @Language)
-					END 
-					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-				, @ErrCode = 103
-
+								END 
+							AS '@Msg'
+						, (
+							SELECT tmp.SportType AS '@SportType'
+								, tmp.BetType AS '@BetType'
+							FROM @ErrorSportTypeTbl tmp
+							WHERE tmp.MinMinBet > 0
+								AND tmp.MinBet	> 0
+								AND tmp.MinBet	< tmp.MinMinBet
+							FOR XML PATH('Row')
+								, TYPE
+							)
+					FOR XML PATH('Root')
+						, TYPE
+					)		
+			SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+			SET @MsgType = 71
+			SET @ErrCode = 103
+			
 			RETURN
 		END
 
 		--Check if MIN(upper.maxbet) > 0 and maxbet>0 then maxbet<=MIN(upper.maxbet)
-		SELECT @ErrSport = @ErrSport 
-								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-									WHEN pdt.ErrMsgLevel = 2
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-									WHEN pdt.ErrMsgLevel = 3
-											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-									WHEN pdt.ErrMsgLevel = 4
-											THEN p.ProductName 
-									WHEN pdt.ErrMsgLevel = 5
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-												+ ' - '
-												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-								END 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MaxMaxBet) 
-								+ ','
-		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-			ON pdt.SportType = tmp.SportType
-				AND pdt.BetType = tmp.BetType
-				AND pdt.IsLive = 0
-				AND pdt.SettingType = 2
-		JOIN bodb02.dbo.Products p WITH (NOLOCK)
-			ON p.ProductID = pdt.ProductID
-		WHERE tmp.MaxMaxBet > 0
-			AND tmp.MaxBet	> 0
-			AND tmp.MaxBet	> tmp.MaxMaxBet
-
-		IF @@ROWCOUNT > 0
+		IF EXISTS(SELECT TOP 1 1
+				FROM @ErrorSportTypeTbl tmp
+				WHERE tmp.MaxMaxBet > 0
+					AND tmp.MaxBet	> 0
+					AND tmp.MaxBet	> tmp.MaxMaxBet)
 		BEGIN
-			IF @ErrSport <> ''
-				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN CASE 
+			SET @xml = (
+					SELECT CASE 
+								WHEN @RoleID = 3
+									THEN 10017
+								WHEN @RoleID = 2
+									THEN 10020
+								WHEN @RoleID = 1
+									THEN 10007
+								END 
+							AS '@MsgID'
+						, CASE 
 								WHEN @RoleID = 3
 									THEN 'Max bet must be equal to or less than Super Agent max bet'
 								WHEN @RoleID = 2
 									THEN 'Max bet must be equal to or less than Master Agent max bet'
 								WHEN @RoleID = 1
 									THEN 'Max bet must be equal to or less than Agent max bet'
-								END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](CASE 
-								WHEN @RoleID = 3
-									THEN 10017
-								WHEN @RoleID = 2
-									THEN 10020
-								WHEN @RoleID = 2
-									THEN 10007
-								END, @Language)
-					END 
-					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-				, @ErrCode = 104
-
+								END 
+							AS '@Msg'
+						, (
+							SELECT tmp.SportType AS '@SportType'
+								, tmp.BetType AS '@BetType'
+							FROM @ErrorSportTypeTbl tmp
+							WHERE tmp.MaxMaxBet > 0
+									AND tmp.MaxBet	> 0
+									AND tmp.MaxBet	> tmp.MaxMaxBet
+							FOR XML PATH('Row')
+								, TYPE
+							)
+					FOR XML PATH('Root')
+						, TYPE
+					)		
+			SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+			SET @MsgType = 71
+			SET @ErrCode = 104
+			
 			RETURN
 		END
 
 		--Check if MIN(upper.maxpermatch)> 0 and maxpermatch>0 then maxpermatch<=MIN(upper.maxpermatch)
-		SELECT @ErrSport = @ErrSport 
-								+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-									WHEN pdt.ErrMsgLevel = 2
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) 
-									WHEN pdt.ErrMsgLevel = 3
-											THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-									WHEN pdt.ErrMsgLevel = 4
-											THEN p.ProductName 
-									WHEN pdt.ErrMsgLevel = 5
-											THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-												+ ' - '
-												+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) 
-								END 
-								+ ':' 
-								+ convert(VARCHAR(20), tmp.MaxMaxPerMatch) 
-								+ ','
-		FROM @ErrorSportTypeTbl tmp
-		JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-			ON pdt.SportType = tmp.SportType
-				AND pdt.BetType = tmp.BetType
-				AND pdt.IsLive = 0
-				AND pdt.SettingType = 2
-		JOIN bodb02.dbo.Products p WITH (NOLOCK)
-			ON p.ProductID = pdt.ProductID
-		WHERE tmp.MaxMaxPerMatch	> 0
-			AND tmp.MaxPerMatch		> 0
-			AND tmp.MaxPerMatch		> tmp.MaxMaxPerMatch
-
-		IF @@ROWCOUNT > 0
+		IF EXISTS(SELECT TOP 1 1
+				FROM @ErrorSportTypeTbl tmp
+				WHERE tmp.MaxMaxPerMatch	> 0
+					AND tmp.MaxPerMatch		> 0
+					AND tmp.MaxPerMatch		> tmp.MaxMaxPerMatch)
 		BEGIN
-			IF @ErrSport <> ''
-				SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-			SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN CASE 
+			SET @xml = (
+					SELECT CASE 
+								WHEN @RoleID = 3
+									THEN 10018
+								WHEN @RoleID = 2
+									THEN 10021
+								WHEN @RoleID = 1
+									THEN 10008
+								END 
+							AS '@MsgID'
+						, CASE 
 								WHEN @RoleID = 3
 									THEN 'Max Per Match must be equal to or less than Super Agent Max Per Match'
 								WHEN @RoleID = 2
@@ -506,18 +457,24 @@ BEGIN
 								WHEN @RoleID = 1
 									THEN 'Max Per Match must be equal to or less than Agent Max Per Match'
 								END
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](CASE 
-								WHEN @RoleID = 3
-									THEN 10018
-								WHEN @RoleID = 2
-									THEN 10021
-								WHEN @RoleID = 2
-									THEN 10008
-								END, @Language)
-					END 
-					+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-				, @ErrCode = 105
-
+							AS '@Msg'
+						, (
+							SELECT tmp.SportType AS '@SportType'
+								, tmp.BetType AS '@BetType'
+							FROM @ErrorSportTypeTbl tmp
+							WHERE tmp.MaxMaxPerMatch	> 0
+								AND tmp.MaxPerMatch		> 0
+								AND tmp.MaxPerMatch		> tmp.MaxMaxPerMatch
+							FOR XML PATH('Row')
+								, TYPE
+							)
+					FOR XML PATH('Root')
+						, TYPE
+					)		
+			SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+			SET @MsgType = 71
+			SET @ErrCode = 105
+			
 			RETURN
 		END
 	END

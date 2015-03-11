@@ -6,13 +6,13 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_BetLimitUpd] 
 	  @CustID		INT
-	, @BetLimit_XML VARCHAR(MAX)
+	, @BetLimit VARCHAR(MAX)
 	, @SubAccID		INT				= 0
 	, @UserID		INT
 	, @IP			VARCHAR(50)		= ''
-	, @Language		VARCHAR(20)		= 'E'
-	, @ErrCode		INT				= 0		OUTPUT
-	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
+	, @ErrCode			INT				= 0		OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(200)	= ''	OUTPUT
 AS
 /*
 	Created: 20141111@Dominic
@@ -21,7 +21,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @BetLimit_XML:
+	• @BetLimit:
 		<ROOT>
 				<BetLimit 
 						SportType="1" 
@@ -65,23 +65,27 @@ BEGIN
 		)
 
 	--Check if XML is null or empty
-	IF @BetLimit_XML IS NULL
-		OR @BetLimit_XML = ''
+	IF @BetLimit IS NULL
+		OR @BetLimit = ''
 		RETURN
 
 	SET @startRun = GETDATE()
 
-	SELECT @ErrCode			= 0
-		, @ErrMsg			= ''
+	SELECT	@ErrCode	= 0
+		,	@MsgType	= 0
+		,	@ErrMsg			= ''
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-						, @ErrCode	= @ErrCode OUTPUT
-						, @ErrMsg	= @ErrMsg OUTPUT
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+										@custid		= @custid
+									,	@ErrCode	= @ErrCode OUTPUT
+									,	@ErrMsg		= @ErrMsg OUTPUT
 
 	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
 		RETURN
-	
+	END
 
 	--Get line information
 	SELECT @AgentID = recommend
@@ -91,12 +95,39 @@ BEGIN
 	FROM dbo.custInfo WITH (NOLOCK)
 	WHERE custid = @CustID
 
+	--Check belonging
+	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+		@SessionCustID	= @Userid 
+		,@Custid		= @custid		
+		,@roleid		= @roleid OUTPUT
+	IF (@roleid = 0)
+	BEGIN
+		SET @MsgType = 101
+		SET @ErrCode = 101
+		SET @ErrMsg = 'Users are not in the same line!'
+		RETURN
+	END
+	
+	--Check Allowed downlines	
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines 
+												@custid		= @custid
+											,	@roleid		= @roleid
+											,	@isExecRep	= 1
+											,	@Language	= 'E'
+											,	@ErrCode	= @ErrCode	OUTPUT
+											,	@ErrMsg		= @ErrMsg	OUTPUT
 
+	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
+		RETURN
+	END
+	
 	--Parse XML	
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @BetLimit_XML
+		, @BetLimit
 
 	INSERT @NewBetLimitTbl
 	SELECT *
@@ -111,15 +142,15 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 
 	--Validate new bet settings
-	EXEC [dbo].[Acc_CustSetting_BetLimitCheck] @CustID = @CustID
+	EXEC [dbo].[Acc_CustSetting_BetLimitCheck] @CustID	= @CustID
 						, @RoleID		= @RoleID
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @BetLimit_XML = @BetLimit_XML
-						, @Language		= @Language
-						, @ErrCode		= @ErrCode OUTPUT
-						, @ErrMsg		= @ErrMsg OUTPUT
+						, @BetLimit		= @BetLimit
+						, @ErrCode		= @ErrCode	OUTPUT
+						, @MsgType		= @MsgType  OUTPUT
+						, @ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode <> 0
 		RETURN
@@ -187,27 +218,12 @@ BEGIN
 				)
 	END
 
-	IF (@@ERROR <> 0)
-	BEGIN
-		SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN 'Update process is unsuccessful !'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](90001, @Language)
-				END
-			, @ErrCode = 106
-
-		IF @ErrCode > 0
-			RETURN
-		
-	END
-
 	--START LOGGING		
 	SET @xml = (
 			SELECT @CustID	AS '@CustID'
 				, @UserID	AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP		AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'
@@ -227,7 +243,6 @@ BEGIN
 				, @UserID	AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP		AS '@IP'
-				, @Language AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'

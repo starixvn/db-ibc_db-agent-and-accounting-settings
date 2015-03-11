@@ -5,14 +5,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatCheck] 
-	  @IsDisabled_XML	VARCHAR(MAX)
+	  @IsDisabled	VARCHAR(MAX)
 	, @RoleID			INT
 	, @AgentID			INT
 	, @MasterID			INT
 	, @SuperID			INT
-	, @Language			VARCHAR(2)		= 'E'
 	, @ErrCode			INT				= 0		OUTPUT
-	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(MAX)	= ''	OUTPUT
 AS
 /*
 	Created: 20141110@Dominic
@@ -21,7 +21,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @IsDisabled_XML
+	• @IsDisabled
 		<ROOT>
 				<ProductStatus
 						SportType="1" 
@@ -45,7 +45,7 @@ BEGIN
 			SportType SMALLINT
 			, BetType SMALLINT
 		)
-	DECLARE @ErrSport VARCHAR(4000) = ''
+	DECLARE @xml		XML
 
 	SELECT @ErrCode = 0
 		, @ErrMsg	= ''
@@ -53,7 +53,7 @@ BEGIN
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @IsDisabled_XML
+		, @IsDisabled
 
 	INSERT @NewDisableStatTbl
 	SELECT *
@@ -114,41 +114,26 @@ BEGIN
 			)
 		RETURN
 
-	SELECT @ErrSport = ''
-	SELECT @ErrSport = @ErrSport 
-				+ CASE WHEN pdt.ErrMsgLevel = 1 THEN ''
-						WHEN pdt.ErrMsgLevel = 2
-								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language) + ','
-						WHEN pdt.ErrMsgLevel = 3
-								THEN bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-						WHEN pdt.ErrMsgLevel = 4
-								THEN p.ProductName + ','
-						WHEN pdt.ErrMsgLevel = 5
-								THEN [dbo].[f_Get_SportNameBySporttype](tmp.SportType, @Language)
-									+ ' - '
-									+ bodb02.[dbo].[F_Get_BetNameByTypeID](tmp.BetType, @Language) + ','
-					END
-	FROM @ErrorSportTypeTbl tmp
-	JOIN dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		ON pdt.SportType = tmp.SportType
-			AND pdt.BetType = tmp.BetType
-			AND pdt.IsLive = 0
-			AND pdt.SettingType = 4
-	JOIN bodb02.dbo.Products p WITH (NOLOCK)
-		ON p.ProductID = pdt.ProductID
-
-	IF @@ROWCOUNT > 0
+	IF EXISTS(SELECT TOP 1 1 FROM @ErrorSportTypeTbl)
 	BEGIN
-		IF @ErrSport <> ''
-			SET @ErrSport = LEFT(@ErrSport, LEN(@ErrSport) - 1)
-
-		SELECT @ErrMsg = CASE @Language
-					WHEN 'E'
-						THEN 'Account disabled for this product. Unable to edit downlines.'
-					ELSE [dbo].[f_Get_MsgNamebyMsgID](60031, @Language)
-				END 
-				+ CASE WHEN @ErrSport <> '' THEN  ' (' + @ErrSport + ')' ELSE '' END
-			, @ErrCode = 101
+		SET @xml = (
+				SELECT 60031 AS '@MsgID'
+					, 'Account disabled for this product. Unable to edit downlines.' AS '@Msg'
+					, (
+						SELECT SportType AS '@SportType'
+							, BetType AS '@BetType'
+						FROM @ErrorSportTypeTbl
+						FOR XML PATH('Row')
+							, TYPE
+						)
+				FOR XML PATH('Root')
+					, TYPE
+				)		
+		SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		SET @MsgType = 91
+		SET @ErrCode = 101
+		
+		RETURN
 	END
 END
 
