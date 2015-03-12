@@ -207,7 +207,7 @@ BEGIN
 	EXEC dbo.[Acc_ExecRep_Cust_04_Renovation] @CustID = @CustID
 						, @RoleID			= @RoleID
 						, @Action			= 'Others'
-						, @IsDisabled	= @IsDisabled
+						, @IsDisabled_XML	= @IsDisabled
 	
 
 	--START LOGGING		
