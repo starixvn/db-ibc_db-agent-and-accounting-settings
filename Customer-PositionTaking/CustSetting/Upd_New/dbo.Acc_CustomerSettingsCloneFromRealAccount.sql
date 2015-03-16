@@ -53,7 +53,10 @@ BEGIN
 	FROM customer (NOLOCK) 
 	WHERE username = @toUsername
 	
-	IF @toCurrency <> 20 OR ISNULL(@toCustID,0) = 0 OR @fromRoleid <> @toRoleid
+	
+	IF @toCurrency <> 20 OR ISNULL(@toCustID,0) = 0 
+		OR @fromRoleid <> @toRoleid
+		OR EXISTS(SELECT 1 FROM Dep_custSuper WITH(NOLOCK) WHERE custid = @toSuperID)	
 	BEGIN
 		SELECT @ErrCode = 100,
 				@ErrMsg = 'Invalid test account'
@@ -61,18 +64,13 @@ BEGIN
 	END
 	
 	IF ISNULL(@fromCustID,0) = 0 OR @fromRoleid NOT IN (1,2,3,4)
+		OR EXISTS(SELECT 1 FROM Dep_custSuper WITH(NOLOCK) WHERE custid = @fromSuperID)	
 	BEGIN
 		SELECT @ErrCode = 101,
 				@ErrMsg = 'Invalid real account'
 		RETURN
 	END
-	
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
-		@SessionCustID = @Userid, 
-		@Custid = @fromCustid,		
-		@roleid = @fromRoleid OUTPUT
-		if (@fromRoleid = 0) return
-	
+		
 	IF @fromRoleid = 4
 	BEGIN
 		INSERT INTO @tmpUser (fromCustID, toCustID, roleid)
