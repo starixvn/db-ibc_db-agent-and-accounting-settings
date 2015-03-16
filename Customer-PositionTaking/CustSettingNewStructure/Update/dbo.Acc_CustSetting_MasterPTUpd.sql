@@ -5,10 +5,10 @@
 	@newSuperPT			SMALLINT = 0,	
 	
 	@SubAccID			INT = 0,
-	@UserID				INT = 0,    
-    @Language			VARCHAR(2) = 'E',
-    @IP					VARCHAR(15)='',
+	@UserID				INT = 0,        
+    @IP					VARCHAR(15)='',    
     @ErrCode			INT = 0 OUTPUT,
+    @MsgType			INT = 0 OUTPUT,
     @ErrMsg				NVARCHAR(4000) = '' OUTPUT
 AS
 	/*
@@ -54,7 +54,10 @@ BEGIN
 		,@ErrMsg	= @ErrMsg OUTPUT
 		
 	IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
 		RETURN
+	END
 	--end
 	
 	---- Checking total downlines before UPDATEs 
@@ -67,8 +70,11 @@ BEGIN
         ,@Language		= 'E'
         ,@ErrMsg		= @ErrMsg OUTPUT
         ,@ErrCode		= @ErrCode OUTPUT
-    IF    @ErrCode <> 0 
-		RETURN 
+    IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
+		RETURN
+	END
     ----------		
     
     IF @PT = '' RETURN 
@@ -134,8 +140,7 @@ BEGIN
 	SET @xml =(
 		SELECT @custid AS '@custid'
 				,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				,@userid AS '@userid'
-				,@language AS '@language'
+				,@userid AS '@userid'				
 				,@IP AS '@Ip'
 				,@updateallmembers AS '@updateAllMembers'
 				,@newSuperPT AS '@newSuperPT'
@@ -226,9 +231,9 @@ BEGIN
 		@PT			= @PT,
 		@UpdateMinPT = @UpdateMinPT, 
 		@UpdatePresetPT = @UpdatePresetPT,
-		
-		@Language	= @Language,	
+				
 		@ErrCode	= @ErrCode OUTPUT,
+		@MsgType	= @MsgType OUTPUT,	
 		@ErrMsg		= @ErrMsg OUTPUT
 	
 	IF @ErrCode > 0
@@ -289,8 +294,7 @@ BEGIN
 	SET @xml = (
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-					,@userid AS '@userid'
-					,@language AS '@language'
+					,@userid AS '@userid'					
 					,@IP AS '@Ip'
 					,@updateallmembers AS '@updateAllMembers'
 					,@newSuperPT AS '@newSuperPT'

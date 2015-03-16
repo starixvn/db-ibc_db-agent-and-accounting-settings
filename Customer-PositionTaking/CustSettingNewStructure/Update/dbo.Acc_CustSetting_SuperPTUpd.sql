@@ -5,7 +5,7 @@
     @IP			VARCHAR(15)='',
     @ErrCode	INT = 0 OUTPUT,
     @MsgType	INT = 0 OUTPUT,
-    @ErrMsg		NVARCHAR(MAX) = '' OUTPUT
+    @ErrMsg		NVARCHAR(4000) = '' OUTPUT
 AS
 	/*
 		Created: Johnson
@@ -199,7 +199,8 @@ BEGIN
 			@custid		= @custid,
 			@username	= @username,
 			@PT			= @PT,	
-			@UpdatePresetPT = @UpdatePresetPT,			
+			@UpdatePresetPT = @UpdatePresetPT,	
+			@MsgType	= @MsgType OUTPUT,		
 			@ErrCode	= @ErrCode OUTPUT,
 			@ErrMsg		= @ErrMsg OUTPUT
 	

@@ -5,7 +5,7 @@
 	@UpdatePresetPT INT = 0,	
 	@ErrCode	INT = 0 OUTPUT,
 	@MsgType	INT = 0 OUTPUT,
-	@ErrMsg		NVARCHAR(MAX)='' OUTPUT
+	@ErrMsg		NVARCHAR(4000)='' OUTPUT
 AS
 	/*
 		Created: Johnson
@@ -20,16 +20,7 @@ AS
 					<PT SportType="1" BetType="1" IsLive="0" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
 					<PT SportType="1" BetType="1" IsLive="1" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
 				</ROOT>
-			- @MsgType : format of error message return
-					+ 1	"<Root ErrMsgID=""10018"" UserName=""supertest1"" RoleID=""1"">
-							 <Row sporttype=""1"" Bettype=""1"" Islive=""0"" Infor=""username1,username2"" />
-						</Root>"	
-					+ 2	"<Root ErrMsgID=""10018"" UserName=""supertest1"" RoleID=""1"">
-						 <Row sporttype=""1"" Bettype=""1"" Islive=""0"" MinPT=""10"" MaxPT=""85"" />
-						</Root>"	
-					+ 3	"<Root ErrMsgID=""10018"" >
-						 <Row sporttype=""1"" Bettype=""1"" Islive=""0"" />
-						</Root>"	
+			- @MsgType : xml format of error message return						
 			
 	*/
 BEGIN
@@ -101,9 +92,9 @@ BEGIN
 					OR t.AgentPT < 0 OR t.AgentPT > ps.MaxPT
 					OR t.SuperMinPT < 0
 					OR t.SuperPT < t.MasterPT 
-					OR t.MasterPT < t.AgentPT
+					OR t.MasterPT < t.AgentPT				
 					)
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 	
 	IF @ErrType IS NOT NULL
@@ -122,19 +113,19 @@ BEGIN
 	     
 	     SELECT @ErrType = 
 	     (
-			 SELECT t.SportType, t.BetType, t.IsLive, t.SuperMinPT as MinPT			
+			 SELECT t.SportType, t.BetType, t.IsLive
 			 FROM @tblPT t			
 			WHERE SuperPT < SuperMinPT	
 			ORDER BY t.SportType, t.BetType, t.IsLive
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)	
 		
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20006" Msg="Wrong position taking (min set by company).">' 
+			SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 102
-						, @MsgType = 2
+						, @MsgType = 5
 			RETURN
 		END
 		
@@ -145,7 +136,7 @@ BEGIN
 		
 		SET @ErrType =
 		(
-			SELECT b.SportType, b.BetType, islive, username
+			SELECT b.SportType, b.BetType, Islive, UserName
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
@@ -162,7 +153,7 @@ BEGIN
 									)
 			) b
 			WHERE b.rn <= 10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 	    
 		IF @ErrType IS NOT NULL
@@ -180,7 +171,7 @@ BEGIN
 		SELECT @ErrType = ''
 		
 		SELECT @ErrType =(
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName 
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
@@ -199,7 +190,7 @@ BEGIN
 					   )
 			)b 
 			WHERE b.rn<= 10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 	    
 		IF @ErrType IS NOT NULL
@@ -237,7 +228,7 @@ BEGIN
 		SELECT @ErrType = ''	 
 		SELECT @ErrType =
 		(  
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName 
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
@@ -249,7 +240,7 @@ BEGIN
 					AND IsGrouped = 1
 			)b
 			WHERE b.rn<= 10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 
 		IF @ErrType IS NOT NULL
@@ -266,7 +257,7 @@ BEGIN
 		SELECT @ErrType = ''
 		
 		SELECT @ErrType =(
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
@@ -280,7 +271,7 @@ BEGIN
 					AND cs.MasterPT > b.MasterPT
 			)b	
 			WHERE b.rn<= 10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 
 		IF @ErrType IS NOT NULL
@@ -297,7 +288,7 @@ BEGIN
 		SELECT @ErrType = ''
 		
 		SELECT @ErrType =(
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
@@ -312,7 +303,7 @@ BEGIN
 					   AND cs.MasterPT + cs.AgentPT > b.MasterPT
 			)b
 			WHERE b.rn<=10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 
 		IF @ErrType IS NOT NULL
@@ -347,7 +338,7 @@ BEGIN
 		SELECT @ErrType = ''	 
 		SELECT @ErrType =
 		(  
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
@@ -359,7 +350,7 @@ BEGIN
 					AND IsGrouped = 1
 			)b
 			WHERE b.rn <= 10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 			
 		IF @ErrType IS NOT NULL
@@ -377,7 +368,7 @@ BEGIN
 
 		SELECT @ErrType =
 		(  
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
@@ -392,7 +383,7 @@ BEGIN
 				   AND cs.AgentPT > b.AgentPT
 			)b
 			WHERE b.rn<=10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 
 		IF @ErrType IS NOT NULL
@@ -410,7 +401,7 @@ BEGIN
 
 		SELECT @ErrType =
 		(  
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
@@ -425,7 +416,7 @@ BEGIN
 				   AND cs.AgentPT > b.AgentPT
 			)b
 			WHERE b.rn<=10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)
 
 		IF @ErrType IS NOT NULL
@@ -461,7 +452,7 @@ BEGIN
 		SELECT @ErrType = ''	 
 		SELECT @ErrType =
 		(  
-			SELECT b.SportType, b.BetType, islive, username 
+			SELECT b.SportType, b.BetType, IsLive, UserName 
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 
@@ -473,7 +464,7 @@ BEGIN
 					AND IsGrouped = 1
 			)b
 			WHERE b.rn<=10
-			FOR XML PATH('Row'), TYPE
+			FOR XML RAW('Row'), TYPE
 		)			
 				
 		IF @ErrType IS NOT NULL
