@@ -177,7 +177,7 @@ BEGIN
               
         IF @ErrType IS NOT NULL
         BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20002" Msg="The position taking violates Upline Min/Max PT.">'
+			SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 103
                     , @MsgType = 4                                   
@@ -202,7 +202,7 @@ BEGIN
                         
         IF @ErrType IS NOT NULL
         BEGIN            
-			SELECT @ErrMsg = '<Root MsgID="20002" Msg="The position taking violates Upline Min/Max PT.">'
+			SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 104
                     , @MsgType = 4                                   
@@ -236,7 +236,7 @@ BEGIN
         
         IF @ErrType IS NOT NULL
         BEGIN        
-			SELECT @ErrMsg = '<Root MsgID="20011" Msg="Existing agents exceeded new master position taking">'
+			SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 105
                     , @MsgType = 1                                   
@@ -268,7 +268,7 @@ BEGIN
 
         IF @ErrType IS NOT NULL
         BEGIN         
-			SELECT @ErrMsg = '<Root MsgID="20012" Msg="Existing members exceeded new master position taking">'
+			SELECT @ErrMsg = '<Root MsgID="20022" Msg="Existing members exceeded new Master Max PT">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 106
                     , @MsgType = 1                                  
@@ -314,7 +314,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN      
-			SELECT @ErrMsg = '<Root MsgID="20012" Msg="Existing members exceeded new master position taking">'
+			SELECT @ErrMsg = '<Root MsgID="20022" Msg="Existing members exceeded new Master Max PT">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 106
                     , @MsgType = 1                                  
@@ -336,7 +336,7 @@ BEGIN
         
         IF @ErrType IS NOT NULL
         BEGIN           
-			SELECT @ErrMsg = '<Root MsgID="20003" Msg="The position taking violates Master Max PT set by company">'
+			SELECT @ErrMsg = '<Root MsgID="20027" Msg="The position taking violates Master Max PT set by company">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 107
                     , @MsgType = 3                                 
@@ -369,7 +369,7 @@ BEGIN
 
         IF @ErrType IS NOT NULL
         BEGIN        
-			SELECT @ErrMsg = '<Root MsgID="20011" Msg="Existing agents exceeded new master position taking .">'
+			SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 108
                     , @MsgType = 1                                 
@@ -383,9 +383,7 @@ BEGIN
 			FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
 				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 										AND cs.bettype = b.bettype
-										AND cs.isLive = b.IsLive
-				INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-				INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype										
+										AND cs.isLive = b.IsLive														
 			WHERE cs.custid = @srecommend 
 				AND cs.SuperPT < b.AutoSuperPT
 			FOR XML RAW('Row'), TYPE
@@ -393,7 +391,7 @@ BEGIN
             
         IF @ErrType IS NOT NULL
         BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20009" Msg="The position taking violates Super Max PT.">'
+			SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 109
                     , @MsgType = 3                                 
@@ -402,7 +400,7 @@ BEGIN
         
          --u3>=Max(0, N4-M4)        
         SELECT @ErrType = ''
-        SELECT @ErrType = (
+		SELECT @ErrType = (
 					SELECT b.SportType, b.BetType, b.IsLive, (CASE WHEN scs.MinPT - scs.MasterPT > 0 
 																	THEN scs.MinPT - scs.MasterPT ELSE 0 END) as MinPT 																								
 					FROM CustPTSetting3rd_Agent AS scs WITH (NOLOCK)
@@ -411,31 +409,29 @@ BEGIN
 												AND scs.isLive = b.IsLive						
 				   WHERE scs.custid = @srecommend 
 						AND (b.IsAutoSuperPT >0 
-							AND b.AutoSuperPT < CASE WHEN scs.MinPT - scs.MasterPT > 0 
-														THEN scs.MinPT - scs.MasterPT ELSE 0 END
+							AND b.AutoSuperPT < (CASE WHEN scs.MinPT > scs.MasterPT
+														THEN scs.MinPT - scs.MasterPT ELSE 0 END)
 							)
 					FOR XML RAW('Row'), TYPE
 				)
         
         IF @ErrType IS NOT NULL
         BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
+			SELECT @ErrMsg = '<Root MsgID="20029" Msg=" The position taking violates Super Min PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 110
                     , @MsgType = 2                                
             RETURN            
         END 
         
-         --s3<=s4,s3+m3<=s4
+        --s3<=s4,s3+m3<=s4
         SELECT @ErrType = ''        
         SELECT @ErrType = (
 					SELECT b.SportType, b.BetType, b.IsLive, cs.SuperPT as MaxPT
 					FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
 						INNER JOIN @tblPT b ON cs.sporttype = b.SportType
 												AND cs.bettype = b.BetType
-												AND cs.isLive = b.IsLive
-						INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-						INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype																			
+												AND cs.isLive = b.IsLive																									
 					WHERE custid = @srecommend 
 						AND (cs.SuperPT < b.SuperPT OR b.SuperPT + b.MasterPT > cs.SuperPT)
 					FOR XML RAW('Row'), TYPE
@@ -443,7 +439,7 @@ BEGIN
         
         IF @ErrType IS NOT NULL
         BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20009" Msg="The position taking violates Super Max PT.">'
+			SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 111
                     , @MsgType = 3                                 
@@ -459,19 +455,17 @@ BEGIN
         FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
 			INNER JOIN @tblPT b ON cs.sporttype = b.SportType
 									AND cs.bettype = b.BetType
-									AND cs.isLive = b.isLive            
-			INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-            INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype																			      									
+									AND cs.isLive = b.isLive            																						      									
         WHERE cs.custid = @srecommend
             AND (b.IsAutoSuperPT = 0 
-				AND b.SuperPT < CASE WHEN cs.MinPT - cs.MasterPT > 0 
+				AND b.SuperPT < CASE WHEN cs.MinPT > cs.MasterPT
 										THEN cs.MinPT - cs.MasterPT ELSE 0 END)
 		FOR XML RAW('Row'), TYPE									
 		)										
         
         IF @ErrType IS NOT NULL
         BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong  position taking.">'
+			SELECT @ErrMsg = '<Root MsgID="20029" Msg="The position taking violates Super Min PT.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
                     , @ErrCode = 112
                     , @MsgType = 2                                

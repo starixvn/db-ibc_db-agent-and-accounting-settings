@@ -1,8 +1,6 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterPTUpd]
 	@custid				INT,
 	@PT					VARCHAR(MAX),
-	@updateallmembers	BIT = 0,
-	@newSuperPT			SMALLINT = 0,	
 	
 	@SubAccID			INT = 0,
 	@UserID				INT = 0,        
@@ -21,8 +19,8 @@ AS
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
-					<PT SportType="1" BetType="1" IsLive="0" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0"/>
-					<PT SportType="1" BetType="1" IsLive="1" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="0" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0" UpdAllMems="1" NewSuperPT="20"/>
+					<PT SportType="1" BetType="1" IsLive="1" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0" UpdAllMems="0" NewSuperPT="0"/>
 				</ROOT>
 				
 	*/
@@ -93,7 +91,9 @@ BEGIN
 				IsAutoSuperPT	BIT,
 				AutoSuperPT		SMALLINT,
 				MasterPT		SMALLINT,				
-				MasterMinPT		SMALLINT
+				MasterMinPT		SMALLINT,
+				UpdAllMems		BIT,
+				NewSuperPT		SMALLINT
 				)			
 	
 	-- For read xml
@@ -110,7 +110,9 @@ BEGIN
 				IsAutoSuperPT,
 				AutoSuperPT,
 				MasterPT,				
-				MasterMinPT
+				MasterMinPT,
+				UpdAllMems,
+				NewSuperPT
 			)
 	SELECT
 		Data.SportType,
@@ -120,7 +122,9 @@ BEGIN
 		Data.isAutoSuperPT,
 		Data.AutoSuperPT,
 		Data.MasterPT,		
-		Data.MasterMinPT
+		Data.MasterMinPT,
+		Data.UpdAllMems,
+		Data.NewSuperPT
 	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
 	WITH (
 		SportType		SMALLINT,
@@ -130,7 +134,9 @@ BEGIN
 		IsAutoSuperPT	BIT,
 		AutoSuperPT		SMALLINT,
 		MasterPT		SMALLINT,		
-		MasterMinPT		SMALLINT		
+		MasterMinPT		SMALLINT,
+		UpdAllMems		BIT,
+		NewSuperPT		SMALLINT		
 	) AS Data
 	
 	EXEC sp_xml_removedocument @DocHandler
@@ -141,18 +147,18 @@ BEGIN
 		SELECT @custid AS '@custid'
 				,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				,@userid AS '@userid'				
-				,@IP AS '@Ip'
-				,@updateallmembers AS '@updateAllMembers'
-				,@newSuperPT AS '@newSuperPT'
+				,@IP AS '@Ip'				
 				,(
-					SELECT cs.sporttype
-						,cs.bettype
-						,cs.isLive
+					SELECT cs.SportType
+						,cs.BetType
+						,cs.IsLive
 						,cs.SuperPT
-						,cs.isAutoSuperPT 
+						,cs.IsAutoSuperPT 
 						,cs.AutoSuperPT 
 						,cs.MasterPT 						
 						,cs.MinPT
+						,t.UpdAllMems
+						,t.NewSuperPT
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 												AND cs.bettype = t.BetType 
@@ -173,6 +179,8 @@ BEGIN
 			,cs.isAutoSuperPT AS '@IsAutoSuperPTOld'
 			,t.AutoSuperPT AS '@AutoSuperPT'			
 			,CASE WHEN t.IsAutoSuperPT = cs.IsAutoSuperPT AND t.AutoSuperPT = cs.AutoSuperPT THEN 0 ELSE 1 END AS '@IsUpdateAutoPT'			
+			,t.UpdAllMems
+			,t.NewSuperPT
 		FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 			INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 									AND cs.bettype = t.BetType 
@@ -275,13 +283,9 @@ BEGIN
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
-            @mode = 'Others',
-            
-            @AutoPT = @AutoPT,
-                            
-            @updateallmembers = @updateallmembers,
-            @newspositiontaking = @newSuperPT
-            
+            @mode = 'Others',            
+            @AutoPT = @AutoPT
+           
          EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend
             ,@mrecommend = @custid
@@ -295,9 +299,7 @@ BEGIN
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 					,@userid AS '@userid'					
-					,@IP AS '@Ip'
-					,@updateallmembers AS '@updateAllMembers'
-					,@newSuperPT AS '@newSuperPT'
+					,@IP AS '@Ip'					
 					,(
 						SELECT cs.sporttype
 							,cs.bettype 
@@ -306,7 +308,9 @@ BEGIN
 							,cs.isAutoSuperPT 
 							,cs.AutoSuperPT
 							,cs.MasterPT				
-							,cs.MasterMinPT					
+							,cs.MasterMinPT	
+							,cs.UpdAllMems
+							,cs.NewSuperPT				
 						FROM @tblPT	cs							
 						FOR XML PATH('pt'), Type
 					)

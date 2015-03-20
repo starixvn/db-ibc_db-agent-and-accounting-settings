@@ -158,7 +158,7 @@ BEGIN
 	    
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20013" Msg="Existing masters exceeded new super position taking ">' 
+			SELECT @ErrMsg = '<Root MsgID="20019" Msg="Existing masters exceeded new Super Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 103
 						, @MsgType = 1
@@ -195,7 +195,7 @@ BEGIN
 	    
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20014" Msg="Existing members exceeded new super position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20020" Msg="Existing members exceeded new Super Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 104
 						, @MsgType = 1			        
@@ -245,7 +245,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20014" Msg="Existing members exceeded new super position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20020" Msg="Existing members exceeded new Super Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 104
 						, @MsgType = 1			        
@@ -276,7 +276,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20015" Msg="Existing masters exceeded new master position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20021" Msg="Existing masters exceeded new Master Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 105
 						, @MsgType = 1			        
@@ -308,7 +308,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20012" Msg="Existing members exceeded new master position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20022" Msg=" Existing members exceeded new Master Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 106
 						, @MsgType = 1	
@@ -355,7 +355,7 @@ BEGIN
 			
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20012" Msg="Existing members exceeded new master position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20022" Msg=" Existing members exceeded new Master Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 106
 						, @MsgType = 1				
@@ -388,7 +388,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20016" Msg="Existing agents exceeded new agent position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20023" Msg="Existing agents exceeded new Agent Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 107
 						, @MsgType = 1				
@@ -421,7 +421,7 @@ BEGIN
 
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20017" Msg="Existing members exceeded new agent position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20024" Msg="Existing members exceeded new Agent Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 108
 						, @MsgType = 1						
@@ -469,7 +469,7 @@ BEGIN
 				
 		IF @ErrType IS NOT NULL
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20017" Msg="Existing members exceeded new agent position taking">' 
+			SELECT @ErrMsg = '<Root MsgID="20024" Msg="Existing members exceeded new Agent Max PT">' 
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
 						, @ErrCode = 108
 						, @MsgType = 1									
