@@ -2,7 +2,7 @@
 SET QUOTED_IDENTIFIER ON 
 GO
 SET ANSI_NULLS ON 
-GO
+GO 
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_05    Script Date: 8/21/2014 3:12:20 PM ******/
 
