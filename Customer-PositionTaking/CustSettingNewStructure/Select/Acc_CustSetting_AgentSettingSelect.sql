@@ -78,6 +78,7 @@ BEGIN
    ELSE masterpt.maxPT  
    END AS M3  
   , masterpt.minPT AS N3  
+  , superpt.agentPT AS A4
  FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
  INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)  
   ON pdt.SportType = pt.sporttype  
