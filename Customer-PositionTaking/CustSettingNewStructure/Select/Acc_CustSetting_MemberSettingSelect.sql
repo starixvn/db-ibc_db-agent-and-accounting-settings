@@ -211,7 +211,6 @@ BEGIN
    , c.mobilephone AS MobilePhone  
    , c.email AS Email  
    , c.fax AS Fax  
-   , @DisableAutoMPT AS DisableAutoMPT  
   FROM Customer c WITH (NOLOCK)  
   WHERE c.custID = @CustID  
   
@@ -416,6 +415,7 @@ BEGIN
    ,[2] AS BetLimitLevel  
    ,[3] AS DiscountLevel  
    ,[4] AS StatusLevel  
+   ,@DisableAutoMPT AS DisableAutoMPT
  FROM  
  (  
   SELECT DISTINCT SettingType, SettingLevel  
