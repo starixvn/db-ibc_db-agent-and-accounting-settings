@@ -176,24 +176,6 @@ BEGIN
   WHERE pdt.ProductID = @ProductID  
    AND pdt.SettingType = 3  
   
-  --Product Status  
-  SELECT stt.SportType  
-   , stt.BetType  
-   , ISNULL(stt.IsDisabled, 0) IsDisabled  
-   , ISNULL(stt.IsHidden, 0) IsHidden  
-   , ISNULL(stt.IsSync, 0) IsSync  
-   , ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
-  FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
-  INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
-   ON stt.SportType = pdt.SportType  
-    AND stt.BetType = pdt.BetType  
-    AND stt.CustID = @CustID  
-  INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
-   ON Agentstt.SportType = pdt.SportType  
-    AND Agentstt.BetType = pdt.BetType  
-    AND Agentstt.CustID = @AgentID  
-  WHERE pdt.ProductID = @ProductID  
-   AND pdt.SettingType = 4  
  END  
  ELSE IF @RoleID = 3  
  BEGIN  
@@ -259,24 +241,6 @@ BEGIN
   WHERE pdt.ProductID = @ProductID  
    AND pdt.SettingType = 3  
   
-  --Product Status  
-  SELECT stt.SportType  
-   , stt.BetType  
-   , ISNULL(stt.IsDisabled, 0) IsDisabled  
-   , ISNULL(stt.IsHidden, 0) IsHidden  
-   , ISNULL(stt.IsSync, 0) IsSync  
-   , ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
-  FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
-  INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
-   ON stt.SportType = pdt.SportType  
-    AND stt.BetType = pdt.BetType  
-    AND stt.CustID = @CustID  
-  INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
-   ON Agentstt.SportType = pdt.SportType  
-    AND Agentstt.BetType = pdt.BetType  
-    AND Agentstt.CustID = @AgentID  
-  WHERE pdt.ProductID = @ProductID  
-   AND pdt.SettingType = 4  
  END  
  ELSE IF @RoleID = 2  
  BEGIN  
