@@ -71,3 +71,9 @@ BEGIN
 	END  
 END   
   
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_PermissionValidate] TO [bodbadminNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_PermissionValidate] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_PermissionValidate] TO [bodbExtAccNet]
