@@ -47,25 +47,25 @@ BEGIN
 	FROM dbo.custinfo WITH (NOLOCK)  
 	WHERE custid = @CustID
 	
-	IF @RoleID < @TargetCustID or @@ROWCOUNT =0  
+	IF @RoleID < @TargetRoleID or @@ROWCOUNT =0  
 	BEGIN  
 		SELECT @ErrMsg = 'Invalid Permission!' 
 		SELECT @ErrCode = 3
 		RETURN  
 	END  
 	
-	--Check if Actor is not in the same line with target customer
-	SELECT TOP 1 1
-	FROM dbo.custinfo c WITH (NOLOCK)
-	WHERE c.custid = @TargetCustID
-		and
-		(c.srecommend = @CustID or c.mrecommend = @CustID
-			or c.recommend = @CustID or c.custid = @CustID
-			OR @RoleID >= 5)
-			
-	IF @@ROWCOUNT =0  
+	--Check if Actor is not in the same line with target customer		
+	IF NOT EXISTS(
+		SELECT TOP 1 1
+		FROM dbo.custinfo c WITH (NOLOCK)
+		WHERE c.custid = @TargetCustID
+			and
+			(c.srecommend = @CustID or c.mrecommend = @CustID
+				or c.recommend = @CustID or c.custid = @CustID
+				OR @RoleID >= 5)
+	)
 	BEGIN  
-		SELECT @ErrMsg = 'Invalid Permission!' 
+		SELECT @ErrMsg = 'Customers are not in the same line!' 
 		SELECT @ErrCode = 4
 		RETURN  
 	END  
