@@ -2701,7 +2701,9 @@ BEGIN
 					IsAutoMasterPT,
 					IsAutoMasterPTOld,
 					AutoMasterPT,
-					isUpdateAutoPT
+					isUpdateAutoPT,
+					UpdAllMems,
+					NewMasterPT
 				)
 		SELECT
 			Data.SportType,
@@ -2711,7 +2713,9 @@ BEGIN
 			Data.isAutoMasterPT,
 			Data.isAutoMasterPTOld,
 			Data.AutoMasterPT,
-			Data.IsUpdateAutoPT
+			Data.IsUpdateAutoPT,
+			Data.UpdAllMems,
+			Data.NewMasterPT
 		FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
 		WITH (
 			SportType		SMALLINT,
@@ -2721,7 +2725,9 @@ BEGIN
 			IsAutoMasterPT	BIT,
 			IsAutoMasterPTOld BIT,
 			AutoMasterPT	SMALLINT,
-			IsUpdateAutoPT	BIT	
+			IsUpdateAutoPT	BIT,
+			UpdAllMems		BIT,
+			NewMasterPT		SMALLINT	
 		) AS Data
 		
 		EXEC sp_xml_removedocument @DocHandler
@@ -2771,15 +2777,15 @@ BEGIN
 					AND b.isAutoMasterPT > 0
 					AND b.isUpdateAutoPT = 1
 			
-			IF @updateallmembers = 1 --all member       
+			IF EXISTS(SELECT TOP (1) 1 FROM @tblPT WHERE UpdAllMems = 1)--all member       
 			BEGIN
 				--Not use AUTO MPT
 				--m1=min(m3-a2,@m1)
                 UPDATE cs             
                 SET MasterPT =
                                 CASE
-                                WHEN mcs.MasterPT - acs.AgentPT < @newmpositiontaking THEN mcs.MasterPT - acs.AgentPT
-                                ELSE @newmpositiontaking END        
+                                WHEN mcs.MasterPT - acs.AgentPT < b.NewMasterPT THEN mcs.MasterPT - acs.AgentPT
+                                ELSE b.NewMasterPT END        
                 FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)         
                         INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid   
                         INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
@@ -2795,6 +2801,7 @@ BEGIN
 																				AND mcs.isLive = cs.isLive        
                 WHERE c.recommend = @recommend 
 						AND c.roleid = 1 
+						AND b.UpdAllMems = 1
 						AND b.isUpdateAutoPT = 1
 						AND b.isAutoMasterPT = 0
 						AND b.isAutoMasterPTOld = 1
@@ -2803,8 +2810,8 @@ BEGIN
 				 UPDATE cs             
                 SET MasterPT =
                                 CASE
-                                WHEN mcs.MasterPT - acs.AgentPT < @newmpositiontaking THEN mcs.MasterPT - acs.AgentPT
-                                ELSE @newmpositiontaking END        
+                                WHEN mcs.MasterPT - acs.AgentPT < b.NewMasterPT THEN mcs.MasterPT - acs.AgentPT
+                                ELSE b.NewMasterPT END        
                 FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)         
                         INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid   
                         INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
@@ -2819,42 +2826,44 @@ BEGIN
 																				AND mcs.bettype = cs.bettype
 																				AND mcs.isLive = cs.isLive        
                 WHERE c.custid = @recommend 
+						AND b.UpdAllMems = 1
 						AND b.isUpdateAutoPT = 1
 						AND b.isAutoMasterPT = 0
 						AND b.isAutoMasterPTOld = 1
 			END
 		END
 		
-		IF EXISTS(SELECT TOP 1 1 FROM @tblPT WHERE isUpdateAutoPT = 0) 
+		IF EXISTS(SELECT TOP 1 1 FROM @tblPT WHERE isUpdateAutoPT = 0 AND UpdAllMems = 1) 
 		BEGIN
-			IF @updateallmembers =  1
-			BEGIN
-				UPDATE cs
-				SET cs.MasterPT = @newmpositiontaking
-				FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid   
-                    INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-											AND cs.bettype=b.bettype        
-											AND cs.isLive = b.isLive  
-				WHERE c.recommend = @recommend 
-					AND c.roleid = 1
-					AND b.isUpdateAutoPT = 0
-					AND b.IsAutoMasterPT = 0					
-					AND cs.IsAutoMasterPT = 0
-				
-				--update grouped settings	
-				UPDATE cs
-				SET cs.MasterPT = @newmpositiontaking
-				FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid   
-                    INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-											AND cs.bettype=b.bettype        
-											AND cs.isLive = b.isLive  
-				WHERE c.custid = @recommend 
-					AND b.isUpdateAutoPT = 0
-					AND b.IsAutoMasterPT = 0					
-					AND cs.IsAutoMasterPT = 0
-			END
+			--IF @updateallmembers =  1			
+			UPDATE cs
+			SET cs.MasterPT = b.NewMasterPT
+			FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
+				INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid   
+                INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
+										AND cs.bettype=b.bettype        
+										AND cs.isLive = b.isLive  
+			WHERE c.recommend = @recommend 
+				AND c.roleid = 1
+				AND b.isUpdateAutoPT = 0
+				AND b.UpdAllMems = 1
+				AND b.IsAutoMasterPT = 0					
+				AND cs.IsAutoMasterPT = 0
+			
+			--update grouped settings	
+			UPDATE cs
+			SET cs.MasterPT = b.NewMasterPT
+			FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
+				INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid   
+                INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
+										AND cs.bettype=b.bettype        
+										AND cs.isLive = b.isLive  
+			WHERE c.custid = @recommend 
+				AND b.isUpdateAutoPT = 0
+				AND b.UpdAllMems = 1
+				AND b.IsAutoMasterPT = 0					
+				AND cs.IsAutoMasterPT = 0
+			
 		END
 	END--end mode = 'Others'
 END

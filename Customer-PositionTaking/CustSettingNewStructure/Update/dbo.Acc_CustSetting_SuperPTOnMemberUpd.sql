@@ -5,10 +5,9 @@
 	
 	@UserID		INT = 0,    
 	@SubAccID	INT = 0, --Sub-AccountID  
-    
-    @Language	VARCHAR(2) = 'E',
     @IP			VARCHAR(15)='',
     @ErrCode	INT = 0 OUTPUT,
+    @MsgType	INT = 0 OUTPUT,
     @ErrMsg		NVARCHAR(4000) = '' OUTPUT
 AS
 	/*
@@ -54,8 +53,11 @@ BEGIN
 			,@ErrCode=@ErrCode OUTPUT
 			,@ErrMsg=@ErrMsg OUTPUT  
 			
-	IF @ErrCode > 0  
+	IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
 		RETURN
+	END 
 	
 	DECLARE @tblPT TABLE (
 		SportType			SMALLINT
@@ -180,8 +182,7 @@ BEGIN
 		SET @xml =(
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-					,@userid AS '@userid'
-					,@language AS '@language'
+					,@userid AS '@userid'					
 					,@IP AS '@Ip'					
 					,(
 						SELECT cs.sporttype 
@@ -245,8 +246,7 @@ BEGIN
 		SET @xml =(
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-					,@userid AS '@userid'
-					,@language AS '@language'
+					,@userid AS '@userid'					
 					,@IP AS '@Ip'					
 					,(
 						SELECT cs.sporttype 
@@ -271,8 +271,7 @@ BEGIN
 	SET @xml =(
 			SELECT @custid AS '@custid'
 					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-					,@userid AS '@userid'
-					,@language AS '@language'
+					,@userid AS '@userid'					
 					,@IP AS '@Ip'					
 					,(
 						SELECT cs.sporttype 
@@ -308,9 +307,9 @@ BEGIN
 				, @MasterID		= @mrecommend
 				, @SuperID		= @srecommend
 				, @PT_XML		= @PT
-				
-				, @Language		= @Language
+								
 				, @ErrCode		= @ErrCode	OUTPUT
+				, @MsgType		= @MsgType	OUTPUT
 				, @ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode <> 0

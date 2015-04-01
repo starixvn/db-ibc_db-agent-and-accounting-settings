@@ -1,14 +1,12 @@
 ﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTUpd]
 	@custid				INT,
 	@PT					VARCHAR(MAX),
-	@updateallmembers	BIT = 0,
-	@newMasterPT		SMALLINT = 0,	
 	
 	@SubAccID			INT = 0,
-	@UserID				INT = 0,    
-    @Language			VARCHAR(2) = 'E',
+	@UserID				INT = 0,       
     @IP					VARCHAR(15)='',
     @ErrCode			INT = 0 OUTPUT,
+    @MsgType			INT = 0 OUTPUT,
     @ErrMsg				NVARCHAR(4000) = '' OUTPUT
  AS
 	/*
@@ -21,8 +19,8 @@
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
-					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0"/>
-					<PT SportType="1" BetType="1" IsLive="1" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0" UpdAllMems="0" NewMasterPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="1" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0" UpdAllMems="0" NewMasterPT="0"/>
 				</ROOT>
 	*/
 BEGIN
@@ -55,7 +53,10 @@ BEGIN
 		,@ErrMsg	= @ErrMsg OUTPUT
 		
 	IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
 		RETURN
+	END
 	--end
 	
 	---- Checking total downlines before UPDATEs 
@@ -68,8 +69,12 @@ BEGIN
         ,@Language		= 'E'
         ,@ErrMsg		= @ErrMsg OUTPUT
         ,@ErrCode		= @ErrCode OUTPUT
-    IF    @ErrCode <> 0 
-		RETURN 
+        
+    IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
+		RETURN
+	END 
     ----------		
     
     IF @PT = '' RETURN 
@@ -88,7 +93,9 @@ BEGIN
 				IsAutoMasterPT	BIT,
 				AutoMasterPT	SMALLINT,
 				AgentPT			SMALLINT,				
-				AgentMinPT		SMALLINT
+				AgentMinPT		SMALLINT,
+				UpdAllMems		BIT,
+				NewMasterPT		SMALLINT
 				)	
 				
 	-- For read xml
@@ -105,7 +112,9 @@ BEGIN
 				IsAutoMasterPT,
 				AutoMasterPT,
 				AgentPT,								
-				AgentMinPT
+				AgentMinPT,
+				UpdAllMems,
+				NewMasterPT
 			)
 	SELECT
 		Data.SportType,
@@ -115,7 +124,9 @@ BEGIN
 		Data.isAutoMasterPT,
 		Data.AutoMasterPT,	
 		Data.AgentPT,			
-		Data.AgentMinPT
+		Data.AgentMinPT,
+		Data.UpdAllMems,
+		Data.NewMasterPT
 	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
 	WITH (
 		SportType		SMALLINT,
@@ -125,7 +136,9 @@ BEGIN
 		IsAutoMasterPT	BIT,
 		AutoMasterPT	SMALLINT,
 		AgentPT			SMALLINT,			
-		AgentMinPT		SMALLINT		
+		AgentMinPT		SMALLINT,
+		UpdAllMems		BIT,
+		NewMasterPT		SMALLINT		
 	) AS Data
 	
 	EXEC sp_xml_removedocument @DocHandler
@@ -135,11 +148,7 @@ BEGIN
 	SET @xml =(
 		SELECT @custid AS '@custid'
 				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-				,@userid AS '@userid'
-				,@language AS '@language'
-				,@IP AS '@Ip'
-				,@updateallmembers AS '@updaetAllMembers'
-				,@newMasterPT AS '@newMasterPT'
+				,@userid AS '@userid'								
 				,(
 					SELECT cs.sporttype
 						,cs.bettype 
@@ -149,6 +158,8 @@ BEGIN
 						,cs.AutoMasterPT 	
 						,cs.AgentPT 									
 						,cs.MinPT 
+						,t.UpdAllMems
+						,t.NewMasterPT
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 												AND cs.bettype = t.BetType 
@@ -165,7 +176,9 @@ BEGIN
 			,t.isAutoMasterPT AS '@IsAutoMasterPT'
 			,cs.isAutoMasterPT AS '@IsAutoMasterPTOld'
 			,t.AutoMasterPT AS '@AutoMasterPT'			
-			,CASE WHEN t.IsAutoMasterPT = cs.IsAutoMasterPT AND t.AutoMasterPT = cs.AutoMasterPT THEN 0 ELSE 1 END AS '@IsUpdateAutoPT'			
+			,CASE WHEN t.IsAutoMasterPT = cs.IsAutoMasterPT AND t.AutoMasterPT = cs.AutoMasterPT THEN 0 ELSE 1 END AS '@IsUpdateAutoPT'	
+			,t.UpdAllMems AS '@UpdAllMems'		
+			,t.NewMasterPT AS '@NewMasterPT'
 		FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 			INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 									AND cs.bettype = t.BetType 
@@ -224,9 +237,9 @@ BEGIN
 		@PT			= @PT,
 		@UpdateMinPT = @UpdateMinPT,
 		@UpdatePresetPT = @UpdatePresetPT,
-		
-		@Language	= @Language,	
+					
 		@ErrCode	= @ErrCode OUTPUT,
+		@MsgType	= @MsgType OUTPUT,
 		@ErrMsg		= @ErrMsg OUTPUT
 	
 	IF @ErrCode > 0
@@ -275,9 +288,6 @@ BEGIN
 			,@mode = 'Others'
             
             ,@AutoPT = @AutoPT
-                                        
-            ,@updateallmembers = @updateallmembers
-            ,@newmpositiontaking = @newMasterPT
             
        EXEC dbo.Acc_CustSetting3rd_07 
 			@recommend = @custid
@@ -290,11 +300,8 @@ BEGIN
 	SET @xml = (
 			SELECT @custid AS '@custid'
 				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-				,@userid AS '@userid'
-				,@language AS '@language'
-				,@IP AS '@Ip'
-				,@updateallmembers AS '@updateAllMembers'
-				,@newMasterPT AS '@newMasterPT'
+				,@userid AS '@userid'				
+				,@IP AS '@Ip'				
 				,(
 					SELECT cs.sporttype 
 						,cs.bettype
@@ -304,6 +311,8 @@ BEGIN
 						,cs.AutoMasterPT 
 						,cs.AgentPT									
 						,cs.AgentMinPT 
+						,cs.UpdAllMems
+						,cs.NewMasterPT
 					FROM @tblPT cs	
 					FOR XML PATH('pt'),TYPE
 					)
