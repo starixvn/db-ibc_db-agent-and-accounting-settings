@@ -6,15 +6,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTOnMemberUpd] 
-	  @CustID		INT
-	, @PT_XML		VARCHAR(MAX)
-	
-	, @SubAccID		INT				= 0
-	, @IP			VARCHAR(50)		= ''
-	, @UserID		INT				= 0
-	, @Language		VARCHAR(20)		= 'E'
-	, @ErrCode		INT				= 0		OUTPUT
-	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
+	  @CustID			INT
+	, @PT_XML			VARCHAR(MAX)
+	, @SubAccID			INT				= 0
+	, @IP				VARCHAR(50)		= ''
+	, @UserID			INT				= 0
+	, @ErrCode			INT				= 0		OUTPUT
+	, @MsgType			INT				= 0		OUTPUT
+	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 		Created: Dominic
@@ -91,25 +90,42 @@ BEGIN
 	SET @startRun = GETDATE()
 
 	SELECT @ErrCode = 0
+		, @MsgType = 0
 		, @ErrMsg = ''
 
-
-	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging @SessionCustID = @Userid
-		, @Custid = @custid
-		, @roleid = @roleid OUTPUT
-
-	IF (@roleid = 0)
-		RETURN
-
-			
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
-	, @ErrCode = @ErrCode OUTPUT
-	, @ErrMsg = @ErrMsg OUTPUT
+	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+										@custid		= @custid
+									,	@ErrCode	= @ErrCode OUTPUT
+									,	@ErrMsg		= @ErrMsg OUTPUT
 
 	IF @ErrCode > 0
+	BEGIN
+		SET @MsgType = 101
 		RETURN
+	END
+
+	--Get line information
+	SELECT @AgentID = recommend
+		, @MasterID = mrecommend
+		, @SuperID	= srecommend
+		, @RoleID	= RoleID
+	FROM dbo.custInfo WITH (NOLOCK)
+	WHERE custid = @CustID
+
+	--Check belonging
+	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+		@SessionCustID	= @Userid 
+		,@Custid		= @custid		
+		,@roleid		= @roleid OUTPUT
+	IF (@roleid = 0)
+	BEGIN
+		SET @MsgType = 101
+		SET @ErrCode = 101
+		SET @ErrMsg = 'Users are not in the same line!'
+		RETURN
+	END
+
 	
 	--Parse XML	
 	DECLARE @iDoc INT
@@ -240,13 +256,13 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @PT_XML		= @PT_XML
-						, @Language		= @Language
+						, @PT			= @PT_XML
+						, @MsgType		= @MsgType	OUT
 						, @ErrCode		= @ErrCode	OUT
 						, @ErrMsg		= @ErrMsg	OUT
 
 	IF @ErrCode <> 0
-		RETURN		
+		RETURN
 	
 	
 	--**START ADJUSTING PT**--
@@ -532,7 +548,6 @@ BEGIN
 				, @UserID		AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP			AS '@IP'
-				, @Language		AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'
@@ -551,7 +566,6 @@ BEGIN
 				, @UserID		AS '@UserID'
 				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
 				, @IP			AS '@IP'
-				, @Language		AS '@Language'
 				, (
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'
