@@ -136,6 +136,7 @@ BEGIN
    , superpt.SuperPT AS S4  
    , superpt.MinPT AS N4  
    , masterpt.MasterPT AS M3  
+   , masterpt.IsAutoSuperPT AS IS3
   FROM @MemberPT mb  
   INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)  
    ON mb.SportType = masterpt.sporttype  
@@ -264,6 +265,7 @@ BEGIN
    , mb.A1  
    , agentpt.AgentPT AS A2  
    , agentpt.MinPT AS N2  
+   , agentpt.IsAutoMasterPT AS IM2
   FROM @MemberPT mb  
   INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)  
    ON mb.SportType = agentpt.sporttype  
