@@ -2,12 +2,12 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTCorrect]
 	  @AgentID INT
 	, @MasterID INT
 	, @SuperID INT
-	, @PT_XML VARCHAR(MAX)
+	, @PT VARCHAR(MAX)
 	, @CorrectedPT_XML VARCHAR(MAX) OUTPUT
 	/* Created: 2014-12-09@Dominic 
     Task: Correct member's PT when SMA update member
     DB: DBTXN/CUSTDB
-    • @PT_XML,@CorrectedPT_XML:
+    • @PT,@CorrectedPT_XML:
 			<ROOT>
 					<PT 
 							SportType="1" 
@@ -52,7 +52,7 @@ BEGIN
 	DECLARE @iDoc INT
 	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @PT
 
 	INSERT @NewPTTble
 	SELECT *

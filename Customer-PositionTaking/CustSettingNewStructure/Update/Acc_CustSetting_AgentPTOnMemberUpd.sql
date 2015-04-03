@@ -7,7 +7,7 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTOnMemberUpd] 
 	  @CustID			INT
-	, @PT_XML			VARCHAR(MAX)
+	, @PT			VARCHAR(MAX)
 	, @SubAccID			INT				= 0
 	, @IP				VARCHAR(50)		= ''
 	, @UserID			INT				= 0
@@ -22,7 +22,7 @@ AS
 		DB: DBTXN/CustDB
 
 		Parameter's Explanation:	
-		• @PT_XML:
+		• @PT:
 					<ROOT>
 							<PT 
 									SportType="1" 
@@ -83,8 +83,8 @@ BEGIN
 
 	
 	--Check if XML is null or empty
-	IF @PT_XML IS NULL
-		OR @PT_XML = ''
+	IF @PT IS NULL
+		OR @PT = ''
 		RETURN
 
 	SET @startRun = GETDATE()
@@ -131,7 +131,7 @@ BEGIN
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @PT
 
 	INSERT @NewPTTble
 	SELECT SportType
@@ -256,7 +256,7 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @PT			= @PT_XML
+						, @PT			= @PT
 						, @MsgType		= @MsgType	OUT
 						, @ErrCode		= @ErrCode	OUT
 						, @ErrMsg		= @ErrMsg	OUT
@@ -420,7 +420,7 @@ BEGIN
 	EXEC dbo.Acc_CustSetting_MemberPTCorrect @AgentID = @AgentID
 								, @MasterID = @MasterID
 								, @SuperID = @SuperID
-								, @PT_XML = @AdjustedPT_XML
+								, @PT = @AdjustedPT_XML
 								, @CorrectedPT_XML = @CorrectedPT_XML OUTPUT
 			
 								
