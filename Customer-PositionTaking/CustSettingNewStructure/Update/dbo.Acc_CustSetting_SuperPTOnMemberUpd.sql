@@ -306,7 +306,7 @@ BEGIN
 				, @AgentID		= @recommend
 				, @MasterID		= @mrecommend
 				, @SuperID		= @srecommend
-				, @PT_XML		= @PT
+				, @PT			= @PT
 								
 				, @ErrCode		= @ErrCode	OUTPUT
 				, @MsgType		= @MsgType	OUTPUT
@@ -356,7 +356,7 @@ BEGIN
 		(
 			SELECT SportType		
 				, BetType		
-				, ISLive	
+				, IsLive	
 				, SuperPT							
 				, MasterPT	
 				, AgentPT		
@@ -365,14 +365,14 @@ BEGIN
 				, IsAutoMasterPT
 				, AutoMasterPT
 			FROM @tblPT
-			FOR XML PATH('PT'), ROOT('ROOT')
+			FOR XML RAW('PT'), ROOT('ROOT')
 		)
 	
 	EXEC Acc_CustSetting_MemberPTCorrect
 			@AgentID = @recommend
 			, @MasterID = @mrecommend
 			, @SuperID = @srecommend
-			, @PT_XML = @PT_Adjusted
+			, @PT	 = @PT_Adjusted
 			, @CorrectedPT_XML = @PT_Corrected OUTPUT
 	
 	DELETE @NewPT
@@ -382,7 +382,7 @@ BEGIN
 	INSERT @NewPT(
 					SportType		
 					, BetType		
-					, ISLive	
+					, IsLive	
 					, SuperPT							
 					, MasterPT	
 					, AgentPT		
@@ -413,7 +413,7 @@ BEGIN
 			, AutoSuperPT TINYINT
 			, IsAutoSuperPT BIT
 			)
-
+	
 	EXEC sp_xml_removedocument @iDoc
 		
 	IF @SettingMode = 0

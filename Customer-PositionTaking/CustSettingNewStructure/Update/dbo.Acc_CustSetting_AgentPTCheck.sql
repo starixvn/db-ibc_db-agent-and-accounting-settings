@@ -404,7 +404,7 @@ BEGIN
 										AND b.IsLive = mcs.isLive			
 			WHERE mcs.custid = @mrecommend 
 				AND b.IsAutoMasterPT = 1         
-				AND b.AutoMasterPT < (CASE WHEN mcs.MinPT - scs.AgentPT > 0 
+				AND b.AutoMasterPT < (CASE WHEN mcs.MinPT > scs.AgentPT
 											THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
 			FOR XML RAW('Row'), TYPE	
 		)										
@@ -470,7 +470,7 @@ BEGIN
 										AND b.IsLive = mcs.isLive				
 			WHERE mcs.custid = @mrecommend 
 				AND b.IsAutoMasterPT = 0         
-				AND b.MasterPT < (CASE WHEN mcs.MinPT - scs.AgentPT > 0 
+				AND b.MasterPT < (CASE WHEN mcs.MinPT > scs.AgentPT
 											THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
 			FOR XML RAW('Row'), TYPE											
 		)
