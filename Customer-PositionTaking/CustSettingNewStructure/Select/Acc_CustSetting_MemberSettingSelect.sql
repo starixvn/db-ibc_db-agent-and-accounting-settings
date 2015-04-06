@@ -208,12 +208,18 @@ BEGIN
    , mb.UM1  
    , masterpt.MasterPT AS M3  
    , masterpt.MinPT AS N3  
+   , agentpt.IsAutoMasterPT AS IM2
   FROM @MemberPT mb  
   INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)  
    ON mb.SportType = masterpt.sporttype  
     AND mb.BetType = masterpt.bettype  
     AND mb.IsLive = masterpt.islive  
     AND masterpt.custid = @MasterID  
+   INNER JOIN dbo.CustPTSetting3rd_Agent agentpt WITH (NOLOCK)  
+   ON mb.SportType = agentpt.sporttype  
+    AND mb.BetType = agentpt.bettype  
+    AND mb.IsLive = agentpt.islive  
+    AND agentpt.custid = @AgentID 
   
   --Bet Limit Setting  
   SELECT pdt.SportType  
