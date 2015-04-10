@@ -88,7 +88,12 @@ BEGIN
 	DECLARE @mrecommend INT
 			,@recommend INT
 			,@srecommend INT
-			,@username VARCHAR(30)	
+			
+	SELECT @srecommend = srecommend,
+			@mrecommend = mrecommend,
+			@recommend = recommend
+	FROM CustInfo WITH(NOLOCK)
+	WHERE custid = @custid
 			
 	--Parse XML	
 	DECLARE @iDoc INT
