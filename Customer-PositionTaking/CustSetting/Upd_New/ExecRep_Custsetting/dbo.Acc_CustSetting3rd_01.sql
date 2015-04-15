@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [Acc_CustSetting3rd_01]
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_01]
 	@srecommend int,
 	@mode varchar(20) = 'horse', --'horse' or 'number' or 'finance' or 'virtual-sports'
 	@sports VARCHAR(500)=''
@@ -322,9 +322,9 @@ BEGIN
 																	AND scs.sporttype=cs.sporttype 
 																	AND scs.bettype=cs.bettype 
 																	AND scs.isLive = cs.isLive
-    WHERE cs.IsAutoSuperPT=0 
-	    AND mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT
-	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+		AND cs.IsAutoSuperPT=0 
+	    AND mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT	     
     ----------------------------------------------------------------------------
 
     --update s1,m1,a1 in case s1+m1+a1>s4
@@ -363,8 +363,9 @@ BEGIN
 																	AND aco.sporttype=cs.sporttype 
 																	AND aco.bettype=cs.bettype 
 																	AND aco.isLive = cs.isLive
-    WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
-	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+	AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+	    
 	
 	--correct pt on group settings
 	 --s1=min(s1,s4-m3) if i=0
@@ -383,9 +384,9 @@ BEGIN
 																	AND scs.sporttype=cs.sporttype 
 																	AND scs.bettype=cs.bettype 
 																	AND scs.isLive = cs.isLive
-    WHERE cs.IsAutoSuperPT=0 
-	    AND mcs.IsAutoSuperPT=0 AND scs.SuperPT - mcs.MasterPT<cs.SuperPT
-	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+		AND cs.IsAutoSuperPT=0 
+	    AND mcs.IsAutoSuperPT=0 AND scs.SuperPT - mcs.MasterPT<cs.SuperPT	    
     ----------------------------------------------------------------------------
 
     --update s1,m1,a1 in case s1+m1+a1>s4
@@ -424,11 +425,14 @@ BEGIN
 																	AND aco.sporttype=cs.sporttype 
 																	AND aco.bettype=cs.bettype 
 																	AND aco.isLive = cs.isLive
-    WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
-	    AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+	     
     
     RETURN
 END
+
+
 
 
 GO

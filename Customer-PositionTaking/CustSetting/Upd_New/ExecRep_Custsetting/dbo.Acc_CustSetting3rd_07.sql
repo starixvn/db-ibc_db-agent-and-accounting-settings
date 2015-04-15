@@ -215,8 +215,9 @@ BEGIN
                 INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype AND scs.isLive = cs.isLive
             WHERE ci.srecommend = @srecommend AND ci.roleid = 1
                 AND ci.Enabled = 1              
-                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)
                 AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)
+               
                 
             --correct on pt grouped settings
              UPDATE cs 
@@ -231,8 +232,8 @@ BEGIN
                 INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype AND scs.isLive = cs.isLive
             WHERE ci.srecommend = @srecommend AND ci.roleid = 2
                 AND ci.Enabled = 1              
-                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)
                 AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+                AND (cs.IsAutoSuperPT = 1 OR mcs.IsAutoSuperPT = 1)               
         END  --end mode ='others'
     END
     ELSE IF @roleid = 3
@@ -882,8 +883,8 @@ BEGIN
 																				AND acs.sporttype=cs.sporttype 
 																				AND acs.bettype=cs.bettype
 																				AND acs.isLive = cs.isLive
-            WHERE (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
             
 				--Recal auto pt on grouped settings
 			UPDATE cs 
@@ -905,8 +906,8 @@ BEGIN
 																				AND acs.sporttype=cs.sporttype 
 																				AND acs.bettype=cs.bettype
 																				AND acs.isLive = cs.isLive
-            WHERE (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)		
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)		
+				AND (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
                  
                 
             --check master min/max
@@ -923,8 +924,8 @@ BEGIN
 																			AND mcs.sporttype=cs.sporttype 
 																			AND mcs.bettype=cs.bettype
 																			AND mcs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT < mcs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT + cs.MasterPT < mcs.MinPT
             
             --update on grouped settings
             UPDATE cs
@@ -939,8 +940,8 @@ BEGIN
 																			AND mcs.sporttype=cs.sporttype 
 																			AND mcs.bettype=cs.bettype
 																			AND mcs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT < mcs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT + cs.MasterPT < mcs.MinPT
             
             -- Update m1,a1 when m1+a1>l3
             -- m1=min(m3,l3)-a1
@@ -964,8 +965,8 @@ BEGIN
 																			AND acs.sporttype=cs.sporttype 
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT > mcs.MaxPT 
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)      
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)      
+				AND cs.AgentPT + cs.MasterPT > mcs.MaxPT 
             
             --update on grouped settings
               UPDATE cs
@@ -988,8 +989,8 @@ BEGIN
 																			AND acs.sporttype=cs.sporttype 
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT > mcs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)          
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)          
+				AND cs.AgentPT + cs.MasterPT > mcs.MaxPT
             
             --recal autopos
             -- s1=min(s4-m1-a1,u)
@@ -1021,8 +1022,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)                
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)                
+				AND (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
             
             --grouped settings
             UPDATE cs 
@@ -1053,8 +1054,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
-                AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+                AND (cs.IsAutoSuperPT=1 or mcs.IsAutoSuperPT=1)
             
             --check super min/max when a1+m1+s1<n4
             -- s1=n4-m1-a1
@@ -1070,8 +1071,8 @@ BEGIN
 															AND scs.sporttype=cs.sporttype 
 															AND scs.bettype=cs.bettype
 															AND scs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
                 
             --update on grouped settings
               UPDATE cs
@@ -1086,8 +1087,8 @@ BEGIN
 															AND scs.sporttype=cs.sporttype 
 															AND scs.bettype=cs.bettype
 															AND scs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
             
             
             --update s1,m1,a1 in case s1+m1+a1>s4
@@ -1125,8 +1126,8 @@ BEGIN
 																			AND acs.sporttype=cs.sporttype 
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
-            WHERE cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+				AND cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
             
             --update on grouped settings
             UPDATE cs 
@@ -1157,8 +1158,8 @@ BEGIN
 																			AND acs.sporttype=cs.sporttype 
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
-            WHERE cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)   
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)   
+				AND cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
                            
         END
     END
@@ -1764,8 +1765,8 @@ BEGIN
 																		AND acs.sporttype = cs.sporttype 
 																		AND acs.bettype = cs.bettype 
 																		AND acs.isLive = cs.isLive
-            WHERE cs.AgentPT < acs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT < acs.MinPT
             
             --grouped settings
             UPDATE cs 
@@ -1791,8 +1792,8 @@ BEGIN
 																		AND acs.sporttype = cs.sporttype 
 																		AND acs.bettype = cs.bettype 
 																		AND acs.isLive = cs.isLive
-            WHERE cs.AgentPT > acs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT > acs.MaxPT
             
             --grouped settings
             UPDATE cs 
@@ -1819,8 +1820,8 @@ BEGIN
 																		AND mcs.sporttype = cs.sporttype 
 																		AND mcs.bettype = cs.bettype 
 																		AND mcs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT > mcs.MasterPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+				AND cs.AgentPT + cs.MasterPT > mcs.MasterPT
             
             --grouped settings
             UPDATE cs 
@@ -1832,8 +1833,8 @@ BEGIN
 																		AND mcs.sporttype = cs.sporttype 
 																		AND mcs.bettype = cs.bettype 
 																		AND mcs.isLive = cs.isLive
-            WHERE cs.AgentPT + cs.MasterPT > mcs.MasterPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+				AND cs.AgentPT + cs.MasterPT > mcs.MasterPT
                
 
 
@@ -1892,8 +1893,8 @@ BEGIN
 																			AND acs.sporttype=cs.sporttype 
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive=cs.isLive
-            WHERE (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)    
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)    
+				AND (acs.IsAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
                 
 
             --Check min max n3<=m1+a1<=l3 => modify m1
@@ -1908,8 +1909,8 @@ BEGIN
 																		AND cs.sporttype = mcs.sporttype 
 																		AND cs.bettype = mcs.bettype 
 																		AND cs.isLive = mcs.isLive
-            WHERE cs.MasterPT + cs.AgentPT < mcs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.MasterPT + cs.AgentPT < mcs.MinPT
             
             --grouped settings
             UPDATE cs
@@ -1921,8 +1922,8 @@ BEGIN
 																		AND cs.sporttype = mcs.sporttype 
 																		AND cs.bettype = mcs.bettype 
 																		AND cs.isLive = mcs.isLive
-            WHERE cs.MasterPT + cs.AgentPT < mcs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.MasterPT + cs.AgentPT < mcs.MinPT
                 
 
             --Nonlive(max)
@@ -1936,8 +1937,8 @@ BEGIN
 																		AND cs.sporttype = mcs.sporttype 
 																		AND cs.bettype = mcs.bettype 
 																		AND cs.isLive = mcs.isLive
-            WHERE cs.MasterPT + cs.AgentPT > mcs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.MasterPT + cs.AgentPT > mcs.MaxPT
             
             --grouped settings
             UPDATE cs
@@ -1949,8 +1950,8 @@ BEGIN
 																		AND cs.sporttype = mcs.sporttype 
 																		AND cs.bettype = mcs.bettype 
 																		AND cs.isLive = mcs.isLive
-            WHERE cs.MasterPT + cs.AgentPT > mcs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.MasterPT + cs.AgentPT > mcs.MaxPT
             
                 
 
@@ -2009,8 +2010,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE (cs.IsAutoSuperPT=1 OR mcs.IsAutoSuperPT=1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND (cs.IsAutoSuperPT=1 OR mcs.IsAutoSuperPT=1)
                 
 
             --check super min/max when a1+m1+s1<n4
@@ -2027,8 +2028,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
             
             --grouped settings
             UPDATE cs
@@ -2041,8 +2042,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
                 
             --Nonlive(max)
             UPDATE cs
@@ -2056,8 +2057,8 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)    
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				AND cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT     
             
             --grouped settings
             UPDATE cs
@@ -2070,8 +2071,9 @@ BEGIN
 																			AND scs.sporttype=cs.sporttype 
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)              
+            WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
+            AND cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT
+				             
 
         END--end mode ='Others'
     END
