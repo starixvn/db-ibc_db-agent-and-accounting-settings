@@ -139,7 +139,7 @@ BEGIN
 	
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 103,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END		
@@ -157,7 +157,7 @@ BEGIN
 	
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 104,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END		
@@ -190,7 +190,7 @@ BEGIN
 	
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 105,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END		
@@ -208,7 +208,7 @@ BEGIN
 	
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 106,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END	
@@ -232,7 +232,7 @@ BEGIN
 	
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 107,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END		
@@ -247,13 +247,66 @@ BEGIN
 		
 	IF @@Error <> 0
 	BEGIN
-		SELECT @ErrCode = 102,
+		SELECT @ErrCode = 108,
 				@ErrMsg = 'Clone settings fails. Please try again'
 		RETURN
 	END				
 	
+	UPDATE cg
+	SET cg.minbet = cg2.minbet,
+		cg.maxbet = cg2.maxbet,
+		cg.MaxPerGameType = cg2.MaxPerGameType
+	FROM CustGameType cg WITH(UPDLOCK,ROWLOCK)
+		INNER JOIN CustGameType cg2 WITH(NOLOCK) ON cg.GameTypeID = cg2.GameTypeID													
+		INNER JOIN @tmpUser t ON cg.custid = t.toCustID AND cg2.custid = t.fromCustID	
+		
+	IF @@Error <> 0
+	BEGIN
+		SELECT @ErrCode = 109,
+				@ErrMsg = 'Clone settings fails. Please try again'
+		RETURN
+	END	
 	
-	
+	UPDATE c
+	SET c.maxpermatch = c2.maxpermatch,
+		c.maxpermatch2 = c2.maxpermatch2,
+		c.maxpermatch3 = c2.maxpermatch3,
+		c.maxpermatch5 = c2.maxpermatch5,
+		c.maxpermatch8 = c2.maxpermatch8,
+		c.maxpermatch10 = c2.maxpermatch10,
+		c.maxpermatch11 = c2.maxpermatch11,
+		
+		c.maxpermatch99 = c2.maxpermatch99,
+		c.MaxPerMatch99MP = c2.MaxPerMatch99MP,	
+		c.maxpermatch151 = c2.maxpermatch151,
+		c.maxpermatch151_OT = c2.maxpermatch151_OT,		
+		c.MaxPerMatch151_AU = c2.MaxPerMatch151_AU,
+		c.MaxPerMatch152_UK = c2.MaxPerMatch152_UK,
+		c.MaxPerMatch152_AU = c2.MaxPerMatch152_AU,
+		c.MaxPerMatch153_AU = c2.MaxPerMatch153_AU,
+		c.maxpermatch154 = c2.maxpermatch154,
+		c.maxpermatch161 = c2.maxpermatch161,
+		c.MaxPerBall161 = c2.MaxPerBall161,
+		
+		c.maxpermatch180 = c2.maxpermatch180,
+		c.maxpermatch181 = c2.maxpermatch181,
+		c.maxpermatch182 = c2.maxpermatch182,
+		c.maxpermatch183 = c2.maxpermatch183,
+		c.maxpermatch184 = c2.maxpermatch184,
+		c.maxpermatch185 = c2.maxpermatch185,
+		c.maxpermatch186 = c2.maxpermatch186,
+		
+		c.MaxPerMatch201 = c2.MaxPerMatch201
+	FROM @tmpUser t 
+		INNER JOIN CustInfo c WITH(UPDLOCK,ROWLOCK) ON c.custid = t.toCustID
+		INNER JOIN CustInfo c2 WITH(NOLOCK) ON c2.custid = t.fromCustID	
+		
+	IF @@Error <> 0
+	BEGIN
+		SELECT @ErrCode = 109,
+				@ErrMsg = 'Clone settings fails. Please try again'
+		RETURN
+	END	
 	
 END
 GO
