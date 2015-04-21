@@ -209,10 +209,16 @@ BEGIN
                                         (CASE WHEN cs.IsAutoSuperPT = 1 THEN cs.AutoSuperPT ELSE mcs.AutoSuperPT END) 
                                     ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
                                 END                            
-            FROM CustPTSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK)
-                INNER JOIN CustInfo ci WITH(NOLOCK) ON ci.custid = cs.custid
-                INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = ci.mrecommend AND mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype AND mcs.isLive = cs.isLive
-                INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype AND scs.isLive = cs.isLive
+            FROM CustInfo ci WITH(NOLOCK)
+                INNER JOIN CustPTSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) ON ci.custid = cs.custid
+                INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = ci.mrecommend 
+																	AND mcs.sporttype = cs.sporttype 
+																	AND mcs.bettype = cs.bettype 
+																	AND mcs.isLive = cs.isLive
+                INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend 
+																	AND scs.sporttype = cs.sporttype 
+																	AND scs.bettype = cs.bettype 
+																	AND scs.isLive = cs.isLive
             WHERE ci.srecommend = @srecommend AND ci.roleid = 1
                 AND ci.Enabled = 1              
                 AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)

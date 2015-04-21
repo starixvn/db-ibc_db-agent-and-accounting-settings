@@ -141,11 +141,11 @@ BEGIN
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
 				FROM 
-					custinfo as c WITH (NOLOCK) 
-					INNER JOIN CustPTSetting3rd_Agent AS cs WITH (NOLOCK) ON c.custid = cs.custid
+					CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
 					INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
 												AND cs.bettype = b.BetType 
 												AND cs.isLive = b.IsLive
+					INNER JOIN custinfo as c WITH (NOLOCK) ON c.custid = cs.custid					
 				WHERE c.srecommend = @custid AND c.roleid = 3 AND (
 										((cs.IsAutoSuperPT=0) AND (cs.SuperPT+cs.MasterPT>b.SuperPT)) OR 
 										((cs.IsAutoSuperPT=1) AND (cs.MasterPT>b.SuperPT)) OR 
@@ -175,11 +175,11 @@ BEGIN
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-				FROM custinfo c WITH(NOLOCK)
-					INNER JOIN CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
+				FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
 					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 											AND cs.bettype = b.bettype 
 											AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
 				WHERE c.srecommend = @custid
 					AND c.roleid     = 1
 					AND c.Enabled    = 1
@@ -209,11 +209,11 @@ BEGIN
 		FROM
 		(
 			SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-			FROM custinfo c WITH(NOLOCK)
-				INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
+			FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
 				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 										AND cs.bettype = b.bettype 
-										AND cs.IsLive = b.IsLive		
+										AND cs.IsLive = b.IsLive	
+				INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.AgentID															
 			WHERE c.srecommend = @custid
 				AND c.roleid     = 2
 				AND c.Enabled    = 1
@@ -262,11 +262,11 @@ BEGIN
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
 				FROM 
-					custinfo AS c WITH (NOLOCK) 
-					INNER JOIN CustPTSetting3rd_Agent AS cs WITH (NOLOCK) ON c.custid = cs.custid
+					CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
 					INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
 												AND cs.bettype = b.bettype 
 												AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo AS c WITH (NOLOCK) ON c.custid = cs.custid					
 				WHERE c.srecommend = @custid AND c.roleid = 3 
 					AND cs.MasterPT > b.MasterPT
 			)b	
@@ -292,11 +292,11 @@ BEGIN
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-				FROM custinfo c WITH(NOLOCK) 
-					INNER JOIN CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
+				FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
 					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 											AND cs.bettype = b.bettype 
 											AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
 				WHERE c.srecommend = @custid
 					   AND c.roleid     = 1
 					   AND c.Enabled    = 1
@@ -322,11 +322,11 @@ BEGIN
 		FROM
 		(
 			SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn						
-			FROM custinfo c WITH(NOLOCK) 
-				INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
+			FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
 				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 										AND cs.bettype = b.bettype 
 										AND cs.IsLive = b.IsLive
+				INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.AgentID				
 			WHERE c.srecommend = @custid
 				   AND c.roleid     = 2
 				   AND c.Enabled    = 1
@@ -372,11 +372,11 @@ BEGIN
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
-				 FROM custinfo c WITH(NOLOCK) 
-					INNER JOIN CustPTSetting3rd_Agent cs WITH(NOLOCK) ON c.custid = cs.custid
+				 FROM CustPTSetting3rd_Agent cs WITH(NOLOCK) 
 					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 											AND cs.bettype = b.bettype 
 											AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid				
 				 WHERE c.srecommend = @custid
 				   AND c.roleid     = 2
 				   AND c.Enabled    = 1
@@ -405,11 +405,11 @@ BEGIN
 			FROM
 			( 
 				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
-				 FROM custinfo c WITH(NOLOCK) 
-					INNER JOIN CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
+				 FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
 					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
 											AND cs.bettype = b.bettype
 											AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
 				 WHERE c.srecommend = @custid
 				   AND c.roleid     = 1
 				   AND c.Enabled    = 1
@@ -436,11 +436,11 @@ BEGIN
 		FROM
 		(
 			SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn									
-			FROM custinfo c WITH(NOLOCK) 
-				INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON cs.AgentID = c.custid
+			FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
 				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
 										AND cs.bettype = b.bettype
 										AND cs.IsLive = b.IsLive
+				INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid
 			 WHERE c.srecommend = @custid
 			   AND c.roleid     = 2
 			   AND c.Enabled    = 1

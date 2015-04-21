@@ -310,10 +310,8 @@ BEGIN
     UPDATE cs
 	    SET cs.SuperPT = scs.SuperPT - mcs.MasterPT
     FROM 
-	    CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid 
-													AND mb.srecommend = @srecommend 
-													AND mb.roleid=1
+	    custinfo AS mb WITH (NOLOCK)
+	    INNER JOIN CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK) ON cs.custid = mb.custid 
 	    INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = mb.mrecommend 
 																	AND mcs.sporttype=cs.sporttype 
 																	AND mcs.bettype=cs.bettype 
@@ -322,7 +320,9 @@ BEGIN
 																	AND scs.sporttype=cs.sporttype 
 																	AND scs.bettype=cs.bettype 
 																	AND scs.isLive = cs.isLive
-    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+    WHERE mb.srecommend = @srecommend 
+		AND mb.roleid=1
+		AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
 		AND cs.IsAutoSuperPT=0 
 	    AND mcs.IsAutoSuperPT=0 and scs.SuperPT - mcs.MasterPT<cs.SuperPT	     
     ----------------------------------------------------------------------------
@@ -347,10 +347,8 @@ BEGIN
 		    @apos = CASE WHEN cs.AgentPT + @mpos>@mapos THEN @mapos-@mpos ELSE cs.AgentPT END,
 		    AgentPT = CASE WHEN @apos<aco.MinPT THEN aco.MinPT ELSE @apos END
     FROM 
-	    CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)
-	    INNER JOIN custinfo AS mb WITH (NOLOCK) ON cs.custid = mb.custid 
-													AND mb.srecommend=@srecommend 
-													AND mb.roleid=1
+	    custinfo AS mb WITH (NOLOCK)
+	    INNER JOIN CustPTSetting3rd_Member AS cs WITH (ROWLOCK, UPDLOCK)  ON cs.custid = mb.custid 													
 	    INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend  
 																	AND scs.sporttype=cs.sporttype 
 																	AND scs.bettype=cs.bettype 
@@ -363,8 +361,10 @@ BEGIN
 																	AND aco.sporttype=cs.sporttype 
 																	AND aco.bettype=cs.bettype 
 																	AND aco.isLive = cs.isLive
-    WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-	AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+    WHERE mb.srecommend=@srecommend 
+		AND mb.roleid=1
+		AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+		AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 	    
 	
 	--correct pt on group settings
