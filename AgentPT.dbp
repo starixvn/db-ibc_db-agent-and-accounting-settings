@@ -410,6 +410,8 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustSetting3rd_09.sql"
                Script = "dbo.Acc_ExecRep_Cust_04.sql"
             End
+            Begin Folder = "Gold Deluxe"
+            End
             Begin Folder = "HR"
                Script = "dbo.Acc_CustomerUpdAgent_CommissionHR.proc.sql"
                Script = "dbo.Acc_CustomerUpdAgent_MinMaxBet151_31.proc.sql"
