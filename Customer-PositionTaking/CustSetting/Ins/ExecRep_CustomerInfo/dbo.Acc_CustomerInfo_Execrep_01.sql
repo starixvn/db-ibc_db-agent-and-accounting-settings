@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01_xtest]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -20,6 +20,7 @@ AS
 						
 		Revisions:	
 			- 20140318@Elodie: Add Keno product [Redmine:#13156]
+			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
 		Parameter's Explanation:
 	*/	
 BEGIN
@@ -571,6 +572,7 @@ BEGIN
 			CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
 			inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
 			inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = c.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+
 			inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
 		where
 			cs.custid = @custid
@@ -863,7 +865,7 @@ BEGIN
 		
 	END--end mode = 'LiveCasino'
 
-	ELSE IF @mode = 'Keno'
+	ELSE IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
 	BEGIN		
 		--check agent min/max
 		--update a1=n2 when a1<n2

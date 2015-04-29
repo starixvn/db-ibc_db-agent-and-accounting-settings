@@ -1,14 +1,14 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_MAg]
 	@custid									INT,		
 
-	@v162mpositiontaking_1101				SMALLMONEY,	
-	@auto_v162mpositiontaking_mem_1101			SMALLMONEY,
-	@isauto_v162mpositiontaking_mem_1101		BIT,
+	@v255mpositiontaking_1701				SMALLMONEY,	
+	@auto_v255mpositiontaking_mem_1701		SMALLMONEY,
+	@isauto_v255mpositiontaking_mem_1701	BIT,
 	--im2
-	@isauto_v162mpositiontaking_1101			BIT,
+	@isauto_v255mpositiontaking_1701		BIT,
 
-	@v162UpdatePositiontaking_1101			BIT = 1,	
-	@v162UpdateAutoPositiontaking_1101		BIT = 1,
+	@v255UpdatePositiontaking_1701			BIT = 1,	
+	@v255UpdateAutoPositiontaking_1701		BIT = 1,
 
 	@userid									INT,
 	@SubAccID								INT = 0, --Sub-AccountID
@@ -19,18 +19,12 @@
 	@ErrMsg									NVARCHAR(4000) = '' OUTPUT
 AS
 /*
-	Created: 20120111@Lukas
-	Task: Master edit live casino PT setting on member
-	DB: DBTXN/BODB02
+	Created: 20150422@Elodie
+	Task: Master edit Gold Deluxe PT setting on member
+	DB: DBTXN/CustDB
 	
 	Revisions:
-		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
-		- 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
-		- 20130516@Lukas: allow PT = 100%
-		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
-		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
-		- 20140318@Johnson: check um1 with constraint um1_min and merge code correct pt [Redmine: #11562]
-		- 20140926@Johnson: remove bettype name out of error message
+		
 	Parameters Explanation:
 */
 BEGIN
@@ -44,7 +38,7 @@ BEGIN
 	set @startRun = getdate()
 
 	DECLARE @ErrType varchar(1000), @roleid TINYINT, @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000), @ErrAcc NVARCHAR(4000),
-			@recommend INT,	@srecommend INT, @mrecommend INT, @UplineSyncLiveCS BIT
+			@recommend INT,	@srecommend INT, @mrecommend INT
 
 	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney
 
@@ -75,20 +69,18 @@ BEGIN
 				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 		RETURN
 	END
-
 	
 	select @UserName = username, @recommend = recommend, @mrecommend = mrecommend, @srecommend = srecommend 
-	from customer with (NOLOCK) where custid = @custid
-	
+	from customer with (NOLOCK) where custid = @custid	
 	
 	INSERT INTO @tmp_cs(custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, isautopositiontaking, isautompositiontaking, autopositiontaking, autompositiontaking)
 	SELECT custid, sporttype, bettype, spositiontaking, mpositiontaking, apositiontaking, isautopositiontaking, isautompositiontaking, autopositiontaking, autompositiontaking
 	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101 
+	WHERE custid = @custid AND sporttype = 255 AND bettype = 1701 
 	
-	IF (@v162mpositiontaking_1101 < 0 OR @v162mpositiontaking_1101 > 1
-		OR @auto_v162mpositiontaking_mem_1101 < 0 OR @auto_v162mpositiontaking_mem_1101 > 1)
-		AND @v162UpdatePositiontaking_1101 = 1
+	IF (@v255mpositiontaking_1701 < 0 OR @v255mpositiontaking_1701 > 1
+		OR @auto_v255mpositiontaking_mem_1701 < 0 OR @auto_v255mpositiontaking_mem_1701 > 1)
+		AND @v255UpdatePositiontaking_1701 = 1
 	BEGIN
 		select @ErrCode_cur = 5
 		Select @ErrMsg_cur = case @Language 
@@ -102,58 +94,56 @@ BEGIN
 	
 	DECLARE 
 	--a1
-	@v162apositiontaking_1101 SMALLMONEY,
+	@v255apositiontaking_1701 SMALLMONEY,
 	--a2
-	@max_v162apositiontaking_1101 SMALLMONEY,
+	@max_v255apositiontaking_1701 SMALLMONEY,
 	--old_m1	
-	@old_v162mpositiontaking_1101 SMALLMONEY,
+	@old_v255mpositiontaking_1701 SMALLMONEY,
 	--old_um1
-	@old_auto_v162mpositiontaking_mem_1101 SMALLMONEY,
+	@old_auto_v255mpositiontaking_mem_1701 SMALLMONEY,
 	--old_im1
-	@old_isauto_v162mpositiontaking_mem_1101 BIT,
+	@old_isauto_v255mpositiontaking_mem_1701 BIT,
 	--s4
-	@max_v162spositiontaking_1101 SMALLMONEY,
-	@v162spositiontaking_1101 SMALLMONEY,
+	@max_v255spositiontaking_1701 SMALLMONEY,
+	@v255spositiontaking_1701 SMALLMONEY,
 	--u1
-	@auto_v162spositiontaking_mem_1101 SMALLMONEY,
+	@auto_v255spositiontaking_mem_1701 SMALLMONEY,
 	--i1
-	@isauto_v162spositiontaking_mem_1101 BIT,
+	@isauto_v255spositiontaking_mem_1701 BIT,
 	--u3
-	@auto_v162spositiontaking_1101 SMALLMONEY,
+	@auto_v255spositiontaking_1701 SMALLMONEY,
 	--i3
-	@isauto_v162spositiontaking_1101 BIT,
+	@isauto_v255spositiontaking_1701 BIT,
 	--um2
-	@auto_v162mpositiontaking_1101 SMALLMONEY,
+	@auto_v255mpositiontaking_1701 SMALLMONEY,
 	---- backup to write log
-	@isauto_v162mpositiontaking_agent_1101 bit
+	@isauto_v255mpositiontaking_agent_1701 bit
 	
-	DECLARE
-	@max_v162mapositiontaking_1101 SMALLMONEY
-	
-	
+	DECLARE @max_v255mapositiontaking_1701 SMALLMONEY
+		
 	-- backup
 	SELECT 
-	@isauto_v162mpositiontaking_agent_1101 = @isauto_v162mpositiontaking_1101
+	@isauto_v255mpositiontaking_agent_1701 = @isauto_v255mpositiontaking_1701
 	--s1,a1,old_m1,u1,i1
-	IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
+	IF @v255UpdatePositiontaking_1701 = 1 OR @v255UpdateAutoPositiontaking_1701 = 1
 	BEGIN
-		SELECT	@v162spositiontaking_1101 = spositiontaking, 
-				@v162apositiontaking_1101 = apositiontaking, 
-				@auto_v162spositiontaking_mem_1101 = autopositiontaking, 
-				@isauto_v162spositiontaking_mem_1101 = isautopositiontaking, 
-				@old_v162mpositiontaking_1101 = mpositiontaking , 
-				@old_auto_v162mpositiontaking_mem_1101 = autompositiontaking , 
-				@old_isauto_v162mpositiontaking_mem_1101 = isautompositiontaking 
+		SELECT	@v255spositiontaking_1701 = spositiontaking, 
+				@v255apositiontaking_1701 = apositiontaking, 
+				@auto_v255spositiontaking_mem_1701 = autopositiontaking, 
+				@isauto_v255spositiontaking_mem_1701 = isautopositiontaking, 
+				@old_v255mpositiontaking_1701 = mpositiontaking , 
+				@old_auto_v255mpositiontaking_mem_1701 = autompositiontaking , 
+				@old_isauto_v255mpositiontaking_mem_1701 = isautompositiontaking 
 		FROM @tmp_cs
-		WHERE bettype=1101 AND sporttype=162
+		WHERE bettype=1701 AND sporttype=255
 	END
 
 	--Check if old_PT = new_PT return
-	IF @v162mpositiontaking_1101 = @old_v162mpositiontaking_1101 AND
+	IF @v255mpositiontaking_1701 = @old_v255mpositiontaking_1701 AND
 		--um1
-		@auto_v162mpositiontaking_mem_1101 = @old_auto_v162mpositiontaking_mem_1101 AND
+		@auto_v255mpositiontaking_mem_1701 = @old_auto_v255mpositiontaking_mem_1701 AND
 		--im1
-		@isauto_v162mpositiontaking_mem_1101 = @old_isauto_v162mpositiontaking_mem_1101
+		@isauto_v255mpositiontaking_mem_1701 = @old_isauto_v255mpositiontaking_mem_1701
 		
 	BEGIN	
 		Select @ErrCode = @ErrCode + '-103'+char(7), @ErrMsg = @ErrMsg + char(7)
@@ -164,31 +154,28 @@ BEGIN
 	SELECT scs.custid, scs.sporttype, scs.bettype, scs.spositiontaking, sco.minpositiontaking
 	FROM CustSettingGame scs WITH(NOLOCK)
 		INNER JOIN CustOverrideGame sco WITH(NOLOCK) ON scs.custid = sco.custid AND scs.sporttype = sco.sporttype AND scs.bettype = sco.bettype
-	WHERE scs.custid = @srecommend AND scs.sporttype = 162 and scs.bettype = 1101
+	WHERE scs.custid = @srecommend AND scs.sporttype = 255 and scs.bettype = 1701
 
 	INSERT INTO @tmp_mag(custid, sporttype, bettype, mpositiontaking, isautopositiontaking, autopositiontaking, minpositiontaking)
 	SELECT mcs.custid, mcs.sporttype, mcs.bettype, mpositiontaking, isautopositiontaking, autopositiontaking, minpositiontaking
 	FROM  CustSettingGame mcs WITH(NOLOCK)
 		INNER JOIN CustOverrideGame mco WITH(NOLOCK) ON mcs.custid = mco.custid AND mcs.sporttype = mco.sporttype AND mcs.bettype = mco.bettype
-	WHERE mcs.custid = @mrecommend AND mcs.sporttype = 162 and mcs.bettype = 1101
+	WHERE mcs.custid = @mrecommend AND mcs.sporttype = 255 and mcs.bettype = 1701
 
 	INSERT INTO @tmp_ag(custid, sporttype, bettype, apositiontaking, isautompositiontaking, autompositiontaking, minpositiontaking)
 	SELECT acs.custid, acs.sporttype, acs.bettype, apositiontaking, isautompositiontaking, autompositiontaking, minpositiontaking
 	FROM CustSettingGame acs WITH(NOLOCK)
 		INNER JOIN CustOverrideGame aco WITH(NOLOCK) ON acs.custid = aco.custid AND acs.sporttype = aco.sporttype AND acs.bettype = aco.bettype
-	WHERE acs.custid = @recommend AND acs.sporttype = 162 and acs.bettype = 1101
+	WHERE acs.custid = @recommend AND acs.sporttype = 255 and acs.bettype = 1701		
 
-	SELECT @UplineSyncLiveCS = SyncLiveCasino FROM CustInfo WITH(NOLOCK) WHERE custid = @recommend 
-		
-
-	IF @v162UpdateAutoPositiontaking_1101 = 1 
+	IF @v255UpdateAutoPositiontaking_1701 = 1 
 	BEGIN
 		--Check um1<=m3
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag AS mcs INNER JOIN
 			(
-				SELECT 162 AS sporttype, 1101 AS bettype, @auto_v162mpositiontaking_mem_1101 AS autopositiontaking, @isauto_v162mpositiontaking_mem_1101 AS isautopositiontaking
+				SELECT 255 AS sporttype, 1701 AS bettype, @auto_v255mpositiontaking_mem_1701 AS autopositiontaking, @isauto_v255mpositiontaking_mem_1701 AS isautopositiontaking
 			) AS b ON mcs.sporttype=b.sporttype AND mcs.bettype=b.bettype		
 		WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>mcs.mpositiontaking) 
 
@@ -211,7 +198,7 @@ BEGIN
 		FROM @tmp_mag AS mco 
 		INNER JOIN @tmp_cs cs ON mco.sporttype = cs.sporttype AND mco.bettype = cs.bettype		
 		INNER JOIN	(
-				SELECT 162 AS sporttype, 1101 AS bettype, @auto_v162mpositiontaking_mem_1101 AS autopositiontaking, @isauto_v162mpositiontaking_mem_1101 AS isautopositiontaking
+				SELECT 255 AS sporttype, 1701 AS bettype, @auto_v255mpositiontaking_mem_1701 AS autopositiontaking, @isauto_v255mpositiontaking_mem_1701 AS isautopositiontaking
 			) AS b ON mco.sporttype=b.sporttype AND mco.bettype=b.bettype		
 		WHERE (b.isautopositiontaking>0 AND cs.apositiontaking + b.autopositiontaking < mco.minpositiontaking) 
 
@@ -230,34 +217,34 @@ BEGIN
 	END
 
 	--m3,u3,i3	
-	IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
+	IF @v255UpdatePositiontaking_1701 = 1 OR @v255UpdateAutoPositiontaking_1701 = 1
 	BEGIN
-		SELECT @max_v162mapositiontaking_1101 = mpositiontaking, @auto_v162spositiontaking_1101 = autopositiontaking, @isauto_v162spositiontaking_1101 = isautopositiontaking 
+		SELECT @max_v255mapositiontaking_1701 = mpositiontaking, @auto_v255spositiontaking_1701 = autopositiontaking, @isauto_v255spositiontaking_1701 = isautopositiontaking 
 		FROM @tmp_mag 
-		WHERE bettype=1101 AND sporttype=162
+		WHERE bettype=1701 AND sporttype=255
 				
 		--s4
-		SELECT @max_v162spositiontaking_1101 = spositiontaking 
+		SELECT @max_v255spositiontaking_1701 = spositiontaking 
 		FROM @tmp_sag
-		WHERE bettype=1101 AND sporttype=162
+		WHERE bettype=1701 AND sporttype=255
 	END
 
 	--um2
 	SELECT 
-		@auto_v162mpositiontaking_1101 = MAX(acs.autompositiontaking),
+		@auto_v255mpositiontaking_1701 = MAX(acs.autompositiontaking),
 		--a2	
-		@max_v162apositiontaking_1101 = MAX(acs.apositiontaking)		
+		@max_v255apositiontaking_1701 = MAX(acs.apositiontaking)		
 	FROM @tmp_ag acs 
-	WHERE acs.sporttype = 162 AND acs.bettype = 1101
+	WHERE acs.sporttype = 255 AND acs.bettype = 1701
 			
-	IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
+	IF @v255UpdatePositiontaking_1701 = 1 OR @v255UpdateAutoPositiontaking_1701 = 1
 	BEGIN	
 		--Check m1<=m3
 		SELECT @ErrType = ''
 		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag mcs INNER JOIN 
 			(
-				SELECT 162 AS sporttype	,	 1101 AS bettype	,	 @v162mpositiontaking_1101 AS mpositiontaking
+				SELECT 255 AS sporttype	,	 1701 AS bettype	,	 @v255mpositiontaking_1701 AS mpositiontaking
 			)b ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype					
 		WHERE (b.mpositiontaking>mcs.mpositiontaking) 
 
@@ -279,7 +266,7 @@ BEGIN
 		SELECT @ErrType = @ErrType + 'Max: '+ CAST((mcs.mpositiontaking - cs.apositiontaking) AS VARCHAR(10))
 		FROM @tmp_mag mcs INNER JOIN 
 			(
-				SELECT 162 AS sporttype	,	 1101 AS bettype	,	 @v162mpositiontaking_1101 AS mpositiontaking
+				SELECT 255 AS sporttype	,	 1701 AS bettype	,	 @v255mpositiontaking_1701 AS mpositiontaking
 			)b ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype	
 			INNER JOIN @tmp_cs cs ON mcs.sporttype = cs.sporttype and mcs.bettype = cs.bettype				
 		WHERE (b.mpositiontaking + cs.apositiontaking > mcs.mpositiontaking) 
@@ -302,7 +289,7 @@ BEGIN
 		SELECT @ErrType = @ErrType + 'Min: ' + CAST((mco.minpositiontaking - cs.apositiontaking) AS VARCHAR(10))  
 		FROM @tmp_cs cs
 			INNER JOIN @tmp_mag mco ON cs.sporttype = mco.sporttype AND cs.bettype = mco.bettype			
-		WHERE cs.apositiontaking + @v162mpositiontaking_1101< mco.minpositiontaking
+		WHERE cs.apositiontaking + @v255mpositiontaking_1701< mco.minpositiontaking
 		
 		IF @ErrType <>''
 		BEGIN
@@ -320,19 +307,18 @@ BEGIN
 		
 		--m1=m1+a1>m3?m3-a1:m1
 		SELECT 
-			@v162mpositiontaking_1101 = CASE WHEN cs.apositiontaking + @v162mpositiontaking_1101> mcs.mpositiontaking THEN mcs.mpositiontaking- cs.apositiontaking ELSE @v162mpositiontaking_1101 END
+			@v255mpositiontaking_1701 = CASE WHEN cs.apositiontaking + @v255mpositiontaking_1701> mcs.mpositiontaking THEN mcs.mpositiontaking- cs.apositiontaking ELSE @v255mpositiontaking_1701 END
 		FROM @tmp_cs cs
 			INNER JOIN @tmp_mag mcs ON cs.sporttype = mcs.sporttype AND cs.bettype = mcs.bettype
-		WHERE cs.sporttype = 162 AND cs.bettype = 1101
+		WHERE cs.sporttype = 255 AND cs.bettype = 1701
 
 		--m1=m1+a1<n3?n3-a1:m1
 		--SELECT 
-		--	@v162mpositiontaking_1101 = CASE WHEN @v162apositiontaking_1101+@v162mpositiontaking_1101<@min_v162mapositiontaking_1101 THEN @min_v162mapositiontaking_1101-@v162apositiontaking_1101 ELSE @v162mpositiontaking_1101 END		
+		--	@v255mpositiontaking_1701 = CASE WHEN @v255apositiontaking_1701+@v255mpositiontaking_1701<@min_v255mapositiontaking_1701 THEN @min_v255mapositiontaking_1701-@v255apositiontaking_1701 ELSE @v255mpositiontaking_1701 END		
 
 		SELECT 
-			@v162mpositiontaking_1101 = CASE WHEN @v162mpositiontaking_1101<0 THEN 0 ELSE @v162mpositiontaking_1101 END
-			
-			
+			@v255mpositiontaking_1701 = CASE WHEN @v255mpositiontaking_1701<0 THEN 0 ELSE @v255mpositiontaking_1701 END
+						
 		--Must include code for auto master
 			--um=im1>0?um1:um2
 			--im=im1>0?im1:im2
@@ -342,55 +328,43 @@ BEGIN
 
 			--um=im1>0?um1:um2
 			SELECT 
-				@auto_v162mpositiontaking_1101 = CASE WHEN @isauto_v162mpositiontaking_mem_1101>0 THEN @auto_v162mpositiontaking_mem_1101 ELSE @auto_v162mpositiontaking_1101 END,		
+				@auto_v255mpositiontaking_1701 = CASE WHEN @isauto_v255mpositiontaking_mem_1701>0 THEN @auto_v255mpositiontaking_mem_1701 ELSE @auto_v255mpositiontaking_1701 END,		
 				
 				--im=im1>0?im1:im31
-				@isauto_v162mpositiontaking_1101 = CASE WHEN @isauto_v162mpositiontaking_mem_1101>0 THEN @isauto_v162mpositiontaking_mem_1101 ELSE @isauto_v162mpositiontaking_1101 END			
+				@isauto_v255mpositiontaking_1701 = CASE WHEN @isauto_v255mpositiontaking_mem_1701>0 THEN @isauto_v255mpositiontaking_mem_1701 ELSE @isauto_v255mpositiontaking_1701 END			
 			---------------------------------------------------------------------------------------------------------------------------------------------
 		----------------***Use Auto Position Taking***----------------------------------
 		--m1=im>0?min(um,m3-a1):m1
-		SELECT @v162mpositiontaking_1101 = CASE WHEN ISNULL(@isauto_v162mpositiontaking_1101, 0)<=0 THEN @v162mpositiontaking_1101 
-													ELSE CASE WHEN @auto_v162mpositiontaking_1101 < mcs.mpositiontaking - cs.apositiontaking THEN @auto_v162mpositiontaking_1101 ELSE mcs.mpositiontaking - cs.apositiontaking END END
+		SELECT @v255mpositiontaking_1701 = CASE WHEN ISNULL(@isauto_v255mpositiontaking_1701, 0)<=0 THEN @v255mpositiontaking_1701 
+													ELSE CASE WHEN @auto_v255mpositiontaking_1701 < mcs.mpositiontaking - cs.apositiontaking THEN @auto_v255mpositiontaking_1701 ELSE mcs.mpositiontaking - cs.apositiontaking END END
 		FROM @tmp_cs cs
 			INNER JOIN @tmp_mag mcs ON cs.sporttype = mcs.sporttype AND cs.bettype = mcs.bettype													
-		WHERE cs.sporttype = 162 AND cs.bettype = 1101
+		WHERE cs.sporttype = 255 AND cs.bettype = 1701
 		-------------------------------------------------------------------------------
 		
 		--CHOOSE MEMBER AUTOPOSITIONTAKING IF MEMBER IS SET AUTO (regardless of the setting in master account)
 		SELECT 
-			@auto_v162spositiontaking_1101 = CASE WHEN @isauto_v162spositiontaking_mem_1101>0 THEN @auto_v162spositiontaking_mem_1101 ELSE @auto_v162spositiontaking_1101 END,
-			@isauto_v162spositiontaking_1101 = CASE WHEN @isauto_v162spositiontaking_mem_1101>0 THEN @isauto_v162spositiontaking_mem_1101 ELSE @isauto_v162spositiontaking_1101 END		
+			@auto_v255spositiontaking_1701 = CASE WHEN @isauto_v255spositiontaking_mem_1701>0 THEN @auto_v255spositiontaking_mem_1701 ELSE @auto_v255spositiontaking_1701 END,
+			@isauto_v255spositiontaking_1701 = CASE WHEN @isauto_v255spositiontaking_mem_1701>0 THEN @isauto_v255spositiontaking_mem_1701 ELSE @isauto_v255spositiontaking_1701 END		
 		-----------------------------------------------------------------------------------------------------------------------------------------------
 
 		------------------***Use Auto Position Taking***----------------------------------
-		SELECT @v162spositiontaking_1101 = CASE WHEN ISNULL(@isauto_v162spositiontaking_1101, 0)<=0 THEN @v162spositiontaking_1101 ELSE CASE WHEN @auto_v162spositiontaking_1101 < @max_v162spositiontaking_1101 - @v162mpositiontaking_1101 - @v162apositiontaking_1101 THEN @auto_v162spositiontaking_1101 ELSE @max_v162spositiontaking_1101 - @v162mpositiontaking_1101 - @v162apositiontaking_1101 END END
+		SELECT @v255spositiontaking_1701 = CASE WHEN ISNULL(@isauto_v255spositiontaking_1701, 0)<=0 THEN @v255spositiontaking_1701 ELSE CASE WHEN @auto_v255spositiontaking_1701 < @max_v255spositiontaking_1701 - @v255mpositiontaking_1701 - @v255apositiontaking_1701 THEN @auto_v255spositiontaking_1701 ELSE @max_v255spositiontaking_1701 - @v255mpositiontaking_1701 - @v255apositiontaking_1701 END END
 		
 		---------------------------------------------------------------------------------
 		----maxs1=isauto?s4:s4-m2
-		SELECT @max_v162spositiontaking_1101 = CASE WHEN ISNULL(@isauto_v162spositiontaking_1101, 0)>0 THEN @max_v162spositiontaking_1101 ELSE @max_v162spositiontaking_1101-@max_v162mapositiontaking_1101 END
+		SELECT @max_v255spositiontaking_1701 = CASE WHEN ISNULL(@isauto_v255spositiontaking_1701, 0)>0 THEN @max_v255spositiontaking_1701 ELSE @max_v255spositiontaking_1701-@max_v255mapositiontaking_1701 END
 		----s1=s1>maxs1?maxs1:s1
-		SELECT @v162spositiontaking_1101 = CASE WHEN @v162spositiontaking_1101 > @max_v162spositiontaking_1101 THEN @max_v162spositiontaking_1101 ELSE @v162spositiontaking_1101 END
+		SELECT @v255spositiontaking_1701 = CASE WHEN @v255spositiontaking_1701 > @max_v255spositiontaking_1701 THEN @max_v255spositiontaking_1701 ELSE @v255spositiontaking_1701 END
 				
 	END
 	--don't update m1,s1 for member under agent was set im2=1
 	UPDATE cs
-	SET	mpositiontaking = @v162mpositiontaking_1101 ,
-		spositiontaking = @v162spositiontaking_1101
+	SET	mpositiontaking = @v255mpositiontaking_1701 ,
+		spositiontaking = @v255spositiontaking_1701
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_ag acs ON cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype 
-	WHERE acs.isautompositiontaking = 0 AND cs.sporttype = 162
-	/*
-	UPDATE cs WITH (ROWLOCK, UPDLOCK)
-	SET
-		mpositiontaking = CASE	WHEN cs.bettype = 1101 and cs.sporttype = 162 THEN @v162mpositiontaking_1101 
-							ELSE cs.mpositiontaking END,
-		spositiontaking = CASE WHEN cs.bettype = 1101 and cs.sporttype = 162 THEN @v162spositiontaking_1101 
-							ELSE cs.spositiontaking END
-	FROM CustSettingGame cs 
-		INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-		INNER JOIN CustSettingGame acs WITH(NOLOCK) ON acs.custid = c.recommend AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype 
-	WHERE c.custid=@custid AND c.roleid = 1 AND acs.isautompositiontaking = 0 AND cs.sporttype = 162
-	*/
+	WHERE acs.isautompositiontaking = 0 AND cs.sporttype = 255
 	
 	--Update auto PT
 	--------------------------------------------------------
@@ -400,60 +374,18 @@ BEGIN
 		isautompositiontaking = b.isautompositiontaking 
 	FROM @tmp_cs cs	inner join 
 			(
-				--select 1101 as bettype, 162 as sporttype, @auto_v162mpositiontaking_mem_1101 as autompositiontaking, @isauto_v162mpositiontaking_mem_1101 as isautompositiontaking
-				select 1101 as bettype, 162 as sporttype, @auto_v162mpositiontaking_mem_1101 as autompositiontaking, @isauto_v162mpositiontaking_mem_1101 as isautompositiontaking
+				--select 1701 as bettype, 255 as sporttype, @auto_v255mpositiontaking_mem_1701 as autompositiontaking, @isauto_v255mpositiontaking_mem_1701 as isautompositiontaking
+				select 1701 as bettype, 255 as sporttype, @auto_v255mpositiontaking_mem_1701 as autompositiontaking, @isauto_v255mpositiontaking_mem_1701 as isautompositiontaking
 			 ) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
-	/*
-	update CustSettingGame with (ROWLOCK, UPDLOCK) 
-	set autompositiontaking =  b.autompositiontaking, 
-		isautompositiontaking = b.isautompositiontaking 
-	from CustSettingGame as cs inner join 
-			(
-				--select 1101 as bettype, 162 as sporttype, @auto_v162mpositiontaking_mem_1101 as autompositiontaking, @isauto_v162mpositiontaking_mem_1101 as isautompositiontaking
-				select 1101 as bettype, 162 as sporttype, @auto_v162mpositiontaking_mem_1101 as autompositiontaking, @isauto_v162mpositiontaking_mem_1101 as isautompositiontaking
-			 ) as b on b.bettype = cs.bettype and b.sporttype = cs.sporttype
-	where cs.custid = @custid
-	if @@Error <> 0
-	BEGIN
 		
-		SELECT @ErrCode_cur = 101,
-				@ErrMsg_cur =  
-						case @Language 
-							when 'E' then 'Error updating auto position taking'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20010,@Language)
-						end	
-		SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-		return
-	END
-	*/
-	
 	declare @maxpos smallmoney
-	if @isauto_v162mpositiontaking_1101 >0 
+	if @isauto_v255mpositiontaking_1701 >0 
 	BEGIN
-		select @maxpos = mpositiontaking from @tmp_mag where sporttype=162 and bettype = 1101		
+		select @maxpos = mpositiontaking from @tmp_mag where sporttype=255 and bettype = 1701		
 		UPDATE cs
-		SET mpositiontaking = case when @maxpos - apositiontaking>@auto_v162mpositiontaking_1101 then @auto_v162mpositiontaking_1101 else @maxpos - apositiontaking end
+		SET mpositiontaking = case when @maxpos - apositiontaking>@auto_v255mpositiontaking_1701 then @auto_v255mpositiontaking_1701 else @maxpos - apositiontaking end
 		FROM @tmp_cs cs
-		WHERE cs.bettype = 1101 and cs.sporttype = 162
-		/*
-		select @maxpos = mpositiontaking from CustSettingGame with (NOLOCK) where custid = @mrecommend and sporttype=162 and bettype = 1101
-		update CustSettingGame with (ROWLOCK, UPDLOCK) set mpositiontaking = case when @maxpos - apositiontaking>@auto_v162mpositiontaking_1101 then @auto_v162mpositiontaking_1101 else @maxpos - apositiontaking end
-		from CustSettingGame as cs
-		where custid = @custid and cs.bettype = 1101 and cs.sporttype = 162
-		if @@Error <> 0
-		BEGIN
-			SELECT @ErrCode_cur = 110,
-					@ErrMsg_cur =  
-							case @Language 
-								when 'E' then 'Error updating auto position taking (for Other sports)'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](20010,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](99,@Language) + ')'
-							end	
-			SELECT  @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + char(7)
-			return
-		END
-		*/
+		WHERE cs.bettype = 1701 and cs.sporttype = 255		
 	END
 	
 	---merge code correct pt
@@ -465,7 +397,7 @@ BEGIN
 	FROM @tmp_cs cs	
 		INNER JOIN @tmp_ag aco ON cs.sporttype = aco.sporttype AND cs.bettype = aco.bettype
 		INNER JOIN @tmp_mag mcs ON mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701
 		AND cs.apositiontaking < aco.minpositiontaking
 	
 	--Recal AUTO MPT 
@@ -476,7 +408,7 @@ BEGIN
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_ag acs ON acs.sporttype = cs.sporttype AND acs.bettype = cs.bettype 
 		INNER JOIN @tmp_mag mcs ON mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101 
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701 
 		AND (cs.isautompositiontaking = 1 OR acs.isautompositiontaking = 1)
 		
 	--check master min/max
@@ -485,7 +417,7 @@ BEGIN
 	SET cs.mpositiontaking = CASE WHEN cs.mpositiontaking + cs.apositiontaking < mco.minpositiontaking THEN mco.minpositiontaking - cs.apositiontaking ELSE cs.mpositiontaking END
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_mag mco ON mco.sporttype = cs.sporttype AND mco.bettype = cs.bettype
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype= 1101
+	WHERE cs.sporttype = 255 AND cs.bettype= 1701
 	
 	--update m1,a1 when a1+m1>m3
 	--update m1=if(m3-a1<0,0,m3-a1)
@@ -498,7 +430,7 @@ BEGIN
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_mag mcs ON mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 
 		INNER JOIN @tmp_ag aco ON aco.sporttype = cs.sporttype AND aco.bettype = cs.bettype
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701
 		AND cs.mpositiontaking + cs.apositiontaking > mcs.mpositiontaking 		
 			
 	--recal autopos
@@ -509,7 +441,7 @@ BEGIN
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_mag mcs ON mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 
 		INNER JOIN @tmp_sag scs ON scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype 
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701
 		AND (cs.isautopositiontaking = 1 OR mcs.isautopositiontaking = 1)
 		
 	--check super min/max
@@ -518,7 +450,7 @@ BEGIN
 	SET cs.spositiontaking = sco.minpositiontaking - cs.mpositiontaking - cs.apositiontaking
 	FROM @tmp_cs cs
 		INNER JOIN @tmp_sag sco ON sco.sporttype = cs.sporttype AND sco.bettype = cs.bettype 
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101 
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701 
 		AND cs.spositiontaking + cs.mpositiontaking  + cs.apositiontaking < sco.minpositiontaking
 	
 	--update s1,m1,a1 in case s1+m1+a1>s4
@@ -544,7 +476,7 @@ BEGIN
 		INNER JOIN @tmp_sag scs ON scs.sporttype = cs.sporttype AND scs.bettype = cs.bettype 
 		INNER JOIN @tmp_mag mcs ON mcs.sporttype = cs.sporttype AND mcs.bettype = cs.bettype 		
 		INNER JOIN @tmp_ag aco ON aco.sporttype = cs.sporttype AND aco.bettype = cs.bettype
-	WHERE @UplineSyncLiveCS = 1 AND cs.sporttype = 162 AND cs.bettype = 1101 
+	WHERE cs.sporttype = 255 AND cs.bettype = 1701 
 		AND cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking
 	
 	UPDATE cs
@@ -565,54 +497,41 @@ BEGIN
 		OR cs.autopositiontaking <> t.autopositiontaking
 		OR cs.autompositiontaking <> t.autompositiontaking
 		
-	/*
-	EXEC dbo.Acc_CustSetting3rd_00
-		@custid = @custid, 
-		@recommend = @recommend, 
-		@mrecommend = @mrecommend, 
-		@srecommend = @srecommend,
-		@mode = 'LiveCasino'
-	*/	
-	---EXEC dbo.Acc_CustomerUpdMemberLiveCS_MinPositiontaking @custid = @custid, @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
-
-
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	DECLARE @LogSPData VARCHAR(MAX),
 			@TrackingValueDB VARCHAR(5000)
 
-	Select @LogSPData = '<Acc_CustomerUpdMemberLiveCS_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
+	Select @LogSPData = '<Acc_CustomerUpdMemberGoldDeluxe_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
 	
-	'v162mpositiontaking_1101="'+ coalesce(cast(@v162mpositiontaking_1101 as varchar(50)),space(1)) + '" ' +
-	'isauto_v162mpositiontaking_1101="'+ coalesce(cast(@isauto_v162mpositiontaking_agent_1101 as varchar(50)),SPACE(1)) + '" ' +
-	'isauto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@isauto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +	
-	'auto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@auto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +
-	'v162updatepositiontaking_1101="' + coalesce(cast(@v162updatepositiontaking_1101 as varchar(10)), space(1)) + '" ' +
-	'v162updateautopositiontaking_1101="' + coalesce(cast(@v162updateautopositiontaking_1101 as varchar(10)), space(1)) + '" ' +
+						'v255mpositiontaking_1701="'+ coalesce(cast(@v255mpositiontaking_1701 as varchar(50)),space(1)) + '" ' +
+						'isauto_v255mpositiontaking_1701="'+ coalesce(cast(@isauto_v255mpositiontaking_agent_1701 as varchar(50)),SPACE(1)) + '" ' +
+						'isauto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@isauto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +	
+						'auto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@auto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +
+						'v255updatepositiontaking_1701="' + coalesce(cast(@v255updatepositiontaking_1701 as varchar(10)), space(1)) + '" ' +
+						'v255updateautopositiontaking_1701="' + coalesce(cast(@v255updateautopositiontaking_1701 as varchar(10)), space(1)) + '" ' +
 	
-	'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
-	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
-	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
-	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
-	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
-	'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />' 
-
+						'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
+						'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
+						'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
+						'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+						'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />' 
 	
+	Select @TrackingValueDB =	'<Acc_CustomerUpdMemberGoldDeluxe_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
 	
-	Select @TrackingValueDB = '<Acc_CustomerUpdMemberLiveCS_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
+								'v255mpositiontaking_1701="'+ coalesce(cast(@old_v255mpositiontaking_1701 as varchar(50)),space(1)) + '" ' +
+								'isauto_v255mpositiontaking_1701="'+ coalesce(cast(@isauto_v255mpositiontaking_agent_1701 as varchar(50)),SPACE(1)) + '" ' +
+								'isauto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@old_isauto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +
+								'auto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@old_auto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +
+								'v255updatepositiontaking_1701="' + coalesce(cast(@v255updatepositiontaking_1701 as varchar(10)), space(1)) + '" ' +
+								'v255updateautopositiontaking_1701="' + coalesce(cast(@v255updateautopositiontaking_1701 as varchar(10)), space(1)) + '" ' +
 	
-	'v162mpositiontaking_1101="'+ coalesce(cast(@old_v162mpositiontaking_1101 as varchar(50)),space(1)) + '" ' +
-	'isauto_v162mpositiontaking_1101="'+ coalesce(cast(@isauto_v162mpositiontaking_agent_1101 as varchar(50)),SPACE(1)) + '" ' +
-	'isauto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@old_isauto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +
-	'auto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@old_auto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +
-	'v162updatepositiontaking_1101="' + coalesce(cast(@v162updatepositiontaking_1101 as varchar(10)), space(1)) + '" ' +
-	'v162updateautopositiontaking_1101="' + coalesce(cast(@v162updateautopositiontaking_1101 as varchar(10)), space(1)) + '" ' +
-	
-	'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
-	'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
-	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
-	'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
-	'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
-	'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />' 
+								'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
+								'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+								'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
+								'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
+								'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+								'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />' 
 
 	
 	
@@ -624,32 +543,32 @@ BEGIN
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 429,
+			@ActionID = 462,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
 	END TRY
 	BEGIN CATCH
-		Select @LogSPData = '<Acc_CustomerUpdMemberLiveCS_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
+		Select @LogSPData = '<Acc_CustomerUpdMemberGoldDeluxe_MAg custid="'+ COALESCE(CAST(@CustID AS VARCHAR(50)),SPACE(1)) + '" ' +
 	
-		'v162mpositiontaking_1101="'+ coalesce(cast(@v162mpositiontaking_1101 as varchar(50)),space(1)) + '" ' +
-		'isauto_v162mpositiontaking_1101="'+ coalesce(cast(@isauto_v162mpositiontaking_agent_1101 as varchar(50)),SPACE(1)) + '" ' +
-		'isauto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@isauto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +	
-		'auto_v162mpositiontaking_mem_1101="'+ coalesce(cast(@auto_v162mpositiontaking_mem_1101 as varchar(50)),SPACE(1)) + '" ' +
-		'v162updatepositiontaking_1101="' + coalesce(cast(@v162updatepositiontaking_1101 as varchar(10)), space(1)) + '" ' +
-		'v162updateautopositiontaking_1101="' + coalesce(cast(@v162updateautopositiontaking_1101 as varchar(10)), space(1)) + '" ' +
+							'v255mpositiontaking_1701="'+ coalesce(cast(@v255mpositiontaking_1701 as varchar(50)),space(1)) + '" ' +
+							'isauto_v255mpositiontaking_1701="'+ coalesce(cast(@isauto_v255mpositiontaking_agent_1701 as varchar(50)),SPACE(1)) + '" ' +
+							'isauto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@isauto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +	
+							'auto_v255mpositiontaking_mem_1701="'+ coalesce(cast(@auto_v255mpositiontaking_mem_1701 as varchar(50)),SPACE(1)) + '" ' +
+							'v255updatepositiontaking_1701="' + coalesce(cast(@v255updatepositiontaking_1701 as varchar(10)), space(1)) + '" ' +
+							'v255updateautopositiontaking_1701="' + coalesce(cast(@v255updateautopositiontaking_1701 as varchar(10)), space(1)) + '" ' +
 		
-		'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
-		'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
-		'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
-		'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
-		'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
-		'ErrMsg="'+ ERROR_MESSAGE() + '" />' 
+							'UserID="'+ COALESCE(CAST(@UserID AS VARCHAR(50)),SPACE(1)) + '" ' +
+							'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +
+							'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),SPACE(1)) + '" ' +
+							'IP="'+ COALESCE(CAST(@IP AS VARCHAR(15)),SPACE(1)) + '" ' +
+							'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +
+							'ErrMsg="'+ ERROR_MESSAGE() + '" />' 
 		
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 429,
+			@ActionID = 462,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration
@@ -661,10 +580,10 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_MAg] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_MAg] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_MAg] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_MAg] TO [vnteam] AS [dbo]

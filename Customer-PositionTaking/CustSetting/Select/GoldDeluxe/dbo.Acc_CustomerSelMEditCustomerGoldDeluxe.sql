@@ -1,14 +1,13 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerLiveCS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe]
 	@custid		INT
 AS
 /*
-	Created: 20120111@Lukas	
-	Task: Master select edits live casino PT settings on member
-	DB: DB053.BODB02
+	Created: 20150422@Elodie
+	Task: Master select edits Gold Deluxe PT settings on member
+	DB: DBAGE/BODB02
 	
 	Revisions:
-		- 20140307@Johnson: apply new m1_max is m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
+
 	Parameters Explanation:
 */
 BEGIN
@@ -18,11 +17,10 @@ BEGIN
 			@MasterID							INT,
 			@SuperID							INT,
 			@roleid								TINYINT,			
-			@v162mpositiontaking_1101_max		SMALLMONEY,
-			@v162mpositiontaking_1101_min		SMALLMONEY,
-			--@max_v162mpositiontaking_1101		SMALLMONEY,
-			@max_v162spositiontaking_1101		SMALLMONEY,
-			@isauto_v162mpositiontaking_1101	BIT,
+			@v255mpositiontaking_1701_max		SMALLMONEY,
+			@v255mpositiontaking_1701_min		SMALLMONEY,
+			@max_v255spositiontaking_1701		SMALLMONEY,
+			@isauto_v255mpositiontaking_1701	BIT,
 			@DisableAutoMPT						BIT	
 
 	SELECT	@AgentID = recommend,
@@ -31,7 +29,6 @@ BEGIN
 			@roleid	 = roleid
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid
-	
 	
 	IF @roleid <> 1
 		RETURN
@@ -42,57 +39,47 @@ BEGIN
 	WHERE custid = @MasterID
 
 	-- get is master auto on agent
-	SELECT @isauto_v162mpositiontaking_1101 = isautompositiontaking
+	SELECT @isauto_v255mpositiontaking_1701 = isautompositiontaking
 	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @AgentID AND sporttype = 162 AND bettype = 1101 
+	WHERE custid = @AgentID AND sporttype = 255 AND bettype = 1701 
 	
-	SELECT @v162mpositiontaking_1101_max = mpositiontaking
+	SELECT @v255mpositiontaking_1701_max = mpositiontaking
 	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @MasterID AND sporttype = 162 AND bettype = 1101
+	WHERE custid = @MasterID AND sporttype = 255 AND bettype = 1701
 
-	SELECT @max_v162spositiontaking_1101 = spositiontaking
+	SELECT @max_v255spositiontaking_1701 = spositiontaking
 	FROM custsettingGame WITH(NOLOCK)
-	WHERE custid = @SuperID AND sporttype = 162 AND bettype = 1101
+	WHERE custid = @SuperID AND sporttype = 255 AND bettype = 1701
 
-	SELECT @v162mpositiontaking_1101_min = minpositiontaking
+	SELECT @v255mpositiontaking_1701_min = minpositiontaking
 	FROM CustOverrideGame WITH(NOLOCK)
-	WHERE custid = @MasterID AND sporttype = 162 AND bettype = 1101
-	
-	/*
-	--@max_v162mpositiontaking_1101 = !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1)
-	SELECT @max_v162mpositiontaking_1101 = MAX(CASE WHEN NOT (cs.isautopositiontaking = 0 AND mcs.isautopositiontaking = 0) THEN mcs.mpositiontaking-cs.apositiontaking ELSE CASE WHEN mcs.mpositiontaking - cs.apositiontaking <= @max_v162spositiontaking_1101 - cs.spositiontaking - cs.apositiontaking THEN mcs.mpositiontaking - cs.apositiontaking ELSE @max_v162spositiontaking_1101 - cs.spositiontaking - cs.apositiontaking END END)
-	FROM custsettingGame cs WITH(NOLOCK)
-		INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-		INNER JOIN custsettingGame mcs WITH(NOLOCK) ON c.mrecommend = mcs.custid AND cs.sporttype = mcs.sporttype AND cs.bettype = mcs.bettype
-	WHERE cs.custid = @custid AND cs.sporttype = 162 AND cs.bettype = 1101
-	*/	
+	WHERE custid = @MasterID AND sporttype = 255 AND bettype = 1701		
 	
 	SELECT 	
 		ISNULL(@DisableAutoMPT,0) AS DisableAutoMPT,
-		mpositiontaking AS v162mpositiontaking_1101,
-		apositiontaking	AS V162apositiontaking_1101,
-		autompositiontaking AS auto_v162mpositiontaking_1101_mem,
-		isautompositiontaking AS isauto_v162mpositiontaking_1101_mem,
+		mpositiontaking AS v255mpositiontaking_1701,
+		apositiontaking	AS V255apositiontaking_1701,
+		autompositiontaking AS auto_v255mpositiontaking_1701_mem,
+		isautompositiontaking AS isauto_v255mpositiontaking_1701_mem,
 
-		@isauto_v162mpositiontaking_1101 AS isauto_v162mpositiontaking_1101,
+		@isauto_v255mpositiontaking_1701 AS isauto_v255mpositiontaking_1701,
 
-		@v162mpositiontaking_1101_max AS auto_v162mpositiontaking_1101_max,
+		@v255mpositiontaking_1701_max AS auto_v255mpositiontaking_1701_max,
 		
 		--m1_max = m3 - a1
-		@v162mpositiontaking_1101_max - apositiontaking AS v162mpositiontaking_1101_max,
+		@v255mpositiontaking_1701_max - apositiontaking AS v255mpositiontaking_1701_max,
 
-		CASE WHEN @v162mpositiontaking_1101_min - apositiontaking < 0 THEN 0 ELSE @v162mpositiontaking_1101_min - apositiontaking END AS v162mpositiontaking_1101_min
+		CASE WHEN @v255mpositiontaking_1701_min - apositiontaking < 0 THEN 0 ELSE @v255mpositiontaking_1701_min - apositiontaking END AS v255mpositiontaking_1701_min
 	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
+	WHERE custid = @custid AND sporttype = 255 AND bettype = 1701
 
 END
 
-
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMEditCustomerLiveCS] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe] TO [vnteam]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerLiveCS] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerLiveCS] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerLiveCS] TO [bodbDownlineNetView]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe] TO [bodbDownlineNetView]

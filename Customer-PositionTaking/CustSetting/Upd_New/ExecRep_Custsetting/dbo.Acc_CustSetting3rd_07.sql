@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_07    Script Date: 8/21/2014 3:12:20 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_07    Script Date: 8/21/2014 2:58:14 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_07] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_07_xtest] 
     @srecommend INT= 0,
     @mrecommend iNT = 0,
     @recommend INT = 0,
@@ -36,9 +27,10 @@ AS
                 Acc_CustomerUpdAgentHR_MaxPositiontaking                    
     Revision:
         - 20131104@Johnson: Add virtual sports, live casino, racing
-        - 20131203@Johnson: update virtual-sport for agent by @sporttype not hard code in sp
+        - 20131203@Johnson: Update virtual-sport for agent by @sporttype not hard code in sp
         - 20140314@Elodie: Add Keno product [Redmine:#13326]
-        - 20140818@Logan:   Exclude disabled members while updating Super, Master setting [Redmine:#19631]
+        - 20140818@Logan: Exclude disabled members while updating Super, Master setting [Redmine:#19631]
+		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
     Parameter's Explanation:
 */ 
 BEGIN
@@ -47,7 +39,7 @@ BEGIN
     DECLARE @IsExistTables tinyint
     SET @IsExistTables = 0
 
-    IF @mode IN ('LiveCasino','Keno')
+    IF @mode IN ('LiveCasino','Keno','GoldDeluxe')
     BEGIN    
         SELECT @IsExistTables = COUNT(*) 
         FROM dbo.sysobjects
@@ -141,7 +133,7 @@ BEGIN
                 AND cs.sporttype = 162 AND cs.bettype = 1101 
                 AND (cs.isautopositiontaking = 1 OR mcs.isautopositiontaking = 1)     
             
-        END        
+        END        		
         ELSE IF @mode = 'horse'
         BEGIN
             Update cs
@@ -158,7 +150,7 @@ BEGIN
                 AND c.Enabled = 1
                 and (cs.isautopositiontaking=1 or mcs.isautopositiontaking=1)
         END
-        ELSE IF @mode = 'Keno'
+        ELSE IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN            
             --u = (i3 or i1)?(u3 or u1)
             --s1 = min(s4-m1-a1, u)
@@ -595,7 +587,7 @@ BEGIN
                 AND cs.sporttype = 162 AND cs.bettype = 1101
                 AND cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking 
             
-        END        
+        END        		       
         ELSE IF @mode = 'horse'
         BEGIN
             --Recal AUTO MPT m1=min(m3-a1,u2)
@@ -702,7 +694,7 @@ BEGIN
                 and cs.sporttype in (151,152,153)
 
         END
-        ELSE IF @mode = 'Keno'
+        ELSE IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN
             --Recal AUTO MPT m1=min(m3-a1,u2)
             UPDATE cs
@@ -1187,8 +1179,8 @@ BEGIN
                 AND cs.sporttype = 162 AND cs.bettype = 1101 
                 AND cs.spositiontaking + cs.mpositiontaking + cs.apositiontaking > scs.spositiontaking
             
-        END
-        ELSE IF @mode = 'Keno'
+        END		
+        ELSE IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN
             UPDATE cs
             SET cs.apositiontaking = aco.minpositiontaking
@@ -1387,17 +1379,3 @@ BEGIN
     END
 END
 
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_07] TO [vnteam]
-GO 

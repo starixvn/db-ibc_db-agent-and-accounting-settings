@@ -1,25 +1,19 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_Commission]
-(
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentGoldDeluxe_Commission]
 	@custid				INT,
-	@v162discount_1101	DECIMAL(9,8),
+	@v255discount_1701	DECIMAL(9,8),
 	@UserID				INT, 
 	@SubAccID			INT,
 	@Language			VARCHAR(10), 
 	@IP					VARCHAR(21),  
 	@ErrCode			INT = 0 OUTPUT, 
 	@ErrMsg				NVARCHAR(200) = '' OUTPUT
-)
 AS
 /*
-	Created: 20120103@Lukas
-	Task: update agent live CS setting - commission
-	DB: DBTXN/BODB02
+	Created: 20150423@Elodie
+	Task: update agent Gold Deluxe setting - commission
+	DB: DBTXN/CustDB
 	
-	Revisions:
-		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
-		- 20130301@Johnson: write log on DBTXN if DBLOG failure
-		- 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
+	Revisions:		
 
 	Parameters Explanation:
 */
@@ -34,7 +28,7 @@ BEGIN
 	
 	DECLARE @username				NVARCHAR(50), 
 			@mrecommend				INT , 
-			@db_v162discount_1101	DECIMAL(9,8),
+			@db_v255discount_1701	DECIMAL(9,8),
 			@roleid					INT 
 
 	SELECT	@UserName	= username, 
@@ -43,39 +37,41 @@ BEGIN
 	FROM customer WITH(NOLOCK) 
 	WHERE CustID = @CustID
 	
-	SELECT  @db_v162discount_1101 = discount	
+	SELECT  @db_v255discount_1701 = discount	
 	FROM CustSettingGame WITH(NOLOCK) 
 	WHERE custid = @custid 
-		AND bettype = 1101 
-		AND sporttype = 162
+		AND bettype = 1701 
+		AND sporttype = 255
 	
 	--check if not change setting
-	IF 	@db_v162discount_1101 = @v162discount_1101
+	IF 	@db_v255discount_1701 = @v255discount_1701
 		RETURN
 		
-	IF @v162discount_1101 < 0 AND @v162discount_1101 > 0.01	
+	IF @v255discount_1701 < 0 AND @v255discount_1701 > 0.01	
 	BEGIN
 		SELECT @ErrMsg = CASE @Language 
-							WHEN 'E' THEN N'Invalid commission rate (Live Casino)'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](1,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](162,@Language) + ')'
+							WHEN 'E' THEN N'Invalid commission rate (Gold Deluxe)'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](1,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](255,@Language) + ')'
 						END, 
 				@ErrCode = 101
 		RETURN
 	END
 	
 	--Get g2=g3 if g2>g3	
-	SELECT @v162discount_1101 = CASE WHEN @v162discount_1101 > adiscount THEN adiscount ELSE @v162discount_1101 END
+	SELECT @v255discount_1701 = CASE WHEN @v255discount_1701 > adiscount THEN adiscount ELSE @v255discount_1701 END
 	FROM CustSettingGame AS cs WITH (NOLOCK) 
 	WHERE custid = @mrecommend 
-		AND bettype = 1101 AND sporttype = 162
+		AND bettype = 1701 AND sporttype = 255
 		
 	
 	-- apply exec rep
-	EXEC Acc_CustSetting3rd_06
-	@CustId = @custid,
-	@RoleId = @roleid,
-	@v162discount_1101 = @v162discount_1101,
-	@mode = 'LiveCasino'
+	EXEC Acc_CustSetting3rd_06_xtest
+		@CustId = @custid
+		,@RoleId = @roleid
+		,@discount = @v255discount_1701
+		,@mode = 'GoldDeluxe'
+		,@SportType = 255
+		,@BetType = 1701
 	
 	SET @endRun = GETDATE()
 	set @duration  = DATEDIFF(MILLISECOND,@startRun,@endRun)
@@ -83,38 +79,38 @@ BEGIN
 	DECLARE @LogSPData VARCHAR(MAX),
 			@TrackingValueDB VARCHAR(4000)
 			
-	SELECT @LogSPData = '<Acc_CustomerUpdAgentLiveCS_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
-	'discount162_1101="'+ coalesce(cast(@v162discount_1101 as varchar(50)),space(1))+ '" ' +
-	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
-	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
-	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
-	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
-	'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
+	SELECT @LogSPData = '<Acc_CustomerUpdAgentGoldDeluxe_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+						'discount255_1701="'+ coalesce(cast(@v255discount_1701 as varchar(50)),space(1))+ '" ' +
+						'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+						'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+						'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
+						'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+						'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
 
 
-	Select @TrackingValueDB = '<Acc_CustomerUpdAgentLiveCS_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
-	'discount162_1101="'+ coalesce(cast(@db_v162discount_1101 as varchar(50)),space(1))+ '" ' +
-	'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
-	'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
-	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
-	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
-	'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
+	Select @TrackingValueDB =	'<Acc_CustomerUpdAgentGoldDeluxe_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+								'discount255_1701="'+ coalesce(cast(@db_v255discount_1701 as varchar(50)),space(1))+ '" ' +
+								'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+								'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+								'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+								'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+ '" ' +
+								'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+								'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(5000)),space(1)) + '" />'
 
 	--Log customer info 
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 226,
+			@ActionID = 240,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration  = @duration
 	END TRY
 	BEGIN CATCH
-		SELECT @LogSPData = '<Acc_CustomerUpdAgentLiveCS_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
-		'discount162_1101="'+ coalesce(cast(@v162discount_1101 as varchar(50)),space(1))+ '" ' +
+		SELECT @LogSPData = '<Acc_CustomerUpdAgentGoldDeluxe_Commission custid="'+ coalesce(cast(@custid as varchar(50)),space(1))+ '" ' +
+		'discount255_1701="'+ coalesce(cast(@v255discount_1701 as varchar(50)),space(1))+ '" ' +
 		'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
 		'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
@@ -125,7 +121,7 @@ BEGIN
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID = @UserID,
 			@CustID = @CustID,
-			@ActionID = 226,
+			@ActionID = 240,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration  = @duration
@@ -135,8 +131,8 @@ BEGIN
 END
 
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_Commission] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentGoldDeluxe_Commission] TO [vnteam]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_Commission] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentGoldDeluxe_Commission] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentLiveCS_Commission] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentGoldDeluxe_Commission] TO [bodbDownlineNet]
