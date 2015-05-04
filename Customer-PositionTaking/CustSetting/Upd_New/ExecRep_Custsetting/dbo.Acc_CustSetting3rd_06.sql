@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_06    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_06    Script Date: 8/21/2014 2:58:10 PM ******/
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06_xtest]
     @CustId int,
     @RoleId int,
     @discountNumber decimal(9,8)    = 0, -- Number game
@@ -60,6 +51,7 @@ AS
                             2.Code aligning on modified parts
 		- 20141113@Johnson: Hardcode agent list not give commission for downlines 
 						and add Keno, LiveCasino sport for member level [Redmine #25787]                                              
+		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
@@ -67,6 +59,7 @@ AS
                 - 'LiveCasino': Live Casino
                 - 'Keno': Keno
                 - 'LiveCasinoUpdAll': Update LC commision for super and downlines
+				- 'GoldDeluxe': Gold Deluxe
             
     */
 BEGIN
@@ -110,7 +103,7 @@ BEGIN
 	
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
-	UNION SELECT	14228293	,	1	--	supertestUAT20101001
+	UNION SELECT	14228293	,	1	--	supertestUAT20101001	
 	--End customer list------------------------------------------
 	
     IF @Mode = 'NumberGame'
@@ -1286,70 +1279,8 @@ BEGIN
 			END
 		END             
     END
-    IF @mode = 'LiveCasinoUpdAll'
-    BEGIN
-        IF @RoleId = 4
-        BEGIN
-            -- update commission for super
-            UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-               SET sdiscount = @v162discount_1101
-             WHERE custid = @custid 
 
-            -- update commission for master
-            UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
-               SET adiscount = @v162discount_1101
-             WHERE custid IN (SELECT custid 
-                          FROM custinfo WITH(NOLOCK)
-                             WHERE            srecommend = @custid and roleid=3) 
-
-            -- update commission for agents
-            UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
-               SET discount = @v162discount_1101
-             WHERE custid IN (SELECT custid 
-                                FROM custinfo WITH(NOLOCK)
-                               WHERE srecommend = @custid
-                                 AND roleid     = 2
-                                 AND Enabled    = 1
-                             ) -- active agents
-
-            -- update commission for members
-            --Check IF the current super is Credit Type
-
-            IF NOT EXISTS (SELECT 1 
-                             FROM Dep_CustSuper cs WITH(NOLOCK) 
-                       INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.srecommend
-                            WHERE ci.custid = @custid
-                          )
-            BEGIN
-                UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
-                   SET sdiscount = @v162discount_1101
-                     , adiscount = @v162discount_1101
-                     , discount = @v162discount_1101
-                     , playerdiscount = @v162discount_1101
-                 WHERE custid IN (SELECT custid 
-                                    FROM custinfo WITH(NOLOCK)
-                                   WHERE srecommend = @custid
-                                     AND roleid = 1
-                                     AND Enabled = 1
-                                 ) 
-            END
-            ELSE
-            BEGIN
-                UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
-                   SET sdiscount = @v162discount_1101
-                     , adiscount = @v162discount_1101
-                     , discount = @v162discount_1101    
-                 WHERE custid IN (SELECT custid 
-                                    FROM custinfo WITH(NOLOCK)
-                                   WHERE srecommend = @custid
-                                     AND roleid = 1
-                                     AND Enabled = 1
-                                 ) 
-            END    
-        END
-    END    
-
-    IF @mode = 'Keno'
+	IF @mode = 'Keno' or @mode = 'GoldDeluxe'
     BEGIN
         IF @RoleId = 4
         BEGIN
@@ -1527,17 +1458,67 @@ BEGIN
 			
 		END 
     END
+
+    IF @mode = 'LiveCasinoUpdAll'
+    BEGIN
+        IF @RoleId = 4
+        BEGIN
+            -- update commission for super
+            UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
+               SET sdiscount = @v162discount_1101
+             WHERE custid = @custid 
+
+            -- update commission for master
+            UPDATE custsettinggame WITH(ROWLOCK,UPDLOCK)
+               SET adiscount = @v162discount_1101
+             WHERE custid IN (SELECT custid 
+                          FROM custinfo WITH(NOLOCK)
+                             WHERE            srecommend = @custid and roleid=3) 
+
+            -- update commission for agents
+            UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
+               SET discount = @v162discount_1101
+             WHERE custid IN (SELECT custid 
+                                FROM custinfo WITH(NOLOCK)
+                               WHERE srecommend = @custid
+                                 AND roleid     = 2
+                                 AND Enabled    = 1
+                             ) -- active agents
+
+            -- update commission for members
+            --Check IF the current super is Credit Type
+
+            IF NOT EXISTS (SELECT 1 
+                             FROM Dep_CustSuper cs WITH(NOLOCK) 
+                       INNER JOIN custInfo ci WITH(NOLOCK) ON cs.custid = ci.srecommend
+                            WHERE ci.custid = @custid
+                          )
+            BEGIN
+                UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
+                   SET sdiscount = @v162discount_1101
+                     , adiscount = @v162discount_1101
+                     , discount = @v162discount_1101
+                     , playerdiscount = @v162discount_1101
+                 WHERE custid IN (SELECT custid 
+                                    FROM custinfo WITH(NOLOCK)
+                                   WHERE srecommend = @custid
+                                     AND roleid = 1
+                                     AND Enabled = 1
+                                 ) 
+            END
+            ELSE
+            BEGIN
+                UPDATE custsettinggame WITH(ROWLOCK, UPDLOCK)
+                   SET sdiscount = @v162discount_1101
+                     , adiscount = @v162discount_1101
+                     , discount = @v162discount_1101    
+                 WHERE custid IN (SELECT custid 
+                                    FROM custinfo WITH(NOLOCK)
+                                   WHERE srecommend = @custid
+                                     AND roleid = 1
+                                     AND Enabled = 1
+                                 ) 
+            END    
+        END
+    END      
 END
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 

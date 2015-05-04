@@ -1,12 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerInsMember_CloneSetting_Com]    Script Date: 08/21/2014 22:41:24 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_Com    Script Date: 8/20/2014 1:32:10 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_Com    Script Date: 8/19/2014 12:42:20 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
 	@Custid INT OUTPUT
 	,@UserName VARCHAR(30)
@@ -42,6 +33,8 @@ AS
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
 	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
+	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]                              
+	
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -284,6 +277,8 @@ BEGIN
 				,maxpermatch154
 				,HideKeno
 				,DisableEsports
+				,HideGoldDeluxe
+				,DisableGoldDeluxe
 				)
 		 SELECT
 				@CustID
@@ -356,6 +351,8 @@ BEGIN
 				,maxpermatch154
 				,HideKeno
 				,DisableEsports
+				,HideGoldDeluxe
+				,DisableGoldDeluxe
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
 	END TRY	
@@ -542,3 +539,13 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam] AS [dbo]

@@ -1,6 +1,6 @@
 USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_02]    Script Date: 10/29/2014 02:38:54 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_02]    Script Date: 04/27/2015 11:12:09 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -23,7 +23,9 @@ AS
 	DB: DBTXN/bodb02
 	
 	Revisions:
-		20140303@Patrick	: Add more sport: 202 for Keno
+		- 20140303@Patrick	: Add more sport: 202 for Keno
+		- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486] 
+		
 	Parameter's Explanation:
 */ 
 BEGIN
@@ -299,9 +301,9 @@ BEGIN
 		RETURN
 	END	
 
-	--Keno
-	INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-	SELECT	GameTypeID, @CustID, MinBet, MaxBet, MaxPerGameType, IsDisabled
+	--Keno, Gold Deluxe
+	INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
+	SELECT	GameTypeID, @CustID, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList
 	FROM	dbo.CustGameType WITH(NOLOCK)
 	WHERE	Custid = @ExistingCustid
 
@@ -324,5 +326,6 @@ BEGIN
 	END
 	--End Keno
 END
+
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_02] TO [vnteam] AS [dbo]
