@@ -12,6 +12,7 @@
 	@DisableVS BIT = 0,
 	@EnableVS BIT = 0,
 	@DisableNumberGame BIT = 0,
+	@DisableGoldDeluxe BIT = 0,
 	@BingoStatus BIT = 0,
 	@AutoSuspendSoccer BIT = 0,
 	@AutoSuspendOtherSports BIT = 0,
@@ -26,6 +27,7 @@ Original: Acc_ExecRep_Cust_04
 
 Revisions:
 	- 20141230@Johnson: separate virtual rate by sporttype and bettype
+	- 20150424@Johnson: add Gold Deluxe
 Param's Explanation:
 	@Action: 
 		+ 'VirtualMultiplier': Virtual Rate [@virtualmultiplier]
@@ -438,3 +440,33 @@ begin
 			AND Recommend = @CustID
 	END
 end
+--@20150424@Johnson: add Gold Deluxe
+ELSE IF @Action = 'GoldDeluxe'
+BEGIN
+	IF (@roleID = 4)
+	BEGIN
+		UPDATE dbo.CustInfo WITH (ROWLOCK, UPDLOCK) 
+		SET DisableGoldDeluxe = @DisableGoldDeluxe,
+			HideGoldDeluxe = CASE WHEN HideGoldDeluxe = 1 THEN 0 ELSE HideGoldDeluxe END		
+		WHERE CustID <> @CustID
+			AND SRecommend = @CustID
+	END
+
+	IF (@roleID = 3)
+	BEGIN
+		UPDATE dbo.CustInfo WITH (ROWLOCK, UPDLOCK) 
+		SET DisableGoldDeluxe = @DisableGoldDeluxe,
+			HideGoldDeluxe = CASE WHEN HideGoldDeluxe = 1 THEN 0 ELSE HideGoldDeluxe END				
+		WHERE CustID <> @CustID
+			AND MRecommend = @CustID
+	END
+
+	IF (@roleID = 2)
+	BEGIN
+		UPDATE dbo.CustInfo WITH (ROWLOCK, UPDLOCK) 
+		SET DisableGoldDeluxe = @DisableGoldDeluxe,
+			HideGoldDeluxe = CASE WHEN HideGoldDeluxe = 1 THEN 0 ELSE HideGoldDeluxe END				
+		WHERE CustID <> @CustID
+			AND Recommend = @CustID
+	END
+END

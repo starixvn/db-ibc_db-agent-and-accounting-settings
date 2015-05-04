@@ -408,9 +408,12 @@ Begin DataProject = "AgentPT"
                Script = "dbo.Acc_CustSetting3rd_07.sql"
                Script = "dbo.Acc_CustSetting3rd_08.sql"
                Script = "dbo.Acc_CustSetting3rd_09.sql"
+               Script = "dbo.Acc_CustSetting3rd_10.sql"
                Script = "dbo.Acc_ExecRep_Cust_04.sql"
             End
             Begin Folder = "Gold Deluxe"
+               Script = "dbo.Acc_CustomerUpdDisableGoldDeluxe.sql"
+               Script = "dbo.Acc_CustomerUpdGoldDeluxe_MinMaxBet.sql"
             End
             Begin Folder = "HR"
                Script = "dbo.Acc_CustomerUpdAgent_CommissionHR.proc.sql"
