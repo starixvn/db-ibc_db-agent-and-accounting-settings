@@ -1,10 +1,17 @@
-﻿ALTER PROCEDURE[dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    Script Date: 05/08/2015 13:59:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE[dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
 	@custid  INT    
 AS    
  /*    
   Created: Kathy    
   Date: 20150424    
-  Task: Company edits super's live casino setting    
+  Task: Company edits super's gold deluxe setting    
   DB: DBAGE.BODB02    
       
   Revisions:    
@@ -16,14 +23,40 @@ BEGIN
 		
 	SET NOCOUNT ON    
 	    
-	DECLARE @min_spositiontaking SMALLMONEY    
+	DECLARE @min_spositiontaking	SMALLMONEY    
+			,@Downlines				BIT	= 1
+			,@DisableDowlines		BIT = 0
+			,@DisableGoldDeluxe		BIT
+		
+	IF NOT EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3)
+		SET @Downlines = 0	
+	ELSE IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo WITH(NOLOCK) WHERE srecommend = @custid AND roleid = 3 AND DisableGoldDeluxe = 1)
+		SET @DisableDowlines = 1
+		
+	SELECT	@DisableGoldDeluxe = DisableGoldDeluxe
+	FROM	dbo.custInfo WITH(NOLOCK)
+	WHERE	custid = @custid
 	    
 	SELECT	@min_spositiontaking = minpositiontaking    
 	FROM	CustOverrideGame WITH(NOLOCK)    
 	WHERE	custid = @custid 
 			AND sporttype = 255 
-			AND bettype = 1701    	    
+			AND bettype = 1701  
+	
+	--Customer Info
+	SELECT	username
+			,firstname
+			,lastname
+			,phone
+			,mobilephone
+			,fax
+			,@DisableGoldDeluxe AS DisableGoldDeluxe
+			,@Downlines			AS Downlines
+			,@DisableDowlines	AS DisableDowlines
+	FROM	dbo.Customer WITH (NOLOCK)
+	WHERE	custID = @CustID   	    
 	     
+	 --PT & commission
 	 SELECT	ISNULL(@min_spositiontaking,0)	AS v255spositiontaking_1701_min,    
 		    gs.MaxPositiontaking			AS v255spositiontaking_1701_max,    
 		    cs.spositiontaking				AS v255spositiontaking_1701,    
@@ -35,8 +68,16 @@ BEGIN
 			AND gs.IsDep = 0
 	 WHERE custid = @custid 
 			AND cs.sporttype = 255 
-			AND cs.bettype = 1101    
+			AND cs.bettype = 1701    
+			
+	-- bet setting
+	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		@custid		= @custid
+		,@UplineId	= @custid
+		
 END
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO

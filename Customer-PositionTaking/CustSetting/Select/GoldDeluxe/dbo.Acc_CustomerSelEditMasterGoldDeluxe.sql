@@ -1,11 +1,18 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]    Script Date: 05/08/2015 15:17:42 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]
 	@custid INT,
 	@srecommend INT
 AS
 	/*
 		Created: Kathy
 		Date: 20150424
-		Task: Super edits master's live casino setting
+		Task: Super edits master's Gold Deluxe setting
 		DB: DBAGE.BODB02
 		
 		Revisions:
@@ -15,16 +22,27 @@ AS
 BEGIN
 	SET NOCOUNT ON
 		
-	DECLARE	@min_mpositiontaking	SMALLMONEY,
-			@max_spositiontaking	SMALLMONEY,
-			@max_adiscount			SMALLMONEY,
-			@DisableAutoMPT			BIT
+	DECLARE	@min_mpositiontaking	SMALLMONEY
+			,@max_spositiontaking	SMALLMONEY
+			,@max_adiscount			SMALLMONEY
+			,@DisableAutoMPT		BIT
+			,@Downlines				BIT	= 1
+			,@DisableDowlines		BIT = 0
+			,@DisableGoldDeluxe		BIT
 			
 	--Disable auto master PT
 	SELECT	@DisableAutoMPT = DisableAutoMPT 
 	FROM	CustMaster WITH(NOLOCK) 
 	WHERE	CustID = @custid
 			
+	IF NOT EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE mrecommend = @CustID AND roleid = 2)
+		SET @Downlines = 0	-- dont have any downlines
+	ELSE IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo WITH(NOLOCK) WHERE mrecommend = @custid AND roleid = 2 AND DisableGoldDeluxe = 1)
+		SET @DisableDowlines = 1
+		
+	SELECT	@DisableGoldDeluxe = DisableGoldDeluxe
+	FROM	dbo.custInfo WITH(NOLOCK)
+	WHERE	custid = @custid
 
 	SELECT	@min_mpositiontaking = minpositiontaking
 	FROM	CustOverrideGame WITH(NOLOCK)
@@ -39,7 +57,20 @@ BEGIN
 			AND sporttype = 255 
 			AND bettype = 1701
 
-
+	--Customer Info
+	SELECT	username
+			,firstname
+			,lastname
+			,phone
+			,mobilephone
+			,fax
+			,@DisableGoldDeluxe AS DisableGoldDeluxe
+			,@Downlines			AS Downlines
+			,@DisableDowlines	AS DisableDowlines
+	FROM	dbo.Customer WITH (NOLOCK)
+	WHERE	custID = @CustID   	  
+	
+	 --PT & commission
 	SELECT	ISNULL(@DisableAutoMPT,0)		AS DisableAutoMPT, 
 			isautopositiontaking			AS isauto_v255spositiontaking_1701, --i3
 			autopositiontaking				AS auto_v255spostiontaking_1701,--u3
@@ -54,14 +85,20 @@ BEGIN
 	WHERE	custid = @custid 
 			AND sporttype = 255 
 			AND bettype = 1701
-
+	
+	-- bet setting
+	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		@custid		= @custid
+		,@UplineId	= @srecommend
 END
 
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].Acc_CustomerSelEditMasterGoldDeluxe TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerSelEditMasterGoldDeluxe TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerSelEditMasterGoldDeluxe TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].Acc_CustomerSelEditMasterGoldDeluxe TO [bodbDownlineNetView]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [vnteam] AS [dbo]
