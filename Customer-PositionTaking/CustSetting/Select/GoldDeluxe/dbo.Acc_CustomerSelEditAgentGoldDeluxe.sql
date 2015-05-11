@@ -1,6 +1,6 @@
 ﻿USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditAgentGoldDeluxe]    Script Date: 05/11/2015 09:17:24 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditAgentGoldDeluxe]    Script Date: 05/11/2015 10:46:39 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -58,6 +58,7 @@ BEGIN
 	
 	--Customer Info
 	SELECT	username
+			,username2 AS nickname
 			,firstname
 			,lastname
 			,phone
