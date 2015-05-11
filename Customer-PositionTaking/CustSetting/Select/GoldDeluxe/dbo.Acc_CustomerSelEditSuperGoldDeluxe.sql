@@ -1,6 +1,6 @@
 ﻿USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    Script Date: 05/08/2015 13:59:12 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    Script Date: 05/11/2015 09:18:27 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -26,7 +26,7 @@ BEGIN
 	DECLARE @min_spositiontaking	SMALLMONEY    
 			,@Downlines				BIT	= 1
 			,@DisableDowlines		BIT = 0
-			,@DisableGoldDeluxe		BIT
+			,@DisableGoldDeluxe		BIT 
 		
 	IF NOT EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3)
 		SET @Downlines = 0	
@@ -50,9 +50,9 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,@DisableGoldDeluxe AS DisableGoldDeluxe
-			,@Downlines			AS Downlines
-			,@DisableDowlines	AS DisableDowlines
+			,ISNULL(@DisableGoldDeluxe,0)	AS DisableGoldDeluxe
+			,@Downlines						AS Downlines
+			,@DisableDowlines				AS DisableDowlines
 	FROM	dbo.Customer WITH (NOLOCK)
 	WHERE	custID = @CustID   	    
 	     
@@ -76,6 +76,8 @@ BEGIN
 		,@UplineId	= @custid
 		
 END
+
+
 
 
 GO

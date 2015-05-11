@@ -1,6 +1,6 @@
 ﻿USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe]    Script Date: 05/08/2015 16:56:04 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelMEditCustomerGoldDeluxe]    Script Date: 05/11/2015 09:18:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -79,7 +79,7 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,@DisableGoldDeluxe AS DisableGoldDeluxe
+			,ISNULL(@DisableGoldDeluxe,0) AS DisableGoldDeluxe
 	FROM	dbo.Customer WITH (NOLOCK)
 	WHERE	custID = @CustID  
 	
@@ -109,6 +109,8 @@ BEGIN
 		@custid		= @custid
 		,@UplineId	= @AgentID
 END
+
+
 
 
 GO
