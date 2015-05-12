@@ -7,12 +7,13 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTOnMemberMultiUpd] 
 	  @CustIDList	VARCHAR(MAX)
-	, @PT_XML		VARCHAR(MAX)
+	, @PT		VARCHAR(MAX)
 	, @SubAccID		INT				= 0
 	, @IP			VARCHAR(50)		= ''
 	, @UserID		INT				= 0
 	, @Language		VARCHAR(20)		= 'E'
 	, @ErrCode		INT				= 0		OUTPUT
+	, @MsgType		INT = 0 OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
@@ -22,7 +23,7 @@ AS
 		DB: DBTXN/CustDB
 
 		Parameter's Explanation:	
-		• @PT_XML:
+		• @PT:
 					<ROOT>
 						<PT 
 							SportType="1" 
@@ -88,8 +89,8 @@ BEGIN
 	DECLARE @RemainCustTbl TABLE (CustID INT)
 			
 	--Check if XML is null or empty
-	IF @PT_XML IS NULL
-		OR @PT_XML = ''
+	IF @PT IS NULL
+		OR @PT = ''
 		OR @CustIDList IS NULL
 		OR @CustIDList = ''
 		RETURN
@@ -97,6 +98,7 @@ BEGIN
 	SET @startRun = GETDATE()
 
 	SELECT @ErrCode = 0
+		, @MsgType = 0
 		, @ErrMsg = ''
 
 
@@ -127,7 +129,7 @@ BEGIN
 	DECLARE @iDoc INT
 
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT_XML
+		, @PT
 
 	INSERT @NewPTTble
 	SELECT SportType
@@ -202,9 +204,10 @@ BEGIN
 						, @AgentID		= @AgentID
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
-						, @PT_XML = @PT_XML
+						, @PT = @PT
 						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUTPUT
+						, @MsgType		= @MsgType	OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
 	IF @ErrCode <> 0
 		RETURN		
@@ -250,7 +253,7 @@ BEGIN
 	EXEC dbo.Acc_CustSetting_MemberPTCorrect @AgentID = @AgentID
 								, @MasterID = @MasterID
 								, @SuperID = @SuperID
-								, @PT_XML = @AdjustedPT_XML
+								, @PT = @AdjustedPT_XML
 								, @CorrectedPT_XML = @CorrectedPT_XML OUTPUT
 			
 								
@@ -466,7 +469,7 @@ BEGIN
 			, @CustIDList		= @CustIDList
 			, @SubAccID			= @SubAccID
 			, @ActionID			= 452
-			, @NewPT_XML		= @PT_XML
+			, @NewPT_XML		= @PT
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END TRY
@@ -477,7 +480,7 @@ BEGIN
 			, @CustIDList		= @CustIDList
 			, @SubAccID			= @SubAccID
 			, @ActionID			= 452
-			, @NewPT_XML		= @PT_XML
+			, @NewPT_XML		= @PT
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END CATCH
