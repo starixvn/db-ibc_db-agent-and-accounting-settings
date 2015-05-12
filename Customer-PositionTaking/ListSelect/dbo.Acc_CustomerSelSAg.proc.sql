@@ -38,6 +38,7 @@ Revisions:
 	- 20131029@Elodie: Put link server DBAGE [Redmine:#7261]
 	- 20140116@Elodie: Hot fix to get information of disabled customer
 	- 20140407@Elodie: Add Keno product [Redmine:#13156]
+	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -109,7 +110,8 @@ BEGIN
 
 		ci.HideKeno,
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
-
+		ci.HideGoldDeluxe,
+		ci.DisableGoldDeluxe,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		
 	FROM 
@@ -147,7 +149,9 @@ BEGIN
 		m.roleid,--phuong.nguyen, get currency name	
 		ci.matchlimit,
 		ci.virtualmultiplier,
-		ci.HideKeno
+		ci.HideKeno,
+		ci.HideGoldDeluxe,
+		ci.DisableGoldDeluxe
 	--ORDER BY ci.closed, m.username
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
@@ -211,7 +215,8 @@ BEGIN
 
 		ci.HideKeno,
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
-
+		ci.HideGoldDeluxe,
+		ci.DisableGoldDeluxe,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
@@ -249,7 +254,9 @@ BEGIN
 		m.roleid,--phuong.nguyen, get currency name	
 		ci.matchlimit,
 		ci.virtualmultiplier,
-		ci.HideKeno
+		ci.HideKeno,
+		ci.HideGoldDeluxe,
+		ci.DisableGoldDeluxe
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
