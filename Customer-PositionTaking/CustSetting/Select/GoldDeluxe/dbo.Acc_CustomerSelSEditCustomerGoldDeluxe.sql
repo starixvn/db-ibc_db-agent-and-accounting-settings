@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]    Script Date: 05/11/2015 10:47:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]
 	@custid		INT
 AS
 /*
@@ -15,32 +22,57 @@ BEGIN
 	SET NOCOUNT ON
 
 	DECLARE 	
-		@v255spositiontaking_1701		SMALLMONEY,--s4
-		@v255spositiontaking_1701_min	SMALLMONEY,--n4
-		@v255mpositiontaking_1701		SMALLMONEY,--m3
-		@isauto_v255spositiontaking_1701 BIT,--i3
-		@srecommend INT, 
-		@mrecommend	INT
+		@v255spositiontaking_1701			SMALLMONEY,--s4
+		@v255spositiontaking_1701_min		SMALLMONEY,--n4
+		@v255mpositiontaking_1701			SMALLMONEY,--m3
+		@isauto_v255spositiontaking_1701	BIT,--i3
+		@srecommend							INT, 
+		@mrecommend							INT,
+		@recommend							INT,
+		@DisableGoldDeluxe					BIT
 
-	SELECT @srecommend = srecommend, @mrecommend = mrecommend 
-	FROM CustInfo WITH(NOLOCK)
-	WHERE custid = @custid
+	SELECT	@srecommend = srecommend
+			,@mrecommend = mrecommend 
+			,@recommend = recommend
+			,@DisableGoldDeluxe = DisableGoldDeluxe
+	FROM	CustInfo WITH(NOLOCK)
+	WHERE	custid = @custid
 
 	--s4
-	SELECT @v255spositiontaking_1701 = spositiontaking
-	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @srecommend AND sporttype = 255 AND bettype = 1701
+	SELECT	@v255spositiontaking_1701 = spositiontaking
+	FROM	CustSettingGame WITH(NOLOCK)
+	WHERE	custid = @srecommend 
+			AND sporttype = 255 
+			AND bettype = 1701
 
 	--n4
-	SELECT @v255spositiontaking_1701_min = minpositiontaking
-	FROM CustOverrideGame WITH(NOLOCK)	
-	WHERE custid = @srecommend AND sporttype = 255 AND bettype = 1701
+	SELECT	@v255spositiontaking_1701_min = minpositiontaking
+	FROM	CustOverrideGame WITH(NOLOCK)	
+	WHERE	custid = @srecommend 
+			AND sporttype = 255 
+			AND bettype = 1701
 
 	--i3,m3
-	SELECT @v255mpositiontaking_1701 = mpositiontaking, @isauto_v255spositiontaking_1701 = isautopositiontaking
-	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @mrecommend AND sporttype = 255 AND bettype = 1701 
+	SELECT	@v255mpositiontaking_1701 = mpositiontaking		
+			,@isauto_v255spositiontaking_1701 = isautopositiontaking
+	FROM	CustSettingGame WITH(NOLOCK)
+	WHERE	custid = @mrecommend 
+			AND sporttype = 255 
+			AND bettype = 1701 
+			
+	--Customer Info
+	SELECT	username
+			,username2 AS nickname
+			,firstname
+			,lastname
+			,phone
+			,mobilephone
+			,fax
+			,ISNULL(@DisableGoldDeluxe,0) AS DisableGoldDeluxe
+	FROM	dbo.Customer WITH (NOLOCK)
+	WHERE	custID = @CustID   	 
 
+	--PT & commission
 	SELECT	spositiontaking as v255spositiontaking_1701,
 			mpositiontaking as v255mpositiontaking_1701,
 			apositiontaking as v255apositiontaking_1701,
@@ -52,15 +84,25 @@ BEGIN
 			ISNULL(@v255spositiontaking_1701,0) - ISNULL(@v255mpositiontaking_1701,0) as v255spositiontaking_1701_max,
 			-- s1_min 
 			CASE WHEN ISNULL(@v255spositiontaking_1701_min,0) - (mpositiontaking + apositiontaking) > 0 THEN ISNULL(@v255spositiontaking_1701_min,0) - (mpositiontaking + apositiontaking) ELSE 0 END v255spositiontaking_1701_min	
-	FROM CustSettingGame WITH(NOLOCK)
-	WHERE custid = @custid AND sporttype = 255 AND bettype = 1701
+	FROM	CustSettingGame WITH(NOLOCK)
+	WHERE	custid = @custid 
+			AND sporttype = 255 
+			AND bettype = 1701
+			
+	-- bet setting
+	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		@custid		= @custid
+		,@UplineId	= @recommend
 END
 
+
+
+
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbAdminNet]
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNet]
-GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNetView]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [vnteam] AS [dbo]
