@@ -1,11 +1,18 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]    Script Date: 05/12/2015 13:22:47 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
 	@custid		INT,
 	@recommend	INT,
 	@v255apositiontaking_1701	SMALLMONEY,
 	@v255playerdiscount_1701	SMALLMONEY,
 	
-	@v255UpdatePositiontaking_1701	BIT,
-	@v255UpdateCommission_1701	BIT,
+	@v255UpdatePositiontaking_1701	BIT = 1,
+	@v255UpdateCommission_1701		BIT = 1,
 	
 	@SubAccID	INT = 0,
 	@IP			VARCHAR(50)='',	
@@ -78,6 +85,7 @@ BEGIN
 
 	END
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All] TO [bodbAdminNet] AS [dbo]

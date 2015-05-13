@@ -1,6 +1,6 @@
 ﻿USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditMemberGoldDeluxe]    Script Date: 05/11/2015 10:47:18 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditMemberGoldDeluxe]    Script Date: 05/12/2015 17:06:39 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -41,13 +41,18 @@ BEGIN
 			
 			@v255spt_1701					SMALLMONEY,
 			@cs_v255apt_1701				SMALLMONEY,
-			@DisableGoldDeluxe				BIT
+			@DisableGoldDeluxe				BIT,
+			@DisableUpline					BIT
 			
 	SELECT	@srecommend = srecommend 
 			,@mrecommend = mrecommend 
 			,@DisableGoldDeluxe = DisableGoldDeluxe
 	FROM	dbo.CustInfo WITH(NOLOCK)
 	WHERE	custid = @custid
+	
+	SELECT	@DisableUpline = DisableGoldDeluxe
+	FROM	dbo.custInfo WITH(NOLOCK)
+	WHERE	custid = @recommend
 	
 	--
 	SELECT	@max_V255apositiontaking_1701 = apositiontaking,
@@ -99,7 +104,10 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,ISNULL(@DisableGoldDeluxe,0) AS DisableGoldDeluxe
+			,@DisableUpline					AS DisableUpline
+			,ISNULL(@DisableGoldDeluxe,0)	AS DisableGoldDeluxe
+			,0								AS Downlines
+			,0								AS DisableDownlines
 	FROM	dbo.Customer WITH (NOLOCK)
 	WHERE	custID = @CustID   	  
 	
@@ -124,6 +132,9 @@ END
 /*
 exec [dbo].[Acc_CustomerSelEditMemberGoldDeluxe] @custid = 642719,@recommend = 642706
 */
+
+
+
 
 
 
