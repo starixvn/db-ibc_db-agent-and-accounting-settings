@@ -282,15 +282,17 @@ BEGIN
 		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
 		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
 		ORDER BY MinStake, MaxStake ASC
-
-		SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
+		
+		IF @LogStakeLevel <> ''	
+			SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
 		
 		SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
 		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
 		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
 		ORDER BY MinStake, MaxStake ASC
-
-		SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
+		
+		IF @LogStakeLevel_Old <> ''
+			SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
 
 		SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
