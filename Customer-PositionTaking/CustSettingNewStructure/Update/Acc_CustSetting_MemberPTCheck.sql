@@ -437,7 +437,7 @@ BEGIN
 		SELECT @ErrType = ''
 		SELECT @ErrType =(
 			SELECT pdt.SportType,pdt.BetType,pdt.IsLive,
-					CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END AS MinPT
+					CASE WHEN mpt.MinPT + (-1)*mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END AS MinPT
 			FROM @NewPTTble mempt
 			JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=mempt.SportType
@@ -450,7 +450,7 @@ BEGIN
 					AND pdt.IsLive = mempt.IsLive
 					AND pdt.SettingType = 1
 			WHERE mempt.IsAutoMasterPT=1 
-				AND mempt.AutoMasterPT<CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END
+				AND mempt.AutoMasterPT<CASE WHEN mpt.MinPT + (-1)*mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END
 			FOR XML RAW('Row'), TYPE)
 			
 		IF @ErrType IS NOT NULL
@@ -561,7 +561,7 @@ BEGIN
 		SELECT @ErrType = ''
 		SELECT @ErrType = (
 		SELECT pdt.SportType,pdt.BetType,pdt.IsLive,
-			CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END  AS MinPT
+			CASE WHEN mpt.MinPT + (-1)*mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END  AS MinPT
 		FROM @NewPTTble mempt
 		JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 			ON apt.SportType=mempt.SportType
@@ -578,7 +578,7 @@ BEGIN
 				AND pdt.BetType = mempt.BetType
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1		
-		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT - mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
+		WHERE mempt.MasterPT < CASE WHEN mpt.MinPT + (-1)*mempt.AgentPT < 0 THEN 0 ELSE mpt.MinPT - mempt.AgentPT END 
 			and mempt.IsAutoMasterPT = 0 and apt.IsAutoMasterPT = 0	
 		FOR XML RAW('Row'), TYPE)
 		

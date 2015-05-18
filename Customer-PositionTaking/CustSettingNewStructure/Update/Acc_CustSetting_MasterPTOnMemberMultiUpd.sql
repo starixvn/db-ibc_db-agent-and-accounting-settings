@@ -11,7 +11,6 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterPTOnMemberMultiUpd]
 	, @SubAccID			INT				= 0
 	, @IP				VARCHAR(50)		= ''
 	, @UserID			INT				= 0
-	, @Language			VARCHAR(20)		= 'E'
 	, @ErrCode			INT				= 0		OUTPUT
 	, @MsgType			INT				= 0		OUTPUT
 	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
@@ -205,7 +204,6 @@ BEGIN
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
 						, @PT		= @PT
-						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @MsgType		= @MsgType  OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
@@ -226,7 +224,7 @@ BEGIN
 												THEN mpt.MasterPT
 											ELSE spt.MasterPT
 										END - main.AgentPT
-							ELSE main.AgentPT
+							ELSE main.MasterPT
 						END
 	FROM @NewPTTble main
 	JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
@@ -243,7 +241,7 @@ BEGIN
 				
 	--Adjust PT: m1=m1+a1<n3?n3-a1:m1
 	UPDATE main
-	SET main.MasterPT = CASE WHEN main.MasterPT < mpt.MinPT - main.AgentPT THEN mpt.MinPT - main.AgentPT ELSE main.MasterPT END
+	SET main.MasterPT = CASE WHEN main.MasterPT < mpt.MinPT + (-1)*main.AgentPT THEN mpt.MinPT - main.AgentPT ELSE main.MasterPT END
 	FROM @NewPTTble main
 		JOIN dbo.CustPTSetting3rd_Agent mpt WITH (NOLOCK)
 			ON mpt.SportType=main.SportType

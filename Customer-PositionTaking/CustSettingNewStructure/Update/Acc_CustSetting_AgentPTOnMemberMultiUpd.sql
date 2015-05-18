@@ -11,7 +11,6 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTOnMemberMultiUpd]
 	, @SubAccID		INT				= 0
 	, @IP			VARCHAR(50)		= ''
 	, @UserID		INT				= 0
-	, @Language		VARCHAR(20)		= 'E'
 	, @ErrCode		INT				= 0		OUTPUT
 	, @MsgType		INT				= 0		OUTPUT
 	, @ErrMsg		NVARCHAR(4000)	= ''	OUTPUT
@@ -196,7 +195,6 @@ BEGIN
 						, @MasterID		= @MasterID
 						, @SuperID		= @SuperID
 						, @PT = @PT
-						, @Language		= @Language
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @MsgType		= @MsgType	OUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
