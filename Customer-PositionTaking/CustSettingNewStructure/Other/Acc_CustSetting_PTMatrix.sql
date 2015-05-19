@@ -75,13 +75,13 @@ BEGIN
 	SELECT @CustID CustID
 		, @UserName UserName
 		, @RoleID RoleID
-		, @currency currency
-		, @SRecommend SAgID
-		, @MRecommend MAgID
-		, @Recommend AgID
-		, @SAg SAg
-		, @MAg MAg
-		, @Ag Ag
+		, @currency Currency
+		, @SRecommend SuperID
+		, @MRecommend MasterID
+		, @Recommend AgentID
+		, @SAg SuperName
+		, @MAg MasterName
+		, @Ag AgentName
 		, @DisableAutoMPT DisableAutoMPT
 		, @SettingLevel PTSettingLevel
 	
