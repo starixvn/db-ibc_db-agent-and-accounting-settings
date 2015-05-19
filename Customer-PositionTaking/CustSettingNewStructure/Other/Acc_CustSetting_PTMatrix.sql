@@ -83,7 +83,7 @@ BEGIN
 		, @MAg MasterName
 		, @Ag AgentName
 		, @DisableAutoMPT DisableAutoMPT
-		, @SettingLevel PTSettingLevel
+		, @SettingLevel SettingLevel
 	
 	
 	DECLARE @PTMatrix TABLE (
@@ -235,15 +235,15 @@ BEGIN
 		, [BetType]
 		, [IsLive]
 		, [RoleID]
-		, [SuperPT]
-		, [MasterPT]
-		, [AgentPT]
-		, [AutoSuperPT]
-		, [IsAutoSuperPT]
-		, [AutoMasterPT]
-		, [IsAutoMasterPT]
-		, [MinPT]
-		, [MaxPT]
+		, ISNULL([SuperPT],0) [SuperPT]
+		, ISNULL([MasterPT],0) [MasterPT]
+		, ISNULL([AgentPT],0) [AgentPT]
+		, ISNULL([AutoSuperPT],0) [AutoSuperPT]
+		, ISNULL([IsAutoSuperPT],0) [IsAutoSuperPT]
+		, ISNULL([AutoMasterPT],0) [AutoMasterPT]
+		, ISNULL([IsAutoMasterPT],0) [IsAutoMasterPT]
+		, ISNULL([MinPT],0) [MinPT]
+		, ISNULL([MaxPT],0) [MaxPT]
 	FROM @PTMatrix pt
 	JOIN dbo.custInfo ci WITH(NOLOCK) ON pt.CustID = ci.custid
 	ORDER BY [SportType]
