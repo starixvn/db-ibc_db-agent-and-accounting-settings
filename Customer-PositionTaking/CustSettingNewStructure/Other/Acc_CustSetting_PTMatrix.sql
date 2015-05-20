@@ -243,7 +243,7 @@ BEGIN
 		, ISNULL([AutoMasterPT],0) [AutoMasterPT]
 		, ISNULL([IsAutoMasterPT],0) [IsAutoMasterPT]
 		, ISNULL([MinPT],0) [MinPT]
-		, ISNULL([MaxPT],0) [MaxPT]
+		--, ISNULL([MaxPT],0) [MaxPT]
 	FROM @PTMatrix pt
 	JOIN dbo.custInfo ci WITH(NOLOCK) ON pt.CustID = ci.custid
 	ORDER BY [SportType]
