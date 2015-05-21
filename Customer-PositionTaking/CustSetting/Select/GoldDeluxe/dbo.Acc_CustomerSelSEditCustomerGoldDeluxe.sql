@@ -1,11 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]    Script Date: 05/12/2015 17:08:37 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe]
 	@custid		INT
 AS
 /*
@@ -88,8 +81,9 @@ BEGIN
 			isautopositiontaking as isauto_v255spositiontaking_1701_mem,
 			ISNULL(@isauto_v255spositiontaking_1701,0) as isauto_v255spositiontaking_1701, -- i3
 			ISNULL(@v255spositiontaking_1701,0) as auto_v255spositiontaking_1701_max,
-			--s1_max= s4- m3
-			ISNULL(@v255spositiontaking_1701,0) - ISNULL(@v255mpositiontaking_1701,0) as v255spositiontaking_1701_max,
+			--s1_max= Max(n4-(m1+a1), s4 - m3)
+			CASE WHEN @v255spositiontaking_1701_min - (mpositiontaking+apositiontaking) > ISNULL(@v255spositiontaking_1701,0) - ISNULL(@v255mpositiontaking_1701,0) THEN @v255spositiontaking_1701_min - (mpositiontaking+apositiontaking) 
+			ELSE ISNULL(@v255spositiontaking_1701,0) - ISNULL(@v255mpositiontaking_1701,0) END AS v255spositiontaking_1701_max,
 			-- s1_min 
 			CASE WHEN ISNULL(@v255spositiontaking_1701_min,0) - (mpositiontaking + apositiontaking) > 0 THEN ISNULL(@v255spositiontaking_1701_min,0) - (mpositiontaking + apositiontaking) ELSE 0 END v255spositiontaking_1701_min	
 	FROM	CustSettingGame WITH(NOLOCK)
@@ -98,16 +92,10 @@ BEGIN
 			AND bettype = 1701
 			
 	-- bet setting
-	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
 		@custid		= @custid
 		,@UplineId	= @recommend
 END
-
-
-
-
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbAdminNet] AS [dbo]
