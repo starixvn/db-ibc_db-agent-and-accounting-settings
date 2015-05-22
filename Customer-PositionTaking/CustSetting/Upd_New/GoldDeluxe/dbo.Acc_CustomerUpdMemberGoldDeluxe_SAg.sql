@@ -285,13 +285,20 @@ BEGIN
     					
 		    RETURN	
 	    END
-    	
-	    --s1 <= s4 - m3
+    		        	
+		--s1 <= Max(n4-(m1+a1), s4 - m3)
 	    select @ErrType = ''	
-	    SELECT @ErrType = @ErrType + 'Max: ' + CAST(scs.spositiontaking - mcs.mpositiontaking AS VARCHAR(10)) 
+	    SELECT @ErrType = @ErrType + 'Max: ' + CAST((CASE WHEN scs.spositiontaking -  mcs.mpositiontaking > scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+													THEN scs.spositiontaking -  mcs.mpositiontaking
+													ELSE scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+												END) AS VARCHAR(10)) 
 	    FROM @tmp_sag scs
 		    INNER JOIN @tmp_mag mcs ON scs.sporttype = mcs.sporttype and scs.bettype = mcs.bettype	
-	    WHERE @v255spositiontaking_1701 + mcs.mpositiontaking > scs.spositiontaking
+		    INNER JOIN CustSettingGame cs WITH(NOLOCK) ON cs.custid = @custid AND cs.sporttype = scs.sporttype and cs.bettype = scs.bettype	
+	    WHERE @v255spositiontaking_1701 > CASE WHEN scs.spositiontaking -  mcs.mpositiontaking > scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+												THEN scs.spositiontaking -  mcs.mpositiontaking
+												ELSE scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+											END
     		
 	    IF @ErrType <> ''
 	    BEGIN 
@@ -306,7 +313,7 @@ BEGIN
     					
 		    RETURN	
 	    END
-    	
+
 	    --s1 + m1 + a1 <=s4
 	    select @ErrType = ''
 	    SELECT @ErrType = @ErrType + 'Max: ' + CAST(scs.spositiontaking - cs.mpositiontaking - cs.apositiontaking AS VARCHAR(10)) 
