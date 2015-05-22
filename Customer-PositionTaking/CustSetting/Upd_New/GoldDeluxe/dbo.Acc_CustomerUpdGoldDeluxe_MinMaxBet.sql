@@ -61,9 +61,7 @@ BEGIN
 				,mrecommend INT
 				,recommend INT		
 				,roleid TINYINT
-				,StakeLevelList varchar(100)
-				,StakeLevelList_new varchar(100)
-				,isUpdated BIT DEFAULT (0)				
+				,StakeLevelList varchar(100)				
 		)
 		
 	SET @startRun = GETDATE()
@@ -114,7 +112,7 @@ BEGIN
 		
 		IF @@ROWCOUNT = 0 BREAK;
 		
-		SELECT @StakeLevelList_Old = StakeLevelList
+		SELECT @StakeLevelList_Old = ISNULL(StakeLevelList,'')
 		FROM CustGameType WITH(NOLOCK)
 		WHERE custid = @custid AND GameTypeID = @GameTypeID
 		
@@ -147,16 +145,13 @@ BEGIN
 						AND MaxStake <> 0
 				ORDER BY MinStake, MaxStake	
 				
-				--delete old data
-				TRUNCATE TABLE #CustGameTypeDownlines
-				
 				IF @roleid = 4
 				BEGIN
 					INSERT INTO #CustGameTypeDownlines (CustID, srecommend, mrecommend, recommend, roleid ,StakeLevelList)
 					SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList
 					FROM custinfo ci WITH(NOLOCK)
 						INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
-					WHERE srecommend = @custid 	
+					WHERE srecommend = @custid AND roleid < 4		
 				END
 				IF @roleid = 3
 				BEGIN
@@ -164,7 +159,7 @@ BEGIN
 					SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList
 					FROM custinfo ci WITH(NOLOCK)
 						INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
-					WHERE mrecommend = @custid 
+					WHERE mrecommend = @custid AND roleid < 3
 				END
 				IF @roleid = 2
 				BEGIN
@@ -172,13 +167,9 @@ BEGIN
 					SELECT ci.custid, srecommend, mrecommend, recommend, ci.roleid, StakeLevelList
 					FROM custinfo ci WITH(NOLOCK)
 						INNER JOIN CustGameType cg WITH(NOLOCK) ON ci.custid = cg.custid AND cg.gametypeid = @GameTypeID
-					WHERE recommend = @custid 
+					WHERE recommend = @custid AND roleid = 1
 				END	
 				
-				UPDATE #CustGameTypeDownlines
-				SET StakeLevelList_new = @StakeLevelList
-				WHERE custid = @custid
-																	 	
 				SELECT @cntCust = 0, 
 						@BetSettings = '<ROOT>'		
 				--correct stake level for all downlines
@@ -187,8 +178,6 @@ BEGIN
 					SELECT TOP 1 @DownlineID = custid , @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend,
 						 @DownlineRoleid = roleid ,@DownlineStakeLevelList = ISNULL(StakeLevelList,'')
 					FROM #CustGameTypeDownlines
-					WHERE roleid < @roleid
-						and isUpdated= 0
 					ORDER BY roleid DESC, custid
 					
 					SET @rowcount = @@rowcount
@@ -196,7 +185,7 @@ BEGIN
 					IF @rowcount = 0 OR @cntCust = 1000
 					BEGIN
 						SET @BetSettings = @BetSettings + '</ROOT>'
-											
+						
 						--call execrep to correct downlines by batch customers
 						EXEC Acc_Custsetting3rd_10 
 							@Action = 'GoldDeluxe'
@@ -229,17 +218,17 @@ BEGIN
 							IF @DownlineStakeLevelList_new = ''
 							BEGIN
 								IF @DownLineRoleid = 3
-									SELECT @UplineStakeLevelList = StakeLevelList_new
-									FROM #CustGameTypeDownlines WITH(NOLOCK)
-									WHERE custid = @srecommend
+									SELECT @UplineStakeLevelList = StakeLevelList
+									FROM CustGameType WITH(NOLOCK)
+									WHERE custid = @srecommend AND gametypeid = @gametypeid
 								ELSE IF  @DownLineRoleid = 2
-									SELECT @UplineStakeLevelList = StakeLevelList_new
-									FROM #CustGameTypeDownlines WITH(NOLOCK)
-									WHERE custid = @mrecommend
+									SELECT @UplineStakeLevelList = StakeLevelList
+									FROM CustGameType WITH(NOLOCK)
+									WHERE custid = @mrecommend AND gametypeid = @gametypeid
 								ELSE IF  @DownLineRoleid = 1
-									SELECT @UplineStakeLevelList = StakeLevelList_new
-									FROM #CustGameTypeDownlines WITH(NOLOCK)
-									WHERE custid = @recommend
+									SELECT @UplineStakeLevelList = StakeLevelList
+									FROM CustGameType WITH(NOLOCK)
+									WHERE custid = @recommend AND gametypeid = @gametypeid
 								
 								SELECT TOP 1 @UplineLowestStakeLevelList = CONVERT(varchar(10),StakeLevelID)
 								FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
@@ -257,42 +246,38 @@ BEGIN
 					IF RTRIM(ISNULL(@StakeLevelList_Old,'')) = '' AND RTRIM(ISNULL(@StakeLevelList,'')) <> ''
 					BEGIN
 						IF @DownLineRoleID = 1 or @DownLineRoleID = 2 
-							SET @DownlineStakeLevelList_new = @LowestStakeLevelList
+							SET @DownlineStakeLevelList_new = ISNULL(@LowestStakeLevelList,'')
 						ELSE IF @DownLineRoleID = 3
-							SET @DownlineStakeLevelList_new = @StakeLevelList
+							SET @DownlineStakeLevelList_new = ISNULL(@StakeLevelList,'')
 					END
 				
 					SELECT @BetSettings = @BetSettings +
 										'<Row ID="'+CONVERT(varchar(10),@DownlineID)+'" Stake="'+ @DownlineStakeLevelList_new +'" />',
 							@cntCust = @cntCust + 1				
 				
-					UPDATE #CustGameTypeDownlines
-					SET StakeLevelList_new = @DownlineStakeLevelList_new,
-						isUpdated = 1
-					WHERE CustID = @DownLineID
+					DELETE #CustGameTypeDownlines WHERE CustID = @DownLineID
 				END
 			END
 		END	
-
 		--write log customer
 		SELECT @LogStakeLevel = ''
 		SELECT @LogStakeLevel_Old = ''
-		
+				
 		SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
 		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
 		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
 		ORDER BY MinStake, MaxStake ASC
-		
-		IF @LogStakeLevel <> ''	
-			SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
+
+		IF @LogStakeLevel <> ''
+		SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
 		
 		SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
 		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
 		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
 		ORDER BY MinStake, MaxStake ASC
-		
+
 		IF @LogStakeLevel_Old <> ''
-			SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
+		SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
 
 		SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
