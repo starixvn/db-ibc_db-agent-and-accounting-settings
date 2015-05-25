@@ -28,10 +28,6 @@ BEGIN
 		, @SRecommend INT
 		, @MRecommend INT
 		, @Recommend INT
-		, @curBettype SMALLINT
-		, @curSporttype SMALLINT
-		, @curtypename VARCHAR(20)
-		, @curSportname VARCHAR(50)
 		, @currency TINYINT
 		, @DisableAutoMPT BIT
 		, @SettingLevel TINYINT
