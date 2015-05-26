@@ -258,4 +258,6 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbA
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbExtAccNet] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [vnteam] AS [dbo]

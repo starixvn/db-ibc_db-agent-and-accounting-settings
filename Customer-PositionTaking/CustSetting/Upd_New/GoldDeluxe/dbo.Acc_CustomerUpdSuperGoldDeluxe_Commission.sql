@@ -174,4 +174,6 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbAdmin
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbDownlineNet] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbExtAccNet] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [vnteam] AS [dbo]

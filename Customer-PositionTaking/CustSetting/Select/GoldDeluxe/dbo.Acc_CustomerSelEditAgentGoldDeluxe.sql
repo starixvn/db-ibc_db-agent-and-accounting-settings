@@ -129,4 +129,6 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbDownlineNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [vnteam] AS [dbo]
