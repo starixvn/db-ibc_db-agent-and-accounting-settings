@@ -1,10 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterGoldDeluxe_Positiontaking]    Script Date: 04/27/2015 15:48:40 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterGoldDeluxe_Positiontaking]
     @custid								INT,
     @v255spositiontaking_1701			SMALLMONEY,
@@ -183,8 +176,8 @@ BEGIN
     WHERE	ci.mrecommend = @custid
 			AND ci.roleid     = 1
 			AND ci.Enabled    = 1
-			AND cs.sporttype  = 162
-			AND cs.bettype    = 1101
+			AND cs.sporttype  = 255
+			AND cs.bettype    = 1701
 			AND cs.mpositiontaking + cs.apositiontaking > @v255mpositiontaking_1701 
 
     IF @ErrAcc <> ''
@@ -287,7 +280,7 @@ BEGIN
             RETURN
         END
         
-        EXEC dbo.Acc_CustSetting3rd_05_xtest
+        EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -304,7 +297,7 @@ BEGIN
 
     IF @v255UpdateAutoPositiontaking_1701 = 1 OR @v255UpdatePositiontaking_1701 = 1
     BEGIN
-         EXEC dbo.Acc_CustSetting3rd_07_xtest
+         EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -403,7 +396,6 @@ BEGIN
             @duration = @duration
     END CATCH
 END
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterGoldDeluxe_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO

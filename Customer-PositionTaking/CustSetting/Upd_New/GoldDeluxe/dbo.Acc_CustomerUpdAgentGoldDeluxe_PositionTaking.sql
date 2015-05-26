@@ -226,7 +226,7 @@ BEGIN
 	
 		if (@auto_v255mpositiontaking_1701 <> @old_auto_v255mpositiontaking_1701 or @isauto_v255mpositiontaking_1701 <> @old_isauto_v255mpositiontaking_1701 )
 		BEGIN
-			EXEC dbo.Acc_CustSetting3rd_05_xtest
+			EXEC dbo.Acc_CustSetting3rd_05
 				@mrecommend = @mrecommend,
 				@recommend = @custid,
 				@roleid = 2,
@@ -245,7 +245,7 @@ BEGIN
 	IF @v255UpdateAutoPositiontaking_1701 = 1 OR @v255UpdatePositiontaking_1701 =1 
 	BEGIN 
 		
-		EXEC dbo.Acc_CustSetting3rd_07_xtest @recommend = @custid, @roleid = 2, @mode = 'GoldDeluxe', @Sporttype = 255, @BetType = 1701
+		EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'GoldDeluxe', @Sporttype = 255, @BetType = 1701
 		
 		IF (@@error <> 0)
 		BEGIN

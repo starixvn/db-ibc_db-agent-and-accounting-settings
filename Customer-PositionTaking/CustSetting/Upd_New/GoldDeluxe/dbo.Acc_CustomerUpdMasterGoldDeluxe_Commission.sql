@@ -98,7 +98,7 @@ BEGIN
 			AND bettype = 1701
 
 	-- Apply exec rep
-	EXEC Acc_CustSetting3rd_06_xtest
+	EXEC Acc_CustSetting3rd_06
 	@CustId = @custid,
 	@RoleId = @roleid,
 	@Discount = @v255discount_1701,
