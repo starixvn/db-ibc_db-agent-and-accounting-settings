@@ -258,60 +258,26 @@ BEGIN
 					DELETE #CustGameTypeDownlines WHERE CustID = @DownLineID
 				END
 			END
-		END	
-		--write log customer
-		SELECT @LogStakeLevel = ''
-		SELECT @LogStakeLevel_Old = ''
-				
-		SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
-		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
-		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
-		ORDER BY MinStake, MaxStake ASC
+			--write log customer
+			SELECT @LogStakeLevel = ''
+			SELECT @LogStakeLevel_Old = ''
+					
+			SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
+			FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
+			ORDER BY MinStake, MaxStake ASC
 
-		IF @LogStakeLevel <> ''
-		SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
-		
-		SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
-		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
-		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
-		ORDER BY MinStake, MaxStake ASC
+			IF @LogStakeLevel <> ''
+			SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
+			
+			SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
+			FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
+			ORDER BY MinStake, MaxStake ASC
 
-		IF @LogStakeLevel_Old <> ''
-		SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
+			IF @LogStakeLevel_Old <> ''
+			SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
 
-		SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
-		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
-		  'StakeLevel="'+ @LogStakeLevel + '" '+  
-		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
-		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
-		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
-		  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-		  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
-		  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />' 
-		  
-		SELECT @LogSPData_Old = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
-		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
-		  'StakeLevel="'+ @LogStakeLevel_old + '" '+  
-		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
-		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
-		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
-		  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-		  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
-		  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'   
-
-		SET @endRun = GETDATE()  
-		SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)  
-
-		BEGIN TRY
-			EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
-			@UserID = @UserID,  
-			@CustID = @CustID,  
-			@ActionID = 389,  
-			@TrackingValue = @LogSPData  , 
-			@TrackingValue2 = @LogSPData_old  ,  
-			@duration = @duration  
-		END TRY 
-		BEGIN CATCH
 			SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 			  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
 			  'StakeLevel="'+ @LogStakeLevel + '" '+  
@@ -319,17 +285,51 @@ BEGIN
 			  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
 			  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
 			  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-			  'ErrMsg="'+ ERROR_MESSAGE() +'" '+
-			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
-					
-			EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
-			@UserID = @UserID,  
-			@CustID = @CustID,  
-			@ActionID = 389,  
-			@TrackingValue = @LogSPData,  
-			@TrackingValue2 = @LogSPData_old,  
-			@duration = @duration
-		END CATCH
+			  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
+			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />' 
+			  
+			SELECT @LogSPData_Old = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+			  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
+			  'StakeLevel="'+ @LogStakeLevel_old + '" '+  
+			  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
+			  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
+			  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
+			  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
+			  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
+			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'   
+
+			SET @endRun = GETDATE()  
+			SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)  
+
+			BEGIN TRY
+				EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
+				@UserID = @UserID,  
+				@CustID = @CustID,  
+				@ActionID = 389,  
+				@TrackingValue = @LogSPData  , 
+				@TrackingValue2 = @LogSPData_old  ,  
+				@duration = @duration  
+			END TRY 
+			BEGIN CATCH
+				SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+				  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
+				  'StakeLevel="'+ @LogStakeLevel + '" '+  
+				  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
+				  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
+				  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
+				  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
+				  'ErrMsg="'+ ERROR_MESSAGE() +'" '+
+				  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+						
+				EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
+				@UserID = @UserID,  
+				@CustID = @CustID,  
+				@ActionID = 389,  
+				@TrackingValue = @LogSPData,  
+				@TrackingValue2 = @LogSPData_old,  
+				@duration = @duration
+			END CATCH
+		END			
 		
 		DELETE @tmpStake WHERE GameTypeID = @GameTypeID				
 	END
