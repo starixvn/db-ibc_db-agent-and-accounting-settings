@@ -149,14 +149,14 @@ BEGIN
 		END
 	END
 	
-	--Return PT
+	--Return Comm
 	SELECT [RoleID]
 		, [SportType]
 		, [BetType]
 		, Discount
 	FROM @CommMatrix comm
-	ORDER BY [RoleID] DESC, [SportType]
-		, [BetType]
+	ORDER BY [SportType]
+		, [BetType] , [RoleID] DESC
 
 END  
   
