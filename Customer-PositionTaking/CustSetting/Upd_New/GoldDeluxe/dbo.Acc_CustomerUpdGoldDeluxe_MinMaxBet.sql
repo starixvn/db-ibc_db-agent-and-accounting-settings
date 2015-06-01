@@ -153,14 +153,13 @@ BEGIN
 		BEGIN
 			--Return Data
 			SELECT @ErrCode = 1000
-			SELECT @ErrMsg = 'Upline has no this Stake Level for Game Type: ' + typenamee 
+			SELECT @ErrMsg = CASE @Language 
+						WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
+					END + typenamee 
 			FROM bodb02.dbo.bettype WITH(NOLOCK)
 			WHERE TypeID = @GameTypeID
 						
-			SELECT @ErrMsg = @ErrMsg + ',StakeLevel=' + MinLabel+ '-' + MaxLabel
-			FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
-			WHERE StakeLevelID = @invalidStakeLevelID
-			
 			RETURN	
 		END	
 		
@@ -207,7 +206,7 @@ BEGIN
 				
 				--Get lowest stake level to apply to agents/members
 				SELECT	top 1 @LowestStakeLevelList = CONVERT(VARCHAR(10),StakeLevelID)
-				FROM	bodb02.dbo.StakeLevel with(nolock)
+				FROM	dbo.StakeLevel with(nolock)
 				WHERE	CHARINDEX('''' + convert(varchar(5),StakeLevelID) + '''','''' + replace(@StakeLevelList,',',''',''') + '''') > 0
 						AND MinStake <> 0
 						AND MaxStake <> 0
@@ -308,7 +307,7 @@ BEGIN
 									WHERE custid = @recommend
 																	
 								SELECT TOP 1 @UplineLowestStakeLevelList = ISNULL(CONVERT(varchar(10),StakeLevelID),'')
-								FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+								FROM dbo.StakeLevel WITH(NOLOCK)
 								WHERE stakeLevelID IN (SELECT val FROM dbo.strSplit(@UplineStakeLevelList,','))
 									AND MinStake <> 0
 									AND MaxStake <> 0
@@ -343,7 +342,7 @@ BEGIN
 			SELECT @LogStakeLevel_Old = ''
 			
 			SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
-			FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+			FROM dbo.StakeLevel WITH(NOLOCK)
 			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
 			ORDER BY MinStake, MaxStake ASC
 			
@@ -351,7 +350,7 @@ BEGIN
 				SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
 			
 			SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
-			FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+			FROM dbo.StakeLevel WITH(NOLOCK)
 			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
 			ORDER BY MinStake, MaxStake ASC
 			
