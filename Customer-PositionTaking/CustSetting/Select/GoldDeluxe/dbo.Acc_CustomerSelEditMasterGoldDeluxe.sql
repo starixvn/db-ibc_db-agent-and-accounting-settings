@@ -111,4 +111,6 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNet
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [vnteam] AS [dbo]

@@ -1,10 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking]    Script Date: 04/27/2015 16:01:03 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking]
     @custid						INT,
     @v255spositiontaking_1701	SMALLMONEY,
@@ -91,8 +84,8 @@ BEGIN
     SELECT	@db_v255spositiontaking_1701 = spositiontaking 
     FROM	CustSettingGame WITH(NOLOCK)
     WHERE	Custid = @custid 
-			AND sporttype = 162 
-			AND bettype = 1101
+			AND sporttype = 255 
+			AND bettype = 1701
 
     --check if not change value
     IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
@@ -175,7 +168,7 @@ BEGIN
 
     --u = (i3 or i1)?(u3 or u1)
     --s1 = min(s4-m1-a1, u)
-    EXEC dbo.Acc_CustSetting3rd_07_xtest 
+    EXEC dbo.Acc_CustSetting3rd_07
 		@srecommend = @custid 
 		,@roleid = 4
 		,@mode = 'GoldDeluxe'
@@ -260,12 +253,11 @@ BEGIN
             @duration		= @duration
     END CATCH
 END
-
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [vnteam] AS [dbo]

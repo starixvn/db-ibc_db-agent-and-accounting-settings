@@ -146,4 +146,6 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberGoldDeluxe] TO [bodbDownlineNet
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMemberGoldDeluxe] TO [vnteam] AS [dbo]

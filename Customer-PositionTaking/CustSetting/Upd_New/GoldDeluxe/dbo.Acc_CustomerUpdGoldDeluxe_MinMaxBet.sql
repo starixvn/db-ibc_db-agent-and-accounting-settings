@@ -45,6 +45,7 @@ BEGIN
 			,@DownlineStakeLevelList_new VARCHAR(300)
 			,@UplineStakeLevelList VARCHAR(300)
 			,@UplineLowestStakeLevelList VARCHAR(300)
+			,@invalidStakeLevelID INT
 			,@cntCust INT 
 			,@rowcount INT
 			--store xml bet settings for downlines when correct settings			
@@ -83,7 +84,7 @@ BEGIN
 		@roleid = @roleid OUTPUT
 		if (@roleid = 0) return
 		
-	DECLARE @tmpStake TABLE(GameTypeID INT, StakeLevelList VARCHAR(500))
+	DECLARE @tmpStake TABLE(GameTypeID INT, StakeLevelList VARCHAR(500), isValidated BIT DEFAULT(0))
 	
 	DECLARE @DocHandler INT
 	
@@ -106,6 +107,70 @@ BEGIN
 	EXEC sp_xml_removedocument @DocHandler
 	-- end read xml
 	
+	SELECT @srecommend = srecommend
+			,@mrecommend = mrecommend
+			,@recommend = recommend
+	FROM CustInfo WITH(NOLOCK)
+	WHERE custid = @custid
+	
+	--validate stake level
+	WHILE (1=1)
+	BEGIN
+		SELECT TOP (1) @GameTypeID = GameTypeID,
+				@StakeLevelList = StakeLevelList 
+		FROM @tmpStake
+		WHERE isValidated = 0
+		
+		IF @@ROWCOUNT = 0 BREAK;
+		
+		IF @RoleID = 3
+		BEGIN
+			SELECT	@UplineStakeLevelList = StakeLevelList
+			FROM	CustGameType with(nolock) 
+			WHERE	CustID = @srecommend
+					AND GameTypeID = @GameTypeID	
+		END									
+		ELSE IF @RoleID = 2
+		BEGIN
+			SELECT	@UplineStakeLevelList = StakeLevelList
+			FROM	CustGameType with(nolock)
+			WHERE	CustID = @Mrecommend
+					AND GameTypeID = @GameTypeID
+		END									
+		ELSE IF @RoleID = 1
+		BEGIN
+			SELECT	@UplineStakeLevelList = StakeLevelList
+			FROM	CustGameType with(nolock) 
+			WHERE	CustID = @recommend
+					AND GameTypeID = @GameTypeID
+		END
+		
+		SELECT	TOP 1 @invalidStakeLevelID = ISNULL(Val,0) 	
+		FROM	dbo.strSplit(@StakeLevelList,',')
+		WHERE	Val not in (SELECT Val FROM dbo.strSplit(@UplineStakeLevelList,','))
+		
+		IF @invalidStakeLevelID > 0
+		BEGIN
+			--Return Data
+			SELECT @ErrCode = 1000
+			SELECT @ErrMsg = CASE @Language 
+						WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
+					END + typenamee 
+			FROM bodb02.dbo.bettype WITH(NOLOCK)
+			WHERE TypeID = @GameTypeID
+						
+			RETURN	
+		END	
+		
+		UPDATE @tmpStake
+		SET isValidated = 1
+		WHERE GameTypeID = @GameTypeID
+		
+	END
+	--end validate
+	
+	--update stake level
 	WHILE (1=1)
 	BEGIN
 		SELECT TOP (1) @GameTypeID = GameTypeID,
@@ -114,7 +179,7 @@ BEGIN
 		
 		IF @@ROWCOUNT = 0 BREAK;
 		
-		SELECT @StakeLevelList_Old = StakeLevelList
+		SELECT @StakeLevelList_Old = ISNULL(StakeLevelList,'')
 		FROM CustGameType WITH(NOLOCK)
 		WHERE custid = @custid AND GameTypeID = @GameTypeID
 		
@@ -141,7 +206,7 @@ BEGIN
 				
 				--Get lowest stake level to apply to agents/members
 				SELECT	top 1 @LowestStakeLevelList = CONVERT(VARCHAR(10),StakeLevelID)
-				FROM	bodb02.dbo.StakeLevel with(nolock)
+				FROM	dbo.StakeLevel with(nolock)
 				WHERE	CHARINDEX('''' + convert(varchar(5),StakeLevelID) + '''','''' + replace(@StakeLevelList,',',''',''') + '''') > 0
 						AND MinStake <> 0
 						AND MaxStake <> 0
@@ -196,7 +261,7 @@ BEGIN
 					IF @rowcount = 0 OR @cntCust = 1000
 					BEGIN
 						SET @BetSettings = @BetSettings + '</ROOT>'
-											
+										
 						--call execrep to correct downlines by batch customers
 						EXEC Acc_Custsetting3rd_10 
 							@Action = 'GoldDeluxe'
@@ -240,15 +305,15 @@ BEGIN
 									SELECT @UplineStakeLevelList = StakeLevelList_new
 									FROM #CustGameTypeDownlines WITH(NOLOCK)
 									WHERE custid = @recommend
-								
-								SELECT TOP 1 @UplineLowestStakeLevelList = CONVERT(varchar(10),StakeLevelID)
-								FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
+																	
+								SELECT TOP 1 @UplineLowestStakeLevelList = ISNULL(CONVERT(varchar(10),StakeLevelID),'')
+								FROM dbo.StakeLevel WITH(NOLOCK)
 								WHERE stakeLevelID IN (SELECT val FROM dbo.strSplit(@UplineStakeLevelList,','))
 									AND MinStake <> 0
 									AND MaxStake <> 0
 								ORDER BY minstake , maxstake
 								
-								SET @DownlineStakeLevelList_new = @UplineLowestStakeLevelList
+								SET @DownlineStakeLevelList_new = ISNULL(@UplineLowestStakeLevelList,'')															
 							END
 						END
 					END
@@ -257,9 +322,9 @@ BEGIN
 					IF RTRIM(ISNULL(@StakeLevelList_Old,'')) = '' AND RTRIM(ISNULL(@StakeLevelList,'')) <> ''
 					BEGIN
 						IF @DownLineRoleID = 1 or @DownLineRoleID = 2 
-							SET @DownlineStakeLevelList_new = @LowestStakeLevelList
+							SET @DownlineStakeLevelList_new = ISNULL(@LowestStakeLevelList,'')
 						ELSE IF @DownLineRoleID = 3
-							SET @DownlineStakeLevelList_new = @StakeLevelList
+							SET @DownlineStakeLevelList_new = ISNULL(@StakeLevelList,'')
 					END
 				
 					SELECT @BetSettings = @BetSettings +
@@ -272,61 +337,26 @@ BEGIN
 					WHERE CustID = @DownLineID
 				END
 			END
-		END	
-
-		--write log customer
-		SELECT @LogStakeLevel = ''
-		SELECT @LogStakeLevel_Old = ''
-		
-		SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
-		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
-		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
-		ORDER BY MinStake, MaxStake ASC
-		
-		IF @LogStakeLevel <> ''	
-			SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
-		
-		SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
-		FROM bodb02.dbo.StakeLevel WITH(NOLOCK)
-		WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
-		ORDER BY MinStake, MaxStake ASC
-		
-		IF @LogStakeLevel_Old <> ''
-			SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
-
-		SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
-		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
-		  'StakeLevel="'+ @LogStakeLevel + '" '+  
-		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
-		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
-		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
-		  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-		  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
-		  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />' 
-		  
-		SELECT @LogSPData_Old = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
-		  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
-		  'StakeLevel="'+ @LogStakeLevel_old + '" '+  
-		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
-		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
-		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
-		  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-		  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
-		  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'   
-
-		SET @endRun = GETDATE()  
-		SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)  
-
-		BEGIN TRY
-			EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
-			@UserID = @UserID,  
-			@CustID = @CustID,  
-			@ActionID = 389,  
-			@TrackingValue = @LogSPData  , 
-			@TrackingValue2 = @LogSPData_old  ,  
-			@duration = @duration  
-		END TRY 
-		BEGIN CATCH
+			--write log customer
+			SELECT @LogStakeLevel = ''
+			SELECT @LogStakeLevel_Old = ''
+			
+			SELECT @LogStakeLevel = @LogStakeLevel + MinLabel + '-' + MaxLabel + ','
+			FROM dbo.StakeLevel WITH(NOLOCK)
+			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList,','))
+			ORDER BY MinStake, MaxStake ASC
+			
+			IF @LogStakeLevel <> ''	
+				SELECT @LogStakeLevel = LEFT(@LogStakeLevel,LEN(@LogStakeLevel)-1)
+			
+			SELECT @LogStakeLevel_Old = @LogStakeLevel_old + MinLabel + '-' + MaxLabel + ','
+			FROM dbo.StakeLevel WITH(NOLOCK)
+			WHERE StakeLevelID IN (SELECT val FROM dbo.strSplit(@StakeLevelList_Old,','))
+			ORDER BY MinStake, MaxStake ASC
+			
+			IF @LogStakeLevel_Old <> ''
+				SELECT @LogStakeLevel_Old = LEFT(@LogStakeLevel_Old,LEN(@LogStakeLevel_Old)-1)
+	
 			SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 			  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
 			  'StakeLevel="'+ @LogStakeLevel + '" '+  
@@ -334,23 +364,59 @@ BEGIN
 			  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
 			  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
 			  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
-			  'ErrMsg="'+ ERROR_MESSAGE() +'" '+
-			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
-					
-			EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
-			@UserID = @UserID,  
-			@CustID = @CustID,  
-			@ActionID = 389,  
-			@TrackingValue = @LogSPData,  
-			@TrackingValue2 = @LogSPData_old,  
-			@duration = @duration
-		END CATCH
+			  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
+			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />' 
+			  
+			SELECT @LogSPData_Old = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+			  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
+			  'StakeLevel="'+ @LogStakeLevel_old + '" '+  
+			  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
+			  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
+			  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
+			  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
+			  'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(400)),space(1))+'" '+  
+			  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'   
+	
+			SET @endRun = GETDATE()  
+			SET @duration  = DATEDIFF (MILLISECOND,@startRun,@endRun)  
+	
+			BEGIN TRY
+				EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
+				@UserID = @UserID,  
+				@CustID = @CustID,  
+				@ActionID = 389,  
+				@TrackingValue = @LogSPData  , 
+				@TrackingValue2 = @LogSPData_old  ,  
+				@duration = @duration  
+			END TRY 
+			BEGIN CATCH
+				SELECT @LogSPData = '<Acc_CustomerUpdGoldDeluxe_MinMaxBet CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+				  'GameTypeID="'+ coalesce(cast(@GameTypeID as varchar(50)),space(1)) + '" '+  
+				  'StakeLevel="'+ @LogStakeLevel + '" '+  
+				  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
+				  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
+				  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
+				  'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" '+  
+				  'ErrMsg="'+ ERROR_MESSAGE() +'" '+
+				  'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+						
+				EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP  
+				@UserID = @UserID,  
+				@CustID = @CustID,  
+				@ActionID = 389,  
+				@TrackingValue = @LogSPData,  
+				@TrackingValue2 = @LogSPData_old,  
+				@duration = @duration
+			END CATCH
+		END	
+	
 		
 		DELETE @tmpStake WHERE GameTypeID = @GameTypeID				
 	END
 
 
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbAdminNet] 
 GO

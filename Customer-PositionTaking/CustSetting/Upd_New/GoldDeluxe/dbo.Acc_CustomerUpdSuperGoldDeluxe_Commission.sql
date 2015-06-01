@@ -106,7 +106,7 @@ BEGIN
 	END
 
 	-- Apply exec rep
-		EXEC Acc_CustSetting3rd_06_xtest
+		EXEC Acc_CustSetting3rd_06
 			@CustId				= @custid,
 			@RoleId				= @roleid,
 			@Discount			= @v255discount_1701,
@@ -173,5 +173,7 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Commission] TO [vnteam] AS [dbo]

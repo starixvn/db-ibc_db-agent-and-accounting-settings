@@ -125,4 +125,6 @@ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_Commission] TO [
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_Commission] TO [bodbAdminNet]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_Commission] TO [bodbExtAccNet]
+GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_Commission] TO [bodbDownlineNet]
