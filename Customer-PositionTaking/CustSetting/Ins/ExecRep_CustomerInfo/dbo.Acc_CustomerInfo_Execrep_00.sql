@@ -1195,12 +1195,12 @@ SET NOCOUNT ON
 
 		DECLARE @StakeLevelList_1701 VARCHAR(50), @StakeLevelList_1702 VARCHAR(50)
 		SELECT @StakeLevelList_1701 = '', @StakeLevelList_1702 = ''
-		SELECT @StakeLevelList_1701 = @StakeLevelList_1701 + CASE WHEN @StakeLevelList_1701 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM bodb02.dbo.StakeLevel WHERE GameTypeID = 1701 AND ExchangeId = @currency
-		SELECT @StakeLevelList_1702 = @StakeLevelList_1702 + CASE WHEN @StakeLevelList_1702 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM bodb02.dbo.StakeLevel WHERE GameTypeID = 1702 AND ExchangeId = @currency
+		SELECT @StakeLevelList_1701 = @StakeLevelList_1701 + CASE WHEN @StakeLevelList_1701 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1701 AND ExchangeId = @currency
+		SELECT @StakeLevelList_1702 = @StakeLevelList_1702 + CASE WHEN @StakeLevelList_1702 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1702 AND ExchangeId = @currency
 
 		--Keno
 		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
-		SELECT	GameTypeID, @Custid, 0, 0, 0, 1, 0
+		SELECT	GameTypeID, @Custid, 0, 0, 0, 1, CAST(0 AS VARCHAR(100))
 		FROM	bodb02.dbo.GameType WITH(NOLOCK)
 		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
 		UNION ALL SELECT 1701, @custid, 0, 0, 0, 0, @StakeLevelList_1701
@@ -2531,8 +2531,8 @@ SET NOCOUNT ON
 		SELECT @StakeLevelListAg_1701 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1701
 		SELECT @StakeLevelListAg_1702 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1702
 
-		SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN bodb02.dbo.StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
-		SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN bodb02.dbo.StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
 
 		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
         --      Member.MaxBet = MIN(Agent.MaxBet, Master.MaxBet, Super.MaxBet)
