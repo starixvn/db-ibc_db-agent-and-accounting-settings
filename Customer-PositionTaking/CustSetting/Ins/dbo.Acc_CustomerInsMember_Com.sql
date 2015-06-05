@@ -668,7 +668,12 @@ IF @IsAllowedHR = 0
 DECLARE @Disable180_1201 BIT, @HideVirtualSports  BIT, 
 	@isAutoResetLiveCasino BIT , @MaxWinLiveCasino SMALLMONEY, @HideKeno BIT, @HideGoldDeluxe  BIT
 SELECT @Disable180_1201 = 0, @HideVirtualSports = 1, 
-		@isAutoResetLiveCasino = 1, @MaxWinLiveCasino =  0, @HideKeno = 1, @HideGoldDeluxe = 1
+		@isAutoResetLiveCasino = 1, @MaxWinLiveCasino =  0, @HideKeno = 1
+
+IF @currency = 20		
+	SELECT @HideGoldDeluxe = 0
+ELSE 
+	SELECT @HideGoldDeluxe = 1
 	
 Declare @autosuspend BIT,
 		@autosuspend2 BIT
