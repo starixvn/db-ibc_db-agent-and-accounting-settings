@@ -1,4 +1,12 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelRefSport_Bettype]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelRefSport_Bettype]    Script Date: 06/06/2015 14:30:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerSelRefSport_Bettype    Script Date: 9/29/2014 12:50:42 PM ******/
+ALTER PROCEDURE  [dbo].[Acc_CustomerSelRefSport_Bettype]
 	 @CustID		INT = NULL
 	,@RoleID		INT = 0 
 	,@isShowAll		BIT = 1 
@@ -10,13 +18,15 @@ AS
 	DB: DBTXN/bodb02 
 
 	Revision: 
+		- 20150606@Kathy: Change link server DBTXN.CustDB to DBCust.CustDB [Redmine:#36216]
+
 
 	Param's Explanation: 
 		@CustID (Login account): =NULL: Admin ; =NOT NULL: SMA 
 		@isShowAll: 0: Show Active Bettype, 1: Show ALL 
 
 	Sample: 
-		EXEC [Acc_CustomerSelRefSport_Bettype] @CustID = 8 , @RoleID = 5 
+				EXEC [Acc_CustomerSelRefSport_Bettype] @CustID = 8 , @RoleID = 5 
 
 */
 BEGIN
@@ -31,11 +41,11 @@ BEGIN
 			SELECT	 @DisableHRFixedOdds = ci.DisableHRFixedOdds
 					,@HideKeno			 = ci.HideKeno
 					,@DisableNumber		 = ci.DisableNumber
-			FROM	dbo.CustInfo ci WITH (NOLOCK) 
+			FROM	CustDB.dbo.CustInfo ci WITH (NOLOCK) 
 			WHERE	ci.CustID = @CustID
 
 			SELECT	@DisableKeno = MIN(CAST(cg.IsDisabled AS INT))
-			FROM	CustDB.dbo.CustGameType cg WITH (NOLOCK) 
+			FROM	DBCUST.CustDB.dbo.CustGameType cg WITH (NOLOCK) 
 					LEFT JOIN dbo.GameType g WITH (NOLOCK) ON cg.GameTypeID = g.GameTypeID 
 			WHERE	cg.CustID = @CustID
 					AND g.IBCBetTypeID IN (1501,1503,1504,1505,1507,1508,1509,1511,1513)	--Keno Bettype 
@@ -53,12 +63,12 @@ BEGIN
 	ORDER BY Sporttype, Bettype, SporttypeRef, BettypeRef
 
 END
+
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbAdminNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbDownlineNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbExtAccNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbDownlineNetView] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbDownlineNetView] 
-GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbExtAccNet] AS [dbo]
