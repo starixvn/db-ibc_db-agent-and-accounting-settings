@@ -1,16 +1,24 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAgInfo]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_Dep_CustomerSelMember_MAgInfo]    Script Date: 06/06/2015 14:21:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAgInfo]
 	@CustID INT
 AS
 
 /*
 Created: 20120720@Dom
 TASk : select min/max setting Master Agent to add new agent
-DB: DB052.bodb02
+DB: DBCust.CustDB
 
 Revisions:
 - 20131014@Francis: Support selecting new virtual sports with settings via XML param
 - 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
 - 20140512@Florent: Add sport Keno
+- 20150603@Kathy: Move SP to DBCust.custDB [Redmine:#36216]
     
 Param's Explanation:
 • @CustID: member ID
@@ -644,15 +652,25 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 + '</products>'
 	
 --Keno
-
+-- 20150603@Kathy: Migrate custDB to new server - DBCust
+ DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+ BEGIN TRY		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+ END TRY
+ BEGIN CATCH		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+ END CATCH
 --Keno
+
 --Minbet maxbet matchpermatch
 SELECT @vPT= ISNULL(mpositiontaking,0) 
-FROM  DBTXN.CustDB.dbo.CustSettingGame WITH (NOLOCK) 
+FROM  dbo.CustSettingGame WITH (NOLOCK) 
 WHERE Bettype =1501 AND CustID=@CustID 
 --MinBet_Max Maxbet_Min
 SELECT @vPt_Max= ISNULL(mpositiontaking,0) 
-FROM  DBTXN.CustDB.dbo.CustSettingGame WITH (NOLOCK) 
+FROM  dbo.CustSettingGame WITH (NOLOCK) 
 WHERE Bettype =1501 AND CustID=@mrecommend 
 
 
@@ -662,8 +680,8 @@ SELECT gt.IBCBetTypeID bettype ,
 	ISNULL(MaxPerGameType,0) AS MaxPerMatch_Up,
 	ISNULL(cgt.isDisabled,1) AS isDisabled
 INTO #dataUpline
-FROM DBTXN.CustDB.dbo.CustGameType cgt WITH (NOLOCK) 
-INNER JOIN bodb02.dbo.GameType gt with (nolock) ON cgt.GameTypeID = gt.GameTypeID
+FROM dbo.CustGameType cgt WITH (NOLOCK) 
+INNER JOIN @tmp_GameType gt ON cgt.GameTypeID = gt.GameTypeID
 WHERE Custid=@mrecommend 
 
 SELECT gt.IBCBetTypeID bettype ,
@@ -672,8 +690,8 @@ SELECT gt.IBCBetTypeID bettype ,
 	ISNULL(MaxPerGameType,0) AS MaxPerMatch,
 	ISNULL(cgt.isDisabled,1) AS isDisabled
 INTO #data
-FROM DBTXN.CustDB.dbo.CustGameType cgt WITH (NOLOCK) 
-INNER JOIN bodb02.dbo.GameType gt with (NOLOCK) ON cgt.GameTypeID = gt.GameTypeID
+FROM dbo.CustGameType cgt WITH (NOLOCK) 
+INNER JOIN @tmp_GameType gt ON cgt.GameTypeID = gt.GameTypeID
 WHERE Custid=@CustID 
 
 
@@ -891,8 +909,8 @@ FROM custinfo (NOLOCK) ci WHERE ci.custid = @CustID
 DROP TABLE #dataUpline
 DROP TABLE #data
 
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerSelMember_MAgInfo] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerSelMember_MAgInfo] TO [bodbAdminNet]
-GO 
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerSelMember_MAgInfo] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerSelMember_MAgInfo] TO [vnteam] AS [dbo]
