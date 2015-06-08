@@ -130,6 +130,8 @@ Revisions:
 	- 20111115@TOM: Add parameter input @UpdatePositiontakingv151_31 => _51
 								@UpdatePositiontakingv152_41 => _51	
 	- 20130227@Johnson: change linked server DB053 to DBAGE
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
+
 Param's Explanation:
 â€¢ @ErrCode:
     = 0: Transaction recorded successfully.
@@ -142,7 +144,7 @@ SET NOCOUNT ON
 Declare @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000), @roleid tinyint
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID
 	@SessionCustID = @Userid, 
 	@Custid = @custid,
 	@Username = @Username OUTPUT,
@@ -150,7 +152,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 	if (@roleid <> 1) return
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -164,7 +166,7 @@ BEGIN
 	IF @UpdateDisable151_31 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_31
+								EXEC dbo.Acc_CustomerUpdDisable151_31
 			@custid			= @custid, 
 			@Disable151_31	= @Disable151_31, 
 			@UserID			= @UserID, 
@@ -190,7 +192,7 @@ BEGIN
 	IF @UpdateDisable151_41 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_41
+								EXEC dbo.Acc_CustomerUpdDisable151_41
 			@custid			= @custid, 
 			@Disable151_41	= @Disable151_41, 
 			@UserID			= @UserID, 
@@ -216,7 +218,7 @@ BEGIN
 	IF @UpdateDisable151_51 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_51	
+								EXEC dbo.Acc_CustomerUpdDisable151_51	
 			@custid			= @custid, 
 			@Disable151_51	= @Disable151_51, 
 			@UserID			= @UserID, 
@@ -242,7 +244,7 @@ BEGIN
 	IF @UpdateDisable152_41 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_41	
+								EXEC dbo.Acc_CustomerUpdDisable152_41	
 			@custid			= @custid, 
 			@Disable152_41	= @Disable152_41, 
 			@UserID			= @UserID, 
@@ -268,7 +270,7 @@ BEGIN
 	IF @UpdateDisable152_51 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_51	
+								EXEC dbo.Acc_CustomerUpdDisable152_51	
 			@custid			= @custid, 
 			@Disable152_51	= @Disable152_51, 
 			@UserID			= @UserID, 
@@ -294,7 +296,7 @@ BEGIN
 	IF @UpdateDisable153_51 = 1 
 	BEGIN								
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable153_51	
+								EXEC dbo.Acc_CustomerUpdDisable153_51	
 			@custid			= @custid, 
 			@Disable153_51	= @Disable153_51, 
 			@UserID			= @UserID, 
@@ -320,7 +322,7 @@ BEGIN
 	IF @UpdateCommission = 1 
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdMember_CommissionHR	
+								EXEC dbo.Acc_CustomerUpdMember_CommissionHR	
 			@custid			= @custid, 
 			@v151discount_31= @v151discount_31, 
 			@v151discount_41= @v151discount_41, 
@@ -358,7 +360,7 @@ BEGIN
 	--Update bet setting
 	IF @UpdateMinMaxBet151_31 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_31	
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_31	
 			@custid		= @custid, 
 			@minbet		= @v151minbet_31, 
 			@maxbet		= @v151maxbet_31, 
@@ -385,7 +387,7 @@ BEGIN
 	--Update OpenTote bet setting
 	IF @UpdateMinMaxBet151_41 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_41
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_41
 			@custid		= @custid, 
 			@minbet		= @v151minbet_41, 
 			@maxbet		= @v151maxbet_41, 
@@ -412,7 +414,7 @@ BEGIN
 	--Update AU Horse racing bet setting
 	IF @UpdateMinMaxBet151_51 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_51	
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet151_51	
 			@custid		= @custid, 
 			@minbet		= @v151minbet_51, 
 			@maxbet		= @v151maxbet_51, 
@@ -439,7 +441,7 @@ BEGIN
 	--Update UK Greyhound racing bet setting
 	IF @UpdateMinMaxBet152_41 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet152_41	
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet152_41	
 			@custid		= @custid, 
 			@minbet		= @v152minbet_41, 
 			@maxbet		= @v152maxbet_41, 
@@ -466,7 +468,7 @@ BEGIN
 	--Update AU Greyhound racing bet setting
 	IF @UpdateMinMaxBet152_51 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet152_51	
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet152_51	
 			@custid		= @custid, 
 			@minbet		= @v152minbet_51, 
 			@maxbet		= @v152maxbet_51, 
@@ -493,7 +495,7 @@ BEGIN
 	--Update AU Harness racing bet setting
 	IF @UpdateMinMaxBet153_51 = 1
 	BEGIN
-				EXEC dbo.Acc_CustomerUpdMember_MinMaxBet153_51	
+								EXEC dbo.Acc_CustomerUpdMember_MinMaxBet153_51	
 			@custid		= @custid, 
 			@minbet		= @v153minbet_51, 
 			@maxbet		= @v153maxbet_51, 
@@ -521,7 +523,7 @@ BEGIN
 	IF @UpdatePositiontaking = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdMemberHR_PositionTaking 
+								EXEC dbo.Acc_CustomerUpdMemberHR_PositionTaking 
 			@custid = @custid,
 			@v151apositiontaking_31 = @v151apositiontaking_31,
 			@v151apositiontaking_32 = @v151apositiontaking_32,

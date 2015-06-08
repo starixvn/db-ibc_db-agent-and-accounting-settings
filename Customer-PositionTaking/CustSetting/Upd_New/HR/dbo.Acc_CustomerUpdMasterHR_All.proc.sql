@@ -1,18 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 8/21/2014 3:12:18 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 8/21/2014 2:58:07 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 12/5/2013 5:35:47 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 10/10/2013 2:53:23 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterHR_All    Script Date: 7/23/2013 6:12:52 PM ******/
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterHR_All]
     @custid int,
     @UserID int = 0,
     
@@ -200,7 +186,8 @@ Revisions:
      - 20111114@TOM: Change condition check Belonging from @roleid<>3 to @roleid=0.
                      Add parameter input @UpdatePositiontakingv151_31 => _51
                                 @UpdatePositiontakingv152_41 => _51
-    - 20130226@Johnson: change linked server DB053 to DBAGE                
+    - 20130226@Johnson: change linked server DB053 to DBAGE        
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)        
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -213,7 +200,7 @@ SET NOCOUNT ON
 Declare @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000), @roleid tinyint
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @Username = @Username OUTPUT,
@@ -221,7 +208,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
     if (@roleid = 0) return --return if not master
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -395,7 +382,7 @@ END
 IF @UpdateCommission = 1 
 BEGIN
     Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-                EXEC dbo.Acc_CustomerUpdMaster_CommissionHR
+                                                                EXEC dbo.Acc_CustomerUpdMaster_CommissionHR
         @custid=@custid, 
         @v151discount_31=@v151discount_31, 
         @v151discount_41=@v151discount_41, 
@@ -604,7 +591,7 @@ IF @newspositiontaking <> 0
 IF @UpdatePositiontaking = 1
 BEGIN 
     Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-                                EXEC dbo.Acc_CustomerUpdMasterHR_Positiontaking
+                                                                                                                                EXEC dbo.Acc_CustomerUpdMasterHR_Positiontaking
         @custid = @custid,
         @v151spositiontaking_31 = @v151spositiontaking_31,
         @v151spositiontaking_32 = @v151spositiontaking_32,
@@ -689,16 +676,6 @@ BEGIN
     END
 END
 Return
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterHR_All] TO [vnteam]

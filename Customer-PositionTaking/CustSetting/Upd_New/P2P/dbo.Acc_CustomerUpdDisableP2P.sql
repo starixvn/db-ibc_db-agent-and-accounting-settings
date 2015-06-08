@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableP2P]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableP2P]
 	@custid int,
 	@disablep2p bit,
 	@disablefunp2p bit,
@@ -24,6 +24,7 @@ Revisions:
 	- 20121213@Dan: correct linked server from DB052 --> DB053 
 	- 20130318@Elodie: Change linked server DB053 to DBAGE
 					   Write more log on DBTXN server in case of DBLOG server failure
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
 Param's Explanation:
 • @custid: customer id.
 • @DisableNumber: status
@@ -33,7 +34,7 @@ SET NOCOUNT OFF
 DECLARE @startrun DATETIME, @duration INT
 SET @startrun = GETDATE()
 
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @errcode=@errcode OUTPUT,@errmsg=@errmsg OUTPUT
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @errcode=@errcode OUTPUT,@errmsg=@errmsg OUTPUT
 IF @errcode <>0 RETURN
 
 DECLARE @uplinedisablep2p BIT, @old_disablep2p BIT ,
@@ -79,7 +80,7 @@ IF (
 	)
 BEGIN
 
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=0,
 											@Language=@Language,
@@ -299,6 +300,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
 
 GO
 GRANT EXECUTE ON dbo.Acc_CustomerUpdDisableP2P TO [bodbAdminNet]

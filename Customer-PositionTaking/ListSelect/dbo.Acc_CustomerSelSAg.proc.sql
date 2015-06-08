@@ -39,6 +39,7 @@ Revisions:
 	- 20140116@Elodie: Hot fix to get information of disabled customer
 	- 20140407@Elodie: Add Keno product [Redmine:#13156]
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
+	- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -49,6 +50,18 @@ B: 'B%'
 */
 
 SET NOCOUNT ON
+----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /Elodie @ 01 JUN 2015 -------------------
 
 DECLARE @RowCount int, @RowStart int, @RowEnd int
 DECLARE @isAccountingSystem bit
@@ -120,7 +133,7 @@ BEGIN
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
 		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)			
+		LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)			
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 		and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -224,7 +237,7 @@ BEGIN
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
 		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)
+		LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)
 		INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 	WHERE	
 			m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
