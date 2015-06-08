@@ -113,7 +113,12 @@ BEGIN
 		, @roleid = @roleid OUTPUT
 
 	IF (@roleid = 0)
+	BEGIN
+		SET @MsgType = 101
+		SET @ErrCode = 101
+		SET @ErrMsg = 'Users are not in the same line!'
 		RETURN
+	END
 
 			
 	--Check disable user
