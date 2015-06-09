@@ -1,14 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_Commission    Script Date: 8/21/2014 3:12:18 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_Commission    Script Date: 8/21/2014 2:58:03 PM ******/
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_Commission]
     @custid INT,-- masterId
     
     @groupa DECIMAL(9,8),
@@ -56,6 +46,7 @@ Revisions:
     - 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
     - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
     - 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
 Param's Explanation:
 • @ErrCode:
     = 0: Update agent's commission successfully.
@@ -108,7 +99,7 @@ FROM customer WITH (NOLOCK)
 WHERE custid = @custid AND roleid = 3
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -168,7 +159,7 @@ BEGIN
     
     
     -- Apply exec rep
-    exec Acc_CustSetting_06
+                exec Acc_CustSetting_06
         @CustId = @custid,
         @RoleId = @RoleId,
         @groupa = @groupa,
@@ -179,7 +170,7 @@ BEGIN
         @discountHRFixedOdds = @discountHRFixedOdds,
         @discount1x2 = @discount1x2
 
-    exec Acc_CustSetting3rd_06
+                exec Acc_CustSetting3rd_06
         @CustId = @custid,
         @RoleId = @RoleId,
         @discountNumber = @discountnumber,
@@ -278,16 +269,6 @@ BEGIN CATCH
         @TrackingValue2 = @TrackingValue2,
         @duration = @duration    
 END CATCH
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_Commission] TO [vnteam]

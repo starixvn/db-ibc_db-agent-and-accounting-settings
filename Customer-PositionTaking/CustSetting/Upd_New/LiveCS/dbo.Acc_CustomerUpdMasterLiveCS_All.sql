@@ -1,14 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_All    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_All    Script Date: 8/21/2014 2:58:08 PM ******/
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_All]
     @custid        INT,
     @srecommend INT,
     @v162spositiontaking_1101    SMALLMONEY,
@@ -49,6 +39,7 @@ AS
             - 20140724@Johnson: write log all parameters for tracking pt issue 
             - 20140725@Johnson:- comment code write log paramters
                                 - call sp to check parameters before update pt
+			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
         Parameters Explanation:
     */
 SET NOCOUNT ON
@@ -58,7 +49,7 @@ SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 ---------------------------
 -- ***Check Downline Belonging***
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @roleid = @roleid OUTPUT
@@ -66,7 +57,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 ---------------------------
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -83,7 +74,7 @@ WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN
-                EXEC Acc_CustomerUpdMasterLiveCS_Commission
+                                                                EXEC Acc_CustomerUpdMasterLiveCS_Commission
         @custid                = @custid, 
         @v162discount_1101    = @v162discount_1101, 
         @SubAccID            = @SubAccID, 
@@ -185,7 +176,7 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_Tracking
 
 IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 BEGIN
-    EXEC Acc_CustomerUpdMasterLiveCS_CheckParam
+                EXEC Acc_CustomerUpdMasterLiveCS_CheckParam
         @custid        = @custid,
         @v162spositiontaking_1101    = @v162spositiontaking_1101,
         @v162mpositiontaking_1101    = @v162mpositiontaking_1101,    
@@ -207,7 +198,7 @@ END
         
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
-                EXEC Acc_CustOverrideUpdLiveCS
+                                                                EXEC Acc_CustOverrideUpdLiveCS
         @custid        = @custid, 
         @UplineID    =  @srecommend ,
         @min_v162positiontaking_1101 = @v162mpositiontaking_1101_min, 
@@ -230,7 +221,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 BEGIN
-                EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking 
+                                                                EXEC Acc_CustomerUpdMasterLiveCS_Positiontaking 
         @custid        = @custid, 
         
         @v162spositiontaking_1101        = @v162spositiontaking_1101, 
@@ -259,17 +250,6 @@ BEGIN
         SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)        
 
 END
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterLiveCS_All] TO [vnteam]

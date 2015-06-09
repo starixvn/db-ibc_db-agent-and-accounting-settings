@@ -371,6 +371,7 @@ Revisions:
 	- 20140822@Logan:   Add status for Esports [Redmine: #20531]
 	- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+	- 20150601@Elodie: Separate CustDB to DBCUST server (Use temp table for GameType table)
 
 Param's Explanation:
 • @ErrCode:
@@ -380,7 +381,19 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
 SET NOCOUNT ON
+----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
 
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+
+----- /Elodie @ 01 JUN 2015 -------------------
 DECLARE @startRun DATETIME , @endRun DATETIME , @duration INT
 SET @startRun = GETDATE()
 
@@ -1503,7 +1516,7 @@ DECLARE @LogDataKeno NVARCHAR(4000) = ''
 SELECT @LogDataKeno = COALESCE(@LogDataKeno + 'Disable202_' + CAST(IBCBetTypeID AS VARCHAR(10)) 
 	+ '=' + '"' + CAST(1 AS VARCHAR(1)) + '"' + SPACE(1), + 'Disable202_' + CAST(IBCBetTypeID AS VARCHAR(10)) 
 	+ '=' + '"' + CAST(1 AS VARCHAR(1)) + '"' + SPACE(1))
-FROM bodb02.dbo.GameType gt WITH (NOLOCK)
+FROM @tmp_GameType gt
 WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
 
 SET @LogDataKeno = 'HideKeno="'+ COALESCE(CAST(@HideKeno AS VARCHAR(1)), SPACE(1)) + '" ' + @LogDataKeno

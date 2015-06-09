@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [Acc_CustomerUpdAgentVS_MinMaxBet]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentVS_MinMaxBet]
 	@custid int,-- agentID
 	@sporttype tinyint,
 	@bettype int,	
@@ -26,6 +26,8 @@ Revisions:
 						- write log on DBTXN if DBLOG failure
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]				
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -45,7 +47,7 @@ DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
 SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -265,7 +267,7 @@ BEGIN
 	IF (@sporttype = 183)
 	BEGIN
 	
-				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS183_1231 
+																EXEC dbo.Acc_CustomerUpdMaxPerMatchVS183_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -288,7 +290,7 @@ BEGIN
 	IF (@sporttype = 185)
 	BEGIN
 	
-				EXEC dbo.Acc_CustomerUpdMaxPerMatchVS185_1231 
+																EXEC dbo.Acc_CustomerUpdMaxPerMatchVS185_1231 
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -388,6 +390,7 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 ---------------------------------------------------------
+
 
 
 GO

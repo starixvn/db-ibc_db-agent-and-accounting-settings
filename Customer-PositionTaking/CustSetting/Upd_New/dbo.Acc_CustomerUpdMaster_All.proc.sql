@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_All    Script Date: 8/21/2014 3:12:18 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_All    Script Date: 8/21/2014 2:58:03 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     @custid int,-- masterid    
     @disCasino bit = 0,    
     @firstname nvarchar(50),
@@ -142,6 +133,7 @@ CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     @v161slivepositiontaking_90 smallmoney = 0,
     
     
+
     @groupa decimal(9,8),
     @groupb decimal(9,8),
     @groupc decimal(9,8),
@@ -434,6 +426,8 @@ Revisions:
     - 20130218@Dan: Change linked server DB053 to DBAGE
     - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
     - 20140623@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -448,7 +442,7 @@ SET NOCOUNT ON
 declare @roleid tinyint, @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000)
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC  DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC  Age_CustomerSelCheckBelongingByCustID
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @Username = @Username OUTPUT,
@@ -456,7 +450,7 @@ EXEC  DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
     if (@roleid = 0) return
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -620,7 +614,7 @@ BEGIN
     if @updatecomm_old <> 0
     begin
         
-        EXEC dbo.Acc_CustomerUpdMaster_Commission
+                                EXEC dbo.Acc_CustomerUpdMaster_Commission
             @custid = @custid,
             @groupa = @groupa,
             @groupb = @groupb,
@@ -1367,7 +1361,7 @@ BEGIN
         @v161mlivepositiontaking_90 <> @v161mlivepositiontaking_90_old 
 
     BEGIN
-        EXEC dbo.Acc_CustomerUpdMaster_PositionTaking
+                                EXEC dbo.Acc_CustomerUpdMaster_PositionTaking
             @custid = @custid,
             @spositiontaking_1 = @spositiontaking_1,
             @spositiontaking_2 = @spositiontaking_2,
@@ -1651,18 +1645,6 @@ BEGIN
         Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)
     END
 END
-
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_All] TO [vnteam]

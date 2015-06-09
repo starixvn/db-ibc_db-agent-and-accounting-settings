@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Positiontaking    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Positiontaking    Script Date: 8/21/2014 2:58:08 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking]
     @custid        INT,
     @v162spositiontaking_1101    SMALLMONEY,
     @v162mpositiontaking_1101    SMALLMONEY,
@@ -44,6 +35,7 @@ AS
                     and Check total downlines before UPDATEs
             - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                               2.Code aligning on modified parts
+			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
                               
         Parameters Explanation:
     */
@@ -69,7 +61,7 @@ BEGIN
     SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
     ---- Johnson@20131104: Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+    EXEC Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
         @roleid=3,
         @isExecRep=1,
         @isUpdatePT = 1,
@@ -277,7 +269,7 @@ INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
             RETURN
         END
         
-        EXEC dbo.Acc_CustSetting3rd_05
+                                EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -359,7 +351,7 @@ INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 
     IF @v162UpdateAutoPositiontaking_1101 = 1 OR @v162UpdatePositiontaking_1101 = 1
     BEGIN
-        EXEC dbo.Acc_CustSetting3rd_07
+                                EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -459,15 +451,6 @@ INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
             @duration = @duration
     END CATCH
 END
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterLiveCS_Positiontaking] TO [vnteam]
