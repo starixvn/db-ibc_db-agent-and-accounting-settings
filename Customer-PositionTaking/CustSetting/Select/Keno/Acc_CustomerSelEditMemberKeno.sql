@@ -5,19 +5,28 @@ AS
 	Created: Bobby
 	Date: 20140225
 	Task: Select member's Keno setting
-	DB: DBAGE/BODB02
+	DB: DBCust/CustDB
 		
 	Revisions:
-										
+		- 20150608@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 	Parameters Explanations:
 			
 */
 BEGIN
 	SET NOCOUNT ON
 
+	----- 20150608@Kos -------------------
 	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
-	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
-	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+
+	BEGIN TRY
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END CATCH
+	----- 20150608@Kos -------------------
 
 	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @currency INT
 	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend, @currency = currency
@@ -146,14 +155,3 @@ BEGIN
 	ORDER BY cs.Bettype
 
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbAdminNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbDownlineNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbExtAccNet]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [bodbDownlineNetView]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMemberKeno] TO [vnteam]

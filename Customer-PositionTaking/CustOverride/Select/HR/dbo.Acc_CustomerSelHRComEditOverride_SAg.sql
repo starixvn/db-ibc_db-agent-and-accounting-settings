@@ -1,12 +1,11 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRComEditOverride_SAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRComEditOverride_SAg]
 	@CustID int --SuperID
 AS
 
 /*
 Created by: Phuc
 Task : Company Edits Super for HR 
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 Orginal: Acc_CustomerSelComEditOverride_SAg
 
 Revisions:
@@ -16,6 +15,7 @@ Revisions:
 	- 20110124@Lukas: Add more partner ( AU Horse racing) & racing game (Harness, Greyhound) setting
 	- 20110309@Lukas: get custid
 	- 20110310@Johnson: remove custsetting3rd because s4 = l4
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: super ID
 */
@@ -61,6 +61,7 @@ where
 	c.roleid=4 and c.custid=@CustID AND sco.sporttype between 151 and 153
 group by 
 	c.firstname, c.lastname, c.roleid, c.username, c.currency, c.phone, c.mobilephone, c.fax
+
 
 
 

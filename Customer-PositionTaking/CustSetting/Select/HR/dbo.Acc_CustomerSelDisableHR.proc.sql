@@ -1,24 +1,27 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelDisableHR]
-	@CustID int
+	@CustID INT
 AS
 /*
 Created: 20100514@Terry
 Task : Get Status for HorseRacing
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 
-Revisions:   
-	-- 20110225@Lukas: Add more partner & racing game
+Revisions:
+	- 20110225@Lukas: Add more partner (AU Horse Racing) & racing game (Greyhound, Harness)
+	- 20150609@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
 SET NOCOUNT ON
 
-select	isnull(DisableHorseracing,0) as Disable151_31,
-		isnull(DisableOpenTote,0) as Disable151_41,
-		isnull(Disable151_AU,0) as Disable151_51,
-		isnull(Disable152_UK,0) as Disable152_41,
-		isnull(Disable152_AU,0) as Disable152_51,
-		isnull(Disable153_AU,0) as Disable153_51
-from custinfo with (nolock)
-where CustID = @CustID
+SELECT
+	ISNULL(DisableHorseracing, 0) AS Disable151_31,
+	ISNULL(DisableOpenTote, 0) AS Disable151_41,
+	ISNULL(Disable151_AU, 0) AS Disable151_51,
+	ISNULL(Disable152_UK, 0) AS Disable152_41,
+	ISNULL(Disable152_AU, 0) AS Disable152_51,
+	ISNULL(Disable153_AU, 0) AS Disable153_51
+FROM custinfo WITH (NOLOCK)
+WHERE CustID = @CustID
+
 
 
 GO

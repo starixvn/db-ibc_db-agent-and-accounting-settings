@@ -1,21 +1,21 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRAgent_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRAgent_All]
 	@custid int--agentID
 AS
 /*
 Created: 20081028@PhuongNguyen
 Task : Master edit agent.
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 
 Revisions:
-    - 20090515@Phuc: PT for HR
-    - 20090701@Phuc: remove dbo.IsAllowChangePositiontaking, auto master, disalbe auto MPT.
-    - 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
-    - 20100414@Shifu: OpenTote
-    - 20100729@Henry: Grant permission for bodbExtAccNet
-    - 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
-    - 20130306@Johnson: Check bet setting with setting of 3rd
-    - 20130506@Johnson: check null bet setting of 3rd
+	- 20090515@Phuc: PT for HR
+	- 20090701@Phuc: remove dbo.IsAllowChangePositiontaking, auto master, disalbe auto MPT.
+	- 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
+	- 20100414@Shifu: OpenTote
+	- 20100729@Henry: Grant permission for bodbExtAccNet
+	- 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
+	- 20130306@Johnson: Check bet setting with setting of 3rd
+	- 20130506@Johnson: check null bet setting of 3rd
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: super ID
 */
@@ -697,6 +697,7 @@ where custid = @srecommend and sporttype = 153
 		ci.Disable152_AU,
 		ci.Disable153_AU,		
 		c.mrecommend
+
 
 
 
