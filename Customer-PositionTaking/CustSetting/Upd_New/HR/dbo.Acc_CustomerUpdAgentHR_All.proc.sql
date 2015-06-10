@@ -182,6 +182,8 @@ Revisions:
 					Add parameter input @UpdatePositiontakingv151_31 => _51
 								@UpdatePositiontakingv152_41 => _51
 	- 20130226@Johnson: change linked server DB053 to DBAGE
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
+
 Param's Explanation:
 â€¢ @ErrCode:
     = 0: Transaction recorded successfully.
@@ -194,7 +196,7 @@ SET NOCOUNT ON
 Declare @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000), @roleid tinyint
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID 
 	@SessionCustID = @Userid, 
 	@Custid = @custid,
 	@Username = @Username OUTPUT,
@@ -202,7 +204,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 	if (@roleid = 0) return-- return if not agent
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -216,7 +218,7 @@ BEGIN
 	IF @UpdateDisable151_31 = 1 
 	BEGIN	
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_31 -- Acc_CustomerUpdDisableHR -> Acc_CustomerUpdDisable151_31
+								EXEC dbo.Acc_CustomerUpdDisable151_31 -- Acc_CustomerUpdDisableHR -> Acc_CustomerUpdDisable151_31
 			@custid=@custid, 
 			@Disable151_31=@Disable151_31, 
 			@DisableDownlines151_31=@DisableDownlines151_31,
@@ -243,7 +245,7 @@ BEGIN
 	IF @UpdateDisable151_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_51	
+								EXEC dbo.Acc_CustomerUpdDisable151_51	
 			@custid=@custid, 
 			@Disable151_51=@Disable151_51, 
 			@DisableDownlines151_51=@DisableDownlines151_51,
@@ -269,7 +271,7 @@ BEGIN
 	IF @UpdateDisable152_41 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_41
+								EXEC dbo.Acc_CustomerUpdDisable152_41
 			@custid=@custid, 
 			@Disable152_41=@Disable152_41, 
 			@DisableDownlines152_41=@DisableDownlines152_41,
@@ -295,7 +297,7 @@ BEGIN
 	IF @UpdateDisable152_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable152_51
+								EXEC dbo.Acc_CustomerUpdDisable152_51
 			@custid=@custid, 
 			@Disable152_51=@Disable152_51, 
 			@DisableDownlines152_51=@DisableDownlines152_51,
@@ -321,7 +323,7 @@ BEGIN
 	IF @UpdateDisable153_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable153_51
+								EXEC dbo.Acc_CustomerUpdDisable153_51
 			@custid=@custid, 
 			@Disable153_51=@Disable153_51, 
 			@DisableDownlines153_51=@DisableDownlines153_51,
@@ -348,7 +350,7 @@ BEGIN
 	IF @UpdateDisable151_41 = 1 
 	BEGIN	
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''		
-				EXEC dbo.Acc_CustomerUpdDisable151_41 -- Acc_CustomerUpdDisableOpenTote -> Acc_CustomerUpdDisable151_41
+								EXEC dbo.Acc_CustomerUpdDisable151_41 -- Acc_CustomerUpdDisableOpenTote -> Acc_CustomerUpdDisable151_41
 			@custid=@custid, 
 			@Disable151_41=@Disable151_41, 
 			@DisableDownlines151_41=@DisableDownlines151_41,
@@ -375,7 +377,7 @@ BEGIN
 	IF @UpdateCommission = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_CommissionHR	
+								EXEC dbo.Acc_CustomerUpdAgent_CommissionHR	
 			@custid=@custid, 
 			@v151discount_31=@v151discount_31, 
 			@v151discount_41=@v151discount_41, 
@@ -414,7 +416,7 @@ BEGIN
 	IF @UpdateMinMaxBet151_31 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_31	-- Acc_CustomerUpdAgent_MinMaxBetHR -> Acc_CustomerUpdAgent_MinMaxBet151_31
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_31	-- Acc_CustomerUpdAgent_MinMaxBetHR -> Acc_CustomerUpdAgent_MinMaxBet151_31
 			@custid=@custid, 
 			@minbet=@v151minbet_31, 
 			@maxbet=@v151maxbet_31, 
@@ -443,7 +445,7 @@ BEGIN
 	IF @UpdateMinMaxBet151_41 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_41	-- Acc_CustomerUpdAgent_MinMaxBetOpenTote -> Acc_CustomerUpdAgent_MinMaxBet151_41
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_41	-- Acc_CustomerUpdAgent_MinMaxBetOpenTote -> Acc_CustomerUpdAgent_MinMaxBet151_41
 			@custid=@custid, 
 			@minbet=@v151minbet_41, 
 			@maxbet=@v151maxbet_41, 
@@ -471,7 +473,7 @@ BEGIN
 	IF @UpdateMinMaxBet151_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_51
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet151_51
 			@custid=@custid, 
 			@minbet=@v151minbet_51, 
 			@maxbet=@v151maxbet_51, 
@@ -499,7 +501,7 @@ BEGIN
 	IF @UpdateMinMaxBet152_41 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet152_41
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet152_41
 			@custid=@custid, 
 			@minbet=@v152minbet_41, 
 			@maxbet=@v152maxbet_41, 
@@ -527,7 +529,7 @@ BEGIN
 	IF @UpdateMinMaxBet152_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet152_51
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet152_51
 			@custid=@custid, 
 			@minbet=@v152minbet_51, 
 			@maxbet=@v152maxbet_51, 
@@ -555,7 +557,7 @@ BEGIN
 	IF @UpdateMinMaxBet153_51 = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet153_51
+								EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet153_51
 			@custid=@custid, 
 			@minbet=@v153minbet_51, 
 			@maxbet=@v153maxbet_51, 
@@ -586,7 +588,7 @@ BEGIN
 	IF @UpdatePositiontaking = 1
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-				EXEC dbo.Acc_CustomerUpdAgentHR_PositionTaking 
+								EXEC dbo.Acc_CustomerUpdAgentHR_PositionTaking 
 			@custid = @custid,
 			@v151apositiontaking_31 = @v151apositiontaking_31,
 			@v151apositiontaking_32 = @v151apositiontaking_32,

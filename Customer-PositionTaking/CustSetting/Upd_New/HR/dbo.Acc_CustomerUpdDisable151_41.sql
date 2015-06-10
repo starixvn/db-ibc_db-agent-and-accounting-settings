@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisable151_41]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisable151_41]
 	@CustID					INT,
 	@Disable151_41			BIT,
 	@DisableDownlines151_41	BIT = true, --Disable all downline
@@ -25,6 +24,7 @@ Revisions:
 	- 20110709@Johnson: Change to use new server BD053 instead DB052
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB)
 Param's Explanation:
 â€¢ @custid: customer id.   
 â€¢ @Disable151_41: status
@@ -37,7 +37,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return 
 --end
 Declare @RoleID tinyint , @UplineDisable151_41 bit, @Old_Disable151_41 bit
@@ -210,8 +210,6 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-
-
 
 
 GO

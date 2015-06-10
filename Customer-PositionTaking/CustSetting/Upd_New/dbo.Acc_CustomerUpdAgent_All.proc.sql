@@ -441,6 +441,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20140626@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 Param's Explanation:
 • @ErrCode:
     = 0: Update Agent successfully.
@@ -456,7 +457,7 @@ SET NOCOUNT ON
 declare @roleid tinyint, @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000)
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID 
 	@SessionCustID = @Userid, 
 	@Custid = @custid,
 	@Username = @Username OUTPUT,
@@ -464,7 +465,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 	if (@roleid = 0) return
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -627,7 +628,7 @@ BEGIN
 	if @updatecomm_old <> 0
 	begin	
 		
-		EXEC dbo.Acc_CustomerUpdAgent_Commission 
+								EXEC dbo.Acc_CustomerUpdAgent_Commission 
 			@custid = @custid,
 			@groupa = @groupa,
 			@groupb = @groupb,
@@ -1353,7 +1354,7 @@ BEGIN
 			@isauto_v161mlivepositiontaking_90 <> @isauto_v161mlivepositiontaking_90_old 
 			
 	BEGIN
-		EXEC dbo.Acc_CustomerUpdAgent_PositionTaking 
+																EXEC dbo.Acc_CustomerUpdAgent_PositionTaking 
 			@custid = @custid,
 			@apositiontaking_1 = @apositiontaking_1,
 			@apositiontaking_2 = @apositiontaking_2,

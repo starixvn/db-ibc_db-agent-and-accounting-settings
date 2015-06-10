@@ -31,6 +31,7 @@ AS
 	DB: DBTXN/CustDB
 	
 	Revisions:
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Use temp table for sports, bettype table)
 	Parameters Explanation:
 		@ErrCode: 0 is successful
 */
@@ -40,8 +41,31 @@ BEGIN
 		, @ErrAcc VARCHAR(4000), @ErrType VARCHAR(4000)
 	SET @startRun = GETDATE()
 
+	----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+	----- /Elodie @ 01 JUN 2015 -------------------
+
 	--Checking total downlines before UPDATEs 
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
+	EXEC Acc_CustomerSelCheckAllowedDownlines @custid = @custid
 		, @roleid = 2
 		, @isExecRep = 1
 		, @isUpdatePT = 1
@@ -91,8 +115,8 @@ BEGIN
 				, @a2 AS apositiontaking, @m2 AS mpositiontaking
 				, @im2 AS isauto_mpositiontaking, @um2 AS auto_mpositiontaking
 		) b ON co.bettype = b.bettype AND co.sporttype = b.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid
+		INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype
 	WHERE co.custid = @mrecommend
 		AND (((b.isauto_mpositiontaking = 0) AND (b.mpositiontaking + b.apositiontaking < co.minpositiontaking)) 
 			OR (b.isauto_mpositiontaking > 0 AND (b.apositiontaking + b.auto_mpositiontaking < co.minpositiontaking)))
@@ -112,8 +136,8 @@ BEGIN
 	FROM (SELECT @BetType AS bettype, @SportType AS sporttype, @n2 AS minpositiontaking) AS co
 		INNER JOIN (SELECT @BetType AS bettype, @SportType AS sporttype, @a2 AS apositiontaking) AS b
 			ON co.bettype = b.bettype AND co.sporttype = b.sporttype
-		INNER JOIN bodb02.dbo.bettype bt WITH(NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid
+		INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype
 	WHERE b.apositiontaking < co.minpositiontaking
 
 	IF @ErrType <> ''
@@ -136,8 +160,8 @@ BEGIN
 		SELECT @BetType AS bettype, @SportType AS sporttype, @a2 AS apositiontaking
 			, @m2 AS mpositiontaking, @MPositiontaking_Max AS max_mapositiontaking
 	) b
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid
+		INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype
 	WHERE (b.apositiontaking + b.mpositiontaking > b.max_mapositiontaking) 
 
 	IF @ErrType <> ''
@@ -157,8 +181,8 @@ BEGIN
 		SELECT @BetType AS bettype, @SportType AS sporttype, @um2 as autopositiontaking
 			, @im2 as isautopositiontaking, @MPositiontaking_Max as max_mapositiontaking
 	) AS b 
-		INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s WITH(NOLOCK) ON b.sporttype = s.sporttype
+		INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid
+		INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype
 	WHERE b.isautopositiontaking = 1
 		AND b.autopositiontaking > max_mapositiontaking
 		
@@ -209,7 +233,7 @@ BEGIN
 		--Call execrep
 		IF (@um2 <> @Old_Auto_MPositionTaking OR @im2 <> @Old_IsAuto_MPositionTaking)
 		BEGIN
-			EXEC dbo.Acc_CustSetting3rd_05 @mrecommend = @mrecommend
+												EXEC dbo.Acc_CustSetting3rd_05 @mrecommend = @mrecommend
 					, @recommend = @custid
 					, @roleid = 2
 					, @mode = 'Keno'
@@ -224,7 +248,7 @@ BEGIN
 	
 	IF @UpdatePositiontaking = 1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @im2 = 0        
 	BEGIN   
-		EXEC dbo.Acc_CustSetting3rd_05 		
+								EXEC dbo.Acc_CustSetting3rd_05 		
 			@recommend = @custid,
 			@roleid = 2,
 			@mode = 'Keno',
@@ -239,7 +263,7 @@ BEGIN
 
 	IF (@UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1)
 	BEGIN 
-		EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'Keno', @Sporttype = @SportType, @BetType = @Bettype
+								EXEC dbo.Acc_CustSetting3rd_07 @recommend = @custid, @roleid = 2, @mode = 'Keno', @Sporttype = @SportType, @BetType = @Bettype
 		IF (@@ERROR <> 0)
 		BEGIN
 			SELECT @ErrMsg = @UserName + ': '+ CASE @Language 
@@ -308,6 +332,7 @@ BEGIN
 			, @duration = @duration
 	END CATCH	
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_PositionTaking] TO [bodbAdminNet] AS [dbo]

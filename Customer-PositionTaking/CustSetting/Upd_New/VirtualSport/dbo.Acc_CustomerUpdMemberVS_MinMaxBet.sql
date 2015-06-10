@@ -1,4 +1,14 @@
-﻿ALTER PROCEDURE [Acc_CustomerUpdMemberVS_MinMaxBet]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_MinMaxBet]    Script Date: 06/09/2015 16:40:01 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_MinMaxBet    Script Date: 4/22/2014 1:45:57 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_MinMaxBet    Script Date: 10/04/2014 5:25:04 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_MinMaxBet    Script Date: 12/5/2013 5:35:50 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberVS_MinMaxBet]
 	@custid			INT,
 	@sporttype		INT,
 	@bettype		INT,
@@ -27,7 +37,8 @@ AS
 								- change linked server DB053 to DBAGE
 								- write log on DBTXN if DBLOG failure
 			- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
-			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]											
+			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]	
+			- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]										
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -54,7 +65,7 @@ SET NOCOUNT ON
 	
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -62,7 +73,7 @@ SET NOCOUNT ON
 	---------------------------
 	
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -243,7 +254,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 183)
 		BEGIN
 		
-						EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
+																								EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,
@@ -266,7 +277,7 @@ SET NOCOUNT ON
 		IF (@sporttype = 185)
 		BEGIN
 		
-						EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
+																								EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
 				@custid = @custid,
 				@MaxPerMatch = @MaxPerMatch,
 				@Language = @Language,

@@ -1,6 +1,4 @@
-﻿USE [CustDB]
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableHRFixedOdds]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableHRFixedOdds]
 	@custid		INT,
 	@DisableHRFixedOdds BIT = NULL,	
 	@EnableDownlinesHRFixedOdds BIT = 0,
@@ -21,6 +19,7 @@ Original:
 Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]		
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
 Param's Explanation:
 • @custid: customer id.   
 • @DisabledHRFixedOdds: status
@@ -33,7 +32,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 Declare @RoleID tinyint , @UplineDisableHRFixedOdds bit, @Old_DisableHRFixedOdds bit
@@ -56,7 +55,7 @@ END
 --Check Allowed downlines during peak hour at weekend
 IF (@DisableHRFixedOdds = 1 or (@DisableHRFixedOdds = 0 and @EnableDownlinesHRFixedOdds = 1))
 BEGIN
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1,
 											@Language=@Language,
@@ -173,6 +172,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	 ,
 		@duration = @duration		
 END CATCH
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableHRFixedOdds] TO [bodbAdminNet] AS [dbo]

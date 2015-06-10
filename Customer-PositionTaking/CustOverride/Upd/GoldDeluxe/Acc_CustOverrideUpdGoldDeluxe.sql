@@ -79,17 +79,17 @@ BEGIN
 
     IF @roleid = 4
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'GoldDeluxe'
+        EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     IF @roleid = 3
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'GoldDeluxe'
+        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     IF @roleid = 2
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'GoldDeluxe'
+        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     DECLARE @LogSPData VARCHAR(MAX),
@@ -145,6 +145,7 @@ BEGIN
             @duration = @duration
     END CATCH
 END
+
 
 GO  
 GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdGoldDeluxe] TO [bodbAdminNet]

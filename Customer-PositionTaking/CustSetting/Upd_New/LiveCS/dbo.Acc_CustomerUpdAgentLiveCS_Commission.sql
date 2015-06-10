@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_Commission]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgentLiveCS_Commission]
 (
 	@custid				INT,
 	@v162discount_1101	DECIMAL(9,8),
@@ -20,6 +19,7 @@ AS
 		- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 		- 20130301@Johnson: write log on DBTXN if DBLOG failure
 		- 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
 
 	Parameters Explanation:
 */
@@ -42,6 +42,19 @@ BEGIN
 			@roleid = roleid
 	FROM customer WITH(NOLOCK) 
 	WHERE CustID = @CustID
+	
+	--Check Allowed downlines	
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+				@roleid=@roleid,
+				@isExecRep=1,
+				@isUpdatePT = 1,
+				@Sporttype = 1,
+				@Language='E',
+				@ErrMsg=@ErrMsg output,
+				@ErrCode=@ErrCode output
+	IF	@ErrCode <> 0 
+		RETURN 
+		
 	
 	SELECT  @db_v162discount_1101 = discount	
 	FROM CustSettingGame WITH(NOLOCK) 
@@ -133,6 +146,7 @@ BEGIN
 		
 
 END
+
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentLiveCS_Commission] TO [vnteam]

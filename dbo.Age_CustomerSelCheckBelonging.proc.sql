@@ -18,7 +18,6 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettrans, bettrans14 by link database in DBTXN)
     - 20140303@Johnson: fix bug check session's roleid 
 	- 20150225@Lukas: add subaccountID 
-	- 20150310@Johnson: check uplineid not same user do action
 */
 SET NOCOUNT ON
 Declare @SessionRoleID tinyint
@@ -42,8 +41,7 @@ if @custid is NULL
 	select @custid = custid from DBARC.bodb_archive.dbo.Bettrans_bk with (nolock) where transid = @transid
 
 --------------------------------------------------------------------------------
-IF @SessionCustID = @custid
-	RETURN
+
 
 select	@SessionRoleID = roleid,
 		@isActive = CASE WHEN closed = 1 OR Enabled = 0 THEN 0 ELSE 1 END
@@ -68,7 +66,7 @@ BEGIN
 END
 
 select	@roleid = isnull(@roleid, 0), 
-		@isActive = ISNULL(@isActive,0)
+		@isActive = ISNULL(@isActive,0
 
 
 GO

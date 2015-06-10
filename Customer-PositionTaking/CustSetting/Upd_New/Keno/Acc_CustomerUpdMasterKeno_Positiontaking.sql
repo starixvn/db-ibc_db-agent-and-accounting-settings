@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterKeno_Positiontaking    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterKeno_Positiontaking    Script Date: 8/21/2014 2:58:10 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking]
 (
     @CustId INT
     , @SportType INT = 202
@@ -42,6 +33,7 @@ AS
     Revisions:
         - 20140729@Logan: 1.Exclude disabled agents, members while updating master setting [Redmine: #19631]
                           2.Code aligning on modified parts
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
 
     Parameters Explanation:
         @ErrCode is 0 update successful
@@ -56,7 +48,7 @@ BEGIN
 
     SELECT @ErrCode = 0, @ErrMsg = '', @ErrAcc = '', @ErrType = '', @startRun = GETDATE()
     
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
+    EXEC Acc_CustomerSelCheckAllowedDownlines @custid = @custid
         , @roleid = 3
         , @isExecRep = 1
         , @isUpdatePT = 1
@@ -246,7 +238,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
             RETURN
         END
     
-        EXEC dbo.Acc_CustSetting3rd_05
+                                EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend
             , @mrecommend = @custid
             , @roleid = 3
@@ -264,7 +256,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
     --apply new value position taking for super on members
     IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND @UpdateAllMembers = 1 AND @is3 = 0
     BEGIN
-        EXEC dbo.Acc_CustSetting3rd_05
+                                EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -281,7 +273,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 
     IF @UpdateAutoPositionTaking = 1 OR @UpdatePositionTaking = 1
     BEGIN
-        EXEC dbo.Acc_CustSetting3rd_07
+                                EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -313,6 +305,7 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
         + '" ' + 'UpdateAutoPositionTaking="' + COALESCE(CAST(@UpdateAutoPositionTaking AS VARCHAR(50)), SPACE(1))
         + '" ' + 'UpdateAllMembers="' + COALESCE(CAST (@UpdateAllMembers AS VARCHAR(3)), SPACE(1))
         + '" ' + 'NewSPositionTaking="' + COALESCE(CAST (@NewSPositionTaking AS VARCHAR(30)), SPACE(1))
+
         + '" ' + 'UserId="' + COALESCE(CAST(@userid AS VARCHAR(50)), SPACE(1))
         + '" ' + 'SubAccName="'+ COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1))
         + '" ' + 'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1))
@@ -360,18 +353,6 @@ INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
     END CATCH
 
 END
-
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_Positiontaking] TO [vnteam]

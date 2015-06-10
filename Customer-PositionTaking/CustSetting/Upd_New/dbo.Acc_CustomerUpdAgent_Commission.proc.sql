@@ -20,7 +20,7 @@ AS
 /*
 Created: 20080514@Thien
 Task : Update Agent's Commission
-DB: DBTXN/bodb02
+DB: DBCUST/CustDB
 Original:
 
 Revisions:
@@ -42,6 +42,8 @@ Revisions:
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Update commission successfully.
@@ -90,7 +92,7 @@ SELECT @UserName  = username, @mrecommend = mrecommend, @roleid = roleid
 FROM customer WITH (NOLOCK) WHERE CustID = @CustID
 
 --Check Allowed downlines	
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 			@roleid=@roleid,
 			@isExecRep=1,
 			@isUpdatePT = 1,
@@ -154,7 +156,7 @@ BEGIN
 	
 
 	-- Apply exec rep
-	exec Acc_CustSetting_06
+				exec Acc_CustSetting_06
 		@CustId = @custid,
 		@RoleId = @RoleId,
 		@groupa = @groupa,
@@ -264,9 +266,6 @@ BEGIN CATCH
 		@duration = @duration
 		
 END CATCH
-
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_Commission] TO [bodbAdminNet] AS [dbo]

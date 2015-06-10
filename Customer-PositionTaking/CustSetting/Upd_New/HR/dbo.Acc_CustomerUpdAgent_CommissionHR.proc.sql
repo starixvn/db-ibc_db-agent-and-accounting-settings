@@ -44,6 +44,8 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130226@Johnson: write log on DBTXN if DBLOG failure
 	- 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -60,7 +62,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check Allowed downlines	
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 			@roleid=2,--@roleid,
 			@isExecRep=1,
 			@isUpdatePT = 1,
@@ -342,8 +344,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration  = @duration
-END CATCH	
-
+END CATCH
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_CommissionHR] TO [bodbAdminNet] AS [dbo]
