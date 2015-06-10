@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_Commission]    Script Date: 06/10/2015 16:03:34 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Commission    Script Date: 8/28/2014 2:05:19 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Commission    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Commission    Script Date: 8/21/2014 2:58:09 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Commission    Script Date: 12/5/2013 5:35:49 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] 
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] 
     @custid        INT,
     @v162discount_1101        DECIMAL(9,8),
     @IP            VARCHAR(50)='',    
@@ -29,6 +31,7 @@ AS
             - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
             - 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
             - 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
+            - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
         Parameters Explanation:         
     */
 SET NOCOUNT ON
@@ -42,7 +45,7 @@ SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 ---------------------------
 -- ***Check Downline Belonging***
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @roleid = @roleid OUTPUT
@@ -50,7 +53,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 ---------------------------
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -60,7 +63,7 @@ END
 --end
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=4,-- @roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -91,7 +94,7 @@ BEGIN
 END
 
 -- Apply exec rep
-    EXEC Acc_CustSetting3rd_06
+                EXEC Acc_CustSetting3rd_06
     @CustId = @custid,
     @RoleId = @roleid,
     @v162discount_1101 = @v162discount_1101,
@@ -150,19 +153,9 @@ BEGIN CATCH
 END CATCH
 
 
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [bodbDownlineNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Commission] TO [vnteam] AS [dbo]

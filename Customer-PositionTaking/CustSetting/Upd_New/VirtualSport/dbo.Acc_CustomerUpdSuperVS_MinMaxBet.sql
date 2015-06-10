@@ -1,4 +1,14 @@
-﻿ALTER PROCEDURE [Acc_CustomerUpdSuperVS_MinMaxBet]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperVS_MinMaxBet]    Script Date: 06/10/2015 16:08:33 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_MinMaxBet    Script Date: 4/22/2014 1:45:55 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_MinMaxBet    Script Date: 10/04/2014 5:25:04 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_MinMaxBet    Script Date: 12/5/2013 5:35:50 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperVS_MinMaxBet]
 	@custid			INT,
 	@sporttype tinyint,
 	@bettype int,
@@ -24,6 +34,7 @@ Revisions:
 						- write log on DBTXN if DBLOG failure
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)	
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB) [Redmine:#36216]                                
 							
 Param's Explanation:
 * @ErrCode:
@@ -47,7 +58,7 @@ DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
 SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -167,7 +178,7 @@ BEGIN
 
 	IF (@sporttype = 183)
 	BEGIN
-				EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
+																EXEC Acc_CustomerUpdMaxPerMatchVS183_1231
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -187,7 +198,7 @@ BEGIN
 
 	IF (@sporttype = 185)
 	BEGIN
-				EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
+																EXEC Acc_CustomerUpdMaxPerMatchVS185_1231
 			@custid = @custid,
 			@MaxPerMatch = @MaxPerMatch,
 			@Language = @Language,
@@ -276,7 +287,6 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
 END CATCH
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]

@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdVS]    Script Date: 06/10/2015 17:24:44 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdVS    Script Date: 8/28/2014 2:05:06 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdVS    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdVS    Script Date: 8/21/2014 2:58:06 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdVS    Script Date: 12/5/2013 5:35:45 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdVS] 
     @custid int,
     @sporttype tinyint,
     @bettype int,
@@ -40,6 +42,7 @@ AS
         - 20131029@Elodie: Apply execrep when update min/max pt on master or agent
         - 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
         - 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_04 for super
+        - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
     Param's Explanation:
     • @ErrCode:
         = 0: Update successfully.
@@ -55,7 +58,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 Declare @maxpos smallmoney 
@@ -68,7 +71,7 @@ declare @ErrAcc varchar(4000)
 
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -183,19 +186,19 @@ END
 
 if @roleid = 2
 BEGIN    
-    EXEC dbo.Acc_CustSetting3rd_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 2
+                EXEC dbo.Acc_CustSetting3rd_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 2
 
     -- The minimum position taking value of agent was modified by agent's upline
     EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID    
 END
 ELSE IF @roleid = 3
 BEGIN    
-    EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 3
+                EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype, @roleid = 3
 
 END
 ELSE IF @roleid= 4 and @UpdateMinPos = 1 
 BEGIN    
-    EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype
+                EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'virtual-sports', @sporttype = @sporttype, @bettype = @bettype
 END
 ELSE IF @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1 -- process like SB, not correct when changing preset
 BEGIN    
@@ -281,22 +284,11 @@ BEGIN
 
 END
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdVS] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdVS] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdVS] TO [vnteam] AS [dbo]

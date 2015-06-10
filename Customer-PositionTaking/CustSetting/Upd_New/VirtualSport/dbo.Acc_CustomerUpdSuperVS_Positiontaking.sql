@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperVS_Positiontaking]    Script Date: 06/10/2015 16:12:26 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_Positiontaking    Script Date: 8/28/2014 2:05:05 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_Positiontaking    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperVS_Positiontaking    Script Date: 8/21/2014 2:58:06 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperVS_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperVS_Positiontaking]
     @custid int,-- superid    
     @sporttype tinyint,
     @bettype int,
@@ -40,6 +42,7 @@ AS
         - 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
         - 20140725@Logan: 1. Exclude disabled accounts while updating SM's seting [Redmine: #19631]
                           2. Code aligning for modified parts
+		- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, temp sport, bettype table) [Redmine:#36216]                          
 
     Param's Explanation:
     • @ErrCode:
@@ -60,7 +63,7 @@ DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)
 SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -70,7 +73,7 @@ END
 --end
 
 ---- Johnson@20131104: Checking total downlines before UPDATEs 
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
     @roleid=4,
     @isExecRep=1,
     @isUpdatePT = 1,
@@ -88,6 +91,27 @@ END
 Declare @username varchar(40)
 select @username = username from custinfo with (NOLOCK) where custid = @custid
 
+DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+
+BEGIN TRY
+	INSERT INTO @tmp_Sports (SportType, SportName)
+	SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+END TRY
+BEGIN CATCH
+	INSERT INTO @tmp_Sports (SportType, SportName)
+	SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+END CATCH
+
+BEGIN TRY			
+	INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+	SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+END TRY
+BEGIN CATCH		
+	INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+	SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+END CATCH
+	
 DECLARE @s4_old smallmoney,
     @m4_old smallmoney ,
     @a4_old smallmoney,
@@ -162,8 +186,8 @@ BEGIN
             (
                 select @bettype as bettype, @sporttype as sporttype, @s4 as spositiontaking
             ) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-            INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-            INNER JOIN bodb02.dbo.sports s with(nolock) on co.sporttype = s.sporttype
+            INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid
+            INNER JOIN @tmp_sports s  on co.sporttype = s.sporttype
         where co.custid = @custid and (b.spositiontaking<co.minpositiontaking) 
 
         if @ErrType <>''
@@ -389,7 +413,7 @@ INNER JOIN (SELECT @sporttype AS sporttype
     --exec dbo.Acc_CustomerUpdSuper_AutoPositiontaking @srecommend = @custid
     
     ---20131101@Johnson: apply execrep when correct pt on members
-    EXEC dbo.Acc_CustSetting3rd_07
+                EXEC dbo.Acc_CustSetting3rd_07
         @srecommend = @custid,
         @roleid = 4,
         @mode = 'virtual-sports',
@@ -428,7 +452,7 @@ INNER JOIN (SELECT @sporttype AS sporttype
     */
     
     --Update l4=s4
-        EXEC Acc_CustOverrideUpdVS @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_max = @s4, @UpdateMinPos=0, @UpdateMaxPos = 1, @IP = @IP ,@UserID = @userid, @WriteLog = 0, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
+                                EXEC Acc_CustOverrideUpdVS @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_max = @s4, @UpdateMinPos=0, @UpdateMaxPos = 1, @IP = @IP ,@UserID = @userid, @WriteLog = 0, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
 
     if (@@error <> 0)
     begin
@@ -448,7 +472,7 @@ END
 --Update Min PT
 IF @UpdateMinPositiontaking = 1
 BEGIN        
-        EXEC Acc_CustOverrideUpdVS @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_min = @n4, @UpdateMinPos=1, @UpdateMaxPos = 0, @IP = @IP ,@UserID = @userid, @WriteLog = 0,@Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    = @ErrMsg_Cur OUTPUT
+                                EXEC Acc_CustOverrideUpdVS @custid = @custid, @sporttype = @sporttype, @bettype = @bettype, @positiontaking_min = @n4, @UpdateMinPos=1, @UpdateMaxPos = 0, @IP = @IP ,@UserID = @userid, @WriteLog = 0,@Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    = @ErrMsg_Cur OUTPUT
     
     IF (@@error <> 0 or @ErrCode_Cur>0)
     BEGIN
@@ -545,20 +569,9 @@ BEGIN CATCH
         @duration = @duration
 END CATCH
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [bodbExtAccNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [bodbExtAccNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperVS_Positiontaking] TO [vnteam] AS [dbo]

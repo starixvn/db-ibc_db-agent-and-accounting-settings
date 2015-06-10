@@ -1,4 +1,14 @@
-﻿ALTER PROCEDURE [Acc_CustomerUpdVS_MinMaxBet]  
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdVS_MinMaxBet]    Script Date: 06/10/2015 16:44:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdVS_MinMaxBet    Script Date: 4/22/2014 1:46:04 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdVS_MinMaxBet    Script Date: 10/04/2014 5:25:05 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdVS_MinMaxBet    Script Date: 12/5/2013 5:35:50 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_MinMaxBet]  
 	@custid   INT,  
 	@sporttype SMALLINT,
 	@bettype SMALLINT, 
@@ -24,6 +34,7 @@ AS
 						 - write log on DBTXN if DBLOG failure
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
 												 
   Parameters Explanation:  
  */   
@@ -46,7 +57,7 @@ DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT,
 SET @startRun = GETDATE()  
   
 --Check disable user  
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output  
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output  
 IF @ErrCode <>0 RETURN  
    
 SELECT	@recommend = recommend,   
@@ -60,7 +71,7 @@ WHERE custid = @custid
 --Check Allowed downlines during peak hour at weekend   
 IF @UpdDownlinesVS = 1  
 BEGIN  
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid=@custid,  
+	EXEC dbo.Acc_CustomerSelCheckAllowedDownlines @custid=@custid,  
        @roleid=@roleid,  
        @isExecRep=1,  
        @Language=@Language,  
@@ -258,7 +269,7 @@ END
 IF @UpdDownlinesVS = 1 
 BEGIN  
 
-				EXEC Acc_CustSetting3rd_03  
+																EXEC Acc_CustSetting3rd_03  
 		@custid    = @custid,  
 		@roleid    = @roleid,  
 		@sporttype = @sporttype,
@@ -334,8 +345,6 @@ DECLARE @LogSPData VARCHAR(MAX),@LogSPData_Old VARCHAR(2000)
 			@TrackingValue2 = @LogSPData_Old,  
 			@duration = @duration
 	END CATCH
-
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [bodbAdminNet]
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdVS_MinMaxBet] TO [bodbAdminNet] AS [dbo]
