@@ -387,7 +387,8 @@ Revisions:
 	- 20140509@Florent: Add new sport: 202 Keno
 	- 20140605@Florent: Remove checking for Super
 	- 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
-	    
+    - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+       
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -398,6 +399,18 @@ Param's Explanation:
 */
 BEGIN
 SET NOCOUNT ON
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 DECLARE @startRun DATETIME , @endRun DATETIME , @duration INT
 SET @startRun = GETDATE()
 
@@ -1238,7 +1251,7 @@ WHERE bettype =1501
 
 INSERT INTO dbo.CustGameType(CustID,GameTypeID,StakeLevelList,MaxPerGameType,MinBet,MaxBet,IsDisabled)
 SELECT @custid,gt.GameTypeID,'',MaxPerMatch,MinBet,MaxBet,d.IsDisable 
-FROM #data d INNER JOIN bodb02.dbo.GameType gt with (nolock) ON d.bettype=gt.IBCBetTypeID
+FROM #data d INNER JOIN @tmp_GameType gt ON d.bettype=gt.IBCBetTypeID
 
 IF @@ERROR <> 0
 BEGIN
@@ -1786,9 +1799,3 @@ DROP TABLE #data
 --DROP TABLE #KenoPT
 
 END
-
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsMember_Com] TO [vnteam] AS [dbo]

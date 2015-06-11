@@ -356,7 +356,7 @@ Revisions:
 	- 20140505@Florent: Add new sport HRFO
 	- 20140509@Florent: Add new sport: 202 Keno
 	- 20140605@Florent: Remove checking for Super
-	    
+	- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -367,6 +367,39 @@ Param's Explanation:
 • @UpdateAll :  0 - default - Update only Super
 				1 - Allow update all line
 */
+
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 
 --Update all line feature
 IF @UpdateAll = 1
@@ -509,7 +542,7 @@ CREATE Table #data_old
 		AgRBDiscount Money
 	)
 	INSERT INTO #data_old (Custid,Sporttype,Bettype ,islive,MinB,MaxB,MPM,MPB,spt,mpt,apt,SupRBDiscount,MastRBDiscount,	AgRBDiscount)
-	EXEC dbo.Acc_Dep_CustomerSelInfo @Custid
+				EXEC dbo.Acc_Dep_CustomerSelInfo @Custid
 	 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1167,7 +1200,7 @@ END
 -----------------------------------------------Validate Min & Max Bet-------------------------------------------------------------------
 SELECT @ErrType = ''
 SELECT @ErrType = @ErrType +  (CASE WHEN MP=0 THEN sportname ELSE 'Mixed Sports' END )       + ', '
-from bodb02.dbo.sports WITH (NOLOCK) inner join
+from @tmp_Sports sports inner join
 (
 				SELECT 1 AS sporttype,0 AS MP, @MinBetv1 AS MinBet, @MaxBetv1 AS MaxBet, @MaxPerMatchv1 AS MaxPerMatch
 	UNION all	SELECT 2 AS sporttype,0 AS MP, @MinBetv2 AS MinBet, @MaxBetv2 AS MaxBet, @MaxPerMatchv2 AS MaxPerMatch
@@ -1215,7 +1248,7 @@ from
 			union all select 	153 as sporttype, 51 as bettype, @v153spositiontaking_51 as maxpositiontaking
 			union all select 	153 as sporttype, 52 as bettype, @v153spositiontaking_52 as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid and c.roleid = 3 and (
 						((cs.spositiontaking+cs.mpositiontaking>b.maxpositiontaking)) or 
 						((cs.mpositiontaking>b.maxpositiontaking))
@@ -2155,7 +2188,7 @@ WHERE c.CustID=@custid AND c.Sporttype=202 AND d.Bettype=1501
 update g set g.MinBet = d.MinBet
 	  ,g.MaxBet = d.MaxBet
 	 ,g.MaxPerGameType = d.MaxPerMatch	
-FROM CustGameType g WITH (ROWLOCK, UPDLOCK) INNER JOIN bodb02.dbo.gametype gt WITH (ROWLOCK, UPDLOCK) on g.GameTypeID=gt.GameTypeID
+FROM CustGameType g WITH (ROWLOCK, UPDLOCK) INNER JOIN @tmp_GameType gt on g.GameTypeID=gt.GameTypeID
 	 INNER JOIN #data d ON d.Bettype=gt.IBCBetTypeID
 where CustID=@custID 
 IF (@@error <> 0)
@@ -2191,7 +2224,7 @@ BEGIN
 			IF @RoleID = 3
 				BEGIN
 					--update Master
-					exec dbo.Acc_Dep_CustomerUpdMember_SAg
+																				exec dbo.Acc_Dep_CustomerUpdMember_SAg
 					@custid  = @MasterID ,
 					@UserID  = @UserID ,
 					@minbetv1  = @minbetv1 ,
@@ -2430,7 +2463,7 @@ BEGIN
 				END 
 			IF @RoleID = 2 -- update Agent
 				BEGIN					
-					exec dbo.Acc_Dep_CustomerUpdMember_MAg
+																				exec dbo.Acc_Dep_CustomerUpdMember_MAg
 					@custid  = @AgentID ,
 					@UserID  = @UserID ,
 
@@ -3384,9 +3417,3 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 DROP TABLE #data
 --DROP TABLE #MinMax_upline
 drop TABLE #data_old
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMember_Com] TO [vnteam] AS [dbo]

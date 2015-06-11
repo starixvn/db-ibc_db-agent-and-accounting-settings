@@ -121,6 +121,7 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)					
 	- 20131113@Johnson: Use execrept Acc_CustSetting_00/Acc_CustSetting3rd_00 to correct after update pt on member 
 	- 20140627@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+	- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -130,7 +131,38 @@ Param's Explanation:
 */
 
 SET NOCOUNT ON
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
 
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 declare @startRun datetime
 declare @endRun datetime
 declare @duration int
@@ -612,6 +644,7 @@ DECLARE
 
 	@auto_v11spositiontaking_mem_1 SMALLMONEY,
 	@auto_v11spositiontaking_mem_20 SMALLMONEY,
+
 
 	@auto_v99spositiontaking_mem_1 SMALLMONEY,
 	@auto_v99spositiontaking_mem_2 SMALLMONEY,
@@ -3999,7 +4032,7 @@ SELECT @v161slivepositiontaking_90 = CASE WHEN @v161slivepositiontaking_90 > @ma
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------
 --- 20131031@Johnson: Apply execrep when update pt on member
-	EXEC dbo.Acc_CustSetting_08
+								EXEC dbo.Acc_CustSetting_08
 		@custid = @custid,
 		@roleid = 2,
 		
@@ -4698,13 +4731,3 @@ BEGIN CATCH
 			@TrackingValue2 = @TrackingValue2,
 			@duration = @duration
 END CATCH
-			
-
-
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_PositionTaking] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_PositionTaking] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMember_PositionTaking] TO [vnteam] AS [dbo]

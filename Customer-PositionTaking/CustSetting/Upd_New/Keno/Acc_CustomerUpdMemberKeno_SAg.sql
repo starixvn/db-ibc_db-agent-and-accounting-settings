@@ -22,6 +22,7 @@ AS
 	DB: DBTXN/CustDB
 	Original: Acc_CustomerUpdMemberVS_SAg  
 	Revisions:  
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 		 
 	Param's Explanation:  
 	• @ErrCode:  
@@ -32,6 +33,29 @@ AS
 */  
 BEGIN
 	SET NOCOUNT ON
+	----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
+
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT
 	SELECT @startRun = GETDATE()
 
@@ -199,8 +223,8 @@ BEGIN
 		  (  
 		   select @bettype as bettype, @sporttype as sporttype, @us1 as autopositiontaking      
 		  ) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid  
 		 where cs.custid = @srecommend  
 		  and   
 		  ((cs.spositiontaking<b.autopositiontaking))  
@@ -226,8 +250,8 @@ BEGIN
 					  @us1 as autopositiontaking, @is1 as isautopositiontaking ,  
 					  @APositionTaking as apositiontaking, @MPositionTaking as mpositiontaking  
 			 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid  
 		 where (b.isautopositiontaking>0 and b.autopositiontaking< case when co.minpositiontaking - b.mpositiontaking - b.apositiontaking >0 then co.minpositiontaking - b.mpositiontaking - b.apositiontaking else 0 end)  
 		
 		 if @ErrType <>''  
@@ -262,8 +286,8 @@ BEGIN
 				   @APositionTaking as apositiontaking, @MPositionTaking as mpositiontaking     
 		  ) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype  		  
 		  inner join @tmp_mag as mcs ON cs.sporttype=mcs.sporttype and cs.bettype=mcs.bettype  
-		  INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		  INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		  INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype  
+		  INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid  
 		 where (b.spositiontaking> case when cs.minpositiontaking - b.mpositiontaking - b.apositiontaking > cs.spositiontaking - mcs.mpositiontaking  
 				 then cs.minpositiontaking - b.mpositiontaking - b.apositiontaking  
 				 else cs.spositiontaking - mcs.mpositiontaking  
@@ -293,8 +317,8 @@ BEGIN
 				  @s1 as spositiontaking, @is1 as isautopositiontaking ,  
 				  @APositionTaking as apositiontaking, @MPositionTaking as mpositiontaking  
 		 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid  
 		 where (b.isautopositiontaking=0 and b.spositiontaking< case when co.minpositiontaking - b.mpositiontaking - b.apositiontaking >0 then co.minpositiontaking - b.mpositiontaking - b.apositiontaking else 0 end)  
 		  
 		 if @ErrType <>''  
@@ -564,12 +588,3 @@ BEGIN
 			, @duration = @duration
 	END CATCH	
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_SAg] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_SAg] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_SAg] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_SAg] TO [vnteam] AS [dbo]
