@@ -1,5 +1,12 @@
 USE [CustDB]
 GO
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 6/12/2015 2:09:40 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -136,7 +143,7 @@ Revisions:
 	- 20140819@Victor: Update AG Casino group for member
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
-
+	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -542,6 +549,7 @@ declare @transcode bigint,
 	@v10mpositiontaking_20 smallmoney,
 
 	@v11mpositiontaking_1 smallmoney,
+
 	@v11mpositiontaking_20 smallmoney,
 
 	--v151
@@ -2539,6 +2547,7 @@ BEGIN
 	
 	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
 	BEGIN
+
 								EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=7,--Dela
 			@CustID = @CustID,
@@ -2636,6 +2645,13 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 
 --Set default bet setting of AG Casino
 EXEC DBLIC.bodb_Licensee.dbo.Lrf_AGC_Customer_SetDefaultSetting  
+ @CustID = @CustID,
+ @SuperID = @srecommend,  
+ @ErrCode = @ErrCode OUTPUT,  
+ @ErrMsg = @ErrMsg OUTPUT
+
+--Set default bet setting of 3rd Product
+EXEC dbo.Lrf_3rdProductCustomerSetDefaultSetting  
  @CustID = @CustID,
  @SuperID = @srecommend,  
  @ErrCode = @ErrCode OUTPUT,  
@@ -2772,13 +2788,3 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
