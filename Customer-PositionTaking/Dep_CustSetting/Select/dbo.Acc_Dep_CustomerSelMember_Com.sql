@@ -231,7 +231,7 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
  END CATCH
  
-SELECT @vPT= ISNULL(spositiontaking,0) FROM  DBTXN.CustDB.dbo.CustSettingGame WITH (NOLOCK) WHERE Bettype =1501 AND CustID=@CustID 
+SELECT @vPT= ISNULL(spositiontaking,0) FROM  dbo.CustSettingGame WITH (NOLOCK) WHERE Bettype =1501 AND CustID=@CustID 
 SELECT gt.IBCBetTypeID bettype ,
 	ISNULL(Minbet,0) AS Minbet,
 	ISNULL(MaxBet,0) AS MaxBet,
