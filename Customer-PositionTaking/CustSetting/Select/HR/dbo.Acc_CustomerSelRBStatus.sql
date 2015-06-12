@@ -1,17 +1,17 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerSelRBStatus]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelRBStatus]
 	@custid INT
-	
+AS
 /*
 	Created: Johnson
 	Date: 2011-03-15
-	DB: DB052.BODB02
+	DB: DBCUST.CustDB
 	Task: get disable status of Racing 
 	
 	Revisions:
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
-AS
-SET NOCOUNT ON
 
+SET NOCOUNT ON
 
 DECLARE @roleid TINYINT, @srecommend INT, @mrecommend INT, @recommend INT,@downlines BIT,
 	@DisableDownlines151_31 BIT, @DisableDownlines151_41 BIT, @DisableDownlines151_51 BIT,
@@ -99,6 +99,7 @@ SELECT
 
 FROM custinfo ci WITH(NOLOCK)
 WHERE custid = @custid
+
 					
 					
 								

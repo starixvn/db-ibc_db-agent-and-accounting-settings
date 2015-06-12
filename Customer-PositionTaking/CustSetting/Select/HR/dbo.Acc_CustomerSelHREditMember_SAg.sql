@@ -1,5 +1,4 @@
-﻿
-ALTER PROCEDURE  [dbo].[Acc_CustomerSelHREditMember_SAg]
+﻿ALTER PROCEDURE  [dbo].[Acc_CustomerSelHREditMember_SAg]
 	@CustID int	
 AS  
 
@@ -7,6 +6,7 @@ AS
 	Created by: Phuc
 	Date: 2009-05-20
 	Task: SUPER EDIT MEMBER FOR HR AT AGENT SITE  
+	DB: DBCUST.CustDB 
 	Original: Acc_CustomerSelEditCustomer_SAg
 
 	Revisions:
@@ -17,6 +17,7 @@ AS
 		- 20100414@Shifu: OpenTote Setting (maxpermatch, opentote status)
 		- 20110122@Lukas: Add more partner (AU Horse racing) & racing game (Greyhound, Harness)
 		- 20110314@Lukas: remove paramter @AgentID 
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
 SET NOCOUNT ON  
   

@@ -4,12 +4,13 @@ AS
 /*
 Created: 20090526@Phuc
 Task : Get Horse Racing information(Super view agent info)
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 
 Revisions:
 	- 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
 	- 20100422@Terry: Get bet setting by bettype for Open Tote
 	- 20110228@Johnson: get setting for GreyHound and Harness
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: AgentID
 */
@@ -283,6 +284,7 @@ Param's Explanation:
 		ci.Disable152_AU,
 		ci.Disable153_AU,
 		c.mrecommend
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelHRAgent_SAg] TO [bodbadminNet]
 GO

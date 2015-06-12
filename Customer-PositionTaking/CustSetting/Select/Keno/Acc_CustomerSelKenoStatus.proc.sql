@@ -7,13 +7,14 @@ AS
 /*
 	Created: Bobby
 	Date: 2014-03-04
-	DB: DBAGE/bodb02
+	DB: DBCUST.CustDB
 	Task: get disable status of Keno
 	
 	Revisions:
 		- 20140320@Bobby: Add output @HasDownline
 		- 20140605@Elodie: Expand bettype for Keno
 		- 20140806@Johnson: put WITH(NOLOCK) for missing SELECT commands
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
 BEGIN
 	SET NOCOUNT ON
@@ -35,7 +36,7 @@ BEGIN
 
 	INSERT INTO @kenoGameType (gametypeid)
 	SELECT gametypeid
-	FROM dbo.GameType_tmp WITH(NOLOCK)
+	FROM dbo.GameType WITH(NOLOCK)
 	WHERE [IBCBetTypeID] >=  1501 AND [IBCBetTypeID] <= 1599
 		AND IsDisabled = 0
 	ORDER BY gametypeid
@@ -148,7 +149,7 @@ BEGIN
 										WHERE custid = @custid
 										) g1 ON t.gametypeid = g1.GameTypeID
 						) g
-			LEFT JOIN dbo.GameType_tmp gt ON g.GameTypeID = gt.GameTypeID
+			LEFT JOIN dbo.GameType gt ON g.GameTypeID = gt.GameTypeID
 		WHERE c.custid = @custid
 		)
 
@@ -162,6 +163,7 @@ BEGIN
 
 	DROP TABLE #kenoDownlines
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelKenoStatus] TO [bodbadminNet] AS [dbo]

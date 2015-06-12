@@ -1,19 +1,20 @@
-﻿ ALTER PROCEDURE [Acc_CustomerSelSEditCustomerVS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSEditCustomerVS]
 	@custid		INT
  AS
-	/*
-		Created: Johnson
-		Date: 2012-08-13
-		Task: Get setting of virtual sports for super edit member
-		DB: DB053.bodb02
+/*
+	Created: Johnson
+	Date: 2012-08-13
+	Task: Get setting of virtual sports for super edit member
+	DB: DBCUST.CustDB
 		
-		Revisions:
-			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-			- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
-			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
-			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
-		Parameter's Explanation:
-	*/
+	Revisions:
+		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
+		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Parameter's Explanation:
+*/
 SET NOCOUNT ON
 -------------------------------
 	DECLARE @srecommend				INT,
@@ -90,6 +91,7 @@ SET NOCOUNT ON
 	WHERE cs.custid = @custid 
 		AND cs.sporttype  in (180, 181, 182, 183, 184, 185, 186)
 		AND cs.bettype in (1201, 1231, 1220)
+
 		
 		
 		

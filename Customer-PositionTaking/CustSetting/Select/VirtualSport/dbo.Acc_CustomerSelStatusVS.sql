@@ -1,20 +1,21 @@
-﻿ALTER PROCEDURE  [Acc_CustomerSelStatusVS]      
- @username VARCHAR(50),       
- @ErrCode INT = 0 OUTPUT,      
- @ErrMsg  VARCHAR(500) = '' OUTPUT      
-AS      
- /*      
-  Created: Johnson      
-  Date: 2012-09-04      
-  Task: Get status virtual sports of customer      
-  DB: DB053.BODB02      
-        
-  Revisions:      
-         - 20121210@Scott : add more sporttype (virtual tennis : 186)
-         - 20130220@Johnson: get virtual horse racing setting (sporttype : 181)
-		 - 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
-		 - 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
-  Parameter's Explanation:      
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelStatusVS]
+	@username	VARCHAR(50),
+	@ErrCode	INT				= 0		OUTPUT,
+	@ErrMsg		VARCHAR(500)	= ''	OUTPUT
+AS
+/*
+	Created: Johnson
+	Date: 2012-09-04
+	Task: Get status virtual sports of customer
+	DB: DBCUST.CustDB
+
+	Revisions:
+		- 20121210@Scott : add more sporttype (virtual tennis : 186)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype : 181)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
+		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Parameter's Explanation:
  */
  
        
@@ -66,8 +67,6 @@ SET NOCOUNT ON
  FROM custinfo WITH(NOLOCK)          
  WHERE custid = @custid          
  
- 
-          
  IF @roleid = 1          
   SELECT @UplineHideVS = HideVirtualSports FROM custinfo WITH(NOLOCK) WHERE custid = @recommend          
  ELSE IF @roleid = 2          
@@ -190,7 +189,8 @@ BEGIN
   FROM custsetting3rd cs WITH(NOLOCK)             
    JOIN @UplineSetting us ON cs.sporttype = us.sporttype and cs.bettype = us.bettype          
   WHERE cs.custid = @custid AND cs.sporttype in(180,181,182,183,184,185,186) AND cs.bettype in(1201,1231,1220)      
- END        
+ END
+     
 	
 
 GO

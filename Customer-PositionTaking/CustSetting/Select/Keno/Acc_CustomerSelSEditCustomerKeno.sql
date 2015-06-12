@@ -4,15 +4,29 @@ AS
 /*
 	Created: 20140317@Patrick
 	Task: Super edit setting Keno on member
-	DB: DBAGE/BODB02
+	DB: DBCUST.CustDB
 		
 	Revisions:
-										
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	Parameters Explanations:
 			
 */
 BEGIN
 	SET NOCOUNT ON
+
+	----- 20150610@Kos -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+
+	BEGIN TRY
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+	-----20150610@Kos -------------------
+
 	DECLARE @srecommend INT, @mrecommend INT
 	
 	--Customer Info
@@ -23,7 +37,7 @@ BEGIN
 	--BetSetting
 	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
 	FROM dbo.CustGameType cg WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+		INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
 	WHERE cg.CustID = @CustID AND gt.IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
 
@@ -46,7 +60,7 @@ BEGIN
 				THEN 0
 				ELSE sco.minpositiontaking - (cs.mpositiontaking + cs.apositiontaking) END AS s1_min --s1_min = Max(0, N4-M1-A1)
 	FROM dbo.CustSettingGame cs WITH(NOLOCK)
-		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
+		INNER JOIN @tmp_GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend AND mcs.bettype = cs.bettype AND mcs.sporttype = cs.sporttype
 		INNER JOIN dbo.CustSettingGame scs WITH(NOLOCK) ON scs.custid = @srecommend AND scs.bettype = cs.bettype AND scs.sporttype = cs.sporttype
 		INNER JOIN dbo.CustOverrideGame sco WITH(NOLOCK) ON sco.custid = @srecommend AND sco.bettype = cs.bettype AND sco.sporttype = cs.sporttype
@@ -56,6 +70,7 @@ BEGIN
 		AND IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerKeno] TO [bodbAdminNet] AS [dbo]
