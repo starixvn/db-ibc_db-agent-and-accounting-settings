@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON 
 GO
-ALTER PROCEDURE	[dbo].[Acc_3rdProductSelSuperStatus_xtest]
+ALTER PROCEDURE	[dbo].[Acc_3rdProductSelSuperStatus]
 	@ProductID			INT,
 	@CustID				INT,
 	@SupperStatus		BIT=0 OUTPUT,
@@ -14,7 +14,7 @@ AS
 /*
 	Created: 20150313@Winne
 	Task: select 3rd product status of super ( 12 GoldDeluxe)
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 	Revisions:
 	-- 20150612@Winnie: Add Microgaming
