@@ -115,7 +115,7 @@ select @custid CustID,
  LEFT JOIN Dep_CustSettingGame ag WITH(NOLOCK) ON c.sporttype=ag.sporttype AND c.bettype=ag.bettype AND ag.Custid=@recommend
  WHERE c.SportType=@Sporttype AND c.bettype=@Bettype AND c.custid=@CustId AND @roleid = 1
 
-   select @sporttype, @bettype, @sportname, @typename,
+   select @sporttype AS sporttype, @bettype AS bettype, @sportname AS sportname, @typename AS typename,
                 @s4 AS s4, @m4 AS m4, @a4 As a4, @n4 AS n4, @l4 As l4,
                 @s3 AS s3, @m3 AS m3, @a3 AS a3, @n3 AS n3, @l3 As l3,
                 @s2 As s2, @m2 As m2, @a2 As a2, @n2 AS n2, @l2 As l2,
