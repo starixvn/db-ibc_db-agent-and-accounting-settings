@@ -2829,3 +2829,12 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbadminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
+
