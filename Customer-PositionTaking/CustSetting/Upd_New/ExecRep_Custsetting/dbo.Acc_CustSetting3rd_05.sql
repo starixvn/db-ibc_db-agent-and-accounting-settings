@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05_xtest]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05]
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -314,7 +314,7 @@ AS
     Created: Johnson
     Date: 2013-10-29
     Task: Apply execrep when UPDATE auto pt ON master , agent, member levels
-    DB: DBTXN/bodb02
+    DB: DBCUST/custDB
     Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
                 Acc_CustomerUpdAgent_AutoPositiontaking                    
                 Acc_CustomerUpdMasterVS_Positiontaking
@@ -328,31 +328,23 @@ AS
         - 20140320@Patrick: Add more Keno product
         - 20140818@Logan: Exclude disabled members while updating Master setting [Redmine: #19631]
 		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+	   - 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST   		
+		
 
     Parameter's Explanation:
 */
 BEGIN
     SET NOCOUNT ON
-    DECLARE @IsExistTables tinyint
-    SET @IsExistTables = 0
 
-    IF @mode IN ('LiveCasino', 'Keno', 'GoldDeluxe')
-    BEGIN    
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'U'                                
-    END
-    ELSE
-    BEGIN
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'U'                                     
-    END
-
-    IF @IsExistTables <> 3
-        RETURN
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('custsetting3rd') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+	   AND dbo.f_CheckRepTable('CustSettingGame') = 1
+	   AND dbo.f_CheckRepTable('CustOverrideGame') = 1	   
+	   )
+	RETURN   
 
     DECLARE
         @bettype int,

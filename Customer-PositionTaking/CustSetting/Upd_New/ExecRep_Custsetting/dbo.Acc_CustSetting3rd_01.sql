@@ -6,7 +6,7 @@ AS
 /*
 Created: 20090520@Phuc
 Task : Update member level when update l4(HR)
-DB: DBTRANS.bodb02
+DB: DBCUST/custDB
 Original: Acc_CustomerUpdSuperHR_MaxPositiontaking, Acc_CustomerUpdSuper_MaxPositiontaking, Acc_CustomerUpdSuperFI_MaxPositiontaking
 
 Revisions for Acc_CustomerUpdSuperHR_MaxPositiontaking:
@@ -29,6 +29,10 @@ Revisions for Acc_CustomerUpdSuper_MaxPositiontaking:
 	- 20130222@Johnson: add virtual horse racing setting (sporttype: 181)
 	- 20131126@Kathy: Add Virtual Greyhounds/Motor Racing (182, 184) [Redmine:#7234]
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST   	
+	
 Param's Explanation: 
 
 * @mode:
@@ -44,16 +48,12 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
 
---DECLARE @IsExistTables tinyint
---SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
---WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
---		AND xtype = 'U'
-
---if @IsExistTables <> 3 RETURN
-
-IF ((SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'U') <> 3
-	AND (SELECT COUNT(1) FROM sysobjects WHERE Name IN ('custinfo','CustSetting3rd','CustOverride3rd') AND type = 'V') <> 3) 
-	RETURN
+ if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+   AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+   AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+   )
+ RETURN
+ 
 
     declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 

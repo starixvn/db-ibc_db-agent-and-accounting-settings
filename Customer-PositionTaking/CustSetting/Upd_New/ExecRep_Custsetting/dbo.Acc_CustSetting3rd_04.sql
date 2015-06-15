@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 2:58:09 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -21,7 +21,7 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04]
         Created: Johnson
         Date: 2013-10-29
         Task: Apply execrep WHEN UPDATE min/max pt ON master AND agent
-        DB: DBTXN/CustDB
+        DB: DBCUST/CustDB
         Original versions: Acc_CustomerUpdMaster_MinMaxPositiontaking
                 Acc_CustomerUpdAgent_MinMaxPositiontaking
     
@@ -35,32 +35,24 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04]
             - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                               2.Code aligning ON modified parts
 
+		  - 20150610@Daniel: 
+			  + Improve medthod check table existing in subscribers	
+			  + Separate custDB to new server DBCUST   
+	    
         Parameter's Explanation:        
     */ 
 BEGIN
     SET NOCOUNT ON 
-    
-    DECLARE @IsExistTables tinyint
-    SET @IsExistTables = 0
 
-    IF @mode IN ('LiveCasino', 'Keno')
-    BEGIN    
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'U'
-    END
-    ELSE
-    BEGIN
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'U'
-    END
-
-    IF @IsExistTables <> 3 
-        RETURN
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	    AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+	    AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+	    AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+	    AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+	    )
+	   RETURN
     
+     
     declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
     
     --UPDATE min pt ON super

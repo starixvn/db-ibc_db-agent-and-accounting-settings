@@ -8,7 +8,7 @@ GO
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting_05    Script Date: 8/21/2014 2:58:12 PM ******/
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_05]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_05]
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -481,7 +481,7 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting_05]
         Created: Johnson
         Date: 2013-10-29
         Task: Apply execrep when UPDATE auto pt ON master , agent, member levels
-        DB: DBTXN/bodb02
+        DB: DBCUST/custDB
         Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
                     Acc_CustomerUpdAgent_AutoPositiontaking
         
@@ -489,23 +489,21 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting_05]
             - 20131105@Elodie: Add HR Fixed Odds [Redmine:#6505]
             - 20140624@Johnson: Add bettype Others fOR soccer & tennis [Redmine #16903]
             - 20140818@Logan: Exclude disabled members while updating Master setting [Redmine: #19631]
+		  - 20150610@Daniel: 
+		   + Improve medthod check table existing in subscribers	
+		   + Separate custDB to new server DBCUST               
 
         Parameter's Explanation:        
     */
 BEGIN
     SET NOCOUNT ON
-    
-    DECLARE @IsExistTables tinyint, @IsExistViews tinyint
-    SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-    WHERE    name IN ('custinfo', 'CustSetting', 'CustOverride')
-            AND xtype = 'U'
-    
-    SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-    WHERE    name IN ('custinfo', 'CustSetting', 'CustOverride')
-            AND xtype = 'V'
-            
-    if @IsExistTables <> 3 AND @IsExistViews <> 3
-        RETURN
+
+     if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride') = 1 
+	   )
+     RETURN
+   
     
     Declare
             @bettype int,

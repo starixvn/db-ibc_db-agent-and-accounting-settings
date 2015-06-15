@@ -10,10 +10,12 @@ AS
 /*
 Created: 20131113@Johnson
 Task : Correct pt after SMA update pt on member 
-DB: DBTXN/bodb02
+DB: DBCUST/custDB
 Original: Acc_CustomerUpdMember_MinMaxPositiontaking
 
 Revisions:
+	     - 20150610@Daniel: 
+		  + Improve medthod check table existing in subscribers	
   
 Param's Explanation:
 
@@ -25,18 +27,11 @@ Param's Explanation:
 
 --if @IsExistTables <> 3 RETURN
 
-DECLARE @IsExistTables tinyint, @IsExistViews tinyint
-SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
-		AND xtype = 'U'
-
-SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
-		AND xtype = 'V'
-		
-if @IsExistTables <> 3 AND @IsExistViews <> 3
-	RETURN
-
+ if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+    AND dbo.f_CheckRepTable('CustSetting') = 1
+    AND dbo.f_CheckRepTable('CustOverride') = 1
+    ) RETURN	
+	   
 declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 
 --check agent min/max

@@ -249,7 +249,7 @@ AS
 		Created: Johnson
 		Date: 2013-10-30
 		Task: Apply execrep update auto pt on member
-		DB: DBTXN/bodb02
+		DB: DBCUST/custDB
 		Original versions:	Acc_CustomerUpdMember_AutoPositiontaking, Acc_CustomerUpdMember_AutoMPositiontaking				
 		
 		Revision:
@@ -257,17 +257,22 @@ AS
 			- 20140220@Johnson: Merge code correct pt on members after update auto pt
 			- 20140424@Johnson: fix bug correct super pt on member after master update auto pt on member
 			- 20140701@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+
+		  - 20150610@Daniel: 
+		   + Improve medthod check table existing in subscribers	
+		   + Separate custDB to new server DBCUST   
+		   			
 		Parameter's Explanation:
 	*/
 BEGIN
 	SET NOCOUNT ON 
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
-			AND xtype = 'U'
 	
-	if @IsExistTables <> 3 RETURN
-	
+     if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride') = 1 
+	   )
+     RETURN	
+		
 	Declare @bettype int,	
 			
 			@autopositiontaking smallmoney, 	

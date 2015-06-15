@@ -13,40 +13,40 @@ AS
 /*  
 	Created: 20111111@Sophia
 	Task: enable/disable number game for whole line
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 
 	Revisions:	
+ 	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST  
  
 	Param's Explanation:
  
 */  
 SET NOCOUNT ON
 
+ if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+   AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+   )
+ RETURN
+
+
 DECLARE @isDisable BIT
 SELECT @isDisable = CASE WHEN @isEnable = 1 THEN 0 ELSE 1 END
-
-IF NOT exists (select TOP 1 1 from dbo.sysobjects where name = 'Custinfo') RETURN  
  
 IF @roleid = 1 -- update for himself only
-BEGIN  
-	UPDATE	dbo.custinfo WITH (ROWLOCK, UPDLOCK)  
-	SET		disablenumber = @isDisable,		
-		 	maxperball161 = case @isDisable when 0 then @maxperball else maxperball161 end,
-		 	maxpermatch161 = case @isDisable when 0 then @maxpermatch else maxpermatch161 end
-	WHERE	custid = @custid
-
-	IF @@ERROR > 0 
-	BEGIN
-		SELECT  @ErrMsg = 'Update enable/disable number game unsuccessful.',
-				@ErrCode = 110
-		RETURN
-	END
-	
+BEGIN  	
+     EXEC [dbo].[Acc_ExecRep_Cust_11]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @isEnable = @isEnable,
+	   @maxperball = @maxperball,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
 	
 	IF @isDisable = 0
 	BEGIN
-		IF NOT exists (select TOP 1 1 from dbo.sysobjects where name = 'custsetting3rd') RETURN
-
 		UPDATE	custsetting3rd WITH (ROWLOCK, UPDLOCK)  
 		SET		minbet = @minbet,
 				maxbet = @maxbet
@@ -62,23 +62,17 @@ BEGIN
 END
 ELSE IF @roleid = 2
 BEGIN
-	UPDATE	dbo.custinfo WITH (ROWLOCK, UPDLOCK)
-	SET		disablenumber = @isDisable,		
-			maxperball161 = case @isDisable when 0 then @maxperball else maxperball161 end,
-			maxpermatch161 = case @isDisable when 0 then @maxpermatch else maxpermatch161 end
-	WHERE	recommend = @custid
-
-	IF @@ERROR > 0 
-		BEGIN
-			SELECT  @ErrMsg = 'Update enable/disable number game unsuccessful.',
-					@ErrCode = 112
-			RETURN
-		END	
+     EXEC [dbo].[Acc_ExecRep_Cust_11]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @isEnable = @isEnable,
+	   @maxperball = @maxperball,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
 
 	IF @isDisable = 0
 	BEGIN
-		IF NOT exists (select TOP 1 1 from dbo.sysobjects where name = 'custsetting3rd') RETURN
-
 		UPDATE	custsetting3rd WITH (ROWLOCK, UPDLOCK)  
 		SET		minbet = @minbet,
 				maxbet = @maxbet
@@ -96,22 +90,17 @@ BEGIN
 END
 ELSE IF @roleid = 3
 BEGIN
-	UPDATE	dbo.custinfo WITH (ROWLOCK, UPDLOCK)
-	SET		disablenumber = @isDisable,		
-			maxperball161 = case @isDisable when 0 then @maxperball else maxperball161 end,
-			maxpermatch161 = case @isDisable when 0 then @maxpermatch else maxpermatch161 end
-	WHERE	mrecommend = @custid
-
-	IF @@ERROR > 0 
-		BEGIN
-			SELECT  @ErrMsg = 'Update enable/disable number game unsuccessful.',
-					@ErrCode = 114
-			RETURN
-		END	
+     EXEC [dbo].[Acc_ExecRep_Cust_11]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @isEnable = @isEnable,
+	   @maxperball = @maxperball,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
 
 	IF @isDisable = 0
 	BEGIN
-		IF NOT exists (select TOP 1 1 from dbo.sysobjects where name = 'custsetting3rd') RETURN
 
 		UPDATE	custsetting3rd WITH (ROWLOCK, UPDLOCK)  
 		SET		minbet = @minbet,
@@ -129,22 +118,17 @@ BEGIN
 END
 ELSE IF @roleid = 4
 BEGIN
-	UPDATE	dbo.custinfo WITH (ROWLOCK, UPDLOCK)
-	SET		disablenumber = @isDisable,		
-			maxperball161 = case @isDisable when 0 then @maxperball else maxperball161 end,
-			maxpermatch161 = case @isDisable when 0 then @maxpermatch else maxpermatch161 end
-	WHERE	srecommend = @custid
-
-		IF @@ERROR > 0 
-			BEGIN
-				SELECT  @ErrMsg = 'Update enable/disable number game unsuccessful.',
-						@ErrCode = 116
-				RETURN
-			END	
+     EXEC [dbo].[Acc_ExecRep_Cust_11]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @isEnable = @isEnable,
+	   @maxperball = @maxperball,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
 
 	IF @isDisable = 0
 	BEGIN
-		IF NOT exists (select TOP 1 1 from dbo.sysobjects where name = 'custsetting3rd') RETURN
 
 		UPDATE	custsetting3rd WITH (ROWLOCK, UPDLOCK)  
 		SET		minbet = @minbet,

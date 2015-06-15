@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06_xtest]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
     @CustId int,
     @RoleId int,
     @discountNumber decimal(9,8)    = 0, -- Number game
@@ -25,7 +25,7 @@ AS
     Created: Kathy
     Date: 20131029
     Task : Update commission [Redmine:#3244]
-    DB: DBTXN/CustDB
+    DB: DBCUST/CustDB
     Original: 
     Revisions:
         - 20131029@Kathy: Update NumberGame's commission for all level. Refer to:
@@ -52,6 +52,9 @@ AS
 		- 20141113@Johnson: Hardcode agent list not give commission for downlines 
 						and add Keno, LiveCasino sport for member level [Redmine #25787]                                              
 		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+		- 20150610@Daniel: 
+	      + Improve medthod check table existing in subscribers	
+	      + Separate custDB to new server DBCUST  
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
@@ -64,10 +67,16 @@ AS
     */
 BEGIN
     SET NOCOUNT ON;
-    -- check existing tables
-    IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting3rd','CustSettingGame', 'custinfo', 'customer', 'Dep_CustSuper') AND type = 'U') < 5
-        RETURN
-        
+    
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	     AND dbo.f_CheckRepTable('custsetting3rd') = 1 
+	     AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+	     AND dbo.f_CheckRepTable('customer') = 1 
+	     AND dbo.f_CheckRepTable('Dep_CustSuper') = 1 
+     )
+	   	RETURN    
+    
+
     --20141113@Johnson: hardcode customer list not give commission for downlines	   
     DECLARE @tblCustList TABLE(custid INT, roleid INT)
 	
