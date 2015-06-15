@@ -2035,7 +2035,7 @@ select @username = @agusername  + @username
 select @username = replace(@username, ' ', '')
 */
 --20140812: Change rule generate username
-SELECT @UserName = dbo.f_LAS_GenerateUsername(@recommend)
+SELECT @UserName = dbo.f_LAS_GenerateUsername_xtest(@recommend)
 IF @UserName = ''
 BEGIN
 	SELECT @ErrMsg = 'The username is not available.'
