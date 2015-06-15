@@ -6,7 +6,7 @@ AS
 /*
 Created: 20120321@Dom
 Task : Company edit Super
-DB: DB052.bodb02
+DB: DBCUST.CUSTDB
 
 Revisions:
 - 20131014@Francis: Support selecting new virtual sports with settings via XML param

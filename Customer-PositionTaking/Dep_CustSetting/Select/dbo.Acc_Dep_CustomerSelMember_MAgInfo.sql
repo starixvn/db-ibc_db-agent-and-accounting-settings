@@ -1,11 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAgInfo]
+﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAgInfo]
 	@CustID INT
 AS
 
 /*
 Created: 20120720@Dom
 TASk : select min/max setting Master Agent to add new agent
-DB: DB052.bodb02
+DB: DBCUST.CUSTDB
 
 Revisions:
 - 20131014@Francis: Support selecting new virtual sports with settings via XML param
