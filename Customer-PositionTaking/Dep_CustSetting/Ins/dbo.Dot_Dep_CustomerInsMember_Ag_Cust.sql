@@ -1,5 +1,12 @@
 USE [CustDB]
 GO
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 6/12/2015 2:09:40 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -136,8 +143,8 @@ Revisions:
 	- 20140819@Victor: Update AG Casino group for member
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
-
-
+	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
+	- 20150611@Winnie: Add Microgaming 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -417,6 +424,9 @@ Declare @apositiontaking_1 smallmoney,
 	@v162apositiontaking_1101 smallmoney,
 	--Keno
 	@v202apositiontaking_1501 smallmoney,
+	--Microgaming
+	@v203apositiontaking_2001 smallmoney,
+	@v203apositiontaking_2005 smallmoney,
 
 	-- virtual soccer
 	@v180apositiontaking_1201 smallmoney,
@@ -542,6 +552,7 @@ declare @transcode bigint,
 	@v10mpositiontaking_20 smallmoney,
 
 	@v11mpositiontaking_1 smallmoney,
+
 	@v11mpositiontaking_20 smallmoney,
 
 	--v151
@@ -583,7 +594,9 @@ declare @transcode bigint,
 	@v162mpositiontaking_1101 smallmoney,
 	--Keno
 	@v202mpositiontaking_1501 smallmoney,
-	
+	--Microgaming
+	@v203mpositiontaking_2001 smallmoney,
+	@v203mpositiontaking_2005 smallmoney,
 	-- virtual soccer
 	@v180mpositiontaking_1201 smallmoney,	
 	
@@ -691,7 +704,9 @@ declare @transcode bigint,
 	@v162spositiontaking_1101 smallmoney,
 	--Keno
 	@v202spositiontaking_1501 smallmoney,
-		
+	--Microgaming
+	@v203spositiontaking_2001 smallmoney,
+	@v203spositiontaking_2005 smallmoney,	
 	-- virtual soccer
 	@v180spositiontaking_1201 smallmoney,
 
@@ -784,6 +799,7 @@ declare @transcode bigint,
 	
 	@DisableHRFixedOdds BIT,
 	@HideKeno BIT,
+	@DisableMicrogame BIT,
 
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -876,7 +892,8 @@ select
 	@isAutoResetLiveCasino = isAutoResetLiveCasino,
 	@DoubleCommLosing = DoubleCommLosing,
 	@DisableCasinoBonus = 1, --20130805@Elodie hardcode
-	@HideKeno = HideKeno
+	@HideKeno = HideKeno,
+	@DisableMicrogame=DisableMicrogame
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -1364,6 +1381,14 @@ SELECT	 @v162apositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype =
 FROM custsettinggame with(nolock) 
 WHERE custid = @recommend and bettype IN (1101,1501) and sporttype IN (162,202)
 
+--- Microgaming
+SELECT			
+		@v203apositiontaking_2001 = MAX(CASE WHEN bettype = 2001 AND sporttype = 203 THEN apositiontaking ELSE 0 END) 
+		,@v203mpositiontaking_2001 = MAX(CASE WHEN bettype = 2001 AND sporttype = 203 THEN mpositiontaking ELSE 0 END) 
+		,@v203apositiontaking_2005 = MAX(CASE WHEN bettype = 2005 AND sporttype = 203 THEN apositiontaking ELSE 0 END) 
+		,@v203mpositiontaking_2005 = MAX(CASE WHEN bettype = 2005 AND sporttype = 203 THEN mpositiontaking ELSE 0 END)
+FROM Dep_custsettinggame with(nolock) 
+WHERE custid = @recommend and bettype IN (2001,2005) and sporttype =203
 		
 ----INSERT MEMBER ---------------------------------------------------------------
 
@@ -2123,6 +2148,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	--Virtual Tennis
 	@MaxPerMatchv186 = @MaxPerMatchv186,
 	@HideKeno = @HideKeno,
+	@DisableMicrogame = @DisableMicrogame,
 	@credit = 0,
 	@IP = '',
 	@TransferOption_dec = null,
@@ -2390,6 +2416,29 @@ BEGIN
 	return
 END
 
+-- Microgaming
+INSERT INTO Dep_CustSettingGame(custid, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount)
+SELECT @custid, 2001, 203, @v203apositiontaking_2001, @v203mpositiontaking_2001, @v203spositiontaking_2001, 0, 0, 0, 0
+UNION ALL
+SELECT @custid, 2005, 203, @v203apositiontaking_2005, @v203mpositiontaking_2005, @v203spositiontaking_2005, 0, 0, 0, 0
+IF @@ERROR <> 0
+BEGIN
+	--Error occurs
+	SELECT 
+		@ErrMsg = 'Add member fail. Please try again',
+		@ErrCode=218
+
+	-- MANUALLY ROLLBACK
+	DELETE Dep_CustSetting WHERE CustID = @CustID
+	DELETE Dep_CustSetting3rd WHERE CustID = @CustID
+	DELETE P2PGameSetting WHERE CustID = @CustID
+	DELETE P2PGroupComm WHERE CustID = @CustID
+	DELETE CustSettingGame WHERE CustID = @CustID
+	DELETE Dep_CustSettingGame WHERE CustID = @CustID
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	return
+END
+
 -- Keno
 INSERT INTO CustGameType (GameTypeID, CustID, MaxPerGameType, MinBet, MaxBet, IsDisabled)
 SELECT cg.GameTypeID, @CustID, isnull(t.maxpergametype,cg.MaxPerGameType), cg.MinBet, isnull(t.maxbet,cg.MaxBet), cg.IsDisabled
@@ -2539,6 +2588,7 @@ BEGIN
 	
 	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
 	BEGIN
+
 								EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=7,--Dela
 			@CustID = @CustID,
@@ -2636,6 +2686,13 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 
 --Set default bet setting of AG Casino
 EXEC DBLIC.bodb_Licensee.dbo.Lrf_AGC_Customer_SetDefaultSetting  
+ @CustID = @CustID,
+ @SuperID = @srecommend,  
+ @ErrCode = @ErrCode OUTPUT,  
+ @ErrMsg = @ErrMsg OUTPUT
+
+--Set default bet setting of 3rd Product
+EXEC dbo.Lrf_3rdProductCustomerSetDefaultSetting  
  @CustID = @CustID,
  @SuperID = @srecommend,  
  @ErrCode = @ErrCode OUTPUT,  
@@ -2772,13 +2829,3 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]

@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsUserInfo]
+﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerInsUserInfo]
 	@custid INT OUTPUT,
 	@creator INT,
 	@username VARCHAR(30),
@@ -92,6 +92,7 @@
 	
 	@DisableHRFO BIT = 0,
 	@HideKeno BIT =0,
+	@DisableMicrogame BIT = 0,
 
 	@credit MONEY,
 	@maxcredit MONEY = 0,
@@ -117,6 +118,7 @@ Revisions:
 	- 20130731@Elodie: Apply progressive bonus
 	- 20131014@Francis: Add some new virtual sports' max per match
 	- 20140512@Florent: Add Sport HRFO and param HideKeno
+	- 20150612@Winnie: Add Microgaming
 Param's Explanation:
 • @ErrCode:
     = 0: Insert successfully.
@@ -207,12 +209,12 @@ INSERT INTO [dbo].[custinfo](
 	[custId], [currency], [maxpermatch], [maxpermatch2], [maxpermatch3], [maxpermatch5], [maxpermatch8], [maxpermatch10], [maxpermatch11], [maxpermatch201],[maxpermatch151],[maxpermatch151_OT], MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, [maxpermatch99]
 	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
 	,DisableHorseRacing,DisableOpenTote,Disable151_AU,Disable152_UK,Disable152_AU,Disable153_AU,DisableFinancial, DisableOutright, DisableCasino, DisableNumber,DisableBingo
-	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161,danger,danger2,danger3,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports,maxpermatch180,maxpermatch181,maxpermatch182,maxpermatch183,maxpermatch184,maxpermatch185,maxpermatch186,DisableCasinoBonus,DisableHRFixedOdds,maxpermatch154,HideKeno)
+	,maxpermatch161,MaxPerMatch99MP,MaxPerBall161,danger,danger2,danger3,DisableP2P,DisableFunP2P,ISAUTORESETP2P,DisableLiveCasino, DisableVirtualSports,maxpermatch180,maxpermatch181,maxpermatch182,maxpermatch183,maxpermatch184,maxpermatch185,maxpermatch186,DisableCasinoBonus,DisableHRFixedOdds,maxpermatch154,HideKeno,DisableMicrogame)
 VALUES(
 	@custid, @currency, @MaxPerMatch, @MaxPerMatchv2, @MaxPerMatchv3, @MaxPerMatchv5, @MaxPerMatchv8, @MaxPerMatchv10, @MaxPerMatchv11, @MaxPerMatchv201,@MaxPerMatchv151_31, @MaxPerMatchv151_41,@MaxPerMatchv151_51, @MaxPerMatchv152_41, @MaxPerMatchv152_51, @MaxPerMatchv153_51, @MaxPerMatchv99
 	,@roleid, @srecommend, @mrecommend, @recommend, 0, 0, ISNULL(@suspended,0), @credit, ISNULL(@closed,0), @username, @matchlimit, @virtualmultiplier, 
 	@Disable151_31,@Disable151_41,@Disable151_51,@Disable152_41,@Disable152_51,@Disable153_51,@DisableFinancial,@DisableOutright, @DisableCasino, @DisableNumber,@DisableBingo
-	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161,@danger,@danger2,@danger3,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101,@DisableVirtualSports,@MaxPerMatchv180,@MaxPerMatchv181,@MaxPerMatchv182,@MaxPerMatchv183,@MaxPerMatchv184,@MaxPerMatchv185,@MaxPerMatchv186,@DisableCasinoBonus,@DisableHRFO,@MaxPerMatchv154,@HideKeno)
+	,@MaxPerMatchv161,@MaxPerMatchv99MP,@MaxPerBallv161,@danger,@danger2,@danger3,@DisableP2P,@DisableFUNP2P,@ISAUTORESETP2P, @Disable162_1101,@DisableVirtualSports,@MaxPerMatchv180,@MaxPerMatchv181,@MaxPerMatchv182,@MaxPerMatchv183,@MaxPerMatchv184,@MaxPerMatchv185,@MaxPerMatchv186,@DisableCasinoBonus,@DisableHRFO,@MaxPerMatchv154,@HideKeno,@DisableMicrogame)
 
 IF @@ERROR <> 0
 BEGIN 
@@ -241,3 +243,6 @@ END
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsUserInfo] TO [vnteam] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsUserInfo] TO [bodbAdminNet] AS [dbo]
+GO

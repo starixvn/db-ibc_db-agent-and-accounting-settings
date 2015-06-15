@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_SAg]
+﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_SAg]
 
 @custid int, -- Master ID
 	@UserID int = 0,
@@ -248,7 +248,9 @@
 	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 	--Keno Sports----------------
 	@KenoList VARCHAR(4000)='',
-
+		--Microgaming		
+	@v203_2001PT SMALLMONEY,
+	@v203_2005PT SMALLMONEY,
 	@Language VARCHAR(2) = 'E',
 	@IP VARCHAR(15)='',
 	@ErrCode INT = 0 OUTPUT,
@@ -268,6 +270,7 @@ Revisions:
     - 20131119@Francis: Update 3rd product commission of super will not impact 3rd product commission of its downline members anymore
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sports, bettype by link database)	
 	- 20140512@Florent: Add new sport keno 202
+	- 20150611@Winnie: Add Microgaming 
 	
 Param's Explanation:
 • @ErrCode:
@@ -3962,6 +3965,44 @@ BEGIN
 					END	, @ErrCode = 104 
 	RETURN
 END
+--Microgaming
+--Check PT
+DECLARE @vMaxPT_2001 money
+DECLARE @vMaxPT_2005 money
+SELECT @vMaxPT_2001=isnull(spositiontaking,0) 
+FROM dbo.Dep_CustSettingGame WITH(NOLOCK) 
+WHERE CustID= @srecommend AND sporttype=203 and Bettype=2001
+SELECT @vMaxPT_2005=isnull(spositiontaking,0) 
+FROM dbo.Dep_CustSettingGame WITH(NOLOCK) 
+WHERE CustID= @srecommend AND sporttype=203 and Bettype=2005
+
+
+--check PT
+IF (@v203_2001PT<0 OR @v203_2001PT>@vMaxPT_2001 OR @v203_2005PT<0 OR @v203_2005PT>@vMaxPT_2005)
+BEGIN
+	Select @ErrMsg = case @Language 
+							when 'E' then 'Wrong  position taking.<br>'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'
+						end, @ErrCode = 104
+	return
+END 
+UPDATE c SET
+	c.mpositiontaking=
+	CASE 
+	WHEN  sporttype = 203 AND c.Bettype=2001 THEN @v203_2001PT 	
+	ELSE @v203_2005PT END
+FROM dbo.Dep_CustSettingGame c WITH (ROWLOCK, UPDLOCK) 
+WHERE c.CustID=@custid AND c.Sporttype=203 AND (c.Bettype=2001 OR c.Bettype=2005)
+IF (@@error <> 0)
+BEGIN
+	
+	SELECT @ErrMsg = CASE @Language 
+						WHEN 'E' THEN 'Update process is unsuccessful !'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					END	, @ErrCode = 104 
+	RETURN
+END
+
 
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
@@ -4292,6 +4333,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_SAg><info custid="'+ coalesce(ca
 'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161mlivepositiontaking_90,2),SPACE(1)) + '" '+
+'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2001PT,2),SPACE(1)) + '" ' +
+'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2005PT,2),SPACE(1)) + '" ' +
 @str_mpt+
 'v180mpt="'+ COALESCE(CAST(@v180mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
 'v181mpt="'+ COALESCE(CAST(@v181mPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
@@ -4305,10 +4348,13 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_SAg><info custid="'+ coalesce(ca
 --tracking value old
 DECLARE @pt_SB smallMoney,@pt_NG smallmoney,@pt_VS smallmoney,@pt_KN smallmoney,
 		@spt_SB smallMoney =0 ,@spt_NG smallmoney = 0,@spt_VS smallmoney= 0,@spt_KN smallmoney=0
+		,@ptMGC2001 smallmoney,@ptMGC2005 smallmoney
 select top 1 @pt_SB=mpt FROM #data_old where Sporttype=1 AND Bettype =1 and islive =0
 select top 1 @pt_NG=mpt FROM #data_old where Sporttype=161 AND Bettype =81 and islive =0
 select top 1 @pt_VS=mpt FROM #data_old where Sporttype=180 AND  islive =0
 select top 1 @pt_KN=mpt FROM #data_old where Sporttype=202 AND Bettype =1501 and islive =0
+select top 1 @ptMGC2001=apt FROM #data_old where Sporttype=203 AND Bettype =2001 and islive =0
+select top 1 @ptMGC2005=apt FROM #data_old where Sporttype=203 AND Bettype =2005 and islive =0
 --write log keno
 DECLARE @str_spt_ varchar(1000)='',
 		@str_mpt_ varchar(1000)='',
@@ -4460,6 +4506,8 @@ SELECT @LogSPData2 = '<Acc_Dep_CustomerUpdMember_SAg><info custid="'+ coalesce(c
 'v161mlivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161mlivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161mlivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
+'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2001,2),SPACE(1)) + '" ' +
+'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2005,2),SPACE(1)) + '" ' +
 @str_mpt_+
 'v180mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' + 
 'v181mpt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
