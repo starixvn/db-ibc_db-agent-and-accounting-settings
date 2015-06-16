@@ -1,19 +1,19 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerSelVSCloneSetting_SAg]
-	@Custid int	
+	@Custid INT
 AS
 /*  
- Created by: Dan  
- Date: 2012/08/23
- Original:
- Task: Get VS setting information of master
- 
- DB: DB053.bodb02
-  
- History:  
-	- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-	- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
-	- 20140402@Dom: Get Virtual Speedway/ Cycling setting (sporttype: 183|185, bettype: 1231)
- Explanation's Param:  	
+	Created by: Dan  
+	Date: 2012/08/23
+	Original:
+	Task: Get VS setting information of master
+	DB: DBCUST.CustDB
+
+	History:
+		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+		- 20140402@Dom: Get Virtual Speedway/ Cycling setting (sporttype: 183|185, bettype: 1231)
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Explanation's Param:
 */
 
 /*
@@ -23,7 +23,7 @@ EXEC dbo.Acc_CustomerSelVSCloneSetting_SAg @CustID=987853
 BEGIN
 	SET NOCOUNT ON
 	
-	SELECT 		
+	SELECT
 	---------- bet setting section---------------------------------------------------------------------------------------		
 		v180minbet_1201=MAX(CASE WHEN cs3rd.bettype=1201 AND cs3rd.sporttype=180 THEN cs3rd.minbet ELSE 0 END)
 		,v180maxbet_1201=MAX(CASE WHEN cs3rd.bettype=1201 AND cs3rd.sporttype=180 THEN cs3rd.maxbet ELSE 0 END)
@@ -78,15 +78,21 @@ BEGIN
 		,v185MinPT_1231 = MAX(CASE WHEN csOv3rd.bettype=1231 AND csOv3rd.sporttype=185 THEN csOv3rd.minpositiontaking END)
 		,v186MinPT_1220 = MAX(CASE WHEN csOv3rd.bettype=1220 AND csOv3rd.sporttype=186 THEN csOv3rd.minpositiontaking END)
 
-	FROM dbo.CustInfo AS ci WITH(NOLOCK)		
-		INNER JOIN dbo.CustSetting3rd AS cs3rd WITH(NOLOCK) ON ci.CustID=cs3rd.CustID
-			AND ci.custid=@CustID
-			AND ci.roleid=3
+	FROM dbo.CustInfo AS ci WITH(NOLOCK)
+		INNER JOIN dbo.CustSetting3rd AS cs3rd WITH(NOLOCK) ON ci.CustID = cs3rd.CustID
+			AND ci.custid = @CustID
+			AND ci.roleid = 3
 		LEFT JOIN dbo.custoverride3rd AS csOv3rd WITH (NOLOCK) ON csOv3rd.custid = cs3rd.custid AND csOv3rd.sporttype = cs3rd.sporttype AND csOv3rd.bettype = cs3rd.bettype
-	GROUP BY maxpermatch180, maxpermatch181,maxpermatch183, maxpermatch185, MaxPerMatch186
+	GROUP BY 
+		maxpermatch180, 
+		maxpermatch181,
+		maxpermatch183, 
+		maxpermatch185, 
+		MaxPerMatch186
 			
 	SET NOCOUNT OFF
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelVSCloneSetting_SAg] TO [bodbDownlineNet]

@@ -1,4 +1,13 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberVS_SAg]   
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_SAg]    Script Date: 06/09/2015 18:10:06 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_SAg    Script Date: 4/23/2014 1:41:43 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_SAg    Script Date: 4/16/2014 11:32:11 AM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberVS_SAg]   
 	@CustID int,--memberid   
 	@sporttype tinyint,  
 	@bettype int,  
@@ -33,6 +42,8 @@ AS
 		 - 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 		 - 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		 - 20140318@Johnson: merge code correct pt [Redmine: #11562]
+		 - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID, temp sport, bettype table) [Redmine:#36216]
+		 
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  
@@ -51,7 +62,7 @@ SET NOCOUNT ON
 	Declare @ErrCode_cur int, @ErrMsg_cur nvarchar(4000), @roleid tinyint 
 	DECLARE @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney
 
-
+	
 	DECLARE @tmp_cs TABLE (custid INT, sporttype INT, bettype INT, 
 				spositiontaking SMALLMONEY, mpositiontaking SMALLMONEY, apositiontaking SMALLMONEY, 
 				isautopositiontaking BIT, isautompositiontaking BIT, autopositiontaking SMALLMONEY, autompositiontaking SMALLMONEY)	
@@ -62,7 +73,28 @@ SET NOCOUNT ON
 	 
 	Select @ErrCode_cur = 0, @ErrMsg_cur = '', @ErrCode = '', @ErrMsg = ''  
 	  
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging   
+	 DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+	
+	EXEC dbo.Age_CustomerSelCheckBelonging   
 		 @SessionCustID = @Userid,   
 		 @Custid = @custid,  
 		 @Username = @Username OUTPUT,  
@@ -70,7 +102,7 @@ SET NOCOUNT ON
 		 if (@roleid <> 1) return-- return if not member  
 	  
 	--Check disable user  
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
 	IF @ErrCode_Cur > 0  
 	BEGIN  
 		 select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7),   
@@ -179,8 +211,8 @@ SET NOCOUNT ON
 		 (  
 		  select @sporttype as sporttype, @bettype as bettype, @us1 as autopositiontaking, @is1 as isautopositiontaking   
 		 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_sports s  on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid  
 		 where co.custid = @srecommend and ((b.isautopositiontaking>0 and b.autopositiontaking>co.maxpositiontaking))  
 		  
 		  
@@ -209,8 +241,8 @@ SET NOCOUNT ON
 		  (  
 		   select @bettype as bettype, @sporttype as sporttype, @us1 as autopositiontaking      
 		  ) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN  @tmp_sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid  
 		 where cs.custid = @srecommend  
 		  and   
 		  ((cs.spositiontaking<b.autopositiontaking))  
@@ -236,8 +268,8 @@ SET NOCOUNT ON
 					  @us1 as autopositiontaking, @is1 as isautopositiontaking ,  
 					  @a1 as apositiontaking, @m1 as mpositiontaking  
 			 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid  
 		 where (b.isautopositiontaking>0 and b.autopositiontaking< case when co.minpositiontaking - b.mpositiontaking - b.apositiontaking >0 then co.minpositiontaking - b.mpositiontaking - b.apositiontaking else 0 end)  
 		  
 		 if @ErrType <>''  
@@ -272,8 +304,8 @@ SET NOCOUNT ON
 				   @a1 as apositiontaking, @m1 as mpositiontaking     
 		  ) as b on cs.sporttype=b.sporttype and cs.bettype=b.bettype  		  
 		  inner join @tmp_mag as mcs ON cs.sporttype=mcs.sporttype and cs.bettype=mcs.bettype  
-		  INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		  INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		  INNER JOIN @tmp_sports s  on b.sporttype = s.sporttype  
+		  INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid  
 		 where (b.spositiontaking> case when cs.minpositiontaking - b.mpositiontaking - b.apositiontaking > cs.spositiontaking - mcs.mpositiontaking  
 				 then cs.minpositiontaking - b.mpositiontaking - b.apositiontaking  
 				 else cs.spositiontaking - mcs.mpositiontaking  
@@ -303,8 +335,8 @@ SET NOCOUNT ON
 				  @s1 as spositiontaking, @is1 as isautopositiontaking ,  
 				  @a1 as apositiontaking, @m1 as mpositiontaking  
 		 ) as b on co.sporttype=b.sporttype and co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid  
+		 INNER JOIN @tmp_sports s on b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid  
 		 where (b.isautopositiontaking=0 and b.spositiontaking< case when co.minpositiontaking - b.mpositiontaking - b.apositiontaking >0 then co.minpositiontaking - b.mpositiontaking - b.apositiontaking else 0 end)  
 		  
 		 if @ErrType <>''  
@@ -641,9 +673,8 @@ SET NOCOUNT ON
 		
 	Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
 
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_SAg] TO [bodbDownlineNet] AS [dbo]
 GO

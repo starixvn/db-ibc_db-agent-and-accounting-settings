@@ -23,6 +23,7 @@ AS
 	Task: Master edit Keno PT setting on member
 	DB: DBTXN/CustDB
 	Revisions:
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 	Parameters Explanation:
 	• @ErrCode:  
 		<= 0: Update successfully.  
@@ -31,6 +32,29 @@ AS
 BEGIN
 
 	SET NOCOUNT ON 
+	----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
+
 	declare @startRun datetime  
 	declare @endRun datetime  
 	declare @duration int  
@@ -180,8 +204,8 @@ BEGIN
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m3 AS maxmpositiontaking, @um1 AS autopositiontaking, @im1 AS isautopositiontaking    
 		  ) AS b   
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>b.maxmpositiontaking)  
 		  
 		 IF @ErrType <>''  
@@ -207,8 +231,8 @@ BEGIN
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking, @APositionTaking as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND   
 		  (b.isautopositiontaking>0 AND b.autopositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
 		  
@@ -259,8 +283,8 @@ BEGIN
 			 @SPositionTaking AS spositiontaking, @m1 AS mpositiontaking, @APositionTaking AS apositiontaking,   
 			 @m3 AS maxmpositiontaking, @SPositionTaking_Max AS maxspositiontaking  
 		 )b    
-		  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		  INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		  INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE @im1 = 0 and b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking           
 		  
 		 IF @ErrType <>''  
@@ -286,8 +310,8 @@ BEGIN
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m1 AS mpositiontaking, @im1 AS isautopositiontaking, @APositionTaking as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND   
 		  (b.isautopositiontaking=0 AND b.mpositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
 		  
@@ -611,12 +635,3 @@ BEGIN
 	END CATCH
 
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MAg] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MAg] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_MAg] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_MAg] TO [vnteam] AS [dbo]

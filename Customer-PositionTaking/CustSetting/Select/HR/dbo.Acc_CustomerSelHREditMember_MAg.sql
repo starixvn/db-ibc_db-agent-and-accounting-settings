@@ -1,16 +1,14 @@
-﻿
-ALTER PROCEDURE  [dbo].[Acc_CustomerSelHREditMember_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHREditMember_MAg]
 	@CustID int
 AS
 /*
 	Created by: Phuc
 	Date: 2009-04-16
 	Task: MASTER EDIT MEMBER FOR HR AT AGENT SITE 
-	DB: DB05.BODB02 
+	DB: DBCUST.CustDB 
 	Original: Acc_CustomerSelEditCustomer_MAg
 	
 	Revisions:
-		
 		- 20090701@Phuc: remove dbo.IsAllowChangePositiontaking, auto master, disalbe auto MPT.
 		- 20090714@ThoNguyen: Get status disable HR
 		- 20090806@Phuc: remove check m1=min(m3-a2,m1)
@@ -20,6 +18,7 @@ AS
 		- 20110314@Johnson: remove @AgentID 
 		- 20120504@Johnson: correct m1 max
 		- 20140307@Johnson: fix bug m1_max =  m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
 SET NOCOUNT ON
 

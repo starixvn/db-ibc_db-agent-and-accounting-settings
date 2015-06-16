@@ -67,6 +67,7 @@ Revisions:
 	- 20131014@Francis: Support updating new virtual sports with settings
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call bettype by link database)
 	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old super
+    - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
     
 Param's Explanation:
 • @ErrCode:
@@ -76,6 +77,19 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
  
+ ----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
+
 DECLARE @startRun DATETIME
 DECLARE @endRun DATETIME
 DECLARE @duration INT
@@ -99,7 +113,7 @@ from
 	inner join (
 					select 180 as sporttype, 1201 as bettype, @v180spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 180
 	AND c.roleid = 3 
@@ -235,6 +249,7 @@ BEGIN
 			@v180aPositionTaking, 
 			@v180mPositionTaking, 
 			@v180sPositionTaking, 
+
 			0, 0, 0, 0, 
 			@v180MinBet, 
 			@v180MaxBet,
@@ -262,7 +277,7 @@ from
 	inner join (
 					select 181 as sporttype, 1231 as bettype, @v181spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 181
 	AND c.roleid = 3 
@@ -424,7 +439,7 @@ from
 	inner join (
 					select 182 as sporttype, 1231 as bettype, @v182spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 182
 	AND c.roleid = 3 
@@ -586,7 +601,7 @@ from
 	inner join (
 					select 183 as sporttype, 1231 as bettype, @v183spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 183
 	AND c.roleid = 3 
@@ -750,7 +765,7 @@ from
 	inner join (
 					select 184 as sporttype, 1231 as bettype, @v184spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 184
 	AND c.roleid = 3 
@@ -912,7 +927,7 @@ from
 	inner join (
 					select 185 as sporttype, 1231 as bettype, @v185spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 185
 	AND c.roleid = 3 
@@ -1076,7 +1091,7 @@ from
 	inner join (
 					select 186 as sporttype, 1220 as bettype, @v186spositiontaking as maxpositiontaking
 		) as b on cs.sporttype=b.sporttype and cs.bettype = b.bettype
-	inner join bodb02.dbo.bettype as t with (NOLOCK) ON t.typeid = b.bettype
+	inner join @tmp_Bettype as t ON t.typeid = b.bettype
 where c.srecommend = @custid 
 	AND cs.sporttype = 186
 	AND c.roleid = 3 
@@ -1228,19 +1243,3 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Com] TO [bodbExtAccNet]
-GO 

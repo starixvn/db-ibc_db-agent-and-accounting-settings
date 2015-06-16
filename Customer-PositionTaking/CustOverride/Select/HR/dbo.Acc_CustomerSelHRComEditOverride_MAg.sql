@@ -1,19 +1,18 @@
-﻿
-
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRComEditOverride_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRComEditOverride_MAg]
 	@CustID int --MasterID
 AS
 /*
 Created by: Phuc
 Task :	Company Edits Master for HR 
 		Super Edit Master
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 Orginal: Acc_CustomerSelComEditOverride_MAg
 Revisions:
 	- 20100422@Shifu: Get currency
 	- 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).	
 	- 20110124@Lukas: Add more partner ( AU Horse racing) & racing game (Harness, Greyhound) setting
 	- 20110309@Lukas: get custid
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: master ID
 */
@@ -75,10 +74,9 @@ from
 	INNER JOIN custSetting3rd as cs with (NOLOCK) on c.custid = cs.custid
 	INNER JOIN custOverride3rd as mco with (NOLOCK) on mco.custid = cs.custid and mco.sporttype=cs.sporttype and mco.bettype=cs.bettype	
 where 
-	c.roleid=3 and c.custid=@CustID AND mco.sporttype in (151 ,152,153)
+	c.roleid=3 and c.custid=@CustID AND mco.sporttype BETWEEN 151 AND 153
 group by 
 	c.firstname, c.lastname, c.roleid, c.username, c.currency, c.phone, c.mobilephone, c.fax
-
 
 
 

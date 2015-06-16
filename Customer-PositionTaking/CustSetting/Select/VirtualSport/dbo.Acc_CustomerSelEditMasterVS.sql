@@ -1,20 +1,21 @@
-﻿ALTER PROCEDURE [Acc_CustomerSelEditMasterVS] 
-	@custid			INT	
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMasterVS] 
+	@custid	INT
 AS
-	/*
-		Created: Johnson
-		Date: 2012-08-09
-		Task: get virtual sports info of master
-		DB: DB053.bodb02
+/*
+	Created: Johnson
+	Date: 2012-08-09
+	Task: get virtual sports info of master
+	DB: DBCUST.CustDB
 		
-		Revisions:
-			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-			- 20130220@Johnson: get virtual horse racing setting (sporttype : 181, bettype: 1231)
-			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
-			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	Revisions:
+		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype : 181, bettype: 1231)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
+		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 
-		Parameter's Explanation:
-	*/
+	Parameter's Explanation:
+*/
 SET NOCOUNT ON 
 ---------------------------
 	DECLARE @Downlines						BIT,
@@ -71,7 +72,7 @@ SET NOCOUNT ON
 		AND roleid = 2
 		AND DisableVirtualSports = 1
 				
-	select @DisableUplineVirtualSports = isnull(DisableVirtualSports,0)		   		 
+	select @DisableUplineVirtualSports = isnull(DisableVirtualSports,0)
 	FROM custinfo with (NOLOCK) 
 	WHERE custid = @srecommend
 	
@@ -80,7 +81,7 @@ SET NOCOUNT ON
 	SELECT cs.sporttype, 
 			cs.bettype, 
 			cs.mpositiontaking,
-			cs.spositiontaking, 			
+			cs.spositiontaking, 
 			co.minpositiontaking, 
 			cs.minbet, 
 			cs.maxbet, 
@@ -174,7 +175,7 @@ SET NOCOUNT ON
 	WHERE cs.custid = @custid
 		AND cs.sporttype in (180, 181, 182, 183, 184, 185, 186)
 		AND cs.bettype in (1201, 1231, 1220)
-	
+
 
 
 

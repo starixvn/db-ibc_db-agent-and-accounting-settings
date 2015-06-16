@@ -1,4 +1,13 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]    Script Date: 06/09/2015 15:38:07 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberLiveCS_MAg    Script Date: 9/29/2014 10:46:48 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberLiveCS_MAg    Script Date: 9/26/2014 2:49:27 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_MAg]
 	@custid									INT,		
 
 	@v162mpositiontaking_1101				SMALLMONEY,	
@@ -31,6 +40,7 @@ AS
 		- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 		- 20140318@Johnson: check um1 with constraint um1_min and merge code correct pt [Redmine: #11562]
 		- 20140926@Johnson: remove bettype name out of error message
+		- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
 	Parameters Explanation:
 */
 BEGIN
@@ -60,7 +70,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
 		@SessionCustID = @mrecommend, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -68,7 +78,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT	@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7), 
@@ -661,7 +671,7 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_MAg] TO [bodbDownlineNet] AS [dbo]
 GO

@@ -14,7 +14,7 @@ AS
 Created: Johnson  
 Date: 2012-09-19  
 Task: exec replicate to update status and bet setting virtual sports for downlines  
-DB: DBTXN/CustDB  
+DB: DBCUST/CustDB  
 
 Revisions:  
 	- 20121203@Scott : update status and bet setting for virtual tennis by setting's virtual soccer  
@@ -22,6 +22,9 @@ Revisions:
 	- 20120221@Johnson: add virtual horse racing setting (sporttype :181)
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)	
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]					
+	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST   
 	
 Parameter's Explanation:  
 
@@ -29,79 +32,22 @@ Parameter's Explanation:
 
 SET NOCOUNT ON  
 
+ IF NOT(dbo.f_CheckRepTable('custinfo') = 1 
+   AND dbo.f_CheckRepTable('custsetting3rd') = 1 
+   )
+ RETURN
+
+
 IF @roleid = 4  
 BEGIN  
 	
-	IF @sporttype = 180 
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch180 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-	
-	IF @sporttype = 181
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch181 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-	
-	IF @sporttype = 182
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch182 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-
-	IF @sporttype = 183
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch183 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-	
-	IF @sporttype = 184
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch184 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-	
-	IF @sporttype = 185
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch185 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-
-	IF @sporttype = 186 
-	BEGIN 
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK) 
-			SET MaxPerMatch186 = @maxpermatch	
-		WHERE srecommend = @custid  
-		
-	END 
-	
- 
-	IF (@@ERROR <> 0)  
-	BEGIN     
-		SELECT	@ErrMsg = 'Update process is unsuccessful.',  
-				@ErrCode = 301  
-		RETURN  
-	END  
+     EXEC [dbo].[Acc_ExecRep_Cust_12]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @sporttype = @sporttype,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
  
 	UPDATE cs  
 		SET minbet = @minbet,  
@@ -121,69 +67,13 @@ END
 ELSE IF @roleid = 3  
 BEGIN
 
-	IF @sporttype = 180 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch180 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 181 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch181 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 182
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch182 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 183
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch183 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 184
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch184 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 185
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch185 = @maxpermatch
-		WHERE mrecommend = @custid  
-		
-	END 
-	IF @sporttype = 186 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch186 = @maxpermatch 
-		WHERE mrecommend = @custid  
-		
-	END 
- 
-	IF (@@ERROR <> 0)  
-	BEGIN     
-		SELECT	@ErrMsg = 'Update process is unsuccessful.',  
-				@ErrCode = 303  
-		RETURN  
-	END  
+     EXEC [dbo].[Acc_ExecRep_Cust_12]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @sporttype = @sporttype,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
  
 	UPDATE cs  
 		SET minbet = @minbet,  
@@ -203,70 +93,13 @@ END
 ELSE IF @roleid = 2  
 BEGIN  
 
-	IF @sporttype = 180 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch180 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 181 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch181 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 182
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch182 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 183
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch183 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 184
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch184 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 185
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch185 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	IF @sporttype = 186 
-	BEGIN
-	
-		UPDATE custinfo WITH(UPDLOCK,ROWLOCK)  
-			SET MaxPerMatch186 = @maxpermatch  
-		WHERE recommend = @custid  
-		
-	END
-	
-	
-	IF (@@ERROR <> 0)  
-	BEGIN     
-		SELECT	@ErrMsg = 'Update process is unsuccessful.',  
-				@ErrCode = 305  
-		RETURN  
-	END  
+     EXEC [dbo].[Acc_ExecRep_Cust_12]   
+	   @custid = @custid,  
+	   @roleid = @roleid,  
+	   @sporttype = @sporttype,
+	   @maxpermatch = @maxpermatch,
+	   @ErrCode = @ErrCode,
+	   @ErrMsg = @ErrMsg
  
 	UPDATE cs  
 		SET minbet = @minbet,  

@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdLiveCS]    Script Date: 06/10/2015 17:11:10 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdLiveCS    Script Date: 8/28/2014 2:05:17 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdLiveCS    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdLiveCS    Script Date: 8/21/2014 2:58:08 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdLiveCS    Script Date: 12/5/2013 5:35:45 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdLiveCS]
     @custid        INT,
     @UplineID    INT = 0,
     @min_v162positiontaking_1101    SMALLMONEY,
@@ -32,6 +34,7 @@ AS
             - 20130301@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
             - 20131030@Lukas: Apply execRep
             - 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
+            - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
         Parameters Explanation:
     */
 SET NOCOUNT ON
@@ -48,7 +51,7 @@ SET NOCOUNT ON
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
         @SessionCustID = @Userid, 
         @Custid = @custid,
         @roleid = @roleid OUTPUT
@@ -56,7 +59,7 @@ SET NOCOUNT ON
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+    EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0
     BEGIN
         select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -66,7 +69,7 @@ SET NOCOUNT ON
     --end
     
     --Check Allowed downlines    
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
                 @roleid=@roleid,
                 @isExecRep=1,
                 @isUpdatePT = 1,
@@ -92,19 +95,19 @@ SET NOCOUNT ON
     IF @roleid = 4
     BEGIN
         --EXEC Acc_CustomerUpdSuperLiveCS_MinPositiontaking @srecommend = @custid
-        EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'LiveCasino'
+                                EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'LiveCasino'
     END
 
     IF @roleid = 3
     BEGIN
         --EXEC Acc_CustomerUpdMasterLiveCS_MinPositiontaking @custid = @custid, @srecommend = @UplineID
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'LiveCasino'
+                                EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'LiveCasino'
     END
 
     IF @roleid = 2
     BEGIN
         --EXEC Acc_CustomerUpdAgentLiveCS_MinPositiontaking @custid = @custid, @mrecommend = @UplineID
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'LiveCasino'
+                                EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'LiveCasino'
     END
 
     DECLARE @LogSPData VARCHAR(MAX),
@@ -161,19 +164,9 @@ SET NOCOUNT ON
     END CATCH
 
 
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [bodbDownlineNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdLiveCS] TO [vnteam] AS [dbo]

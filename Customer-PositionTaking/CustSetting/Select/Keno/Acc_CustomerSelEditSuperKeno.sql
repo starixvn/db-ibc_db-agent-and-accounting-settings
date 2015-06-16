@@ -5,18 +5,28 @@ AS
 	Created: Elodie
 	Date: 20140225
 	Task: Select super's Keno setting
-	DB: DBAGE/BODB02
+	DB: DBCust/CustDB
 		
 	Revisions:
-										
+		- 20150608@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 	Parameters Explanations:
 			
 */
 BEGIN
 	SET NOCOUNT ON
+
+	----- 20150608@Kos -------------------
 	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
-	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
-	SELECT GameTypeID, IBCBetTypeID FROM GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+
+	BEGIN TRY
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END CATCH
+	----- 20150608@Kos -------------------
 
 	DECLARE @downlines BIT, @currency INT
 	SELECT @downlines = CASE WHEN EXISTS(SELECT TOP 1 1 FROM dbo.custinfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3) THEN 1 ELSE 0 END
@@ -67,12 +77,13 @@ BEGIN
 	ORDER BY cs.Bettype
 END
 
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbAdminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbDownlineNet]
-GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbExtAccNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbDownlineNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperKeno] TO [bodbDownlineNetView]
 GO

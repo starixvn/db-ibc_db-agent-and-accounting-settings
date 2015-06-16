@@ -20,24 +20,30 @@ AS
 	Created: Johnson
 	Date: 20131106
 	Task: Apply execrep when insert into custsetting/custsetting3rd
-	DB: DBTXN/bodb02
+	DB: DBCUST/custDB
 	
 	Revisions:
 		- 20140303@Patrick	: Add more sport: 202 for Keno
 		- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486] 
+	     
+	     - 20150610@Daniel: 
+		  + Separate custDB to new server DBCUST: 
+		  + Improve medthod check table existing in subscribers			
 		
 	Parameter's Explanation:
 */ 
 BEGIN
 	SET NOCOUNT ON
-	
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2')
 
-	if @IsExistTables <> 7 RETURN	
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1
+		  AND dbo.f_CheckRepTable('CustGameType') = 1
+	   )
+	   RETURN	
 	
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
@@ -182,11 +188,12 @@ BEGIN
 	END
 	
 	--Insert Into P2P Setting
-	INSERT INTO  dbo.P2PGameSetting WITH(ROWLOCK)
-		(custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5)
-	SELECT @custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5	
-	FROM dbo.P2PGameSetting WITH(NOLOCK)
-	WHERE custid=@ExistingCustid	
+	IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1)
+	    INSERT INTO  dbo.P2PGameSetting WITH(ROWLOCK)
+		    (custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5)
+	    SELECT @custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5	
+	    FROM dbo.P2PGameSetting WITH(NOLOCK)
+	    WHERE custid=@ExistingCustid	
 
 	if @@error <> 0
 	BEGIN
@@ -204,11 +211,12 @@ BEGIN
 	END
 
 	--insert P2PGroupComm
-	INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
-           (custId,groupID,sdiscount,adiscount,discount,playerdiscount)
-	SELECT @custid,groupID,sdiscount,adiscount,discount,playerdiscount
-	FROM dbo.P2PGroupComm
-	WHERE custid  = @ExistingCustid  
+	IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) 
+	    INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
+		(custId,groupID,sdiscount,adiscount,discount,playerdiscount)
+	    SELECT @custid,groupID,sdiscount,adiscount,discount,playerdiscount
+	    FROM dbo.P2PGroupComm
+	    WHERE custid  = @ExistingCustid  
 
 	if @@error <> 0
 	BEGIN
@@ -221,7 +229,7 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID
 		
 		RETURN
 	END
@@ -271,8 +279,8 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 
 		RETURN
 	END
@@ -294,8 +302,8 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 					
 		RETURN
@@ -317,8 +325,8 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
 			

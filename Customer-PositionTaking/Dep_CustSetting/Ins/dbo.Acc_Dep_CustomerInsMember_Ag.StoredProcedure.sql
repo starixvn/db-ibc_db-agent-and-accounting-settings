@@ -1,4 +1,16 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_Dep_CustomerInsMember_Ag]    Script Date: 06/10/2015 17:28:09 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/19/2015 12:03:01 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/13/2015 9:10:10 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/13/2015 9:07:25 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/9/2015 11:12:59 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 12/11/2013 10:37:36 AM ******/
+ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
 	@custid		int OUTPUT,
 	@creator	int,
 	@username	varchar(30),
@@ -215,6 +227,8 @@ Revisions:
 	- 20140505@Florent: Add sport HR Fix Odds
 	- 20140512@Florent: Add new sport: 202 Keno
     - 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
+     - 20150610@Kathy: Migrate custDB to new server DBCust (temp GameType table, call Task_Cust_CheckBalance_Exception_Ins by linked server) [Redmine:#36216]
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Create member successfully.
@@ -1371,6 +1385,16 @@ BEGIN
 END
 
 --check minBet maxBet PT Upline
+DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+ BEGIN TRY		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+ END TRY
+ BEGIN CATCH		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+ END CATCH
+
 SELECT  gt.IBCBetTypeID Bettype ,
 		isnull(cgt.minbet,0) AS MinBetMin, 
 		isnull(cgt.maxbet,0) AS MaxbetMax, 
@@ -1379,7 +1403,7 @@ SELECT  gt.IBCBetTypeID Bettype ,
 INTO #MinMaxUpline
 FROM dbo.CustGameType cgt WITH(NOLOCK)
 	INNER JOIN CustSettingGame csg ON cgt.custid = csg.custid
-	INNER JOIN bodb02.dbo.GameType gt with (nolock) ON cgt.GameTypeID = gt.GameTypeID
+	INNER JOIN @tmp_GameType gt ON cgt.GameTypeID = gt.GameTypeID
 WHERE cgt.custid = @recommend
 	AND csg.sporttype = 202	
 
@@ -1507,7 +1531,7 @@ WHERE Bettype=1501
 
 INSERT INTO dbo.CustGameType(CustID,GameTypeID,StakeLevelList,MaxPerGameType,MinBet,MaxBet,IsDisabled)
 SELECT @custid,gt.GameTypeID,'',MaxPerMatch,MinBet,MaxBet,d.IsDisable 
-FROM #data d INNER JOIN bodb02.dbo.GameType gt with(nolock) ON d.bettype=gt.IBCBetTypeID
+FROM #data d INNER JOIN @tmp_GameType gt ON d.bettype=gt.IBCBetTypeID
 
 IF @@ERROR <> 0
 BEGIN
@@ -1585,7 +1609,7 @@ END
 
 --Exclude created member from Balance checking
 --INSERT INTO dbo.Task_Cust_CheckBalance_Exception(custid, remark) values(@custid, @username)
-EXEC bodb02.dbo.Task_Cust_CheckBalance_Exception_Ins @custid = @custid, @username = @username
+EXEC DBTXN.bodb02.dbo.Task_Cust_CheckBalance_Exception_Ins @custid = @custid, @username = @username
 if @@error <> 0
 BEGIN
 	--Error occur
@@ -2012,16 +2036,9 @@ EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 
 DROP TABLE #data
 DROP TABLE #MinMaxUpline
-	
-
-
-
-
-
-
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerInsMember_Ag] TO [bodbDownlineNet] AS [dbo]
 GO

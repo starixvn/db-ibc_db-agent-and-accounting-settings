@@ -1,11 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]    Script Date: 05/12/2015 17:01:08 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMasterGoldDeluxe]
 	@custid INT,
 	@srecommend INT
 AS
@@ -13,9 +6,10 @@ AS
 		Created: Kathy
 		Date: 20150424
 		Task: Super edits master's Gold Deluxe setting
-		DB: DBAGE.BODB02
+		DB: DBCUST.CustDB
 		
 		Revisions:
+			- 20150612@Kathy: Move sp from DBAGE.bodb02 to DBCUST.CustDB [Redmine:#36216]
 		
 		Parameters Explanation
 	*/
@@ -94,23 +88,15 @@ BEGIN
 			AND bettype = 1701
 	
 	-- bet setting
-	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
 		@custid		= @custid
 		,@UplineId	= @srecommend
 END
-
-
-
-
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditMasterGoldDeluxe] TO [vnteam] AS [dbo]

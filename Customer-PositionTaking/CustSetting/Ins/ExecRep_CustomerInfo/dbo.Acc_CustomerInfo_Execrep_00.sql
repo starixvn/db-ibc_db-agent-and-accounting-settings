@@ -787,7 +787,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 		Created: Johnson
 		Date: 20131106
 		Task: Apply execrep when insert into custsetting/custsetting3rd
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 			- 20131120@Kathy: Add Virtual Greyhounds, Virtual Motor Racing (182, 184) [Redmine:#7234]. Refer to Sps:
@@ -806,19 +806,52 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
                                 + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
 			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
 			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+			
+		  - 20150603@Daniel: 
+			  + Separate custDB to new server DBCUST: 
+			  + Improve medthod check table existing in subscribers		
+			  
+			  	
 		Parameter's Explanation:
+		
 	*/
 BEGIN
-SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
+    SET NOCOUNT ON
+			
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+		  AND dbo.f_CheckRepTable('CustGameType') = 1
+		  AND dbo.f_CheckRepTable('ProductGlobalSetting') = 1 
+		  AND dbo.f_CheckRepTable('ProductBetSetting') = 1 
+		  AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
+		  AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
+	   )
+	   RETURN
 
-	if @IsExistTables <> 7 RETURN
 
-    DECLARE @currency INT
+    DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
+    DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
+    DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
+    
+    IF(dbo.f_CheckRepTable('GameType') = 1)
+	   INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+	   SELECT GameTypeID, IBCBettypeID FROM GameType WITH (NOLOCK)
+    ELSE
+	   BEGIN TRY		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	   END TRY
+	   BEGIN CATCH		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	   END CATCH
+   
+	   
+DECLARE @currency INT
           , @super    INT
           , @master   INT
 
@@ -1201,7 +1234,7 @@ SET NOCOUNT ON
 		--Keno
 		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
 		SELECT	GameTypeID, @Custid, 0, 0, 0, 1, CAST(0 AS VARCHAR(100))
-		FROM	bodb02.dbo.GameType WITH(NOLOCK)
+		FROM	@tmp_GameType
 		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
 		UNION ALL SELECT 1701, @custid, 0, 0, 0, 0, @StakeLevelList_1701
 		UNION ALL SELECT 1702, @custid, 0, 0, 0, 0, @StakeLevelList_1702
@@ -1696,7 +1729,7 @@ SET NOCOUNT ON
              , cg.MaxPerGameType
              , cg.IsDisabled
 		FROM dbo.CustGameType cg WITH(NOLOCK)
-			INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+			INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
 			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
 		WHERE cg.CustID = @srecommend
            AND pbs.Currency = @currency
@@ -2199,7 +2232,7 @@ SET NOCOUNT ON
                END
              , mcg.IsDisabled
 		  FROM dbo.CustGameType mcg WITH(NOLOCK)
-    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON mcg.GameTypeID = gt.GameTypeID
+    INNER JOIN @tmp_GameType gt ON mcg.GameTypeID = gt.GameTypeID
     INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
      LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
                                                 AND scg.CustID = @super
@@ -2584,7 +2617,7 @@ SET NOCOUNT ON
                END
              , acg.IsDisabled
 		  FROM dbo.CustGameType acg WITH(NOLOCK)
-			INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON acg.GameTypeID = gt.GameTypeID
+			INNER JOIN @tmp_GameType gt ON acg.GameTypeID = gt.GameTypeID
 			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
 			LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON acg.GameTypeID = scg.GameTypeID
 														AND scg.CustID = @super

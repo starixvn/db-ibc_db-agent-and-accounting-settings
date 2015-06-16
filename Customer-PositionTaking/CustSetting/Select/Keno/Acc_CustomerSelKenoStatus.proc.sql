@@ -7,16 +7,30 @@ AS
 /*
 	Created: Bobby
 	Date: 2014-03-04
-	DB: DBAGE/bodb02
+	DB: DBCUST.CustDB
 	Task: get disable status of Keno
 	
 	Revisions:
 		- 20140320@Bobby: Add output @HasDownline
 		- 20140605@Elodie: Expand bettype for Keno
 		- 20140806@Johnson: put WITH(NOLOCK) for missing SELECT commands
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, use temp table for GameType)
 */
 BEGIN
 	SET NOCOUNT ON
+
+	----- 20150610@Kos -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+
+	BEGIN TRY
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+	-----20150610@Kos -------------------
 
 	DECLARE @custRoleid INT, @srecommend INT, @mrecommend INT, @recommend INT
 	DECLARE @kenoGameType TABLE (gametypeid INT, isdisabled BIT DEFAULT 0)
@@ -35,7 +49,7 @@ BEGIN
 
 	INSERT INTO @kenoGameType (gametypeid)
 	SELECT gametypeid
-	FROM dbo.GameType_tmp WITH(NOLOCK)
+	FROM @tmp_GameType
 	WHERE [IBCBetTypeID] >=  1501 AND [IBCBetTypeID] <= 1599
 		AND IsDisabled = 0
 	ORDER BY gametypeid
@@ -148,7 +162,7 @@ BEGIN
 										WHERE custid = @custid
 										) g1 ON t.gametypeid = g1.GameTypeID
 						) g
-			LEFT JOIN dbo.GameType_tmp gt ON g.GameTypeID = gt.GameTypeID
+			LEFT JOIN @tmp_GameType gt ON g.GameTypeID = gt.GameTypeID
 		WHERE c.custid = @custid
 		)
 
@@ -162,6 +176,8 @@ BEGIN
 
 	DROP TABLE #kenoDownlines
 END
+
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelKenoStatus] TO [bodbadminNet] AS [dbo]

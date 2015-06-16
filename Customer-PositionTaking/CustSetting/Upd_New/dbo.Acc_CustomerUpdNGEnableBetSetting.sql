@@ -1,4 +1,12 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdNGEnableBetSetting]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdNGEnableBetSetting]    Script Date: 06/10/2015 14:21:56 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdNGEnableBetSetting    Script Date: 12/5/2013 5:35:52 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdNGEnableBetSetting]
 	@username varchar(30),
 	@isEnable bit = 0, --default is disable	
 	@minbet money = 0,
@@ -20,7 +28,8 @@ AS
 	Revisions:	
 		- Dom.Cao@2012-07-20: Just allow Enable NG in credit site
 		- 20121206@Scott : Check Allowed downlines during peak hour at weekend
-		- 20130218@Dan: Change linked server DB053 to DBAGE, DB03 to DBPOLICY; Write more log on DBTXN server in case of DBLOG server failure
+		- 20130218@Dan: Change linked server DB053 to DBAGE, DB03 to DBPOLICY; Write more log on DBTXN server in case of DBLOG server failure		
+		- 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
 	Param's Explanation:
 		- @isEnable: the value of checkbox Enable
  
@@ -65,7 +74,7 @@ END
 
 
 --Check Allowed downlines during peak hour at weekend
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1,
 											@Language='E',
@@ -277,10 +286,7 @@ BEGIN
 END
 
 
-
-	 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdNGEnableBetSetting] TO [bodbAdminNet]
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdNGEnableBetSetting] TO [vnteam]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdNGEnableBetSetting] TO [bodbAdminNet] AS [dbo]
 GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdNGEnableBetSetting] TO [vnteam] AS [dbo]

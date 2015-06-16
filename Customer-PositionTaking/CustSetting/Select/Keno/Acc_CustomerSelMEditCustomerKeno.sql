@@ -4,14 +4,28 @@ AS
 /*
 	Created: 20140317@Patrick	
 	Task: Master edit setting of Keno on member
-	DB: DBAGE/BODB02
+	DB: DBCUST.CustDB
 	
 	Revisions:
-	
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	Parameters Explanation:
 */
 BEGIN
 	SET NOCOUNT ON
+
+	----- 20150610@Kos -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+
+	BEGIN TRY
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+	-----20150610@Kos -------------------
+
 	DECLARE @srecommend INT, @mrecommend INT, @recommend INT, @DisableAutoMPT BIT		
 	
 	--PT
@@ -31,7 +45,7 @@ BEGIN
 	--BetSetting
 	SELECT gt.IBCBetTypeID, cg.MinBet, cg.MaxBet, cg.MaxPerGameType, cg.IsDisabled
 	FROM dbo.CustGameType cg WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+		INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
 	WHERE cg.CustID = @CustID and gt.IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
 	ORDER BY gt.IBCBetTypeID
 
@@ -41,7 +55,6 @@ BEGIN
 		, cs.mpositiontaking AS m1
 		, cs.isautompositiontaking AS im1
 		, cs.autompositiontaking AS um1
-
 		, csa.isautompositiontaking  AS im2
 		, csm.mpositiontaking AS um1_max --um1_max=min(m3,m4)
 
@@ -56,7 +69,7 @@ BEGIN
 		, CASE WHEN sco.minpositiontaking - cs.apositiontaking < 0 THEN 0 
 			ELSE sco.minpositiontaking - cs.apositiontaking END AS um1_min --m1_min=um1_min=Max(0, N3-A1)
 	FROM dbo.CustSettingGame AS cs WITH (NOLOCK)
-		INNER JOIN dbo.GameType gt ON cs.Bettype = gt.IBCBetTypeID
+		INNER JOIN @tmp_GameType gt ON cs.Bettype = gt.IBCBetTypeID
 		INNER JOIN dbo.CustSettingGame csa WITH (NOLOCK) ON csa.custid = @recommend AND csa.bettype = cs.bettype AND csa.sporttype = cs.sporttype 
 		INNER JOIN dbo.CustSettingGame csm WITH (NOLOCK) ON csm.custid = @mrecommend AND csm.bettype = cs.bettype AND csm.sporttype = cs.sporttype 
 		INNER JOIN dbo.CustSettingGame css WITH (NOLOCK) ON css.custid = @srecommend AND css.bettype = cs.bettype AND css.sporttype = cs.sporttype 
@@ -67,6 +80,7 @@ BEGIN
 		AND IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
 
 END
+
 
 
 

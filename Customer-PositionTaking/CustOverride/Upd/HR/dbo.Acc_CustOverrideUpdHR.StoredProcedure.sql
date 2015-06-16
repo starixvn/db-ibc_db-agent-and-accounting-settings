@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdHR]    Script Date: 06/10/2015 16:48:58 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 8/28/2014 2:05:10 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 8/21/2014 2:58:07 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdHR    Script Date: 12/5/2013 5:35:45 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdHR] 
     @custid int,
 
     @v151positiontaking_31_min smallmoney = 0,-- @minv151positiontaking_31 -> @v151positiontaking_31_min
@@ -74,6 +76,8 @@ Revisions:
     - 20130227@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
     - 20131029@Lukas: apply execRep
     - 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
+    - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                        
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -89,7 +93,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 Declare @maxpos smallmoney 
@@ -102,7 +106,7 @@ declare @ErrAcc varchar(4000)
 
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -263,6 +267,7 @@ BEGIN
     if @v151positiontaking_31_max <0 or @v151positiontaking_31_max > @maxpos
         or @v151positiontaking_32_max <0 or @v151positiontaking_32_max > @maxpos
         or @v151positiontaking_41_max <0 or @v151positiontaking_41_max > @maxpos
+
         or @v151positiontaking_42_max <0 or @v151positiontaking_42_max > @maxpos
         or @v151positiontaking_51_max <0 or @v151positiontaking_51_max > @maxpos
         or @v151positiontaking_52_max <0 or @v151positiontaking_52_max > @maxpos
@@ -546,6 +551,7 @@ BEGIN
                 union all select     @custid as custid,  151 as sporttype, 41 as bettype, @v151positiontaking_41_min as minpositiontaking
                 union all select     @custid as custid,  151 as sporttype, 42 as bettype, @v151positiontaking_42_min as minpositiontaking
                 union all select     @custid as custid,  151 as sporttype, 51 as bettype, @v151positiontaking_51_min as minpositiontaking
+
                 union all select     @custid as custid,  151 as sporttype, 52 as bettype, @v151positiontaking_52_min as minpositiontaking
                 union all select     @custid as custid,  152 as sporttype, 41 as bettype, @v152positiontaking_41_min as minpositiontaking
                 union all select     @custid as custid,  152 as sporttype, 42 as bettype, @v152positiontaking_42_min as minpositiontaking
@@ -583,18 +589,18 @@ END
 if @roleid = 2
 BEGIN
     --EXEC dbo.Acc_CustomerUpdAgentHR_MinMaxPositiontaking @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend
-    EXEC [dbo].[Acc_CustSetting3rd_04] @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2, @mode = 'horse'
+                EXEC [dbo].[Acc_CustSetting3rd_04] @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2, @mode = 'horse'
     -- The minimum position taking value of agent was modified by agent's upline
     EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID
 END
 else if @roleid = 3
 BEGIN
     --EXEC dbo.Acc_CustomerUpdMasterHR_MinMaxPositiontaking @mrecommend = @mrecommend, @srecommend = @srecommend
-    EXEC dbo.[Acc_CustSetting3rd_04] @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'horse'
+                EXEC dbo.[Acc_CustSetting3rd_04] @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'horse'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMinPos = 1
 BEGIN
-    EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'horse'
+                EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'horse'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1
 BEGIN
@@ -747,22 +753,11 @@ BEGIN
     END CATCH
 END
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdHR] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdHR] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdHR] TO [vnteam] AS [dbo]

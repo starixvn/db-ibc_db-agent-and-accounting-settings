@@ -19,10 +19,33 @@ AS
 	DB: DBTXN/CustDB
 		
 	Revisions:
-			
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)		
 	Parameter's Explanation:	
 */
 SET NOCOUNT ON 
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
+----- /David @ 09 JUN 2015 -------------------
 DECLARE @startRun	DATETIME,
 		@endRun		DATETIME,
 		@duration	INT,
@@ -93,8 +116,8 @@ DECLARE @startRun	DATETIME,
 		(
 			select @bettype as bettype, @sporttype as sporttype, @a1 as apositiontaking 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
+		INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid
+		INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype
 	WHERE co.custid = @recommend and b.apositiontaking<co.minpositiontaking	
 	
 	IF @ErrType <> ''
@@ -304,13 +327,4 @@ DECLARE @startRun	DATETIME,
 			@TrackingValue = @LogSPData,
 			@TrackingValue2 = @TrackingValueDB,
 			@duration = @duration	
-	END CATCH								
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberKeno_Positiontaking] TO [vnteam] AS [dbo]
+	END CATCH

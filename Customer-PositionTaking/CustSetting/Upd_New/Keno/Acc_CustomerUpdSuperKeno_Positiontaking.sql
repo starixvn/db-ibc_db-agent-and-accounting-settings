@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]    Script Date: 06/10/2015 15:53:48 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_Positiontaking    Script Date: 8/28/2014 2:05:46 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_Positiontaking    Script Date: 8/21/2014 3:12:20 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_Positiontaking    Script Date: 8/21/2014 2:58:14 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking]
     @custid INT,-- superid    
     @sporttype INT = 202,
     @bettype INT,
@@ -28,6 +30,7 @@ AS
     Revisions:
 
         - 20140818@Logan:   Exclude disabled members while checking constraints for Super [Redmine: #19631]
+        - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines, change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
 
     Param's Explanation:
     • @ErrCode is:
@@ -46,7 +49,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC Age_CustomerSelCheckBelonging 
+    EXEC Age_CustomerSelCheckBelongingByCustID 
         @SessionCustID = @Userid, 
         @Custid = @custid,
         @roleid = @roleid OUTPUT
@@ -60,7 +63,7 @@ BEGIN
     --end
 
     ---- Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    
         @custid=@custid,
         @roleid=4,
         @isExecRep=1,
@@ -162,7 +165,7 @@ INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
 
     --u = (i3 or i1)?(u3 or u1)
     --s1 = min(s4-m1-a1, u)
-        EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
+                                EXEC dbo.Acc_CustSetting3rd_07 @srecommend = @custid , @roleid = 4, @mode = 'Keno', @sporttype = @sporttype, @bettype = @bettype
     
     Declare @LogSPData varchar(MAX),
             @TrackingValueDB varchar(4000)
@@ -226,22 +229,11 @@ INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
     END CATCH
 END
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperKeno_Positiontaking] TO [vnteam] AS [dbo]

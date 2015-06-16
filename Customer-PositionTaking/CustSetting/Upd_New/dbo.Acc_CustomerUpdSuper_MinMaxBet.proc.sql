@@ -71,6 +71,7 @@ Revisions:
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sportype by link database)
+	- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -80,7 +81,18 @@ Param's Explanation:
 */
 
 SET NOCOUNT ON
-
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 declare @startRun datetime
 declare @endRun datetime
 declare @duration int
@@ -193,7 +205,7 @@ end
 
 select @ErrType = ''
 select @ErrType = @ErrType +  (case when MP=0 then s.sportname else 'Mixed Sports' end )       + ', '
-from bodb02.dbo.sports s with (NOLOCK) inner join
+from @tmp_Sports s inner join
 (
 				select 1 as sporttype,0 as MP, @MinBet as MinBet, @MaxBet as MaxBet, @MaxPerMatch as MaxPerMatch
 	union all	select 2 as sporttype,0 as MP, @MinBetv2 as MinBet, @MaxBetv2 as MaxBet, @MaxPerMatchv2 as MaxPerMatch
@@ -492,11 +504,3 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration
 END CATCH
-
-
-
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [bodbadminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_MinMaxBet] TO [vnteam] AS [dbo]

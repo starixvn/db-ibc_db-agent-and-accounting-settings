@@ -1,6 +1,15 @@
-﻿
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdUserInfo]    Script Date: 06/10/2015 16:25:19 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdUserInfo    Script Date: 6/2/2014 2:04:21 AM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdUserInfo    Script Date: 6/2/2014 12:38:18 PM ******/
 
-ALTER PROC [dbo].[Acc_CustomerUpdUserInfo]
+
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdUserInfo]
 	@CustID         int,	
 	@firstname      nvarchar(50) = NULL,
 	@lastname       nvarchar(50) = NULL,
@@ -52,6 +61,7 @@ Revisions:
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
 	- 20140519@Logan:   1.Updating remarks for SAg, MAg, Ag and members
 	                    2.Code aligning
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB) [Redmine:#36216]	                    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -85,7 +95,7 @@ DECLARE @old_firstname nvarchar(50),
         @old_gender bit
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable
+EXEC dbo.Acc_CustomerSelCheckEnable
      @custid = @CustID,
      @ErrCode=@ErrCode output,
      @ErrMsg=@ErrMsg output
@@ -217,7 +227,7 @@ BEGIN
         update CustSuper with(rowlock, updlock)
            set creationRemark = case when @remark is null then creationRemark else @remark end
          where custid = @CustID
-    end 
+     end 
 END
 
 ELSE RETURN
@@ -344,16 +354,14 @@ BEGIN CATCH
 		@TrackingValue2 = @TrackingValue2,
 		@duration = @duration	
 END CATCH
-		
-GO
-	
-GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdUserInfo]  TO [bodbAdminNet]
-GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdUserInfo]  TO [bodbExtAccNet]
-GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdUserInfo]  TO [bodbDownlineNet]
-GO
-GRANT  EXECUTE  ON [dbo].[Acc_CustomerUpdUserInfo]  TO [vnteam]
 
-
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdUserInfo] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdUserInfo] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdUserInfo] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdUserInfo] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdUserInfo] TO [vnteam] AS [dbo]

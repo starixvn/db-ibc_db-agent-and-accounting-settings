@@ -141,7 +141,7 @@
 		Created: Johnson
 		Date: 2013-10-30
 		Task: Apply execrep update auto pt on member
-		DB: DBTXN/bodb02
+		DB: DBCUST/bodb02
 		Original versions:	Acc_CustomerUpdMember_Super
 				Acc_CustomerUpdMember_Master
 				Acc_CustomerUpdMemberHR_SAg
@@ -152,18 +152,21 @@
 			- 20140220@Johnson: Merge code correct pt on members after update auto pt for number game[RedmineID: #11562]
 			- 20140313@Johnson: Merge code correct pt on members after update auto pt for racing [RedmineID: #11562]
 			- 20140424@Johnson: fix bug number game correct super pt on member after master update auto pt on member
+			- 20150610@Daniel: 
+		       + Improve medthod check table existing in subscribers	
+		       + Separate custDB to new server DBCUST  	
 	
 		Parameter's Explanation:
 	*/
 BEGIN
 	SET NOCOUNT ON 
-	
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting3rd', 'CustOverride3rd')
-			AND xtype = 'U'
 
-	if @IsExistTables <> 3 RETURN
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	     AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+	     AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+     )
+	   	RETURN  
+	
 	Declare @bettype int,
 			@maxpos smallmoney,	
 			@autov161positiontaking smallmoney,

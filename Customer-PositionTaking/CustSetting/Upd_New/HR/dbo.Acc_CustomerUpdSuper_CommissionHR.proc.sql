@@ -1,16 +1,18 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuper_CommissionHR]    Script Date: 06/10/2015 15:24:09 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_CommissionHR    Script Date: 8/28/2014 2:05:11 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_CommissionHR    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_CommissionHR    Script Date: 8/21/2014 2:58:08 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_CommissionHR    Script Date: 12/5/2013 5:35:48 PM ******/
 
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuper_CommissionHR]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_CommissionHR]
     @custid INT,-- superid
     @v151discount_31 DECIMAL(9,8),--commission for tote.
     @v151discount_41 DECIMAL(9,8),--commission for FO.    
@@ -50,6 +52,7 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
     - 20130227@Johnson: write log on DBTXN if DBLOG failure
     - 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
+    - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -66,7 +69,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=4,--@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -240,18 +243,7 @@ BEGIN CATCH
         @duration = @duration
 END CATCH
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [bodbAdminNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_CommissionHR] TO [vnteam] AS [dbo]

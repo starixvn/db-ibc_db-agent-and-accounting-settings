@@ -1,18 +1,18 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerSelSBCloneSetting_MAg]
-	@Custid int	
+	@Custid INT
 AS
-/*  
- Created by: Dan
- Date:20120203
- Original:
- Task: Get setting information of sport book for a custid 
-	("search and copy" feature of creating new agent)
- 
- DB: DBAGE/bodb02, DBTXN/bodb02
+/*
+	Created by: Dan
+	Date: 20120203
+	Original:
+	Task: Get setting information of sport book for a custid 
+	("search and copy" feature of creating new agent) 
+	DB: DBCUST.CustDB
   
- History:   
+	History:   
 		- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
- Explanation's Param:  	
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Explanation's Param:
 */
 
 /*
@@ -102,7 +102,6 @@ BEGIN
 		
 		--min live PT of number game (on behalf of bettype=85)
 		,v161MinLivePT_85 = MAX(CASE WHEN csOv3rd.bettype=85 AND csOv3rd.sporttype=161 THEN csOv3rd.minlivepositiontaking END)
-		
 
 	FROM dbo.CustInfo AS ci WITH(NOLOCK)
 		INNER JOIN dbo.CustSetting AS cs WITH(NOLOCK) ON cs.CustID=ci.CustID
@@ -120,6 +119,7 @@ BEGIN
 			,TransferOption
 	SET NOCOUNT OFF
 END
+
 
 
 GO

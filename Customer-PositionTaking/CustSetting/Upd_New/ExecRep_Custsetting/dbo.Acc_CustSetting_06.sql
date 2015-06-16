@@ -37,16 +37,25 @@ AS
         - 20140729@Logan:   1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
                             2.Code aligning on modified parts
 		- 20141113@Johnson: Hardcode agent list not give commission for downlines [Redmine #25787]                      
+
+	  - 20150610@Daniel: 
+	   + Improve medthod check table existing in subscribers	
+	   + Separate custDB to new server DBCUST   
+	   
+	    		
     Param's Explanation: 
 
     */
 BEGIN
     SET NOCOUNT ON;
-    -- check existing tables
-    IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting', 'custinfo', 'customer') AND type = 'U') < 3
-        AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting', 'custinfo', 'customer') AND type = 'V') < 3
-        RETURN
     
+    if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('customer') = 1 
+	   )
+     RETURN    
+   
+   
     --20141113@Johnson: hardcode customer list not give commission for downlines	   
     DECLARE @tblCustList TABLE(custid INT, roleid INT)
 	

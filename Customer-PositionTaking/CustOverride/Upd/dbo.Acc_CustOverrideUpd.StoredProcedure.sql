@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpd]    Script Date: 06/10/2015 16:46:40 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd    Script Date: 8/28/2014 2:04:58 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd    Script Date: 8/21/2014 2:58:04 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpd]
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpd]
     @custid int,
     @minpositiontaking_1 smallmoney,
     @minpositiontaking_2 smallmoney,
@@ -193,6 +195,7 @@ Revisions:
     - 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
     - 20140729@Logan:   1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
                         2.Code aligning on modified parts
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                        
 
 Param's Explanation:
 • @ErrCode:
@@ -209,7 +212,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
@@ -233,7 +236,7 @@ declare @IsValid bit, @totalDownlines int
 
 
 --Check Allowed downlines during peak hour at weekend    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
                                     @roleid=@roleid,
                                     @isExecRep=1,
                                     @isUpdatePT = 1,
@@ -1061,20 +1064,20 @@ END
 
 if @roleid = 2
 BEGIN
-    EXEC dbo.Acc_CustSetting_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2
-    EXEC dbo.Acc_CustSetting3rd_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2, @mode = 'number'
+                EXEC dbo.Acc_CustSetting_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2
+                EXEC dbo.Acc_CustSetting3rd_04 @recommend = @recommend, @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 2, @mode = 'number'
     -- The minimum position taking value of agent was modified by agent's upline
     EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID
 END
 else if @roleid = 3
 BEGIN
-    EXEC dbo.Acc_CustSetting_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3
-    EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'number'
+                EXEC dbo.Acc_CustSetting_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3
+                EXEC dbo.Acc_CustSetting3rd_04 @mrecommend = @mrecommend, @srecommend = @srecommend, @roleid = 3, @mode = 'number'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMinPos = 1
 BEGIN
-    EXEC dbo.Acc_CustSetting_04 @srecommend = @srecommend, @roleid = 4
-    EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'number'
+                EXEC dbo.Acc_CustSetting_04 @srecommend = @srecommend, @roleid = 4
+                EXEC dbo.Acc_CustSetting3rd_04 @srecommend = @srecommend, @roleid = 4, @mode = 'number'
 END
 else if @roleid= 4 and @WriteLog = 1 and @UpdateMaxPos = 1
 BEGIN
@@ -1660,25 +1663,11 @@ BEGIN
     END CATCH
 END
 
-
-
-
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpd] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpd] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpd] TO [vnteam] AS [dbo]

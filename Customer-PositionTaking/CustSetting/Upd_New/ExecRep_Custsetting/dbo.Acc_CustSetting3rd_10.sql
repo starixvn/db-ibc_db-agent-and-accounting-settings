@@ -10,12 +10,16 @@ AS
 	Created: Bobby
 	Date: 2014-03-18
 	Task: Apply execrep update keno setting - disable
-	DB: DBTXN/custDB
+	DB: DBCUST/custDB
 	Original versions:	[Acc_ExecRep_Cust_04]
 				
 	Revision:
 		- 20140228@Bobby: Update Keno status [Redmine:#12474]
 		- 20150427@Johnson: update bet settings for Gold Deluxe 
+	     - 20150610@Daniel: 
+	      + Improve medthod check table existing in subscribers	
+	      + Separate custDB to new server DBCUST  
+		
 	Parameter's Explanation:
 		+ 'DisableKeno' : Disable Keno gaming
 		+ 'GameTypeID' : Keno game ID
@@ -29,6 +33,10 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
+	
+	if dbo.f_CheckRepTable('custgametype') = 0
+	   	RETURN              
+    	
 	IF (
 			NOT EXISTS (
 				SELECT *

@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]    Script Date: 06/10/2015 16:04:58 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels    Script Date: 8/28/2014 2:05:18 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels    Script Date: 8/21/2014 2:58:08 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels    Script Date: 12/5/2013 5:35:49 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels]
     @custid        INT,
     @v162discount_1101        DECIMAL(9,8),
     @IP            VARCHAR(50)='',    
@@ -25,6 +27,7 @@ Original:
 
 Revisions:    
     - 20131118@Kathy: Apply exec rep [Redmine:#3244]
+    - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
 
 Param's Explanation:
     • @custid: super id.   
@@ -44,7 +47,7 @@ If @ErrCode <> 0
     RETURN
     
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
@@ -68,7 +71,7 @@ BEGIN
 END
 
 -- Check Allowed downlines during peak hour at weekend 
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
                         @roleid=@roleid,
                         @isExecRep=1,
                         @isUpdatePT = 1,
@@ -152,18 +155,7 @@ BEGIN CATCH
         @duration = @duration
 END CATCH
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [bodbAdminNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_CommissionForAllLevels] TO [vnteam] AS [dbo]

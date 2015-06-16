@@ -1,30 +1,44 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelInfoLiveCS]
-	@custid		INT
+	@custid	INT
 AS
-	/*
-		Created: Johnson	
-		Date: 09Jan2012
-		Task: get informattion of customer
-		DB: DB053.BODB02
+/*
+	Created: Johnson	
+	Date: 09Jan2012
+	Task: get informattion of customer
+	DB: DBCUST.CustDB
 		
-		Revisions:
-			- 20120323@Johnson: get site info
-			- 20120417@Johnson: Get live casino's status and upline status
-			- 20120927@Dan: add win limit
-		Parameters Explanation:	
-	*/
+	Revisions:
+		- 20120323@Johnson: get site info
+		- 20120417@Johnson: Get live casino's status and upline status
+		- 20120927@Dan: add win limit
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Parameters Explanation:	
+*/
 SET NOCOUNT ON
 	
-	DECLARE @syncLiveCasino BIT,@DisableLiveCasino BIT,@UplineDisableLiveCasino BIT,@UplineID INT, @roleid INT,
-			@isAutoResetLiveCasino BIT, @MaxWinLiveCasino SMALLMONEY, @UplineIsAutoResetLiveCasino BIT, @UplineMaxWinLiveCasino SMALLMONEY
+	DECLARE 
+		@syncLiveCasino BIT,
+		@DisableLiveCasino BIT,
+		@UplineDisableLiveCasino BIT,
+		@UplineID INT, 
+		@roleid INT,
+		@isAutoResetLiveCasino BIT, 
+		@MaxWinLiveCasino SMALLMONEY, 
+		@UplineIsAutoResetLiveCasino BIT, 
+		@UplineMaxWinLiveCasino SMALLMONEY
 	
-	SELECT @syncLiveCasino = SyncLiveCasino,@DisableLiveCasino = DisableLiveCasino,
-	@UplineID = CASE WHEN roleid = 1 THEN recommend 
-					WHEN roleid = 2 THEN mrecommend
-					WHEN roleid = 3 THEN srecommend
-					ELSE 0 END ,
-	@roleid	= roleid,					
-	@isAutoResetLiveCasino = isAutoResetLiveCasino, @MaxWinLiveCasino = MaxWinLiveCasino 
+	SELECT 
+		@syncLiveCasino = SyncLiveCasino,
+		@DisableLiveCasino = DisableLiveCasino,
+		@UplineID = CASE 
+						WHEN roleid = 1 THEN recommend 
+						WHEN roleid = 2 THEN mrecommend
+						WHEN roleid = 3 THEN srecommend
+						ELSE 0 
+					END,
+		@roleid	= roleid,
+		@isAutoResetLiveCasino = isAutoResetLiveCasino, 
+		@MaxWinLiveCasino = MaxWinLiveCasino 
 	FROM CustInfo WITH(NOLOCK)
 	WHERE custid = @custid
 	
@@ -44,16 +58,17 @@ SET NOCOUNT ON
 		c.fax,
 		c.currency,
 		c.site,
-		@SyncLiveCasino as SyncLiveCasino,
-		@DisableLiveCasino as DisableLiveCasino, 
-		ISNULL(@UplineDisableLiveCasino,0) as UplineDisableLiveCasino, 
+		@SyncLiveCasino AS SyncLiveCasino,
+		@DisableLiveCasino AS DisableLiveCasino, 
+		ISNULL(@UplineDisableLiveCasino, 0) AS UplineDisableLiveCasino, 
 		c.roleid,
-		@isAutoResetLiveCasino as isAutoResetLiveCasino, 
-		@MaxWinLiveCasino as MaxWinLiveCasino,
-		ISNULL(@UplineIsAutoResetLiveCasino,0) AS UplineIsAutoResetLiveCasino,
-		ISNULL(@UplineMaxWinLiveCasino,0) AS UplineMaxWinLiveCasino			
-	FROM Customer c WITH(NOLOCK)		
-	WHERE c.custid = @custid 
+		@isAutoResetLiveCasino AS isAutoResetLiveCasino, 
+		@MaxWinLiveCasino AS MaxWinLiveCasino,
+		ISNULL(@UplineIsAutoResetLiveCasino, 0) AS UplineIsAutoResetLiveCasino,
+		ISNULL(@UplineMaxWinLiveCasino, 0) AS UplineMaxWinLiveCasino
+	FROM Customer AS c WITH(NOLOCK)
+	WHERE c.custid = @custid
+
 
 
 GO
