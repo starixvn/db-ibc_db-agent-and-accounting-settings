@@ -23,27 +23,7 @@ AS
   Parameters Explanation:
  */
 SET NOCOUNT ON
-DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
 DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))	
-
-	BEGIN TRY
-		INSERT INTO @tmp_Sports (SportType, SportName)
-		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
-	END TRY
-	BEGIN CATCH
-		INSERT INTO @tmp_Sports (SportType, SportName)
-		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
-	END CATCH
-
-	BEGIN TRY			
-		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
-		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
-	END TRY
-	BEGIN CATCH		
-		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
-		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
-	END CATCH
-
 declare @roleid int,
         @custid int,
         @srecommend int,
@@ -58,6 +38,24 @@ declare @roleid int,
         @s3 smallmoney, @m3 smallmoney, @a3 smallmoney, @n3 smallmoney, @l3 smallmoney,
         @s2 smallmoney ,@m2 smallmoney, @a2 smallmoney, @n2 smallmoney, @l2 smallmoney,
         @s1 smallmoney, @m1 smallmoney, @a1 smallmoney, @n1 smallmoney, @l1 smallmoney
+
+	BEGIN TRY		
+		SELECT @sportname=sportname FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK) WHERE Sporttype=@Sporttype
+	END TRY
+	BEGIN CATCH
+		SELECT @sportname=sportname FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK) WHERE Sporttype=@Sporttype
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
+	
 select @custid = p.custid,      
        @roleid = p.roleid,
        @srecommend = p.srecommend,
@@ -90,11 +88,10 @@ select @custid CustID,
        @Ag Ag
 IF @Bettype!=0
 BEGIN
- SELECT @sportname=s.sportname,@typename=b.typenamee
- ,@s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
+	SELECT @typename=typenamee FROM @tmp_Bettype WHERE TypeID=@Bettype
+ SELECT
+ @s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
  FROM Dep_CustSettingGame  su WITH(NOLOCK) 
- LEFT JOIN @tmp_Sports s   ON su.sporttype=s.sporttype
- LEFT JOIN @tmp_Bettype b  ON su.bettype=b.typeid
  LEFT JOIN ProductGlobalSetting p WITH(NOLOCK) ON su.sporttype=p.sporttype AND su.bettype=p.bettype AND p.[IsDep]=1
  WHERE su.SportType=@Sporttype AND su.bettype=@Bettype AND custid=@srecommend
 
@@ -125,11 +122,10 @@ END
 ELSE -- bettype=0
 BEGIN
 SELECT @Bettype=2001
- SELECT @sportname=s.sportname,@typename=b.typenamee
- ,@s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
+SELECT @typename=typenamee FROM @tmp_Bettype WHERE TypeID=@Bettype
+ SELECT 
+ @s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
  FROM Dep_CustSettingGame  su WITH(NOLOCK) 
- LEFT JOIN @tmp_Sports s   ON su.sporttype=s.sporttype
- LEFT JOIN @tmp_Bettype b  ON su.bettype=b.typeid
  LEFT JOIN ProductGlobalSetting p WITH(NOLOCK) ON su.sporttype=p.sporttype AND su.bettype=p.bettype AND p.[IsDep]=1
  WHERE su.SportType=@Sporttype AND su.bettype=@Bettype AND custid=@srecommend
 
@@ -158,11 +154,10 @@ SELECT @Bettype=2001
                 @s1 As s1, @m1 AS m1, @a1 AS a1, @n1 AS n1, @l1 As l1 INTO #temp
 
 SELECT @Bettype=2005
- SELECT @sportname=s.sportname,@typename=b.typenamee
- ,@s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
+SELECT @typename=typenamee FROM @tmp_Bettype WHERE TypeID=@Bettype
+ SELECT 
+ @s4=su.[spositiontaking],@m4=su.[mpositiontaking],@a4=su.[apositiontaking],@n4=0 ,@l4=p.[MaxPositiontaking]
  FROM Dep_CustSettingGame  su WITH(NOLOCK) 
- LEFT JOIN @tmp_Sports s   ON su.sporttype=s.sporttype
- LEFT JOIN @tmp_Bettype b  ON su.bettype=b.typeid
  LEFT JOIN ProductGlobalSetting p WITH(NOLOCK) ON su.sporttype=p.sporttype AND su.bettype=p.bettype AND p.[IsDep]=1
  WHERE su.SportType=@Sporttype AND su.bettype=@Bettype AND custid=@srecommend
 
