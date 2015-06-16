@@ -1,5 +1,3 @@
-USE [CustDB]
-GO
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -22,7 +20,7 @@ AS
 /*
 Created: 
 Task : Create a 12 bet player account for this Affiliate on IBC system
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 Original:
 
 Revisions:
@@ -136,7 +134,8 @@ Revisions:
 	- 20140819@Victor: Update AG Casino group for member
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
-
+	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
+	- 20150609@Elodie: Separate CustDB to DBCUST server (Call Dot_BalanceDelCredit, Dot_BalanceDelCreditGame, Dot_BalanceDelDebit, Dot_BalanceDelDebitGame, GameType, sports by link server)
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -155,6 +154,28 @@ declare @endRun datetime
 declare @duration int
 set @startRun = getdate()
 
+----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH	
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /Elodie @ 01 JUN 2015 -------------------
 
 ---------------------------------
 --20100922@Thien:   1st phrase - Get rid of members' information for Licensee site (first name, last name, email).
@@ -542,6 +563,7 @@ declare @transcode bigint,
 	@v10mpositiontaking_20 smallmoney,
 
 	@v11mpositiontaking_1 smallmoney,
+
 	@v11mpositiontaking_20 smallmoney,
 
 	--v151
@@ -1821,7 +1843,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from bodb02.dbo.sports with (NOLOCK) inner join
+from @tmp_Sports sports inner join
 (
 				select 1 as sporttype, @MinBet as MinBet, @MinMinBet as MinMinBet
 	union all	select 2 as sporttype, @MinBetv2 as MinBet, @MinMinBetv2 as MinMinBet
@@ -1864,7 +1886,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from bodb02.dbo.sports with (NOLOCK) inner join
+from @tmp_Sports sports inner join
 (
 				select 1 as sporttype, @MaxBet as MaxBet, @MaxMaxBet as MaxMaxBet
 	union all	select 2 as sporttype, @MaxBetv2 as MaxBet, @MaxMaxBetv2 as MaxMaxBet
@@ -1906,7 +1928,7 @@ END
 
 select @ErrType = ''
 select @ErrType = @ErrType + sportname + ', '
-from bodb02.dbo.sports with (NOLOCK) inner join
+from @tmp_Sports sports inner join
 (
 				select 1 as sporttype, @MaxPerMatch as MaxPerMatch, @MaxMaxPerMatch as MaxMaxPerMatch
 	union all	select 2 as sporttype, @MaxPerMatchv2 as MaxPerMatch, @MaxMaxPerMatchv2 as MaxMaxPerMatch
@@ -1950,7 +1972,7 @@ SELECT @ErrType = ''
 IF @MaxPerBallv161 > 0 AND @MaxMaxPerBallv161 > 0 AND @MaxPerBallv161 > @MaxMaxPerBallv161
 BEGIN
 	SELECT @ErrType = @ErrType + sportname 
-	from bodb02.dbo.sports WITH(NOLOCK)
+	from @tmp_Sports
 	WHERE sporttype = 161
 	
 	SELECT @ErrMsg= 'Sorry, Max Per ball must be equal to or less than Master/Agent Max Per Match ('+@ErrType+').',
@@ -2394,7 +2416,7 @@ END
 INSERT INTO CustGameType (GameTypeID, CustID, MaxPerGameType, MinBet, MaxBet, IsDisabled)
 SELECT cg.GameTypeID, @CustID, isnull(t.maxpergametype,cg.MaxPerGameType), cg.MinBet, isnull(t.maxbet,cg.MaxBet), cg.IsDisabled
 FROM CustGameType cg WITH (NOLOCK)
-	INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
+	INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
 	LEFT JOIN @custgametype t ON cg.GameTypeID = t.gametypeid
 WHERE cg.CustID = @recommend AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
 IF @@ERROR <> 0
@@ -2419,7 +2441,7 @@ END
 ---- Create balance for new customer
 --INSERT INTO BalanceCredit (CustID, Balance )
 --VALUES (@CustID, 0)
-EXEC bodb02.dbo.Dot_BalanceInsCredit @CustID = @CustID
+EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCredit @CustID = @CustID
 
 IF @@error <> 0
 BEGIN 
@@ -2435,14 +2457,14 @@ BEGIN
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
 	DELETE CustGameType WHERE CustID = @CustID
-	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
 
 --INSERT INTO BalanceDebit (CustID, Balance )
 --VALUES (@CustID, 0)
-EXEC bodb02.dbo.Dot_BalanceInsDebit @CustID = @CustID
+EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebit @CustID = @CustID
 
 IF @@error <> 0
 BEGIN 
@@ -2458,8 +2480,8 @@ BEGIN
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
 	DELETE CustGameType WHERE CustID = @CustID
-	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
@@ -2470,7 +2492,7 @@ SET @today = convert(nvarchar(10), current_timestamp,120)
 
 --INSERT INTO BalanceCreditGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
+EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
 
 IF @@error <> 0
 BEGIN 
@@ -2486,9 +2508,9 @@ BEGIN
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
 	DELETE CustGameType WHERE CustID = @CustID
-	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2496,7 +2518,7 @@ END
 
 --INSERT INTO BalanceDebitGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
+EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
 
 
 IF @@error <> 0
@@ -2513,10 +2535,10 @@ BEGIN
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
 	DELETE CustGameType WHERE CustID = @CustID
-	EXEC bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
-	EXEC bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
+	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2539,6 +2561,7 @@ BEGIN
 	
 	IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 7) = 1
 	BEGIN
+
 								EXEC [Lrf_CustomerUpdMemberBAStatus]
 			@LicenseeID=7,--Dela
 			@CustID = @CustID,
@@ -2636,6 +2659,13 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 
 --Set default bet setting of AG Casino
 EXEC DBLIC.bodb_Licensee.dbo.Lrf_AGC_Customer_SetDefaultSetting  
+ @CustID = @CustID,
+ @SuperID = @srecommend,  
+ @ErrCode = @ErrCode OUTPUT,  
+ @ErrMsg = @ErrMsg OUTPUT
+
+--Set default bet setting of 3rd Product
+EXEC dbo.Lrf_3rdProductCustomerSetDefaultSetting  
  @CustID = @CustID,
  @SuperID = @srecommend,  
  @ErrCode = @ErrCode OUTPUT,  
@@ -2772,6 +2802,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
 GO
 GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
 GO

@@ -22,6 +22,7 @@ AS
 		
 		Revisions:
 			- 20130301@Johnson: change linked server DB053 to DBAGE
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID]
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON 
@@ -31,7 +32,7 @@ SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 ---------------------------
 -- ***Check Downline Belonging***
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID
 	@SessionCustID = @Userid, 
 	@Custid = @custid,
 	@roleid = @roleid OUTPUT
@@ -39,7 +40,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 ---------------------------
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
 	select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -50,7 +51,7 @@ END
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdMemberLiveCS_Commission @custid = @custid, @v162playerdiscount_1101 = @v162playerdiscount_1101, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+		EXEC Acc_CustomerUpdMemberLiveCS_Commission @custid = @custid, @v162playerdiscount_1101 = @v162playerdiscount_1101, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
 	
 	IF @ErrCode_Cur > 0
 	BEGIN
@@ -64,7 +65,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1
 BEGIN
-	EXEC Acc_CustomerUpdMemberLiveCS_Positiontaking @custid = @custid, @v162apositiontaking_1101 = @v162apositiontaking_1101, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+		EXEC Acc_CustomerUpdMemberLiveCS_Positiontaking @custid = @custid, @v162apositiontaking_1101 = @v162apositiontaking_1101, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
 	
 	IF @ErrCode_Cur > 0 
 	BEGIN
@@ -76,7 +77,6 @@ BEGIN
 		SELECT @ErrCode = @ErrCode + '-103' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)		
 
 END
-
 
 
 GO
