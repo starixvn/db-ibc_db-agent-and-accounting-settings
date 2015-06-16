@@ -114,59 +114,62 @@ BEGIN
 	WHERE custid = @custid
 	
 	--validate stake level
-	WHILE (1=1)
+	IF @roleid < 4
 	BEGIN
-		SELECT TOP (1) @GameTypeID = GameTypeID,
-				@StakeLevelList = StakeLevelList 
-		FROM @tmpStake
-		WHERE isValidated = 0
-		
-		IF @@ROWCOUNT = 0 BREAK;
-		
-		IF @RoleID = 3
+		WHILE (1=1)
 		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock) 
-			WHERE	CustID = @srecommend
-					AND GameTypeID = @GameTypeID	
-		END									
-		ELSE IF @RoleID = 2
-		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock)
-			WHERE	CustID = @Mrecommend
-					AND GameTypeID = @GameTypeID
-		END									
-		ELSE IF @RoleID = 1
-		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock) 
-			WHERE	CustID = @recommend
-					AND GameTypeID = @GameTypeID
+			SELECT TOP (1) @GameTypeID = GameTypeID,
+					@StakeLevelList = ISNULL(StakeLevelList ,'')
+			FROM @tmpStake
+			WHERE isValidated = 0
+			
+			IF @@ROWCOUNT = 0 BREAK;
+			
+			IF @RoleID = 3
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock) 
+				WHERE	CustID = @srecommend
+						AND GameTypeID = @GameTypeID	
+			END									
+			ELSE IF @RoleID = 2
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock)
+				WHERE	CustID = @Mrecommend
+						AND GameTypeID = @GameTypeID
+			END									
+			ELSE IF @RoleID = 1
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock) 
+				WHERE	CustID = @recommend
+						AND GameTypeID = @GameTypeID
+			END
+			
+			SELECT	TOP 1 @invalidStakeLevelID = ISNULL(Val,0) 	
+			FROM	dbo.strSplit(@StakeLevelList,',')
+			WHERE	Val not in (SELECT Val FROM dbo.strSplit(@UplineStakeLevelList,','))
+			
+			IF @invalidStakeLevelID > 0
+			BEGIN
+				--Return Data
+				SELECT @ErrCode = 1000
+				SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
+						END + typenamee 
+				FROM bodb02.dbo.bettype WITH(NOLOCK)
+				WHERE TypeID = @GameTypeID
+							
+				RETURN	
+			END	
+			
+			UPDATE @tmpStake
+			SET isValidated = 1
+			WHERE GameTypeID = @GameTypeID
+			
 		END
-		
-		SELECT	TOP 1 @invalidStakeLevelID = ISNULL(Val,0) 	
-		FROM	dbo.strSplit(@StakeLevelList,',')
-		WHERE	Val not in (SELECT Val FROM dbo.strSplit(@UplineStakeLevelList,','))
-		
-		IF @invalidStakeLevelID > 0
-		BEGIN
-			--Return Data
-			SELECT @ErrCode = 1000
-			SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
-					END + typenamee 
-			FROM bodb02.dbo.bettype WITH(NOLOCK)
-			WHERE TypeID = @GameTypeID
-						
-			RETURN	
-		END	
-		
-		UPDATE @tmpStake
-		SET isValidated = 1
-		WHERE GameTypeID = @GameTypeID
-		
 	END
 	--end validate
 	
@@ -174,7 +177,7 @@ BEGIN
 	WHILE (1=1)
 	BEGIN
 		SELECT TOP (1) @GameTypeID = GameTypeID,
-				@StakeLevelList = StakeLevelList 
+				@StakeLevelList = ISNULL(StakeLevelList ,'')
 		FROM @tmpStake
 		
 		IF @@ROWCOUNT = 0 BREAK;
