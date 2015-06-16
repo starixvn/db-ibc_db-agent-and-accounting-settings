@@ -173,3 +173,12 @@ BEGIN
 		END	
 	END	
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbadminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [vnteam] AS [dbo]
