@@ -5,10 +5,11 @@ AS
 		Created:Johnson
 		Date: 23Dec2011
 		Task: Super edits live casino settings on member
-		DB:BD053.BODB02
+		DB: DBCUST.CustDB
 		
 		Revisions:
-		
+			- 20150515@Johnson: fix s1_max = Max(n4-(m1+a1), s4 - m3) [Redmined: #35758]
+			- 20150617@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -40,7 +41,6 @@ SELECT @v162mpositiontaking_1101 = mpositiontaking, @isauto_v162spositiontaking_
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @mrecommend AND sporttype = 162 AND bettype = 1101 
 
-
 SELECT spositiontaking as v162spositiontaking_1101,
 	mpositiontaking as v162mpositiontaking_1101,
 	apositiontaking as v162apositiontaking_1101,
@@ -48,8 +48,10 @@ SELECT spositiontaking as v162spositiontaking_1101,
 	isautopositiontaking as isauto_v162spositiontaking_1101_mem,
 	ISNULL(@isauto_v162spositiontaking_1101,0) as isauto_v162spositiontaking_1101, -- i3
 	ISNULL(@v162spositiontaking_1101,0) as auto_v162spositiontaking_1101_max,
-	--s1_max= s4- m3
-	ISNULL(@v162spositiontaking_1101,0) - ISNULL(@v162mpositiontaking_1101,0) as v162spositiontaking_1101_max,
+	--s1_max= Max(n4-(m1+a1), s4 - m3)
+	CASE WHEN @v162spositiontaking_1101_min - (mpositiontaking+apositiontaking) > ISNULL(@v162spositiontaking_1101,0) - ISNULL(@v162mpositiontaking_1101,0)
+			THEN @v162spositiontaking_1101_min - (mpositiontaking+apositiontaking) 
+			ELSE ISNULL(@v162spositiontaking_1101,0) - ISNULL(@v162mpositiontaking_1101,0) END as v162spositiontaking_1101_max,
 	-- s1_min 
 	CASE WHEN ISNULL(@v162spositiontaking_1101_min,0) - (mpositiontaking + apositiontaking) > 0 THEN ISNULL(@v162spositiontaking_1101_min,0) - (mpositiontaking + apositiontaking) ELSE 0 END v162spositiontaking_1101_min	
 FROM CustSettingGame WITH(NOLOCK)
