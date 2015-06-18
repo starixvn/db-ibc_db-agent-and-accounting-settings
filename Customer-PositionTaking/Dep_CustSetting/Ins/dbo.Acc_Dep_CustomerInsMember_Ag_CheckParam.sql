@@ -133,9 +133,7 @@
 	@v152discount_41 decimal(9,8),
 	@v152discount_51 decimal(9,8),
 	@v153discount_51 decimal(9,8),
-		--Microgaming		
-	@v203_2001PT SMALLMONEY,
-	@v203_2005PT SMALLMONEY,
+
 	@isvalid bit OUTPUT, 
 	@errmsg nvarchar(4000) OUTPUT,
 	@errcode int OUTPUT,
@@ -154,7 +152,7 @@ Revisions:
    - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
    - 20130912@Don: Extend value range for Number Game PT from 0.9 to 1
    - 20140505@Florent: Add Sport HRFO
-   - 20150611@Winnie: Add Microgaming 
+
 Param's Explanation:
 • @ErrCode:
     = 0: check valid parameters successfully.
@@ -377,10 +375,8 @@ if
 	or @v161alivepositiontaking_86 >1
 	or @v161alivepositiontaking_89 >1
 	or @v161alivepositiontaking_90 >1
-	or @v203_2001PT>(SELECT TOP 1 a.apositiontaking FROM Dep_CustSettingGame a WITH (NOLOCK) WHERE a.Sporttype=203 AND a.Bettype=2001 AND a.CustID=@recommend)
-	or @v203_2005PT>(SELECT TOP 1 a.apositiontaking FROM Dep_CustSettingGame a WITH (NOLOCK) WHERE a.Sporttype=203 AND a.Bettype=2005 AND a.CustID=@recommend)
-	or @v203_2001PT<0
-	or @v203_2005PT<0
+	
+	
 BEGIN
 	select @isvalid = 0, @ErrCode = 103
 	Select @ErrMsg = 	case @Language 
