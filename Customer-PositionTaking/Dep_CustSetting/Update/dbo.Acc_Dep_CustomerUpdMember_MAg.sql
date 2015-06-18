@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_MAg]
 	@custid int, -- Agent ID
 	@UserID int = 0,
 
@@ -254,9 +254,7 @@
 	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 	--Keno Sports----------------
 	@KenoList VARCHAR(4000)='',
-	--Microgaming		
-	@v203_2001PT SMALLMONEY,
-	@v203_2005PT SMALLMONEY,
+	
 	@Language VARCHAR(2) = 'E',
 	@IP VARCHAR(15)='',
 	@ErrCode INT = 0 OUTPUT,
@@ -278,7 +276,7 @@ Revisions:
     - 20131108@Elodie: Splitting bodb02 into CustDB (call sports, bettype by link database)	
 	- 20140505@Florent: Add new sport HR Fixed Odds
 	- 20140512@Florent: Add sport Keno 202
-    - 20150611@Winnie: Add Microgaming 
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -2920,44 +2918,6 @@ BEGIN
 	RETURN
 END
 
---Microgaming
---Check PT
-DECLARE @vMaxPT_2001 money
-SELECT @vMaxPT_2001=isnull(mpositiontaking,0) 
-FROM dbo.Dep_CustSettingGame WITH(NOLOCK) 
-WHERE CustID= @mrecommend and Sporttype=203 and Bettype=2001
-
-DECLARE @vMaxPT_2005 money
-SELECT @vMaxPT_2005=isnull(mpositiontaking,0) 
-FROM dbo.Dep_CustSettingGame WITH(NOLOCK) 
-WHERE CustID= @mrecommend and Sporttype=203 and Bettype=2005
-
---check PT
-IF (@v203_2001PT<0 OR @v203_2001PT>@vMaxPT_2001 OR @v203_2005PT<0 OR @v203_2005PT>@vMaxPT_2005)
-BEGIN
-	Select @ErrMsg = case @Language 
-							when 'E' then 'Wrong  position taking.<br>'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](20001,@Language) + '<br>'
-						end, @ErrCode = 104
-	return
-END  
-UPDATE c SET
-	c.apositiontaking=
-	CASE 
-	WHEN  sporttype = 203 AND c.Bettype=2001 THEN @v203_2001PT 	
-	ELSE @v203_2005PT END
-FROM dbo.Dep_CustSettingGame c WITH (ROWLOCK, UPDLOCK) 
-WHERE c.CustID=@custid AND c.Sporttype=203 AND (c.Bettype=2001 OR c.Bettype=2005)
-IF (@@error <> 0)
-BEGIN
-	
-	SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					END	, @ErrCode = 104 
-	RETURN
-END
-
 set @endRun = getdate()
 set @duration  = datediff (millisecond,@startRun,@endRun)
 -- Write log
@@ -3287,8 +3247,6 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_MAg><info custid="'+ coalesce(ca
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
-'v203_2001PT="'+ coalesce(cast(@v203_2001PT as varchar(50)),space(1)) + '" ' +
-'v203_2005PT="'+ coalesce(cast(@v203_2005PT as varchar(50)),space(1)) + '" ' +
 @str_apt+
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -3302,13 +3260,10 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_MAg><info custid="'+ coalesce(ca
 --tracking value old
 DECLARE @pt_SB smallMoney,@pt_NG smallmoney,@pt_VS smallmoney,@pt_KN smallmoney
 		,@mpt_SB smallMoney=0,@mpt_NG smallmoney=0,@mpt_VS smallmoney=0,@mpt_KN smallmoney=0
-		,@ptMGC2001 smallmoney,@ptMGC2005 smallmoney
 select top 1 @pt_SB=apt FROM #data_old where Sporttype=1 AND Bettype =1 and islive =0
 select top 1 @pt_NG=apt FROM #data_old where Sporttype=161 AND Bettype =81 and islive =0
 select top 1 @pt_VS=apt FROM #data_old where Sporttype=180 AND  islive =0
 select top 1 @pt_KN=apt FROM #data_old where Sporttype=202 AND Bettype =1501 and islive =0
-select top 1 @ptMGC2001=apt FROM #data_old where Sporttype=203 AND Bettype =2001 and islive =0
-select top 1 @ptMGC2005=apt FROM #data_old where Sporttype=203 AND Bettype =2005 and islive =0
 --write log keno
 DECLARE @str_spt_ varchar(1000)='',
 		@str_mpt_ varchar(1000)='',
@@ -3459,8 +3414,6 @@ SELECT @LogSPData2 = '<Acc_Dep_CustomerUpdMember_MAg><info custid="'+ coalesce(c
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
-'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2001,2),SPACE(1)) + '" ' +
-'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2005,2),SPACE(1)) + '" ' +
 @str_apt_+
 'v180apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v181apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +

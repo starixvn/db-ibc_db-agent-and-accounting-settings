@@ -330,10 +330,6 @@
 	--Virtual Sports----------------
 	@VirtualSportList VARCHAR(4000)='', -- replace all old params
 
-	--Microgaming		
-	@v203_2001PT SMALLMONEY,
-	@v203_2005PT SMALLMONEY,
-
 	--Virtual Sports----------------
 	@KenoList VARCHAR(4000)='', 
 	@UpdateAll tinyINT = 0,
@@ -360,7 +356,6 @@ Revisions:
 	- 20140505@Florent: Add new sport HRFO
 	- 20140509@Florent: Add new sport: 202 Keno
 	- 20140605@Florent: Remove checking for Super
-	- 20150611@Winnie: Add Microgaming 
 	    
 Param's Explanation:
 • @ErrCode:
@@ -845,8 +840,6 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v152discount_41			= @v152discount_41,
 			@v152discount_51			= @v152discount_51,
 			@v153discount_51			= @v153discount_51,
-			@v203_2001PT				= @v203_2001PT,
-			@v203_2005PT				= @v203_2005PT,
 
 			@isvalid					= @isvalid OUTPUT,
 			@errmsg						= @errmsg OUTPUT,
@@ -2174,23 +2167,8 @@ BEGIN
 					END	, @ErrCode = 104 
 	RETURN
 END
---Microgaming update PT
-UPDATE c SET
-	c.spositiontaking= 
-	CASE 
-	WHEN  sporttype = 203 AND c.Bettype=2001 THEN @v203_2001PT 	
-	ELSE @v203_2005PT END
-FROM dbo.Dep_CustSettingGame c WITH (ROWLOCK, UPDLOCK)
-WHERE c.CustID=@custid AND c.Sporttype=203 AND (c.Bettype=2001 OR c.Bettype=2005)
-IF (@@error <> 0)
-BEGIN
-	
-	SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'Update process is unsuccessful !'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					END	, @ErrCode = 104 
-	RETURN
-END
+
+
 --Update All 
 --check exists real member
 IF @UpdateAll = 1
@@ -2444,8 +2422,6 @@ BEGIN
 					@VirtualSportList  = @VirtualSportList ,
 
 					@KenoList  = @KenoList ,
-					@v203_2001PT				= @v203_2001PT,
-					@v203_2005PT				= @v203_2005PT,
 		
 					@Language  = @Language ,
 					@IP  = @IP ,
@@ -2687,8 +2663,6 @@ BEGIN
 					@VirtualSportList  = @VirtualSportList ,
 
 					@KenoList  = @KenoList ,
-					@v203_2001PT				= @v203_2001PT,
-					@v203_2005PT				= @v203_2005PT,
 		
 					@Language  = @Language ,
 					@IP  = @IP ,
@@ -3105,8 +3079,6 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_87,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_89,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@v161alivepositiontaking_90,2),SPACE(1)) + '" ' +
-'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2001PT,2),SPACE(1)) + '" ' +
-'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2005PT,2),SPACE(1)) + '" ' +
 @str_apt+
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -3118,13 +3090,11 @@ SELECT @LogSPData = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(ca
 '</Acc_Dep_CustomerUpdMember_Com>' 
 
 --tracking value old
-DECLARE @pt_SB smallMoney,@pt_NG smallmoney,@pt_VS smallmoney,@pt_KN smallmoney,@ptMGC2001 smallmoney,@ptMGC2005 smallmoney
+DECLARE @pt_SB smallMoney,@pt_NG smallmoney,@pt_VS smallmoney,@pt_KN smallmoney
 select top 1 @pt_SB=spt FROM #data_old where Sporttype=1 AND Bettype =1 and islive =0
 select top 1 @pt_NG=spt FROM #data_old where Sporttype=161 AND Bettype =81 and islive =0
 select top 1 @pt_VS=spt FROM #data_old where Sporttype=180 AND  islive =0
 select top 1 @pt_KN=spt FROM #data_old where Sporttype=202 AND Bettype =1501 and islive =0
-select top 1 @ptMGC2001=apt FROM #data_old where Sporttype=203 AND Bettype =2001 and islive =0
-select top 1 @ptMGC2005=apt FROM #data_old where Sporttype=203 AND Bettype =2005 and islive =0
 --write log keno
 DECLARE @str_spt_ varchar(1000)='',
 		@str_mpt_ varchar(1000)='',
@@ -3346,9 +3316,6 @@ SELECT @LogSPData2 = '<Acc_Dep_CustomerUpdMember_Com><info custid="'+ coalesce(c
 'v161alivept_87="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161alivept_89="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
 'v161alivept_90="'+ COALESCE(CONVERT(VARCHAR(50),@pt_NG,2),SPACE(1)) + '" ' +
-'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2001,2),SPACE(1)) + '" ' +
-'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@ptMGC2005,2),SPACE(1)) + '" ' +
-
 @str_apt_+
 'v180apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v181apt="'+ COALESCE(CAST(@pt_VS AS VARCHAR(50)),SPACE(1)) + '" ' +
