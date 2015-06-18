@@ -362,10 +362,6 @@
 	@KenoList VARCHAR(4000)='',
 	@DisableKeno BIT = 0,
 	--------------------------------
-	--Microgaming		
-	@v203_2001PT SMALLMONEY,
-	@v203_2005PT SMALLMONEY,
-	@DisableMicrogame BIT = 0,
 
 	@DisableCasinoBonus BIT = 1,
 	
@@ -391,7 +387,6 @@ Revisions:
 	- 20140509@Florent: Add new sport: 202 Keno
 	- 20140605@Florent: Remove checking for Super
 	- 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
-	- 20150611@Winnie: Add Microgaming 
 	    
 Param's Explanation:
 • @ErrCode:
@@ -832,9 +827,6 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v152IBCPositiontaking_51	= @v152IBCPositiontaking_51 ,
 										
 			@v153IBCPositiontaking_51	= @v153IBCPositiontaking_51,
-			@v203_2001PT				= @v203_2001PT,
-			@v203_2005PT				= @v203_2005PT,
-
 
 			--v161
 			@v161apositiontaking_81		= @v161apositiontaking_81,
@@ -962,7 +954,7 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@v153IBCPositiontaking_51 = @v153IBCPositiontaking_51,--AutoIBCPT153_AU
 	
 	@hidekeno=@DisableKeno,
-	@DisableMicrogame=@DisableMicrogame,
+
 	@credit = 0,
 	@maxcredit = NULL,
 	@IP = @IP,
@@ -982,7 +974,6 @@ SELECT @Rollback= ' DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId ='+COALES
 				 ' DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  ='+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))+
 				 ' DELETE CustGameType WITH(ROWLOCK) WHERE custid = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))	+
 				 ' DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))	+
-				 ' DELETE Dep_CustSettingGame WITH(ROWLOCK) WHERE custid = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))	+
 				 ' EXEC Acc_CustomerInsUserInfo_Rollback @CustID = '+COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1))
 
 	
@@ -1265,47 +1256,10 @@ BEGIN
 	DELETE P2PGroupComm WITH (ROWLOCK) WHERE CustId  = @custid
 	DELETE CustGameType WITH(ROWLOCK) WHERE Custid = @custid
 	DELETE CustSettingGame WITH(ROWLOCK) WHERE Custid = @custid
-	DELETE Dep_CustSettingGame WITH(ROWLOCK) WHERE Custid = @custid
 	DELETE CustOverrideGame WITH(ROWLOCK) WHERE Custid = @custid
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID 
 	RETURN
 END 
---Insert Microgaming PT
-INSERT INTO Dep_CustSettingGame([CustID]
-	       ,[Bettype]
-           ,[Sporttype]
-           ,[apositiontaking]
-           ,[mpositiontaking]
-           ,[spositiontaking]
-           ,[playerdiscount]
-           ,[discount]
-           ,[adiscount]
-           ,[sdiscount]
-)
-SELECT @custid ,  2001, 203, 0, 0, @v203_2001PT, 0, 0, 0, 0
-UNION  
-SELECT @custid,  2005,203,0, 0, @v203_2005PT, 0, 0, 0, 0
-IF @@ERROR <> 0
-BEGIN
-	--Error Occurs
-	SELECT @ErrMsg = CASE @Language 
-							when 'E' then 'Create customer fail. Please try again'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-						END	
-			, @ErrCode=116
-	
-	-- ROLLBACK MANUALLY
-	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
-	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
-	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-	DELETE Dep_CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
-	
-	DELETE FROM Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
-	
-	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
-	RETURN
-END  
 
 --Insert live casino PT
 INSERT INTO [CustOverrideGame]
@@ -1328,7 +1282,6 @@ BEGIN
 	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
 	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
 	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-	DELETE Dep_CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
 	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 	
 	DELETE FROM Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
@@ -1400,7 +1353,6 @@ EXEC Acc_Dep_CustomerInsMemberVirtualSports_Com
 	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
 	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
 	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-	DELETE Dep_CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
 	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
@@ -1471,7 +1423,6 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com custid="'+ COALESCE(CAST(@cu
 'disable152_51="'+ COALESCE(CAST(@Disable152_51 AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disable153_51="'+ COALESCE(CAST(@Disable153_51 AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disablenumber="'+ COALESCE(CAST(@disablenumber AS VARCHAR(1)),SPACE(1)) + '" ' +
-'DisableMicrogame="'+ COALESCE(CAST(@DisableMicrogame AS VARCHAR(1)),SPACE(1)) + '" ' +
 'DisableVirtualSports="'+ COALESCE(CAST(@DisableVirtualSports AS VARCHAR(1)),SPACE(1)) + '" />'
 EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 	@UserID = @Creator,
@@ -1812,9 +1763,6 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com><s spt_1="'+ COALESCE(CAST(@
 'v152apt_52="'+ COALESCE(CAST(@v152apositiontaking_52 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v153apt_51="'+ COALESCE(CAST(@v153apositiontaking_51 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v153apt_52="'+ COALESCE(CAST(@v153apositiontaking_52 AS VARCHAR(50)),SPACE(1)) + '" '+
-'v203_2001PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2001PT,2),SPACE(1)) + '" ' +
-'v203_2005PT="'+ COALESCE(CONVERT(VARCHAR(50),@v203_2005PT,2),SPACE(1)) + '" ' +
-
 @str_apt+
 'v180apt="'+ COALESCE(CAST(@v180aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
 'v181apt="'+ COALESCE(CAST(@v181aPositionTaking AS VARCHAR(50)),SPACE(1)) + '" '+
