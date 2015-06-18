@@ -5,14 +5,13 @@ AS
 /*
 Created: 20120321@Dom
 TASk : Super edit master
-DB: DBCUST.CUSTDB
+DB: DB052.bodb02
 
 Revisions:
 	- 20131014@Francis: Support selecting new virtual sports with settings via XML param
 	- 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
     - 20140505@Florent: Add new Sport HRFO
 	- 20140512@Florent: Add Keno Sport
-	- 20140610@Winnie: Add Microgaming 
 Param's Explanation:
 • @CustID: member ID
 • @VirtualSportList: VirtualSport Settings XML param
@@ -223,12 +222,8 @@ DECLARE @MinBetv1						MONEY,
 		--Keno
 		@KenoList VARCHAR(4000)='', -- repalace all old params
 		@vPT SMALLMONEY,
-		@vPT_Max SMALLMONEY,
-		--Microgaming		
-		@v203_2001PT SMALLMONEY,
-		@v203_2001PTMax SMALLMONEY,
-		@v203_2005PT SMALLMONEY,
-		@v203_2005PTMax SMALLMONEY,
+		@vPT_Max SMALLMONEY,		
+
 		@srecommend				INT
 
 SELECT @srecommend = srecommend FROM custinfo AS ci WITH (NOLOCK) where custid = @CustID
@@ -671,11 +666,7 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 'MaxPerMatch = "'+ coalesce(cast(@maxpermatchv186 as varchar(50)),space(1)) + '" ' +
 'MaxPerMatch_Max = "'+ coalesce(cast(isnull(@MaxPerMatchv186_Max,0) as varchar(50)),space(1)) + '"></product>' +
 + '</products>'
---Microgaming		
-SELECT @v203_2001PT		= ISNULL(mpositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2001 AND CustID=@CustID 
-SELECT @v203_2001PTMax	= ISNULL(spositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2001 AND CustID=@srecommend  	 
-SELECT @v203_2005PT		= ISNULL(mpositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2005 AND CustID=@CustID 
-SELECT @v203_2005PTMax	= ISNULL(spositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2005 AND CustID=@srecommend  	 
+
 --Keno
 --Minbet maxbet matchpermatch
 SELECT @vPT= ISNULL(mpositiontaking,0) FROM  DBTXN.CustDB.dbo.CustSettingGame WITH (NOLOCK) WHERE Bettype =1501 AND CustID=@CustID 
@@ -923,10 +914,6 @@ SELECT @MinBetv1  AS MinBetv1,
 	
 	@VirtualSportList AS VirtualSportList,
 	@KenoList AS KenoList,	
-	@v203_2001PT,
-	@v203_2001PTMax,
-	@v203_2005PT,
-	@v203_2005PTMax,
 	ci.username
 FROM CustInfo AS ci with (NOLOCK) 
 WHERE ci.CustID = @CustID

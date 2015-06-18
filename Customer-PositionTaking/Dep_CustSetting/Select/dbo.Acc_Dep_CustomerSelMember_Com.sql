@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_Com] 
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_Com] 
 	@CustID INT
 AS
 
@@ -6,13 +6,12 @@ AS
 /*
 Created: 20120321@Dom
 Task : Company edit Super
-DB: DBCUST.CUSTDB
+DB: DB052.bodb02
 
 Revisions:
 - 20131014@Francis: Support selecting new virtual sports with settings via XML param
 - 20140505@Florent: Add new Sport HRFO
 - 20140512@Florent: add Sport 202 Keno
-- 20150611@Winnie: Add Microgaming 
     
 Param's Explanation:
 • @CustID: member ID
@@ -138,12 +137,6 @@ DECLARE @UserName			NVARCHAR(50),
 		@MaxBetv186 MONEY,
 		@MaxPerMatchv186 MONEY,
 
-		--Microgaming		
-		@v203_2001PT SMALLMONEY,
-		@v203_2001PTMax SMALLMONEY,
-		@v203_2005PT SMALLMONEY,
-		@v203_2005PTMax SMALLMONEY,
-
 		--Keno
 		@KenoList VARCHAR(4000)='', -- repalace all old params
 		@vPT SMALLMONEY
@@ -217,12 +210,6 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 'MaxPerMatch = "'+ coalesce(cast(@maxpermatchv186 as varchar(50)),space(1)) + '"></product>' +
 + '</products>'
 
---Microgaming		
-
-SELECT @v203_2001PT= ISNULL(spositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2001 AND CustID=@CustID 
-SELECT @v203_2005PT= ISNULL(spositiontaking,0) FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2005 AND CustID=@CustID 
-SELECT @v203_2001PT= ISNULL(MaxPositiontaking,0) FROM  dbo.ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2001 AND IsDep=1
-SELECT @v203_2005PT= ISNULL(MaxPositiontaking,0) FROM  dbo.ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype=203 AND Bettype =2005 AND IsDep=1
 --Keno
 
 SELECT @vPT= ISNULL(spositiontaking,0) FROM  DBTXN.CustDB.dbo.CustSettingGame WITH (NOLOCK) WHERE Bettype =1501 AND CustID=@CustID 
@@ -362,10 +349,7 @@ SELECT  @MinBetv1 AS MinBetv1,
 		
 		@VirtualSportList AS VirtualSportList,
 		@KenoList AS KenoList,
-		@v203_2001PT ,
-		@v203_2001PTMax ,
-		@v203_2005PT ,
-		@v203_2005PTMax ,
+		
 		ci.UserName AS UserName
 FROM CustInfo AS ci WITH (NOLOCK)
 	INNER JOIN CustSuper AS csp WITH (NOLOCK) ON ci.custid = csp.custid

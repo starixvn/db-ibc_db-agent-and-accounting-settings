@@ -5,16 +5,9 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelInfo] 
+ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelInfo] 
 	@Custid INT
 AS
-/*
-
-Revisions:	
-	- 20150611@Winnie: Add Microgaming    
-Param's Explanation:
-
-*/
 BEGIN	
 	SET NOCOUNT ON;
 	--Sport book
@@ -92,16 +85,6 @@ BEGIN
 	INNER JOIN bodb02.dbo.GameType KT WITH(NOLOCK)  ON b.GameTypeID = kt.GameTypeID
 	WHERE a.custid=@custID 
 	and a.Sporttype=202
-	
-	UNION ALL -- Microgaming
-	select a.CustID,a.Sporttype,
-	a.bettype,
-	0 islive,0 AS MinBet,0 AS MaxBet,0 AS MaxPerGameType,0 MPB,a.spositiontaking,a.mpositiontaking,a.apositiontaking
-	,0,0,0
-	FROM Dep_CustSettingGame a WITH (NOLOCK)
-	--INNER JOIN DBTXN.bodb02.[Sporttype_Bettype_Reference] b WITH (NOLOCK) ON a.bettype=b.SporttypeRef
-	WHERE a.custid=@custID 
-	and a.Sporttype=203
 	ORDER by sporttype	
 END
 

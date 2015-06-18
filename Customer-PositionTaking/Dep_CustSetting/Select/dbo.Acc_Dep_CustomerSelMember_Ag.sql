@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_Ag]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_Ag]
 	@CustID INT
 AS
 
@@ -11,8 +11,7 @@ Revisions:
 	- 20131014@Francis: Support selecting new virtual sports with settings via XML param
 	- 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
 	- 20140505@Florent: add new Sport HRFO
-	- 20140512@Florent: Add Sport Keno 
-	- 20150611@Winnie: Add Microgaming    
+	- 20140512@Florent: Add Sport Keno    
 Param's Explanation:
 • @CustID: member ID
 • @VirtualSportList: VirtualSport Settings XML param
@@ -247,13 +246,7 @@ DECLARE @MinBetv1						MONEY,
 		--Keno
 		@KenoList VARCHAR(4000)='', -- repalace all old params
 		@vPT SMALLMONEY,
-		@vPT_Max SMALLMONEY,
-		
-			--Microgaming		
-		@v203_2001PT SMALLMONEY,
-		@v203_2001PTMax SMALLMONEY,
-		@v203_2005PT SMALLMONEY,
-		@v203_2005PTMax SMALLMONEY,	
+		@vPT_Max SMALLMONEY,	
 		
 		@recommend				INT,
 		@UserName				VARCHAR(50)
@@ -669,21 +662,7 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 'MaxPerMatch_Max = "'+ coalesce(cast(isnull(@MaxPerMatchv186_Max,0) as varchar(50)),space(1)) + '"></product>' +
 + '</products>'
 
-	--Microgaming		
-
- SELECT @v203_2001PT = ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2001 AND CustID=@CustID 
- SELECT @v203_2005PT = ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2005 AND CustID=@CustID 
-
-SELECT @v203_2001PTMax= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2001 AND CustID=@recommend 
-SELECT @v203_2005PTMax= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2005 AND CustID=@recommend 
+ 
  --Keno
 --Minbet maxbet matchpermatch
 SELECT @vPT = ISNULL(apositiontaking,0) 
@@ -916,10 +895,7 @@ SELECT @MinBetv1  AS MinBetv1,
 
 	@VirtualSportList AS VirtualSportList,
 	@KenoList AS KenoList,
-	@v203_2001PT ,
-	@v203_2001PTMax ,
-	@v203_2005PT ,
-	@v203_2005PTMax ,
+
 	@UserName AS UserName
 FROM custinfo (NOLOCK) ci  WHERE ci.custid = @CustID
 

@@ -1,18 +1,17 @@
-﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAg]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_MAg]
 	@CustID INT
 AS
 
 /*
 Created: 20120321@Dom
 TASk : master edit agent
-DB: DBCUST.CUSTDB
+DB: DB052.bodb02
 
 Revisions:
 	- 20131014@Francis: Support selecting new virtual sports with settings via XML param
 	- 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
 	- 20140505@Florent: Add new sport HRFO
 	- 20140512@Florent: Add sport Keno
-	- 20150610@Winnie: Add Microgaming 
 
 Param's Explanation:
 • @CustID: member ID
@@ -240,11 +239,6 @@ DECLARE @MinBetv1						MONEY,
 		@KenoList VARCHAR(4000)='', -- repalace all old params				
 		@vPT SMALLMONEY,
 		@vPt_Max SMALLMONEY,	
-		--Microgaming		
-		@v203_2001PT SMALLMONEY,
-		@v203_2001PTMax SMALLMONEY,
-		@v203_2005PT SMALLMONEY,
-		@v203_2005PTMax SMALLMONEY,
 
 		@mrecommend				INT,
 		@UserName    VARCHAR(50)
@@ -654,24 +648,7 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 'MaxPerMatch_Max = "'+ coalesce(cast(isnull(@MaxPerMatchv186_Max,0) as varchar(50)),space(1)) + '"></product>' +
 + '</products>'
 
---Microgaming
-
-
-SELECT @v203_2001PT= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE SportType=203 AND Bettype =2001 AND CustID=@CustID 
-
-SELECT @v203_2001PTMax= ISNULL(mpositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE SportType=203 AND Bettype =2001  AND CustID=@mrecommend 
-
-SELECT @v203_2005PT= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE SportType=203 AND Bettype =2005 AND CustID=@CustID 
-
-SELECT @v203_2005PTMax= ISNULL(mpositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE SportType=203 AND Bettype =2005  AND CustID=@mrecommend 
+--Keno
 
 --Keno
 --Minbet maxbet matchpermatch
@@ -906,10 +883,7 @@ SELECT @MinBetv1  AS MinBetv1,
 
 	@VirtualSportList AS VirtualSportList,
 	@KenoList AS KenoList,
-	@v203_2001PT ,
-	@v203_2001PTMax ,
-	@v203_2005PT ,
-	@v203_2005PTMax ,
+
 	@UserName AS UserName
 	
 	

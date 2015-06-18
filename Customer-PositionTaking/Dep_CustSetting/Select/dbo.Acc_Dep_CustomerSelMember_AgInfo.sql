@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_AgInfo]
+﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMember_AgInfo]
 	@CustID INT
 AS
 
@@ -11,7 +11,6 @@ Revisions:
 - 20131014@Francis: Support selecting new virtual sports with settings via XML param
 - 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
 - 20140512@Florent: Add keno Sport
-- 20150611@Winnie: Add Microgaming 
     
 Param's Explanation:
 • @CustID: member ID
@@ -237,12 +236,6 @@ DECLARE @MinBetv1						MONEY,
 		@maxpermatchv186 MONEY,
 		@maxpermatchv186_Max MONEY,
 		@MaxPerMatchv186_Min MONEY,
-
-		--Microgaming		
-		@v203_2001PT SMALLMONEY,
-		@v203_2001PTMax SMALLMONEY,
-		@v203_2005PT SMALLMONEY,
-		@v203_2005PTMax SMALLMONEY,
 
 		--Keno
 		@KenoList VARCHAR(4000)='', 				
@@ -648,23 +641,7 @@ Select @VirtualSportList = '<products><product SportType = "180" MaxBet = "'+ co
 'MaxPerMatch_Max = "'+ coalesce(cast(isnull(@MaxPerMatchv186_Max,0) as varchar(50)),space(1)) + '"></product>' +
 + '</products>'
 
-
-		--Microgaming		
-
-SELECT @v203_2001PT= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2001 AND CustID=@CustID 
-SELECT @v203_2005PT= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2005 AND CustID=@CustID 
-
-SELECT @v203_2001PTMax= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2001 AND CustID=@recommend 
-
-SELECT @v203_2005PTMax= ISNULL(apositiontaking,0) 
-FROM  dbo.Dep_CustSettingGame WITH (NOLOCK) 
-WHERE Sporttype=203 AND Bettype =2005 AND CustID=@recommend 
+--Keno
 
 --Keno
 --Minbet maxbet matchpermatch
@@ -910,10 +887,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	
 	@VirtualSportList AS VirtualSportList,
 	@KenoList AS KenoList,
-	@v203_2001PT ,
-	@v203_2001PTMax ,
-	@v203_2005PT ,
-	@v203_2005PTMax ,
+
 	@UserName AS UserName
 FROM custinfo (NOLOCK) ci  WHERE ci.custid = @CustID
 
