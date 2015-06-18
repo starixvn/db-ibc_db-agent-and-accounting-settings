@@ -144,7 +144,8 @@ Revisions:
 	- 20141103@Jim: fix bug wrong ugroup for Alog member (hotfix #25318)
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
-	- 20150611@Winnie: Add Microgaming 
+	
+
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
 • @Username: return new 12bet Player User name
@@ -424,9 +425,6 @@ Declare @apositiontaking_1 smallmoney,
 	@v162apositiontaking_1101 smallmoney,
 	--Keno
 	@v202apositiontaking_1501 smallmoney,
-	--Microgaming
-	@v203apositiontaking_2001 smallmoney,
-	@v203apositiontaking_2005 smallmoney,
 
 	-- virtual soccer
 	@v180apositiontaking_1201 smallmoney,
@@ -594,9 +592,7 @@ declare @transcode bigint,
 	@v162mpositiontaking_1101 smallmoney,
 	--Keno
 	@v202mpositiontaking_1501 smallmoney,
-	--Microgaming
-	@v203mpositiontaking_2001 smallmoney,
-	@v203mpositiontaking_2005 smallmoney,
+	
 	-- virtual soccer
 	@v180mpositiontaking_1201 smallmoney,	
 	
@@ -704,9 +700,7 @@ declare @transcode bigint,
 	@v162spositiontaking_1101 smallmoney,
 	--Keno
 	@v202spositiontaking_1501 smallmoney,
-	--Microgaming
-	@v203spositiontaking_2001 smallmoney,
-	@v203spositiontaking_2005 smallmoney,	
+		
 	-- virtual soccer
 	@v180spositiontaking_1201 smallmoney,
 
@@ -799,7 +793,6 @@ declare @transcode bigint,
 	
 	@DisableHRFixedOdds BIT,
 	@HideKeno BIT,
-	@DisableMicrogame BIT,
 
 	@suspendedFlag varchar(6),
 	@suspended bit,
@@ -892,8 +885,7 @@ select
 	@isAutoResetLiveCasino = isAutoResetLiveCasino,
 	@DoubleCommLosing = DoubleCommLosing,
 	@DisableCasinoBonus = 1, --20130805@Elodie hardcode
-	@HideKeno = HideKeno,
-	@DisableMicrogame=DisableMicrogame
+	@HideKeno = HideKeno
 FROM custinfo ci WITH(NOLOCK) 
 	inner join customer c WITH(NOLOCK) ON ci.custid = c.custid
 WHERE ci.CustID = @AgentID
@@ -1381,14 +1373,6 @@ SELECT	 @v162apositiontaking_1101 = MAX(CASE WHEN bettype = 1101 AND sporttype =
 FROM custsettinggame with(nolock) 
 WHERE custid = @recommend and bettype IN (1101,1501) and sporttype IN (162,202)
 
---- Microgaming
-SELECT			
-		@v203apositiontaking_2001 = MAX(CASE WHEN bettype = 2001 AND sporttype = 203 THEN apositiontaking ELSE 0 END) 
-		,@v203mpositiontaking_2001 = MAX(CASE WHEN bettype = 2001 AND sporttype = 203 THEN mpositiontaking ELSE 0 END) 
-		,@v203apositiontaking_2005 = MAX(CASE WHEN bettype = 2005 AND sporttype = 203 THEN apositiontaking ELSE 0 END) 
-		,@v203mpositiontaking_2005 = MAX(CASE WHEN bettype = 2005 AND sporttype = 203 THEN mpositiontaking ELSE 0 END)
-FROM Dep_custsettinggame with(nolock) 
-WHERE custid = @recommend and bettype IN (2001,2005) and sporttype =203
 		
 ----INSERT MEMBER ---------------------------------------------------------------
 
@@ -2035,7 +2019,7 @@ select @username = @agusername  + @username
 select @username = replace(@username, ' ', '')
 */
 --20140812: Change rule generate username
-SELECT @UserName = dbo.f_LAS_GenerateUsername_xtest(@recommend)
+SELECT @UserName = dbo.f_LAS_GenerateUsername(@recommend)
 IF @UserName = ''
 BEGIN
 	SELECT @ErrMsg = 'The username is not available.'
@@ -2148,7 +2132,6 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	--Virtual Tennis
 	@MaxPerMatchv186 = @MaxPerMatchv186,
 	@HideKeno = @HideKeno,
-	@DisableMicrogame = @DisableMicrogame,
 	@credit = 0,
 	@IP = '',
 	@TransferOption_dec = null,
@@ -2412,29 +2395,6 @@ BEGIN
 	DELETE P2PGameSetting WHERE CustID = @CustID
 	DELETE P2PGroupComm WHERE CustID = @CustID
 	DELETE CustSettingGame WHERE CustID = @CustID
-	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
-	return
-END
-
--- Microgaming
-INSERT INTO Dep_CustSettingGame(custid, bettype, sporttype, apositiontaking, mpositiontaking, spositiontaking, playerdiscount, discount, adiscount, sdiscount)
-SELECT @custid, 2001, 203, @v203apositiontaking_2001, @v203mpositiontaking_2001, @v203spositiontaking_2001, 0, 0, 0, 0
-UNION ALL
-SELECT @custid, 2005, 203, @v203apositiontaking_2005, @v203mpositiontaking_2005, @v203spositiontaking_2005, 0, 0, 0, 0
-IF @@ERROR <> 0
-BEGIN
-	--Error occurs
-	SELECT 
-		@ErrMsg = 'Add member fail. Please try again',
-		@ErrCode=218
-
-	-- MANUALLY ROLLBACK
-	DELETE Dep_CustSetting WHERE CustID = @CustID
-	DELETE Dep_CustSetting3rd WHERE CustID = @CustID
-	DELETE P2PGameSetting WHERE CustID = @CustID
-	DELETE P2PGroupComm WHERE CustID = @CustID
-	DELETE CustSettingGame WHERE CustID = @CustID
-	DELETE Dep_CustSettingGame WHERE CustID = @CustID
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
 END
@@ -2829,12 +2789,3 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
-
