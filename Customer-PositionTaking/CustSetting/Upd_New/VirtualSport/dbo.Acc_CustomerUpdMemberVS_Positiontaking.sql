@@ -1,6 +1,6 @@
 ﻿USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 06/09/2015 17:59:15 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 06/16/2015 15:52:17 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -96,7 +96,7 @@ SET NOCOUNT ON
 	
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -378,6 +378,7 @@ SET NOCOUNT ON
 	
 	SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
 				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
