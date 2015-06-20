@@ -805,11 +805,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
                                 + MaxBet & MaxPerMatch = MIN(AllUpline)
                                 + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
 			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
-			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
-			
-		  - 20150603@Daniel: 
-			  + Separate custDB to new server DBCUST: 
-			  + Improve medthod check table existing in subscribers		
+			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]			
+			- 20150603@Daniel: 
+				+ Separate custDB to new server DBCUST: 
+				+ Improve medthod check table existing in subscribers		
 			  
 			  	
 		Parameter's Explanation:
@@ -2558,14 +2557,7 @@ DECLARE @currency INT
 			DELETE custsettingGame WITH (ROWLOCK) WHERE custId  =@custid
 				
 			RETURN
-		END
-
-		DECLARE @StakeLevelListAg_1701 VARCHAR(50), @StakeLevelListAg_1702 VARCHAR(50), @StakeLevelID_1701 VARCHAR(50),  @StakeLevelID_1702 VARCHAR(50)
-		SELECT @StakeLevelListAg_1701 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1701
-		SELECT @StakeLevelListAg_1702 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1702
-
-		SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
-		SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		END	
 
 		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
         --      Member.MaxBet = MIN(Agent.MaxBet, Master.MaxBet, Super.MaxBet)
@@ -2627,12 +2619,7 @@ DECLARE @currency INT
 														AND NOT (mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0)
 		 WHERE pbs.Currency = @currency
            AND acg.CustID = @recommend
-           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
-		
-		UNION ALL 
-		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 
-		UNION ALL 
-		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599		
 		
 		IF @@error <> 0
 		BEGIN
@@ -2650,6 +2637,48 @@ DECLARE @currency INT
 			RETURN
 		END
 		--End Keno
+
+		--Gold Deluxe
+		DECLARE @StakeLevelListAg_1701 VARCHAR(50), @StakeLevelListAg_1702 VARCHAR(50), @StakeLevelID_1701 VARCHAR(50),  @StakeLevelID_1702 VARCHAR(50)
+		SELECT @StakeLevelListAg_1701 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1701
+		SELECT @StakeLevelListAg_1702 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1702
+
+		IF @StakeLevelListAg_1701 IS NOT NULL AND @StakeLevelListAg_1702 IS NOT NULL
+		BEGIN
+			SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+			SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		END
+
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )		
+		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 WHERE @StakeLevelID_1701 IS NOT NULL
+		UNION ALL 
+		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 WHERE @StakeLevelID_1702 IS NOT NULL 
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 156
+				
+			-- ROLLBACK MANUALLY
+			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid			
+				
+			RETURN
+		END
+		--End Gold Deluxe
 	END
 END
 
