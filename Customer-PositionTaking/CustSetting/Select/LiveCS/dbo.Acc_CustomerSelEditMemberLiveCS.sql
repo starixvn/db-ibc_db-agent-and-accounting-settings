@@ -1,14 +1,14 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMemberLiveCS]
+﻿ALTER PROCEDURE[dbo].[Acc_CustomerSelEditMemberLiveCS]
 	@custid		INT,
 	@recommend	INT
 AS
 /*
 	Created: 20111226@Lukas
 	Task: Agent edits member's live casino setting
-	DB: DB053.BODB02
+	DB: DBCUST.CustDB
 	
 	Revisions:
+		- 20150617@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	
 	Parameters Explanation
 */
@@ -16,12 +16,13 @@ BEGIN
 
 	SET NOCOUNT ON
 		
-		DECLARE @roleID INT 
+	DECLARE @roleID INT, @Username VARCHAR(30)
 
 		-- Check Downline Belonging
-	EXEC dbo.Age_CustomerSelCheckBelonging  
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID  
 			@SessionCustID	= @recommend, 
 			@Custid			= @CustID,
+			@Username		= @Username OUTPUT,
 			@roleID			= @roleID OUTPUT
 
 	IF @roleID = 0
@@ -72,7 +73,6 @@ BEGIN
 		apositiontaking AS v162apositiontaking_1101,
 		@max_V162apositiontaking_1101 AS v162apositiontaking_1101_max,
 		@min_v162apositiontaking_1101 AS v162apositiontaking_1101_min,
-
 		playerdiscount	AS v162playerdiscount_1101,
 		@v162discount_1101 AS v162playerdiscount_1101_max
 	FROM CustsettingGame WITH(NOLOCK)
