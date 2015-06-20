@@ -52,7 +52,7 @@ BEGIN
 			,mobilephone
 			,fax
 			,0								AS DisableUpline
-			,ISNULL(@DisableGoldDeluxe,0)	AS DisableGoldDeluxe
+			,ISNULL(@DisableGoldDeluxe,1)	AS DisableGoldDeluxe
 			,@Downlines						AS Downlines
 			,@DisableDownlines				AS DisableDownlines
 	FROM	dbo.Customer WITH (NOLOCK)
