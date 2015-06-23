@@ -370,7 +370,7 @@ Revisions:
 	- 20140612@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
 	- 20140822@Logan:   Add status for Esports [Redmine: #20531]
 	- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
-	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]	
 
 Param's Explanation:
 • @ErrCode:
@@ -666,7 +666,7 @@ IF @IsAllowedHR = 0
 	SELECT @Disable151_31 = 1
 
 DECLARE @Disable180_1201 BIT, @HideVirtualSports  BIT, 
-	@isAutoResetLiveCasino BIT , @MaxWinLiveCasino SMALLMONEY, @HideKeno BIT, @HideGoldDeluxe  BIT
+	@isAutoResetLiveCasino BIT , @MaxWinLiveCasino SMALLMONEY, @HideKeno BIT, @HideGoldDeluxe BIT
 SELECT @Disable180_1201 = 0, @HideVirtualSports = 1, 
 		@isAutoResetLiveCasino = 1, @MaxWinLiveCasino =  0, @HideKeno = 1
 
