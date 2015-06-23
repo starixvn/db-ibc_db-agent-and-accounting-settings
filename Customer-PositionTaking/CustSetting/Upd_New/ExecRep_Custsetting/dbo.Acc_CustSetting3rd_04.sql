@@ -1536,7 +1536,7 @@ BEGIN
 
         END--end mode = 'LiveCasino'        
 
-        IF @mode = 'Keno' AND @mode = 'GoldDeluxe'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN        
             --s1=min(s1,s4-m3) if i=0
             UPDATE cs
@@ -3242,7 +3242,7 @@ BEGIN
 
         END
         
-        IF @mode = 'Keno' AND @mode = 'GoldDeluxe'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN                        
             --check agent min/max
             --a1=max(a1,n2)
@@ -4064,7 +4064,7 @@ BEGIN
                 and custsettingGame.sporttype = 162 AND custsettingGame.bettype = 1101
         END        
 
-        IF @mode = 'Keno' AND @mode = 'GoldDeluxe'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN    
             SELECT    @recommend = custid,
                     @srecommend = srecommend

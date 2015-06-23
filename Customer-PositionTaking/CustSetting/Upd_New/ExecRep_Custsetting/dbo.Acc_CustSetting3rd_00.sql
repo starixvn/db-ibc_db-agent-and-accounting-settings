@@ -19,10 +19,11 @@ Original: Acc_CustomerUpdMemberHR_MinPositiontaking,
 
 Revisions:
 	- 20140314@Elodie: Add Keno product [Redmine:#13326]
+	- 20150424@Kathy: Add Gold Deluxe product [Redmine:#34486]
 	- 20150610@Daniel: 
 	    + Improve medthod check table existing in subscribers	
-	    + Separate custDB to new server DBCUST   	
-	
+	    + Separate custDB to new server DBCUST
+
 Param's Explanation:
 * @mode:
     = 'horse': Horse racing
@@ -37,7 +38,7 @@ Param's Explanation:
 */
 SET NOCOUNT ON
 
- if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+IF NOT(dbo.f_CheckRepTable('custinfo') = 1 
    AND dbo.f_CheckRepTable('CustSettingGame') = 1 
    AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
    AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
@@ -688,7 +689,7 @@ BEGIN
     RETURN	
 END--end mode = 'LiveCasino'
 
-if @mode = 'Keno'
+if @mode = 'Keno' OR @mode = 'GoldDeluxe'
 BEGIN		
 	--check agent min/max
 	--update a1=n2 when a1<n2
@@ -783,6 +784,4 @@ BEGIN
 	
 	
     RETURN	
-END--end mode = 'Keno'
-
-
+END--end mode = 'Keno', 'GoldDeluxe'
