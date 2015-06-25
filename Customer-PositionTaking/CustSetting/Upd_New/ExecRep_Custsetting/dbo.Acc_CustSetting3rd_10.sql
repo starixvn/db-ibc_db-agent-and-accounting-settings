@@ -37,15 +37,6 @@ BEGIN
 	if dbo.f_CheckRepTable('custgametype') = 0
 	   	RETURN              
     	
-	IF (
-			NOT EXISTS (
-				SELECT *
-				FROM sys.objects
-				WHERE NAME = 'custgametype'
-					AND type = 'U'
-				)
-			) RETURN
-
 	IF @Action = 'UpdKeno-Disable'
 	BEGIN
 		IF (@RoleID = 4)
