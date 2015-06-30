@@ -29,14 +29,14 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	IF (
-			NOT EXISTS (
-				SELECT *
-				FROM sys.objects
-				WHERE NAME = 'custgametype'
-					AND type = 'U'
-				)
-			) RETURN
+	
+	DECLARE @IsExistTables tinyint
+	SELECT @IsExistTables = COUNT(1) FROM dbo.sysobjects
+	WHERE	name IN ('custinfo', 'custgametype')
+			AND xtype = 'U'
+
+	IF @IsExistTables <> 2
+		RETURN
 
 	IF @Action = 'UpdKeno-Disable'
 	BEGIN
