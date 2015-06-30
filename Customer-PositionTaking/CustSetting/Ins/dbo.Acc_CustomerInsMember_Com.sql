@@ -304,7 +304,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@DisableCasinoBonus BIT = 1,
 	@DisableHRFixedOdds BIT = 0,
 	@DisableEsports BIT = 0,
-	@DisableGoldDeluxe BIT = 0,
+	@DisableGoldDeluxe BIT = 1,
 	
 	@IP VARCHAR(15)='',
 	@Language VARCHAR(2)= 'E',
