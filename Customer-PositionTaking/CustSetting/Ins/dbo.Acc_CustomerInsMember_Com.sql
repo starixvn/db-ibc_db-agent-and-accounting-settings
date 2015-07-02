@@ -1523,6 +1523,7 @@ SELECT @LogSPData = '<Acc_CustomerInsMember_Com custid="'+ COALESCE(CAST(@custid
 'disableFunP2P="'+ COALESCE(CAST(@disableFunP2P AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disable162_1101="'+ COALESCE(CAST(@disable162_1101 AS VARCHAR(1)),SPACE(1)) + '" ' +
 'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
+'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
 'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" />'
@@ -1551,6 +1552,7 @@ BEGIN CATCH
 	'disableFunP2P="'+ COALESCE(CAST(@disableFunP2P AS VARCHAR(1)),SPACE(1)) + '" ' +	
 	'disable162_1101="'+ COALESCE(CAST(@disable162_1101 AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
+	'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
