@@ -79,8 +79,8 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,@DisableUpline		AS DisableUpline
-			,ISNULL(@DisableGoldDeluxe,0) AS DisableGoldDeluxe
+			,ISNULL(@DisableUpline,1) 		AS DisableUpline
+			,ISNULL(@DisableGoldDeluxe,1)	AS DisableGoldDeluxe
 			,0 AS Downlines
 			,0 AS DisableDownlines
 	FROM	dbo.Customer WITH (NOLOCK)

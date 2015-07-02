@@ -1,12 +1,3 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 2:58:09 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
     @srecommend INT = 0,
     @mrecommend INT =0,
@@ -34,8 +25,8 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04]
             - 20140227@Elodie: Add Keno sport [Redmine:#11658]
             - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                               2.Code aligning ON modified parts
-
-		  - 20150610@Daniel: 
+			- 20150424@Kathy: Add Gold Deluxe product [Redmine:#34486]      
+			- 20150610@Daniel: 
 			  + Improve medthod check table existing in subscribers	
 			  + Separate custDB to new server DBCUST   
 	    
@@ -1545,7 +1536,7 @@ BEGIN
 
         END--end mode = 'LiveCasino'        
 
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN        
             --s1=min(s1,s4-m3) if i=0
             UPDATE cs
@@ -3251,7 +3242,7 @@ BEGIN
 
         END
         
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN                        
             --check agent min/max
             --a1=max(a1,n2)
@@ -4073,7 +4064,7 @@ BEGIN
                 and custsettingGame.sporttype = 162 AND custsettingGame.bettype = 1101
         END        
 
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN    
             SELECT    @recommend = custid,
                     @srecommend = srecommend
@@ -4186,17 +4177,6 @@ BEGIN
     END
     
 END
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_04] TO [vnteam]

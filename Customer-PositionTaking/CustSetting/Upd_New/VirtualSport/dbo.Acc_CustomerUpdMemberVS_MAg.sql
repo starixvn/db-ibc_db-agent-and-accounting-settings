@@ -33,6 +33,7 @@ AS
 	 - 20131108@Elodie: Splitting DBTXN into DBCUST (call sport, bettype by link database)			
 	 - 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 	 - 20140320@Johnson: merge code correct pt [Redmine: #11562]
+	 - 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 	Param's Explanation:  
 	• @ErrCode:  
 		= 0: Update successfully.  
@@ -48,6 +49,27 @@ SET NOCOUNT ON
 	declare @duration int  
 	set @startRun = getdate()  
 	  
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
 	Declare @ErrType varchar(1000), @roleid tinyint, @recommend INT, @mrecommend INT, @srecommend INT,  
 			@ErrCode_cur int, @ErrMsg_cur nvarchar(4000)
 	
@@ -63,7 +85,7 @@ SET NOCOUNT ON
 	   
 	Select @ErrCode_cur = 0, @ErrMsg_cur = '', @ErrCode = '', @ErrMsg = ''  
 	  
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging   
+	EXEC Age_CustomerSelCheckBelongingByCustID
 		 @SessionCustID = @Userid,   
 		 @username = @username output,  
 		 @Custid = @custid,  
@@ -71,7 +93,7 @@ SET NOCOUNT ON
 	if (@roleid <> 1) return -- return if not member  
 	  
 	--Check disable user  
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
 	IF @ErrCode_Cur > 0  
 	BEGIN  
 	 select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7),   
@@ -208,8 +230,8 @@ SET NOCOUNT ON
 		  (  
 				SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking        
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND (b.isautopositiontaking>0 AND b.autopositiontaking>co.maxpositiontaking)  
 		  
 		 IF @ErrType <>''  
@@ -232,8 +254,8 @@ SET NOCOUNT ON
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m3 AS maxmpositiontaking, @um1 AS autopositiontaking, @im1 AS isautopositiontaking    
 		  ) AS b   
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE (b.isautopositiontaking>0 AND b.autopositiontaking>b.maxmpositiontaking)  
 		  
 		 IF @ErrType <>''  
@@ -260,8 +282,8 @@ SET NOCOUNT ON
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @um1 AS autopositiontaking, @im1 AS isautopositiontaking, @a1 as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND   
 		  (b.isautopositiontaking>0 AND b.autopositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
 		  
@@ -321,8 +343,8 @@ SET NOCOUNT ON
 			 @s1 AS spositiontaking, @m1 AS mpositiontaking, @a1 AS apositiontaking,   
 			 @m3 AS maxmpositiontaking, @s4 AS maxspositiontaking  
 		 )b    
-		  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		  INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		  INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE @im1 = 0 and b.mpositiontaking > b.maxmpositiontaking - b.apositiontaking           
 		  
 		 IF @ErrType <>''  
@@ -348,8 +370,8 @@ SET NOCOUNT ON
 		  (  
 		   SELECT @sporttype AS sporttype ,  @sporttype AS bettype ,  @m1 AS mpositiontaking       
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		  INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		  INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		  INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		  INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND (b.mpositiontaking>co.maxpositiontaking)   
 		
 		 IF @ErrType <>''  
@@ -374,8 +396,8 @@ SET NOCOUNT ON
 		  (  
 		   SELECT @sporttype AS sporttype, @bettype AS bettype, @m1 AS mpositiontaking, @im1 AS isautopositiontaking, @a1 as  apositiontaking  
 		  ) AS b ON co.sporttype=b.sporttype AND co.bettype=b.bettype  
-		 INNER JOIN bodb02.dbo.sports s WITH (NOLOCK) ON b.sporttype = s.sporttype  
-		 INNER JOIN bodb02.dbo.bettype bt WITH (NOLOCK) ON b.bettype = bt.typeid  
+		 INNER JOIN @tmp_Sports s ON b.sporttype = s.sporttype  
+		 INNER JOIN @tmp_Bettype bt ON b.bettype = bt.typeid  
 		 WHERE co.custid = @mrecommend AND   
 		  (b.isautopositiontaking=0 AND b.mpositiontaking< case when co.minpositiontaking - b.apositiontaking > 0 then co.minpositiontaking - b.apositiontaking else 0 end)  
 		  

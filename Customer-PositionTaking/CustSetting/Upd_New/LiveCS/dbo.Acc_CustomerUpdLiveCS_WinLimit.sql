@@ -1,4 +1,12 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdLiveCS_WinLimit] 
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdLiveCS_WinLimit]    Script Date: 6/16/2015 2:11:04 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdLiveCS_WinLimit    Script Date: 12/5/2013 5:35:48 PM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdLiveCS_WinLimit] 
 	@custid		INT,
 	@MaxWinLiveCasino		SMALLMONEY,
 	@isAutoResetLiveCasino	BIT,
@@ -33,7 +41,7 @@ SELECT @ErrCode = 0, @ErrMsg = ''
 
 ---------------------------
 -- ***Check Downline Belonging***
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC Age_CustomerSelCheckBelongingByCustID
 	@SessionCustID = @Userid, 
 	@Custid = @custid,
 	@roleid = @roleid OUTPUT
@@ -41,7 +49,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 ---------------------------
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 IF @ErrCode > 0
 BEGIN	
 	RETURN
@@ -190,189 +198,28 @@ BEGIN
 	END
 END
 
-DECLARE @today smalldatetime
-SET @today = convert(nvarchar(10), current_timestamp,120)
+
 
 --for weekly reset, insert default balance for member if not exists to keep track balance 
 IF @MaxWinLiveCasino > 0
 BEGIN			
 	-- if customer is weekly reset then insert default balance
-	IF @RoleID = 1 AND @isAutoResetLiveCasino = 0
-	BEGIN				
-		IF NOT EXISTS(SELECT 1 
-					FROM bodb02.dbo.BalanceDebitGame bal
-					WHERE bal.custid=@custid AND bal.winlostdate=@today)
-		BEGIN								
-			-- insert BalanceDebitGame
-			--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-			--SELECT @custid, @today, 0 
-			EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @custid, @winlostdate = @today
-							
-			IF (@@ERROR <> 0)
-			BEGIN	
-				SELECT @ErrMsg = CASE @Language 
-									WHEN 'E' THEN 'Update process is unsuccessful !'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-								END	, @ErrCode = 107
-				RETURN
-			END		
-		END	
-		
-		-- insert BalanceCreditGame
-		IF NOT EXISTS(SELECT 1 
-					FROM bodb02.dbo.BalanceCreditGame bal
-					WHERE bal.custid=@custid AND bal.winlostdate=@today)		
-		
-		BEGIN
-			--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-			--SELECT @custid, @today, 0 
-			EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @custid, @winlostdate = @today
+	EXEC DBTXN.bodb02.dbo.Acc_CustomerInsBalanceLiveCS_WinLimit 
+		@CustID = @CustID, 
+		@RoleID = @RoleID, 
+		@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
+		@ErrCode = @ErrCode	OUTPUT, 
+		@ErrMsg  = @ErrMsg	OUTPUT
 
-			IF (@@ERROR <> 0)
-			BEGIN	
-				SELECT @ErrMsg = CASE @Language 
-									WHEN 'E' THEN 'Update process is unsuccessful !'
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-								END	, @ErrCode = 108
-				RETURN
-			END				
-		END	
+	IF (@ErrCode <> 0)
+	BEGIN			
+		SELECT @ErrMsg = 
+					case @Language 
+						when 'E' then 'Update process is unsuccessful.'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+					end
+		RETURN
 	END
-	ELSE IF @RoleID = 2
-	BEGIN									
-		-- insert BalanceDebitGame
-		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		DECLARE @recommend INT
-		SELECT @recommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE Recommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @recommend, @winlostdate = @today
-						
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 109
-			RETURN
-		END			
-		
-		-- insert BalanceCreditGame
-		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT @recommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE Recommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @recommend, @winlostdate = @today
-
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 110
-			RETURN
-		END	
-	END
-	ELSE IF @RoleID = 3
-	BEGIN
-		-- insert BalanceDebitGame
-		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		DECLARE @mrecommend INT
-		SELECT @mrecommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE MRecommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @mrecommend, @winlostdate = @today
-						
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 111
-			RETURN
-		END			
-		
-		-- insert BalanceCreditGame
-		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT @mrecommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE MRecommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @mrecommend, @winlostdate = @today
-		
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 112
-			RETURN
-		END	
-	END
-	ELSE IF @RoleID = 4
-	BEGIN		
-		-- insert BalanceDebitGame
-		--INSERT dbo.BalanceDebitGame(custid, winlostdate, Balance)
-		DECLARE @srecommend INT
-		SELECT @srecommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE SRecommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceDebitGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @srecommend, @winlostdate = @today
-						
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 113
-			RETURN
-		END			
-		
-		-- insert BalanceCreditGame
-		--INSERT dbo.BalanceCreditGame(custid, winlostdate, Balance)
-		SELECT @srecommend = custid
-		FROM CustInfo cust WITH (NOLOCK)
-		WHERE SRecommend = @CustID AND roleid=1
-			AND isAutoResetLiveCasino=0 AND MaxWinLiveCasino>0
-			AND NOT EXISTS(SELECT 1 
-						FROM bodb02.dbo.BalanceCreditGame bal WITH (NOLOCK)
-						WHERE bal.custid=cust.custid AND bal.winlostdate=@today)
-
-		EXEC bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @srecommend, @winlostdate = @today
-		
-		IF (@@ERROR <> 0)
-		BEGIN	
-			SELECT @ErrMsg = CASE @Language 
-								WHEN 'E' THEN 'Update process is unsuccessful !'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-							END	, @ErrCode = 114
-			RETURN
-		END	
-	END	
 END	
 	
 Declare @LogSPData varchar(MAX),
@@ -447,10 +294,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@TrackingValue2 = @TrackingValueDB,
 		@duration = @duration
-END CATCH		
-
-
-
+END CATCH
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdLiveCS_WinLimit] TO [bodbadminNet] AS [dbo]

@@ -1,23 +1,25 @@
-﻿USE [bodb02]
-GO
-Alter Procedure [dbo].[Acc_CustomerSelDisableOutRight]
-	@CustID int
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelDisableOutRight]
+	@CustID INT
 AS
-SET NOCOUNT ON
+
 /*
 Created: 
 Task : Get status DisableOutright by custid
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 Original: Accounting site
 
 Revisions:
 	- 20090729@Simon: Get customer DisableOutright status
+	- 20150617@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 	@CustID: id of customer
 */		
-Select isnull(DisableOutright,0) as DisableOutright
-From custinfo with (nolock)
-Where CustID = @CustID
+
+SET NOCOUNT ON
+
+SELECT ISNULL(DisableOutright, 0) AS DisableOutright
+FROM custinfo WITH (NOLOCK)
+WHERE CustID = @CustID
 
 
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelDisableOutRight] TO [bodbAdminNet]

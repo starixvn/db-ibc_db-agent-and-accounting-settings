@@ -35,8 +35,13 @@ BEGIN
 	SET NOCOUNT ON
 	
 	if dbo.f_CheckRepTable('custgametype') = 0
+<<<<<<< HEAD
 	   	RETURN              
     	
+=======
+	   	RETURN                  	
+
+>>>>>>> 8ae9143d127b5c21ad393dfff253b58c1bf4f493
 	IF @Action = 'UpdKeno-Disable'
 	BEGIN
 		IF (@RoleID = 4)
