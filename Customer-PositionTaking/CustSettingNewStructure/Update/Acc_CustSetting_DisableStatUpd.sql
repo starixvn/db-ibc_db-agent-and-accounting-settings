@@ -195,7 +195,7 @@ BEGIN
 
 
 	--call execrept to update downline
-	IF EXISTS (
+	IF @RoleID <> 1 AND EXISTS (
 			SELECT TOP 1 1
 			FROM @NewDisableStatTbl
 			WHERE IsDisabled = 1

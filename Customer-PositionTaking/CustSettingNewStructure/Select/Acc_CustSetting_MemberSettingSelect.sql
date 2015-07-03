@@ -10,6 +10,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberSettingSelect]
 	 , @ProductID	TINYINT  
 	 , @RoleID		INT  
 	 , @SettingType	SMALLINT
+	 , @DisableAutoMPT BIT = 0 OUTPUT
 AS  
 /*  
  Created: 20141104@Dominic  
@@ -40,13 +41,13 @@ BEGIN
 		SportType  SMALLINT  
 		, BetType  SMALLINT  
 		, IsLive  BIT  
-		, S1   INT  
-		, M1   INT  
-		, A1   INT  
+		, S1   TINYINT  
+		, M1   TINYINT  
+		, A1   TINYINT  
 		, IS1   BIT  
-		, US1   INT  
+		, US1   TINYINT  
 		, IM1   BIT  
-		, UM1   INT  
+		, UM1   TINYINT  
 		) 
 		
 		--Get member setting from Group OR Individual Settings   
@@ -183,7 +184,7 @@ BEGIN
 		IF @SettingType = 1
 		BEGIN 
 			--Disable auto master PT  
-			SELECT ISNULL(DisableAutoMPT, 0)  DisableAutoMPT
+			SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
 			FROM CustMaster WITH (NOLOCK)  
 			WHERE CustID = @MasterID 
 	

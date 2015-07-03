@@ -8,6 +8,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]
 	@CustID			INT  
 	, @ProductID	TINYINT  
 	, @SettingType	SMALLINT
+	, @DisableAutoMPT BIT = 0 OUTPUT
 AS  
 /*  
  Created: 20141104@Dominic  
@@ -25,15 +26,15 @@ BEGIN
 	SELECT @SuperID=ci.srecommend, @MasterID=ci.mrecommend  
 	FROM dbo.custInfo ci WITH(NOLOCK)  
 	WHERE ci.custid=@CustID    
-  
-	--Disable auto master PT  
-	SELECT ISNULL(DisableAutoMPT, 0)  DisableAutoMPT
-	FROM CustMaster WITH (NOLOCK)  
-	WHERE CustID = @MasterID 
 	
 	--PT Setting  
 	IF @SettingType = 1
 	BEGIN 	
+		--Disable auto master PT  
+		SELECT @DisableAutoMPT = ISNULL(DisableAutoMPT, 0)
+		FROM CustMaster WITH (NOLOCK)  
+		WHERE CustID = @MasterID 
+	
 		SELECT pdt.SportType  
 			, pdt.BetType  
 			, pdt.IsLive  

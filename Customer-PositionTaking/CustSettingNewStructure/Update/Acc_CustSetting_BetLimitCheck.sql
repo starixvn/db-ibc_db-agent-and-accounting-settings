@@ -322,7 +322,7 @@ BEGIN
 					, TYPE
 				)		
 		SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-		SET @MsgType = 51
+		SET @MsgType = 71
 		SET @ErrCode = 101
 		
 		RETURN
