@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_CustomerSettingModeSelect]   
+CREATE PROCEDURE [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect]   
    @CustIDList VARCHAR(MAX) 
 AS  
 /*  
@@ -25,17 +25,18 @@ BEGIN
 	SELECT CONVERT(INT, val)
 	FROM dbo.strSplit(@CustIDList, ',')
 	
-	SELECT cm.CustID,cm.IsGrouped
+	SELECT cm.CustID
 	FROM dbo.CustSettingMode3rd cm WITH(NOLOCK)
 	INNER JOIN @tblCust c ON cm.CustID = c.CustID
+	WHERE cm.IsGrouped = 1
 	ORDER BY cm.CustID
 	
 END  
   
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerSettingModeSelect] TO [bodbadminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect] TO [bodbadminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerSettingModeSelect] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerSettingModeSelect] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect] TO [bodbExtAccNet]
