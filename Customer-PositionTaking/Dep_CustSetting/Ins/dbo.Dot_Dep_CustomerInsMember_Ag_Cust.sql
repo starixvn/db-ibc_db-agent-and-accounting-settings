@@ -22,6 +22,7 @@ Created:
 Task : Create a 12 bet player account for this Affiliate on IBC system
 DB: DBCUST/CustDB
 Original:
+User: NON API Licensee/API Licensee/12Bet
 
 Revisions:
 	- 20090122@Dung: Add excute permission on bodbDownlineNet and view Definition on vnteam
@@ -136,6 +137,7 @@ Revisions:
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
 	- 20150609@Elodie: Separate CustDB to DBCUST server (Call Dot_BalanceDelCredit, Dot_BalanceDelCreditGame, Dot_BalanceDelDebit, Dot_BalanceDelDebitGame, GameType, sports by link server)
+						Move Lrf_AGC_Customer_SetDefaultSetting to DBCUST
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -2658,7 +2660,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 	@ErrMsg = @ErrMsg OUTPUT	
 
 --Set default bet setting of AG Casino
-EXEC DBLIC.bodb_Licensee.dbo.Lrf_AGC_Customer_SetDefaultSetting  
+EXEC Lrf_AGC_Customer_SetDefaultSetting  
  @CustID = @CustID,
  @SuperID = @srecommend,  
  @ErrCode = @ErrCode OUTPUT,  
