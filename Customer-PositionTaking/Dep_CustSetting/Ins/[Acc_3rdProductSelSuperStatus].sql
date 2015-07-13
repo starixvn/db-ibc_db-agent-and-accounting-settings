@@ -33,21 +33,21 @@ BEGIN
 		INSERT INTO #CustList14 (CustID)
 		SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 		INNER JOIN Customer ag WITH (NOLOCK) ON rm.recommend=ag.Custid
-		WHERE rm.srecommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'	
+		WHERE rm.srecommend = @CustID AND rm.custid<>@CustID AND ag.Username not like '%'+ag.site +'ACC%'	
 		END
 		ELSE IF @RoleId=3
 		BEGIN
 		INSERT INTO #CustList14 (CustID)
 		SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 		INNER JOIN Customer ag WITH (NOLOCK) ON rm.recommend=ag.Custid
-		WHERE rm.mrecommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'
+		WHERE rm.mrecommend = @CustID AND rm.custid<>@CustID AND ag.Username not like '%'+ag.site +'ACC%'
 		END
 		ELSE
 		BEGIN
 		INSERT INTO #CustList14 (CustID)
 		SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 		INNER JOIN Customer ag WITH (NOLOCK) ON rm.recommend=ag.Custid
-		WHERE rm.recommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'
+		WHERE rm.recommend = @CustID AND rm.custid<>@CustID AND ag.Username not like '%'+ag.site +'ACC%'
 		END
 
 		IF EXISTS(SELECT TOP 1 1 FROM CustInfo a WITH (NOLOCK) INNER JOIN #CustList14 b ON a.CustID=b.CustID 
