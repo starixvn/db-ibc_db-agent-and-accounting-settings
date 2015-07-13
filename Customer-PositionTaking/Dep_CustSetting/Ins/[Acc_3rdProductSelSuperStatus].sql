@@ -26,7 +26,7 @@ BEGIN
 	IF @ProductID=14 -- Microgaming
 	BEGIN
 	DECLARE @RoleId INT
-	SELECT @SupperStatus=~DisableMicrogame,@RoleId=RoleId FROM CustInfo  WITH (NOLOCK) WHERE CustID = @CustID 
+	SELECT @SupperStatus= ISNULL(~DisableMicrogame,1),@RoleId=RoleId FROM CustInfo  WITH (NOLOCK) WHERE CustID = @CustID 
 	CREATE TABLE #CustList14 ( CustID INT)	
 		IF @RoleId=4	
 		BEGIN
@@ -51,10 +51,12 @@ BEGIN
 		END
 
 		IF EXISTS(SELECT TOP 1 1 FROM CustInfo a WITH (NOLOCK) INNER JOIN #CustList14 b ON a.CustID=b.CustID 
-				WHERE a.DisableMicrogame=1)	
-		SELECT @DownlineStatus=0
+				WHERE ISNULL(a.DisableMicrogame,1)=1)	
+			AND EXISTS(SELECT TOP 1 1 FROM #CustList14 b)	
+		SELECT @DownlineStatus=0		
 		ELSE
 		SELECT @DownlineStatus=1
+		
 	RETURN
 	END
 	---
