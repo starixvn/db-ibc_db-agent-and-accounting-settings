@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTCheck] 
 	  @CustID			INT 
 	, @RoleID			INT
@@ -706,8 +700,8 @@ BEGIN
 		SELECT @ErrType = ''
 		SELECT @ErrType = (
 		SELECT pdt.SportType,pdt.BetType,pdt.IsLive,
-				CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
-											THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
+				CASE WHEN spt.MinPT-mempt.MasterPT-mempt.AgentPT > 0 
+											THEN spt.MinPT-mempt.MasterPT-mempt.AgentPT 
 											ELSE 0
 											END	 AS MinPT
 		FROM @NewPTTble mempt
@@ -722,8 +716,8 @@ BEGIN
 				AND pdt.IsLive = mempt.IsLive
 				AND pdt.SettingType = 1	
 		WHERE mempt.IsAutoSuperPT = 1 
-			AND mempt.AutoSuperPT < CASE WHEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT > 0 
-											THEN spt.SuperPT-mempt.MasterPT-mempt.AgentPT 
+			AND mempt.AutoSuperPT < CASE WHEN spt.MinPT > mempt.MasterPT+mempt.AgentPT 
+											THEN spt.MinPT-mempt.MasterPT-mempt.AgentPT 
 											ELSE 0
 											END	
 		FOR XML RAW('Row'), TYPE)
@@ -814,7 +808,7 @@ BEGIN
 								THEN spt.SuperPT
 							ELSE spt.MaxPT
 							END - mpt.MasterPT > CASE 
-							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+							WHEN spt.MinPT > mempt.MasterPT + mempt.AgentPT 
 								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
 							ELSE 0
 							END
@@ -824,7 +818,7 @@ BEGIN
 								ELSE spt.MaxPT
 								END - mpt.MasterPT
 					ELSE CASE 
-							WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+							WHEN spt.MinPT > mempt.MasterPT + mempt.AgentPT 
 								THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
 							ELSE 0
 							END
@@ -867,7 +861,7 @@ BEGIN
 				AND pdt.SettingType = 1	
 		WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
 			AND mempt.SuperPT < CASE 
-									WHEN spt.MinPT - mempt.MasterPT - mempt.AgentPT > 0
+									WHEN spt.MinPT > mempt.MasterPT + mempt.AgentPT
 										THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT
 									ELSE 0
 								END 
@@ -883,6 +877,7 @@ BEGIN
         END	
 	END
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_MemberPTCheck] TO [bodbadminNet]
