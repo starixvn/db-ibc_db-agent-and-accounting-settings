@@ -1,7 +1,7 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
-	@mrecommend INT = 0,
+	@mrecommend INT = 0,	
 	@recommend INT = 0,
 	@roleid INT,
  
@@ -808,7 +808,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]			
 			- 20150603@Daniel: 
 				+ Separate custDB to new server DBCUST: 
-				+ Improve medthod check table existing in subscribers		
+				+ Improve medthod check table existing in subscribers	
+			- 20150715@Viet: remove P2P tables from replication check	
 			  
 			  	
 		Parameter's Explanation:
@@ -826,8 +827,8 @@ BEGIN
 		  AND dbo.f_CheckRepTable('CustGameType') = 1
 		  AND dbo.f_CheckRepTable('ProductGlobalSetting') = 1 
 		  AND dbo.f_CheckRepTable('ProductBetSetting') = 1 
-		  AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
-		  AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
+		  --AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
+		  --AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
 	   )
 	   RETURN
 
