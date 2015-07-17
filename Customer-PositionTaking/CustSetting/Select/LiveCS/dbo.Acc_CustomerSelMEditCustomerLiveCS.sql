@@ -1,14 +1,14 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerLiveCS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerLiveCS]
 	@custid		INT
 AS
 /*
-	Created: 20120111@Lukas	
+	Created: 20120111@Lukas
 	Task: Master select edits live casino PT settings on member
-	DB: DB053.BODB02
+	DB: DBCUST.CustDB
 	
 	Revisions:
 		- 20140307@Johnson: apply new m1_max is m3-a1 not apply range !(i=0)?(m3-a1):min(m3-a1,s4-s1-a1) [Redmine:#12953] 
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	Parameters Explanation:
 */
 BEGIN
@@ -31,7 +31,6 @@ BEGIN
 			@roleid	 = roleid
 	FROM custinfo WITH(NOLOCK)
 	WHERE custid = @custid
-	
 	
 	IF @roleid <> 1
 		RETURN
@@ -73,9 +72,7 @@ BEGIN
 		apositiontaking	AS V162apositiontaking_1101,
 		autompositiontaking AS auto_v162mpositiontaking_1101_mem,
 		isautompositiontaking AS isauto_v162mpositiontaking_1101_mem,
-
 		@isauto_v162mpositiontaking_1101 AS isauto_v162mpositiontaking_1101,
-
 		@v162mpositiontaking_1101_max AS auto_v162mpositiontaking_1101_max,
 		
 		--m1_max = m3 - a1
@@ -86,7 +83,6 @@ BEGIN
 	WHERE custid = @custid AND sporttype = 162 AND bettype = 1101
 
 END
-
 
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMEditCustomerLiveCS] TO [vnteam]

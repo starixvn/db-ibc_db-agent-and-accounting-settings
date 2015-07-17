@@ -5,10 +5,11 @@ AS
 		Created:Johnson
 		Date: 23Dec2011
 		Task: Super edits live casino settings on member
-		DB:BD053.BODB02
+		DB: DBCUST.CustDB
 		
 		Revisions:
 			- 20150515@Johnson: fix s1_max = Max(n4-(m1+a1), s4 - m3) [Redmined: #35758]
+			- 20150617@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON
@@ -39,7 +40,6 @@ WHERE custid = @srecommend AND sporttype = 162 AND bettype = 1101
 SELECT @v162mpositiontaking_1101 = mpositiontaking, @isauto_v162spositiontaking_1101 = isautopositiontaking
 FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @mrecommend AND sporttype = 162 AND bettype = 1101 
-
 
 SELECT spositiontaking as v162spositiontaking_1101,
 	mpositiontaking as v162mpositiontaking_1101,

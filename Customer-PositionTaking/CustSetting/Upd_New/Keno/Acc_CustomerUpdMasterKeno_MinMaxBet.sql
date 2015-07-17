@@ -22,7 +22,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 	DB: DBTXN/CustDB
 		
 	Revisions:
-														
+
+        - 20141104@Logan:    Add constraint Master MinBet >= Global MinBet [Redmine: #25005]
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 	Parameter's Explanation
 		@ErrCode:
 			= 0: Update successfully.
@@ -31,6 +33,19 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet]
 */
 BEGIN
 	SET NOCOUNT ON
+	----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
+
 	DECLARE @startRun DATETIME, @endRun	DATETIME, @duration INT, @srecommend INT, @Username VARCHAR(50), @currency INT
 		, @MinMinBet MONEY, @MaxMaxBet MONEY, @MaxMaxPerMatch MONEY
 		, @Old_MinBet MONEY, @Old_MaxBet MONEY,	@Old_MaxPerMatch MONEY
@@ -66,26 +81,48 @@ BEGIN
 	END
 	
 	DECLARE @GameTypeID INT
-	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @BetType
+	SELECT @GameTypeID = GameTypeID
+      FROM @tmp_GameType WHERE IBCBetTypeID = @BetType
 
 	SELECT @MinMinBet = ISNULL(cg.MinBet, 0)
-		, @MaxMaxBet = ISNULL(MaxBet, 0)
-		, @MaxMaxPerMatch = ISNULL(cg.MaxPerGameType, 0)
-	FROM dbo.CustGameType AS cg WITH (NOLOCK)
-		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cg.CustID = ci.custid
-	WHERE cg.custid = @srecommend AND cg.GameTypeID = @GameTypeID
-	
-	IF @MinMinBet = 0 
-		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency AND IsDep = 0
+		 , @MaxMaxBet = ISNULL(MaxBet, 0)
+		 , @MaxMaxPerMatch = ISNULL(cg.MaxPerGameType, 0)
+	  FROM dbo.CustGameType cg WITH(NOLOCK)
+INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON cg.CustID = ci.custid
+	 WHERE cg.custid = @srecommend
+       AND cg.GameTypeID = @GameTypeID
 
-	--Check @MinBet >= @MinMinBet
+	--Check @MinBet >= Super's MinBet
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
 	BEGIN
-		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Min bet must be equal to or greater than Super Agent min bet'
-							ELSE [dbo].[f_Get_MsgNamebyMsgID](10016, @Language) END +' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
-				, @ErrCode = 103
+		SELECT @ErrMsg =
+                 CASE @Language
+                   WHEN 'E' THEN 'Min bet must be equal to or greater than Super Agent min bet'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](10016, @Language)
+                 END + ' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
+			 , @ErrCode = 103
 		RETURN
 	END
+
+    --Check @MinBet >= Global's MinBet
+	SELECT @MinMinBet = MinBet
+      FROM ProductBetSetting bs WITH(NOLOCK)
+     WHERE bs.Bettype = @BetType
+       AND bs.Sporttype = @SportType
+       AND currency = @currency
+       AND IsDep = 0
+
+    IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
+	BEGIN
+        SELECT @ErrMsg =
+                 CASE @Language 
+				   WHEN 'E' THEN 'Min Bet must be greater than or equal to Min Bet limit.'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](10030, @Language)
+                 END + ' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
+             , @ErrCode = 107
+		RETURN
+    END
+
 	--Check @MaxBet <= @MaxMaxBet
 	IF (@MaxMaxBet > 0 AND @MaxBet > 0 AND @MaxBet > @MaxMaxBet)
 	BEGIN
@@ -185,12 +222,3 @@ BEGIN
 			@duration = @duration
 	END CATCH
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterKeno_MinMaxBet] TO [vnteam] AS [dbo]

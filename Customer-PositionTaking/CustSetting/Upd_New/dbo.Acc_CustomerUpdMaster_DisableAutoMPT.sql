@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_DisableAutoMPT    Script Date: 8/21/2014 3:12:20 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_DisableAutoMPT    Script Date: 8/21/2014 2:58:14 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_DisableAutoMPT]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_DisableAutoMPT]
     @CustID int,-- MasterID
     @DisableAutoMPT bit = 0,
     @SubAccID int = 0, --Sub-AccountID
@@ -38,6 +29,8 @@ Revisions:
     - 20130218@Dan: Change linked server DB053 to DBAGE; Write more log ON DBTXN server in case of DBLOG server failure
     - 20140819@Logan    1. Exclude disabled agents while updating Master Setting
                         2. Code aligning
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -56,7 +49,7 @@ BEGIN
     DECLARE  @Old_DisableAutoMPT BIT
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable
+    EXEC Acc_CustomerSelCheckEnable
         @custid = @custid
       , @ErrCode = @ErrCode OUTPUT
       , @ErrMsg = @ErrMsg OUTPUT
@@ -279,15 +272,6 @@ BEGIN
           , @duration = @duration
     END CATCH
 END
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_DisableAutoMPT] TO [vnteam]

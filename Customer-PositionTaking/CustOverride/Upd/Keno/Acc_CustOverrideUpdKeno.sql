@@ -1,16 +1,18 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustOverrideUpdKeno]    Script Date: 06/10/2015 16:56:33 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdKeno    Script Date: 8/28/2014 2:05:30 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdKeno    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdKeno    Script Date: 8/21/2014 2:58:11 PM ******/
 
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpdKeno_xtest    Script Date: 6/19/2014 10:30:06 AM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpdKeno] 
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpdKeno] 
     @CustID INT,
     @UplineID INT = 0,
     @Sporttype INT = 202,
@@ -31,6 +33,7 @@ AS
     DB: DBTXN/CustDB
 
     Revisions:
+		- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                        
 
     Param's Explanation:
     • @ErrCode:
@@ -49,7 +52,7 @@ BEGIN
     SELECT @roleid = roleid FROM CustInfo WITH (NOLOCK) WHERE custid = @custid
 
     --Check Allowed downlines    
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    
         @CustID = @CustID,
         @roleid = @roleid,
         @isExecRep = 1,
@@ -73,17 +76,17 @@ BEGIN
     WHERE custid = @CustID AND sporttype = @Sporttype AND bettype = @Bettype
     IF @roleid = 4
     BEGIN        
-                EXEC Acc_CustSetting3rd_04_xtest @srecommend = @CustID, @roleid = 4, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+                EXEC Acc_CustSetting3rd_04 @srecommend = @CustID, @roleid = 4, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
     END
 
     IF @roleid = 3
     BEGIN
-                EXEC Acc_CustSetting3rd_04 @custid = @CustID, @srecommend = @UplineID, @roleid = 3, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+                                                                EXEC Acc_CustSetting3rd_04 @custid = @CustID, @srecommend = @UplineID, @roleid = 3, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
     END
 
     IF @roleid = 2
     BEGIN        
-                EXEC Acc_CustSetting3rd_04_xtest @custid = @CustID, @mrecommend = @UplineID, @roleid = 2, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
+                EXEC Acc_CustSetting3rd_04 @custid = @CustID, @mrecommend = @UplineID, @roleid = 2, @mode = 'Keno', @sporttype = @Sporttype, @bettype = @Bettype
     END
 
     DECLARE @LogSPData VARCHAR(MAX),
@@ -146,22 +149,11 @@ BEGIN
     END CATCH
 END
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdKeno] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustOverrideUpdKeno] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustOverrideUpdKeno] TO [vnteam] AS [dbo]

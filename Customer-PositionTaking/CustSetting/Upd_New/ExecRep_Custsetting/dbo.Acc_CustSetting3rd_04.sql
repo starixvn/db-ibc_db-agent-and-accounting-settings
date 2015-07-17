@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_04    Script Date: 8/21/2014 2:58:09 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04] 
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -21,7 +12,7 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04]
         Created: Johnson
         Date: 2013-10-29
         Task: Apply execrep WHEN UPDATE min/max pt ON master AND agent
-        DB: DBTXN/CustDB
+        DB: DBCUST/CustDB
         Original versions: Acc_CustomerUpdMaster_MinMaxPositiontaking
                 Acc_CustomerUpdAgent_MinMaxPositiontaking
     
@@ -34,33 +25,25 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_04]
             - 20140227@Elodie: Add Keno sport [Redmine:#11658]
             - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                               2.Code aligning ON modified parts
-
+			- 20150424@Kathy: Add Gold Deluxe product [Redmine:#34486]      
+			- 20150610@Daniel: 
+			  + Improve medthod check table existing in subscribers	
+			  + Separate custDB to new server DBCUST   
+	    
         Parameter's Explanation:        
     */ 
 BEGIN
     SET NOCOUNT ON 
-    
-    DECLARE @IsExistTables tinyint
-    SET @IsExistTables = 0
 
-    IF @mode IN ('LiveCasino', 'Keno')
-    BEGIN    
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'U'
-    END
-    ELSE
-    BEGIN
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'U'
-    END
-
-    IF @IsExistTables <> 3 
-        RETURN
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	    AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+	    AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+	    AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+	    AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+	    )
+	   RETURN
     
+     
     declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
     
     --UPDATE min pt ON super
@@ -1553,7 +1536,7 @@ BEGIN
 
         END--end mode = 'LiveCasino'        
 
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN        
             --s1=min(s1,s4-m3) if i=0
             UPDATE cs
@@ -3259,7 +3242,7 @@ BEGIN
 
         END
         
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN                        
             --check agent min/max
             --a1=max(a1,n2)
@@ -4081,7 +4064,7 @@ BEGIN
                 and custsettingGame.sporttype = 162 AND custsettingGame.bettype = 1101
         END        
 
-        IF @mode = 'Keno'
+        IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
         BEGIN    
             SELECT    @recommend = custid,
                     @srecommend = srecommend
@@ -4194,17 +4177,6 @@ BEGIN
     END
     
 END
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_04] TO [vnteam]

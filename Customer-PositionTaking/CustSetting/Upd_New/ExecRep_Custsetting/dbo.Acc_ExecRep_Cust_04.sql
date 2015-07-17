@@ -19,7 +19,7 @@ AS
 /*
 Created: 20121126@Thien
 Task : Update customer/custinfo settings
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 
 Revisions:
 	- 20121126@Thien: implement the 'VirtualMultiplier' update
@@ -29,6 +29,9 @@ Revisions:
 	- 20131024@Kathy: Apply Exec Rep for auto suspend soccer and other sports [Redmine:#5520]
 	- 20140228@Bobby: Update Keno status [Redmine:#12474]
 	- 20140320@Bobby: remove Keno disable
+	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST 	
 	
 Param's Explanation:
 	@Action: 
@@ -49,9 +52,12 @@ Param's Explanation:
    
 */
 SET NOCOUNT ON 
-IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'U') < 2
-	AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'customer') AND type = 'V') < 2
-	RETURN
+
+if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+     AND dbo.f_CheckRepTable('customer') = 1 
+ )
+   	RETURN  
+	   	
 	
 if @action = 'VirtualMultiplier'
 BEGIN

@@ -1,23 +1,24 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelNGUpline]
-	@username varchar(30),
-	@userid int, --Admin ID
-	@minbet money = 0 OUTPUT,
-	@maxbet money = 0 OUTPUT,
-	@maxperball money = 0 OUTPUT,
-	@maxpermatch money = 0 OUTPUT,
-	@isEnable bit = 1 OUTPUT,
-	@ErrCode int = 0 OUTPUT,
-	@ErrMsg varchar(5000) = '' OUTPUT
+	@username		VARCHAR(30),
+	@userid			INT,							--Admin ID
+	@minbet			MONEY			= 0 OUTPUT,
+	@maxbet			MONEY			= 0 OUTPUT,
+	@maxperball		MONEY			= 0 OUTPUT,
+	@maxpermatch	MONEY			= 0 OUTPUT,
+	@isEnable		BIT				= 1 OUTPUT,
+	@ErrCode		INT				= 0 OUTPUT,
+	@ErrMsg			VARCHAR(5000)	= '' OUTPUT
 AS
 
 /*
 	Created: 20111117@Sophia
 	Task: Check upline enable Number game, select upline Minbet, Maxbet, Maxperbll, Maxpermatch 
-	DB: DBAGE/bodb02
+	DB: DBCUST.CustDB
 
-	Revisions:	
+	Revisions:
 		- Dom.Cao@2012-07-20: Just allow Enable NG in credit site
 		- 20130121@Dan: change linked server DB03 to DBPOLICY
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	Param's Explanation:
 		- @isEnable = 1 : unlock checkbox Enable
 		- @isEnable = 0 : lock checkbox Enable
@@ -94,7 +95,7 @@ BEGIN
 			ON (cs.CustID = ci.Recommend or cs.CustID = ci.MRecommend or cs.CustID = ci.SRecommend)
 				and cs.sporttype=161
 	WHERE		ci.custid = @CustID
-END 
+END
 
 
 	 

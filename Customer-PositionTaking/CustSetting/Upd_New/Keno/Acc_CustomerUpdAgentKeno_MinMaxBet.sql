@@ -23,6 +23,10 @@ AS
 	Original: 
 
 	Revisions:
+
+        - 20141104@Logan:   Add constraint Agent MinBet >= Global MinBet [Redmine: #25005]
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+		
 	Param's Explanation:
 	• @ErrCode:
 		= 0: Update successfully.
@@ -32,6 +36,18 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
+----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT
 	SELECT @ErrCode = 0, @ErrMsg = '', @startRun = GETDATE()
@@ -63,19 +79,19 @@ BEGIN
 	END
 
 	DECLARE @GameTypeID INT
-	SELECT @GameTypeID = GameTypeID FROM bodb02.dbo.GameType WHERE IBCBetTypeID = @bettype
+	SELECT @GameTypeID = GameTypeID FROM @tmp_GameType WHERE IBCBetTypeID = @bettype
 
-	SELECT @MinMinBet = 0, @MaxMaxBet = 0
+	SELECT @MinMinBet = 0
+         , @MaxMaxBet = 0
+
 	SELECT @MinMinBet = ISNULL(MAX(CASE WHEN cg.MinBet = 0 THEN NULL ELSE cg.MinBet END), 0)
-		, @MaxMaxBet = ISNULL(MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END), 0)
-		, @MaxMaxperMatch = ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0)
-	FROM dbo.CustGameType AS cg WITH (NOLOCK)
-		INNER JOIN dbo.custinfo AS ci WITH (NOLOCK) ON cg.CustID = ci.custid
-	WHERE cg.custid IN (@mrecommend, @srecommend) AND cg.GameTypeID = @GameTypeID
-	GROUP BY cg.GameTypeID
-
-	IF @MinMinBet = 0 
-		SELECT @MinMinBet = MinBet FROM ProductBetSetting bs WHERE bs.Bettype = @BetType AND bs.Sporttype = @SportType AND currency = @currency AND IsDep = 0
+		 , @MaxMaxBet = ISNULL(MIN(CASE WHEN cg.MaxBet = 0 THEN NULL ELSE cg.MaxBet END), 0)
+		 , @MaxMaxperMatch = ISNULL(MIN(CASE WHEN cg.MaxPerGameType = 0 THEN NULL ELSE cg.MaxPerGameType END), 0)
+	  FROM dbo.CustGameType cg WITH(NOLOCK)
+INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON cg.CustID = ci.custid
+	 WHERE cg.custid IN (@mrecommend, @srecommend)
+       AND cg.GameTypeID = @GameTypeID
+  GROUP BY cg.GameTypeID
 
 	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
 	BEGIN
@@ -86,6 +102,25 @@ BEGIN
 			, @ErrCode = 103
 		RETURN
 	END
+
+    SELECT @MinMinBet = MinBet
+      FROM ProductBetSetting bs WITH(NOLOCK)
+     WHERE bs.Bettype = @BetType
+       AND bs.Sporttype = @SportType
+       AND currency = @currency
+       AND IsDep = 0
+
+    --MinBet >= Global MinBet
+    IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
+	BEGIN
+        SELECT @ErrMsg =
+                 CASE @Language 
+				   WHEN 'E' THEN 'Min Bet must be greater than or equal to Min Bet limit.'
+				   ELSE [dbo].[f_Get_MsgNamebyMsgID](10030, @Language)
+                 END + ' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
+             , @ErrCode = 107
+		RETURN
+    END
 
 	IF (@MaxMaxBet > 0 AND @MaxBet > 0 AND @MaxBet > @MaxMaxBet)
 	BEGIN
@@ -199,12 +234,3 @@ BEGIN
 	END CATCH
 		---------------------------------------------------------
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet] TO [bodbadminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdAgentKeno_MinMaxBet] TO [vnteam] AS [dbo]

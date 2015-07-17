@@ -1,13 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_05    Script Date: 8/21/2014 3:12:20 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting3rd_05    Script Date: 8/21/2014 2:58:13 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_05]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_05]
     @srecommend INT = 0,
     @mrecommend INT =0,
     @recommend INT = 0,
@@ -304,65 +295,56 @@ CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_05]
     @KenoBetType INT = 0,
     @updateautopositiontakingv202 bit = 1,
     
+	--GoldDeluxe
+    @IsAuto_v255MPositionTaking_1701 BIT = 0,
+    @Old_IsAuto_v255MPositionTaking_1701 BIT = 0,
+    @Auto_v255MPositionTaking_1701 SMALLMONEY = 0,
+    @IsAuto_v255SPositionTaking_1701 BIT = 0,
+    @Old_IsAuto_v255SPositionTaking_1701 BIT = 0,
+    @Auto_v255SPositionTaking_1701 SMALLMONEY = 0,    
+    @UpdateAutoPositiontakingv255 BIT = 1,
+
     @updateallmembers bit = 0,
     @updatemultiple bit = 0,
     @newspositiontaking smallmoney =0 ,
     @newmpositiontaking smallmoney =0
 
 AS
-    /*
-        Created: Johnson
-        Date: 2013-10-29
-        Task: Apply execrep when UPDATE auto pt ON master , agent, member levels
-        DB: DBTXN/bodb02
-        Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
-                    Acc_CustomerUpdAgent_AutoPositiontaking                    
-                    Acc_CustomerUpdMasterVS_Positiontaking
-                    Acc_CustomerUpdAgentVS_PositionTaking
-                    Acc_CustomerUpdMasterLiveCS_Positiontaking
-                    Acc_CustomerUpdAgentLiveCS_PositionTaking
-                    Acc_CustomerUpdMasterHR_Positiontaking
-                    Acc_CustomerUpdAgentHR_PositionTaking
-        Revision:
-            - 20131104@Johnson: Add virtual sports, live casino, racing
-            - 20140320@Patrick: Add more Keno product
-            - 20140818@Logan: Exclude disabled members while updating Master setting [Redmine: #19631]
+/*
+    Created: Johnson
+    Date: 2013-10-29
+    Task: Apply execrep when UPDATE auto pt ON master , agent, member levels
+    DB: DBCUST/custDB
+    Original versions: Acc_CustomerUpdMaster_AutoPositiontaking
+                Acc_CustomerUpdAgent_AutoPositiontaking                    
+                Acc_CustomerUpdMasterVS_Positiontaking
+                Acc_CustomerUpdAgentVS_PositionTaking
+                Acc_CustomerUpdMasterLiveCS_Positiontaking
+                Acc_CustomerUpdAgentLiveCS_PositionTaking
+                Acc_CustomerUpdMasterHR_Positiontaking
+                Acc_CustomerUpdAgentHR_PositionTaking
+    Revision:
+        - 20131104@Johnson: Add virtual sports, live casino, racing
+        - 20140320@Patrick: Add more Keno product
+        - 20140818@Logan: Exclude disabled members while updating Master setting [Redmine: #19631]
+		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+	   - 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST   		
+		
 
-        Parameter's Explanation:
-    */
+    Parameter's Explanation:
+*/
 BEGIN
     SET NOCOUNT ON
-    DECLARE @IsExistTables tinyint, @IsExistViews TINYINT
-    SET @IsExistTables = 0
-    SET @IsExistViews = 0
 
-    IF @mode IN ('LiveCasino', 'Keno')
-    BEGIN    
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'U'
-                
-        SELECT @IsExistViews = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-                AND xtype = 'V'                
-    END
-    ELSE
-    BEGIN
-        SELECT @IsExistTables = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'U'
-                
-        SELECT @IsExistViews = COUNT(*) 
-        FROM dbo.sysobjects
-        WHERE    name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-                AND xtype = 'V'                
-    END
-
-    IF @IsExistTables <> 3 AND @IsExistViews <> 3
-        RETURN
+	if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('custsetting3rd') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+	   AND dbo.f_CheckRepTable('CustSettingGame') = 1
+	   AND dbo.f_CheckRepTable('CustOverrideGame') = 1	   
+	   )
+	RETURN   
 
     DECLARE
         @bettype int,
@@ -1642,6 +1624,79 @@ BEGIN
                  WHERE b.isautopositiontaking = 0 --and b.oldisautopositiontaking = 0 
                    AND cs.isautopositiontaking = 0
             END
+        END   
+		ELSE IF @mode = 'GoldDeluxe'
+        BEGIN
+            IF @UpdateAutoPositiontakingv255 = 1
+            BEGIN
+                IF @IsAuto_v255SPositionTaking_1701 > 0 --auto PT is used
+                BEGIN
+                    --UPDATE use Auto_SPT at master for all members only when:
+                    --++(autoSPT at master changes AND isauto at master = 1 OR isauto at master changes FROM 0 to 1)
+                    --++AND isauto at member = 0
+                    SELECT @maxpos = spositiontaking 
+                      FROM dbo.CustSettingGame WITH(NOLOCK) 
+                     WHERE custid = @srecommend
+                       AND bettype = 1701
+                       AND sporttype = 255
+
+                    UPDATE cs
+                       SET cs.spositiontaking =
+                             CASE
+                               WHEN @maxpos - cs.mpositiontaking - cs.apositiontaking > @Auto_v255SPositionTaking_1701 THEN @Auto_v255SPositionTaking_1701
+                               ELSE @maxpos - cs.mpositiontaking - cs.apositiontaking
+                             END
+                      FROM dbo.CustSettingGame cs WITH(ROWLOCK, UPDLOCK) 
+                INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+                     WHERE ci.mrecommend = @mrecommend
+                       AND ci.roleid = 1
+                       AND ci.Enabled = 1
+                       AND cs.bettype = 1701
+                       AND cs.sporttype = 255
+                       AND cs.isautopositiontaking = 0 -- only UPDATE members without AutoSPT at member
+                END
+                ELSE IF @IsAuto_v255SPositionTaking_1701 <> @Old_IsAuto_v255SPositionTaking_1701  --auto PT is NOT used
+                BEGIN
+                    IF @Updateallmembers = 1
+                    BEGIN
+                        --UPDATE a specific SPT for all members only when:
+                        --++ @updateallmembers = 1
+                        --++ isauto at master = 0
+                        --++ AND isauto at master change FROM 1 to 0
+                        --++ AND isauto at member = 0
+                        UPDATE cs
+                           SET cs.spositiontaking =
+                                 CASE
+                                   WHEN mcs.spositiontaking < @newspositiontaking THEN mcs.spositiontaking
+                                   ELSE @newspositiontaking
+                                 END
+                          FROM dbo.CustSettingGame cs WITH(ROWLOCK, UPDLOCK) 
+                    INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
+                    INNER JOIN dbo.CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @mrecommend
+                                                                   AND mcs.sporttype = cs.sporttype
+                                                                   AND mcs.bettype = cs.bettype
+                         WHERE ci.mrecommend = @mrecommend
+                           AND ci.roleid = 1
+                           AND ci.Enabled = 1
+                           AND cs.bettype = 1701
+                           AND cs.sporttype = 255
+                           AND cs.isautopositiontaking = 0
+                    END
+                END
+            END
+            ELSE
+            BEGIN
+               UPDATE cs 
+               SET spositiontaking = @newspositiontaking
+               FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
+					INNER JOIN custinfo ci WITH(NOLOCK) ON ci.custid = cs.custid
+													   AND ci.mrecommend = @mrecommend
+													   AND ci.roleid = 1
+													   AND ci.Enabled = 1					
+				WHERE @IsAuto_v255SPositionTaking_1701 = 0
+					AND cs.isautopositiontaking = 0
+					AND cs.Sporttype = 255 AND cs.Bettype = 1701
+            END
         END    
     END
     ELSE IF @roleid = 2
@@ -2453,20 +2508,52 @@ BEGIN
                 AND cs.isautompositiontaking = 0 
             END
         END
+		ELSE IF @mode = 'GoldDeluxe'
+        BEGIN
+            IF @UpdateAutoPositiontakingv255 = 1
+            BEGIN
+                IF @IsAuto_v255MPositionTaking_1701 > 0 --Use AUTO MPT
+                BEGIN
+                    --m1=min(m3-a1,u2)
+                    SELECT @maxpos = mpositiontaking 
+                    FROM dbo.CustSettingGame WITH(NOLOCK)                    
+                    WHERE custid = @mrecommend AND bettype = 1701 AND sporttype = 255
+                        
+                    UPDATE cs 
+                       
+                    SET mpositiontaking = CASE WHEN @maxpos - apositiontaking > @Auto_v255MPositionTaking_1701 THEN @Auto_v255MPositionTaking_1701 ELSE @maxpos - apositiontaking END
+					FROM dbo.CustSettingGame AS cs WITH(ROWLOCK, UPDLOCK) 
+						INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid                   
+					WHERE ci.recommend = @recommend AND ci.roleid = 1
+						AND cs.bettype = 1701 AND cs.sporttype = 255
+                END
+               
+                ELSE IF @IsAuto_v255MPositionTaking_1701 <> @Old_IsAuto_v255MPositionTaking_1701 --Not use AUTO MPT
+                BEGIN
+                    IF @updateallmembers = 1 --all member
+                    BEGIN
+                        --m1=min(m2,@newmpositiontaking)
+                        UPDATE cs                            
+                        SET mpositiontaking = CASE WHEN acs.mpositiontaking < @newmpositiontaking THEN acs.mpositiontaking ELSE @newmpositiontaking END
+                        FROM dbo.CustSettingGame AS cs WITH(ROWLOCK, UPDLOCK) 
+							INNER JOIN dbo.custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+							INNER JOIN dbo.CustSettingGame AS acs WITH(NOLOCK)  ON acs.custid = @recommend AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype                       
+                         WHERE c.recommend = @recommend AND c.roleid = 1
+                            AND cs.bettype = 1701 AND cs.sporttype = 255
+                    END
+                END
+            END
+            ELSE
+            BEGIN
+                UPDATE cs        
+                SET mpositiontaking = @newmpositiontaking       
+                FROM CustSettingGame as cs WITH(ROWLOCK, UPDLOCK)        
+                    INNER JOIN custinfo ci(nolock) ON cs.custid = ci.custid AND ci.recommend = @recommend AND ci.roleid = 1        
+                WHERE @IsAuto_v255MPositionTaking_1701 = 0
+					AND cs.isautompositiontaking = 0 
+					AND cs.Sporttype = 255 AND cs.Bettype = 1701
+            END
+        END
     END
 END
 
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting3rd_05] TO [vnteam]
-GO 

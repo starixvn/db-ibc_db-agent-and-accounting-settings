@@ -1,15 +1,17 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuper_Commission]    Script Date: 06/10/2015 15:21:13 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_Commission    Script Date: 8/28/2014 2:05:02 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_Commission    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_Commission    Script Date: 8/21/2014 2:58:05 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_Commission    Script Date: 12/5/2013 5:35:52 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuper_Commission]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_Commission]
     @custid INT,-- superid
     
     @groupa DECIMAL(9,8),
@@ -50,6 +52,7 @@ Revisions:
     - 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
     - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
     - 20131029@Kathy: Apply exec rep to update commission [Redmine:#3244]
+     - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -74,7 +77,7 @@ declare @err1 int, @err2 int
     where custid = @custid
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -129,7 +132,7 @@ BEGIN
         
 
     -- Apply exec rep: 
-    exec Acc_CustSetting_06
+                exec Acc_CustSetting_06
         @CustId = @custid,
         @RoleId = @RoleId,
         @groupa = @groupa,
@@ -140,7 +143,7 @@ BEGIN
         @discountHRFixedOdds = @discountHRFixedOdds,        
         @discount1x2 = @discount1x2
 
-    exec Acc_CustSetting3rd_06
+                exec Acc_CustSetting3rd_06
         @CustId = @custid,
         @RoleId = @RoleId,
         @discountNumber = @discountnumber,
@@ -235,18 +238,7 @@ BEGIN CATCH
         @duration = @duration    
 END CATCH
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [bodbAdminNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_Commission] TO [vnteam] AS [dbo]

@@ -1,22 +1,23 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerSelVSCloneSetting_Ag]
 	@Custid INT
 AS
-	/*
-		Created: Dan
-		Date: 2012-08-23
-		Task: Get virtual soccer setting of customer
-		DB: DB053.bodb02
+/*
+	Created: Dan
+	Date: 2012-08-23
+	Task: Get virtual soccer setting of customer
+	DB: DBCUST.CustDB
 		
-		Revisions:
-			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-			- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)	
-		Paramter's Explanation:
-	*/
+	Revisions:
+		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)	
+		- 20150616@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Paramter's Explanation:
+*/
 SET NOCOUNT ON
-	SELECT 				
+	SELECT
 		MAX( CASE WHEN cs.sporttype = 180 AND cs.bettype = 1201 THEN cs.minbet ELSE 0 END) as v180minbet_1201,
 		MAX( CASE WHEN cs.sporttype = 180 AND cs.bettype = 1201 THEN cs.maxbet ELSE 0 END) as v180maxbet_1201,
-		ci.MaxPerMatch180 as v180MaxPerMatch_1201,			
+		ci.MaxPerMatch180 as v180MaxPerMatch_1201,
 		
 		MAX( CASE WHEN cs.sporttype = 181 AND cs.bettype = 1231 THEN cs.minbet ELSE 0 END) as v181minbet_1231,
 		MAX( CASE WHEN cs.sporttype = 181 AND cs.bettype = 1231 THEN cs.maxbet ELSE 0 END) as v181maxbet_1231,

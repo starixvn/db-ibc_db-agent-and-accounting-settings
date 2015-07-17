@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01_xtest]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_01]
 	@custid INT =0,
 	@srecommend INT = 0,
 	@mrecommend INT = 0,
@@ -13,23 +13,33 @@ AS
 		Created: Johnson
 		Date: 2013-11-12
 		Task: Apply execrep when correct pt on member when create new member
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		Original versions: Acc_CustomerUpdMember_MinMaxPositiontaking
 						Acc_CustomerUpdMemberHR_MinMaxPositiontaking
 						Acc_CustomerUpdMemberVS_MinMaxPositiontaking
 						
 		Revisions:	
 			- 20140318@Elodie: Add Keno product [Redmine:#13156]
+			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+		  
+		  - 20150610@Daniel: 
+			  + Improve medthod check table existing in subscribers
+			  				
 		Parameter's Explanation:
 	*/	
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-			AND xtype = 'U'
-
-	if @IsExistTables <> 6 RETURN	
+	
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1
+	   )
+	   RETURN	
+	
+	
 	
 	declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxmapos smallmoney
 	
@@ -571,6 +581,7 @@ BEGIN
 			CustSetting3rd as cs with (ROWLOCK, UPDLOCK)
 			inner join custinfo as c with (NOLOCK) on cs.custid = c.custid
 			inner join CustSetting3rd as mcs with (NOLOCK) on mcs.custid = c.mrecommend and mcs.sporttype=cs.sporttype and mcs.bettype=cs.bettype
+
 			inner join CustSetting3rd as scs with (NOLOCK) on scs.custid = @srecommend and scs.sporttype=cs.sporttype and scs.bettype=cs.bettype
 		where
 			cs.custid = @custid
@@ -863,7 +874,7 @@ BEGIN
 		
 	END--end mode = 'LiveCasino'
 
-	ELSE IF @mode = 'Keno'
+	ELSE IF @mode = 'Keno' OR @mode = 'GoldDeluxe'
 	BEGIN		
 		--check agent min/max
 		--update a1=n2 when a1<n2

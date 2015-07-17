@@ -1,22 +1,31 @@
-ALTER PROCEDURE [Acc_CustomerSelEditAgentVS]
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditAgentVS]    Script Date: 6/9/2015 4:48:31 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[Acc_CustomerSelEditAgentVS]
 	@custid int--agentID
 AS
 /*
 Created: 20120810@Dan
 Task : Master edit agent (VS).
-DB: DB053.bodb02
+DB: DBCUST.CustDB
 
 Revisions:
-    	- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-    	- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
-		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
-		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+	- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+	- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
+	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+	- 20150609@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 	• @CustID: agent ID
 */
 
 	SET NOCOUNT ON
-	DECLARE			
+	DECLARE
 		@mrecommend int,
 		@srecommend int,
 	
@@ -126,6 +135,7 @@ Param's Explanation:
 			@HideVirtualSports		= ISNULL(HideVirtualSports,0),
 			@MaxPerMatch180			= MaxPerMatch180,
 			@MaxPerMatch181			= MaxPerMatch181,
+			@MaxPerMatch182			= MaxPerMatch182,
 			@MaxPerMatch183			= MaxPerMatch183,
 			@MaxPerMatch184			= MaxPerMatch184,
 			@MaxPerMatch185			= MaxPerMatch185,
@@ -218,6 +228,7 @@ Param's Explanation:
 		JOIN @MasterPT m on co.sporttype=m.sporttype and m.bettype=cs.bettype
 		JOIN @SuperPT s on co.sporttype=s.sporttype and s.bettype=cs.bettype	
 	WHERE cs.custid = @custid AND cs.sporttype  in (180, 181, 182, 183, 185, 184, 186) and cs.bettype in (1201, 1231, 1220)
+
 
 
 

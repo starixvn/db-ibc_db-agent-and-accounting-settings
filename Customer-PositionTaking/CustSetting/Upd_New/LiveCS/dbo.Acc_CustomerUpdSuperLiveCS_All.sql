@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_All]    Script Date: 06/10/2015 15:59:29 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_All    Script Date: 8/28/2014 2:05:19 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_All    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_All    Script Date: 8/21/2014 2:58:09 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_All]
     @custid        INT,        
     
     @v162spositiontaking_1101        SMALLMONEY,
@@ -35,6 +37,7 @@ AS
             - 20120914@Johnson: update pt first then min pt
             - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
             - 20130301@Johnson: change linked server DB053 to DBAGE 
+            - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID, temp sport, bettype table) [Redmine:#36216]
         Parameters Explanation:
     */
 SET NOCOUNT ON 
@@ -45,7 +48,7 @@ SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
 ---------------------------
 -- ***Check Downline Belonging***
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC dbo.Age_CustomerSelCheckBelongingByCustID
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @roleid = @roleid OUTPUT
@@ -53,7 +56,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
 ---------------------------
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -76,7 +79,7 @@ END
 
 IF @v162UpdateCommission_1101 = 1
 BEGIN        
-                                EXEC Acc_CustomerUpdSuperLiveCS_Commission @custid = @custid, @v162discount_1101 = @v162discount_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
+                                                                                                                                EXEC Acc_CustomerUpdSuperLiveCS_Commission @custid = @custid, @v162discount_1101 = @v162discount_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
     
     IF @ErrCode_Cur <> 0
     BEGIN
@@ -91,7 +94,7 @@ END
 
 IF @v162UpdatePositiontaking_1101 = 1
 BEGIN
-                                EXEC Acc_CustomerUpdSuperLiveCS_Positiontaking @custid = @custid, @v162spositiontaking_1101 = @v162spositiontaking_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    = @ErrMsg_Cur OUTPUT
+                                                                                                                                EXEC Acc_CustomerUpdSuperLiveCS_Positiontaking @custid = @custid, @v162spositiontaking_1101 = @v162spositiontaking_1101, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    = @ErrMsg_Cur OUTPUT
     
     IF @ErrCode_Cur <> 0
     BEGIN
@@ -106,7 +109,7 @@ END
 
 IF @v162UpdateMinPositiontaking_1101 = 1
 BEGIN
-                                EXEC Acc_CustOverrideUpdLiveCS @custid = @custid, @min_v162positiontaking_1101 = @v162spositiontaking_1101_min, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
+                                                                                                                                EXEC Acc_CustOverrideUpdLiveCS @custid = @custid, @min_v162positiontaking_1101 = @v162spositiontaking_1101_min, @IP = @IP ,@UserID = @userid, @Language = @Language, @ErrCode    = @ErrCode_Cur OUTPUT, @ErrMsg    =@ErrMsg_Cur OUTPUT
     
     IF @ErrCode_Cur <> 0
     BEGIN
@@ -118,22 +121,11 @@ BEGIN
         SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)        
 END
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbExtAccNet]
-GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_All] TO [vnteam] AS [dbo]

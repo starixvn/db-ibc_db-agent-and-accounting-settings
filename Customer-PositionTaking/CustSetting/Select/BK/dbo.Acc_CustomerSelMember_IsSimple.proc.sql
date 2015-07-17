@@ -1,22 +1,21 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelMember_IsSimple]
-	@CustID int , -- AgID
-	@IsSimple bit = 0 output
-as
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMember_IsSimple]
+	@CustID		INT , -- AgID
+	@IsSimple	BIT = 0 OUTPUT
+AS
 /*
 Created: 
 Task : Check is simple mode(agent create member)
-DB: DB052.bodb02
-
+DB: DBCUST.CustDB
 Revisions:
-    - 20090412@Phuc: Remove unused parameters. 
-    - 20090424@Phuc:Separate finance sporttype(201).
-    - 20090612@Phuc: remove HR.
+	- 20090412@Phuc: Remove unused parameters. 
+	- 20090424@Phuc:Separate finance sporttype(201).
+	- 20090612@Phuc: remove HR.
 	- 20101012@Lukas: add number game & mix sports parlay	
 	- 20110801@Lukas: (Number Game)
-			- Add more bettypes: Warrior, Next Combo, Number Group
-			- Remove Dead ball Over/Under
+		- Add more bettypes: Warrior, Next Combo, Number Group
+		- Remove Dead ball Over/Under
 	- 20110831@Lukas: Not offer Number Group yet (exclude when check Is simple)
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 	• @CustID: AgentID.
 	• @IsSimple: Simple mode.
@@ -190,8 +189,6 @@ from
 	INNER JOIN custinfo as ci WITH (NOLOCK) on (cs.CustID = ci.CustID or cs.CustID = ci.MRecommend or cs.CustID = ci.SRecommend) and cs.bettype = 1 and cs.sporttype=1
 where ci.custid = @CustID
 
-
-
 Select	
 	@MaxPerMatch = isnull(Min(case when cs.MaxPerMatch = 0 then NULL else cs.MaxPerMatch end),0) 
 from 
@@ -199,12 +196,12 @@ from
 	INNER JOIN custinfo as ci WITH (NOLOCK) on (cs.CustID = ci.CustID or cs.CustID = ci.MRecommend or cs.CustID = ci.SRecommend)
 where ci.custid = @CustID
 
-
 IF @Pt1378 <= @minpt1378 and @pt456920 <= @minpt456920 and @pt10 <= @minpt10 and @pt81 <= @minpt81 and @ptlive17 <= @minptlive17 and @ptlive38 <= @minptlive38
 	and @MinBet >= @MinBet_Max and @MaxBet <= @MaxBet_Min and @MaxPerMatch >= @MaxPerMatch_Min and @MaxPerMatch <= @MaxPerMatch_Max 
 		set @IsSimple = 1 
 else
 	set @IsSimple = 0
+
 
 
 

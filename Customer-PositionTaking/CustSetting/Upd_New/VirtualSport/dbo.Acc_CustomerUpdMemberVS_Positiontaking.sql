@@ -1,10 +1,11 @@
-﻿USE [custDB]
+﻿USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 11/28/2013 14:47:11 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]    Script Date: 06/16/2015 15:52:17 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberVS_Positiontaking    Script Date: 12/23/2013 2:26:52 PM ******/
 ALTER PROCEDURE  [dbo].[Acc_CustomerUpdMemberVS_Positiontaking]
 	@custid		INT,	
 	
@@ -31,6 +32,7 @@ AS
 			- 20130226@Johnson: change linked server DB053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
+			- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID, temp sport, bettype table) [Redmine:#36216]
 		Parameter's Explanation:	
 	*/
 SET NOCOUNT ON 
@@ -69,20 +71,43 @@ SET NOCOUNT ON
 					
 	SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 		
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+
 	SET @startRun = GETDATE()
 	
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
 		IF (@roleid = 0) RETURN
 	
 	---------------------------
+	
+	
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -117,8 +142,8 @@ SET NOCOUNT ON
 		(
 			select @bettype as bettype, @sporttype as sporttype, @a1 as apositiontaking 			
 		) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-		INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-		INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
+		INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid
+		INNER JOIN @tmp_sports s on b.sporttype = s.sporttype
 	WHERE co.custid = @recommend and (( (b.apositiontaking>co.maxpositiontaking or b.apositiontaking<co.minpositiontaking))
 	)		
 	
@@ -352,12 +377,11 @@ SET NOCOUNT ON
 	SELECT @ErrCode_Cur = -101 --success
 	
 	SELECT @ErrCode = @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7),
-				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)	
-	
+				@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberVS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO

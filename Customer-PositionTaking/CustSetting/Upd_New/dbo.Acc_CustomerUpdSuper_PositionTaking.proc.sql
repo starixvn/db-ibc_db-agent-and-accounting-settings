@@ -1,8 +1,11 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuper_PositionTaking]    Script Date: 06/10/2015 15:26:28 ******/
+SET ANSI_NULLS ON
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_PositionTaking    Script Date: 8/29/2014 1:31:47 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_PositionTaking    Script Date: 8/21/2014 3:12:18 PM ******/
 
@@ -253,6 +256,8 @@ Revisions:
     - 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
     - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                       2.Code aligning on modified parts
+    - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, temp sport, bettype table) [Redmine:#36216]
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -273,7 +278,7 @@ BEGIN
     --------------------------------------------------------------------------------------------
 
     ---- Thien@20131026: Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
         @roleid=4,
         @isExecRep=1,
         @isUpdatePT = 1,
@@ -284,7 +289,27 @@ BEGIN
     IF    @ErrCode <> 0 
         RETURN 
     ----------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
 
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+	
     --Check Param
     Declare @ErrAcc nvarchar(4000)
     declare @ErrType varchar(1000)
@@ -1182,8 +1207,8 @@ BEGIN
             
             union all     select 20 as bettype, 154 as sporttype, @v154spositiontaking_20 as spositiontaking, 0 as slivepositiontaking
         ) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-        INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
-        INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+        INNER JOIN @tmp_sports s on b.sporttype = s.sporttype
+        INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid
     where co.custid = @custid and (    
                         (b.spositiontaking<co.minpositiontaking) or 
                         (b.sporttype = 1 and b.bettype in (1,3,7,8) and (b.slivepositiontaking<co.minlivepositiontaking))
@@ -1215,8 +1240,8 @@ BEGIN
             union all     select 90 as bettype, 161 as sporttype, 0 as spositiontaking, @v161slivepositiontaking_90 as slivepositiontaking
             
         ) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-        INNER JOIN bodb02.dbo.sports s with (nolock) on b.sporttype = s.sporttype
-        INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
+        INNER JOIN @tmp_sports s  on b.sporttype = s.sporttype
+        INNER JOIN @tmp_bettype bt on b.bettype = bt.typeid
     where co.custid = @custid and (    
                         (b.spositiontaking<co.minpositiontaking) or 
                         (b.sporttype = 161 and b.bettype in (85,86,87,89,90) and (b.slivepositiontaking<co.minlivepositiontaking))
@@ -3809,17 +3834,7 @@ INNER JOIN (SELECT 161 AS sporttype
     END CATCH
 END
 
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [bodbAdminNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuper_PositionTaking] TO [vnteam] AS [dbo]

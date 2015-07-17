@@ -12,13 +12,18 @@ AS
 /*
 Created: 20131113@Johnson
 Task : Correct PT after SMA update pt on member
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 Original: Acc_CustomerUpdMemberHR_MinPositiontaking, 
 		Acc_CustomerUpdMember_MinPositiontaking, 
 		Acc_CustomerUpdMemberFI_MinPositiontaking
 
 Revisions:
 	- 20140314@Elodie: Add Keno product [Redmine:#13326]
+	- 20150424@Kathy: Add Gold Deluxe product [Redmine:#34486]
+	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST
+
 Param's Explanation:
 * @mode:
     = 'horse': Horse racing
@@ -33,26 +38,13 @@ Param's Explanation:
 */
 SET NOCOUNT ON
 
-DECLARE @IsExistTables tinyint
-SET @IsExistTables = 0
-
-IF @mode IN ('LiveCasino', 'Keno')
-BEGIN	
-	SELECT @IsExistTables = COUNT(*) 
-	FROM dbo.sysobjects
-	WHERE	name IN ('custinfo','CustSettingGame', 'CustOverrideGame')
-			AND xtype = 'U'
-END
-ELSE
-BEGIN
-	SELECT @IsExistTables = COUNT(*) 
-	FROM dbo.sysobjects
-	WHERE	name IN ('custinfo','CustSetting3rd', 'CustOverride3rd')
-			AND xtype = 'U'
-END
-
-IF @IsExistTables <> 3 
-	RETURN
+IF NOT(dbo.f_CheckRepTable('custinfo') = 1 
+   AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+   AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+   AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+   AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+   )
+ RETURN
 
 declare @mpos smallmoney, @apos smallmoney, @spos smallmoney, @mapos1 smallmoney, @mapos2 smallmoney, @mapos smallmoney, @maxspos smallmoney, @maxmapos smallmoney
 
@@ -697,7 +689,7 @@ BEGIN
     RETURN	
 END--end mode = 'LiveCasino'
 
-if @mode = 'Keno'
+if @mode = 'Keno' OR @mode = 'GoldDeluxe'
 BEGIN		
 	--check agent min/max
 	--update a1=n2 when a1<n2
@@ -792,6 +784,4 @@ BEGIN
 	
 	
     RETURN	
-END--end mode = 'Keno'
-
-
+END--end mode = 'Keno', 'GoldDeluxe'

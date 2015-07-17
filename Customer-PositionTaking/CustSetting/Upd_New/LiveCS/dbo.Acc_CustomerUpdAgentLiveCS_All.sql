@@ -36,6 +36,7 @@ AS
 		- 20140724@Johnson: write log all parameters for tracking pt issue 
 		- 20140725@Johnson: comment code write log paramters 
 							and call sp check parameters before update pt
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 	Parameters Explanation:
 */
 BEGIN
@@ -52,7 +53,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelongingByCustID 
 		@SessionCustID = @mrecommend, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -60,7 +61,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT	@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7), 
@@ -168,7 +169,7 @@ BEGIN
 */
 	IF @v162UpdatePositiontaking_1101 = 1 OR @v162UpdateAutoPositiontaking_1101 = 1
 	BEGIN 
-		EXEC Acc_CustomerUpdAgentLiveCS_CheckParam
+								EXEC Acc_CustomerUpdAgentLiveCS_CheckParam
 			@custid								= @custid,
 			
 			@v162mpositiontaking_1101			= @v162mpositiontaking_1101,
@@ -222,7 +223,7 @@ BEGIN
 	BEGIN
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 
-								EXEC dbo.Acc_CustomerUpdAgentLiveCS_PositionTaking 
+																																EXEC dbo.Acc_CustomerUpdAgentLiveCS_PositionTaking 
 					@custid								= @custid,
 					
 					@v162mpositiontaking_1101			= @v162mpositiontaking_1101,

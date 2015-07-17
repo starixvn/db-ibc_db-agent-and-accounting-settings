@@ -1,13 +1,7 @@
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_00    Script Date: 10/31/2014 11:14:10 AM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
-	@mrecommend INT = 0,
+	@mrecommend INT = 0,	
 	@recommend INT = 0,
 	@roleid INT,
  
@@ -104,6 +98,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161slivepositiontaking_90 SMALLMONEY = 0,
 	
 	@v162spositiontaking_1101 SMALLMONEY =0,
+	@v255spositiontaking_1701 SMALLMONEY =0,
 
 	@v180spositiontaking_1201 smallmoney = 0,
 	@v181spositiontaking_1231 smallmoney = 0,
@@ -361,6 +356,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161mlivepositiontaking_90 SMALLMONEY =0,
 	
 	@v162mpositiontaking_1101 SMALLMONEY =0,
+	@v255mpositiontaking_1701 SMALLMONEY =0,
 
 	@v180mpositiontaking_1201 smallmoney = 0,
 	@v181mpositiontaking_1231 smallmoney = 0,
@@ -607,25 +603,26 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161alivepositiontaking_90 SMALLMONEY = 0,
 	
 	@v162apositiontaking_1101 SMALLMONEY = 0,
+	@v255apositiontaking_1701 SMALLMONEY = 0,
 
-	@v180apositiontaking_1201 smallmoney = 0,
-	@v181apositiontaking_1231 smallmoney = 0,
-	@v182apositiontaking_1231 smallmoney = 0,
-	@v183apositiontaking_1231 smallmoney = 0,
-	@v184apositiontaking_1231 smallmoney = 0,
-	@v185apositiontaking_1231 smallmoney = 0,
-	@v186apositiontaking_1220 smallmoney = 0,
-	
-	@v202apositiontaking_1501 smallmoney = 0,
-	@v202apositiontaking_1511 smallmoney = 0,
-	@v202apositiontaking_1503 smallmoney = 0,
-	@v202apositiontaking_1504 smallmoney = 0,
-	@v202apositiontaking_1505 smallmoney = 0,
-	@v202apositiontaking_1513 smallmoney = 0,
-	@v202apositiontaking_1507 smallmoney = 0,
-	@v202apositiontaking_1508 smallmoney = 0,
-	@v202apositiontaking_1509 smallmoney = 0,
-	@v202apositiontaking_1514 smallmoney = 0,
+	@v180apositiontaking_1201 SMALLMONEY = 0,
+	@v181apositiontaking_1231 SMALLMONEY = 0,
+	@v182apositiontaking_1231 SMALLMONEY = 0,
+	@v183apositiontaking_1231 SMALLMONEY = 0,
+	@v184apositiontaking_1231 SMALLMONEY = 0,
+	@v185apositiontaking_1231 SMALLMONEY = 0,
+	@v186apositiontaking_1220 SMALLMONEY = 0,
+							  
+	@v202apositiontaking_1501 SMALLMONEY = 0,
+	@v202apositiontaking_1511 SMALLMONEY = 0,
+	@v202apositiontaking_1503 SMALLMONEY = 0,
+	@v202apositiontaking_1504 SMALLMONEY = 0,
+	@v202apositiontaking_1505 SMALLMONEY = 0,
+	@v202apositiontaking_1513 SMALLMONEY = 0,
+	@v202apositiontaking_1507 SMALLMONEY = 0,
+	@v202apositiontaking_1508 SMALLMONEY = 0,
+	@v202apositiontaking_1509 SMALLMONEY = 0,
+	@v202apositiontaking_1514 SMALLMONEY = 0,
 	
 	@MinBet MONEY = 0,
 	@MaxBet MONEY = 0,	
@@ -771,6 +768,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v162adiscount_1101 decimal(9,8) = 0,
 	@v162sdiscount_1101 decimal(9,8) = 0,
 	
+	--v255
+	@v255discount_1701 decimal(9,8) = 0,
+	@v255adiscount_1701 decimal(9,8) = 0,
+	@v255sdiscount_1701 decimal(9,8) = 0,
+
 	--v154
 	@discountHRFixedOdds decimal(9,8) = 0,
 	@adiscountHRFixedOdds decimal(9,8) = 0,
@@ -785,13 +787,13 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 		Created: Johnson
 		Date: 20131106
 		Task: Apply execrep when insert into custsetting/custsetting3rd
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 			- 20131120@Kathy: Add Virtual Greyhounds, Virtual Motor Racing (182, 184) [Redmine:#7234]. Refer to Sps:
 				+ Acc_CustomerInsMemb
-				+ Acc_CustomerInsMember_SAg
-				+ Acc_CustomerInsMember_MAg
+				+ Acc_CustomerInsMember_SAg_xtest
+				+ Acc_CustomerInsMember_MAg_xtest
 				+ Acc_CustomerInsMember_Ag
 			- 20140303@Patrick	: Add more sport:202 for Keno
 			- 20140331@Sophia: remove Fi sporttype = 201
@@ -803,19 +805,53 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
                                 + MaxBet & MaxPerMatch = MIN(AllUpline)
                                 + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
 			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
+			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]			
+			- 20150603@Daniel: 
+				+ Separate custDB to new server DBCUST: 
+				+ Improve medthod check table existing in subscribers	
+			- 20150715@Viet: remove P2P tables from replication check	
+			  
+			  	
 		Parameter's Explanation:
+		
 	*/
 BEGIN
-SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
+    SET NOCOUNT ON
+			
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+		  AND dbo.f_CheckRepTable('CustGameType') = 1
+		  AND dbo.f_CheckRepTable('ProductGlobalSetting') = 1 
+		  AND dbo.f_CheckRepTable('ProductBetSetting') = 1 
+		  --AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
+		  --AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
+	   )
+	   RETURN
 
-	if @IsExistTables <> 7 RETURN
 
-    DECLARE @currency INT
+    DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
+    DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
+    DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
+    
+    IF(dbo.f_CheckRepTable('GameType') = 1)
+	   INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+	   SELECT GameTypeID, IBCBettypeID FROM GameType WITH (NOLOCK)
+    ELSE
+	   BEGIN TRY		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	   END TRY
+	   BEGIN CATCH		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	   END CATCH
+   
+	   
+DECLARE @currency INT
           , @super    INT
           , @master   INT
 
@@ -823,7 +859,7 @@ SET NOCOUNT ON
          , @super = srecommend
          , @master = mrecommend
       FROM dbo.custInfo WITH(NOLOCK)
-     WHERE custid = @custid
+    WHERE custid = @custid		
 
 	IF @roleid = 4
 	BEGIN					
@@ -1109,7 +1145,7 @@ SET NOCOUNT ON
 			RETURN
 		END           
 		
-		--Insert live casino, Keno setting
+		--Insert live casino, Keno, GoldDeluxe setting
 		INSERT INTO CustSettingGame([CustID]
 				   ,[Bettype]
 				   ,[Sporttype]
@@ -1135,6 +1171,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid , 1508, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1508
 		UNION ALL SELECT @custid , 1509, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1509
 		UNION ALL SELECT @custid , 1514, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1514
+		UNION ALL SELECT @custid , 1701, 255, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 255 and Bettype = 1701 AND IsDep = 0
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1169,6 +1206,7 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 1508, 202, 0
 		UNION ALL SELECT @custid, 1509, 202, 0
 		UNION ALL SELECT @custid, 1514, 202, 0
+		UNION ALL SELECT @custid, 1701, 255, 0
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -1186,13 +1224,20 @@ SET NOCOUNT ON
 			DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 			
 			RETURN
-		END
+		END		
+
+		DECLARE @StakeLevelList_1701 VARCHAR(50), @StakeLevelList_1702 VARCHAR(50)
+		SELECT @StakeLevelList_1701 = '', @StakeLevelList_1702 = ''
+		SELECT @StakeLevelList_1701 = @StakeLevelList_1701 + CASE WHEN @StakeLevelList_1701 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1701 AND ExchangeId = @currency
+		SELECT @StakeLevelList_1702 = @StakeLevelList_1702 + CASE WHEN @StakeLevelList_1702 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1702 AND ExchangeId = @currency
 
 		--Keno
-		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT	GameTypeID, @Custid, 0, 0, 0, 1
-		FROM	bodb02.dbo.GameType WITH(NOLOCK)
+		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
+		SELECT	GameTypeID, @Custid, 0, 0, 0, 1, CAST(0 AS VARCHAR(100))
+		FROM	@tmp_GameType
 		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
+		UNION ALL SELECT 1701, @custid, 0, 0, 0, 0, @StakeLevelList_1701
+		UNION ALL SELECT 1702, @custid, 0, 0, 0, 0, @StakeLevelList_1702
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -1312,7 +1357,6 @@ SET NOCOUNT ON
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 20, 154, ISNULL(@v154spositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@auto_v154spositiontaking_20,0), ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, ISNULL(@minbetv154,0), ISNULL(@maxbetv154,0), 0, 0, ISNULL(@isauto_v154spositiontaking_20,0), 0, 0, 0, 0, 0
-
 
 		if @@Error <> 0
 		BEGIN
@@ -1602,6 +1646,11 @@ SET NOCOUNT ON
 			SELECT @custid , bettype, 202, 0, 0, spositiontaking, 0, 0, 0,  0, 0, 0 ,0 ,0       
 			FROM CustSettingGame cs WITH(NOLOCK)
 			WHERE cs.custid = @srecommend and cs.sporttype = 202 AND cs.bettype BETWEEN 1501 AND 1599
+			UNION ALL 
+			SELECT @custid , bettype, sporttype, 0, 0, spositiontaking, 0, 0, 0,  0, 0, 0 ,0 ,0       
+			FROM CustSettingGame cs WITH(NOLOCK)
+			WHERE cs.custid = @srecommend and cs.sporttype = 255 AND cs.bettype = 1701
+
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
@@ -1629,6 +1678,10 @@ SET NOCOUNT ON
 		SELECT @custid, bettype, 202, 0 
 		FROM CustOverrideGame co WITH(NOLOCK)
 		WHERE co.custid = @srecommend and co.sporttype = 202 AND co.bettype BETWEEN 1501 AND 1599	
+		UNION ALL 
+		SELECT @custid, bettype, sporttype, 0 
+		FROM CustOverrideGame co WITH(NOLOCK)
+		WHERE co.custid = @srecommend and co.sporttype = 255 AND co.bettype = 1701
 	
 
 		IF @@ERROR <> 0
@@ -1675,13 +1728,15 @@ SET NOCOUNT ON
              , cg.MaxBet
              , cg.MaxPerGameType
              , cg.IsDisabled
-		  FROM dbo.CustGameType cg WITH(NOLOCK)
-    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
-		 WHERE cg.CustID = @srecommend
+		FROM dbo.CustGameType cg WITH(NOLOCK)
+			INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
+			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+		WHERE cg.CustID = @srecommend
            AND pbs.Currency = @currency
            AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
-		
+		UNION ALL 
+		SELECT GameTypeID, @custid, StakeLevelList, 0, 0, 0, 0 FROM CustGameType WITH (NOLOCK) WHERE CustID = @srecommend AND GameTypeID IN (1701,1702)
+
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
@@ -1879,9 +1934,7 @@ SET NOCOUNT ON
 		UNION ALL -- v185 Virtual Cycling
 		select @custid, 1231, 185, 0, ISNULL(@min_v185mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL -- v186 virtual tennis
-		select @custid, 1220, 186, 0, ISNULL(@min_v186mpositiontaking_1220,0), 0, 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		
-		
+		select @custid, 1220, 186, 0, ISNULL(@min_v186mpositiontaking_1220,0), 0, 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0		
 
 		if @@error <> 0
 		BEGIN
@@ -2029,7 +2082,6 @@ SET NOCOUNT ON
 		UNION ALL 
 		SELECT @custid  , 1002 , stakeLevel1 , 0 , 0 , 0 , 0 FROM dbo.P2PGAMESETTING WITH(ROWLOCK) WHERE custid = @mrecommend AND bettype = 1002
 
-
 		if @@error <> 0
 		BEGIN
 
@@ -2081,6 +2133,10 @@ SET NOCOUNT ON
 		SELECT @custid , bettype, 202, 0, mpositiontaking, 0, 0, 0, 0,  0, 0, 0 ,0 ,0       
 		FROM CustSettingGame cs WITH(NOLOCK)
 		WHERE cs.custid = @mrecommend and cs.sporttype = 202 AND cs.bettype BETWEEN 1501 AND 1599
+		UNION ALL 
+		SELECT @custid , bettype, sporttype, 0, mpositiontaking, 0, 0, 0, 0,  0, 0, 0 ,0 ,0       
+		FROM CustSettingGame cs WITH(NOLOCK)
+		WHERE cs.custid = @mrecommend and cs.sporttype = 255 AND cs.bettype = 1701
 
 		if @@error <> 0
 		BEGIN
@@ -2107,6 +2163,10 @@ SET NOCOUNT ON
 		SELECT @custid, bettype, 202, 0
 		FROM Custoverridegame WITH (NOLOCK) 
 		WHERE custid = @mrecommend AND Sporttype = 202 AND Bettype BETWEEN 1501 and 1599
+		UNION ALL 
+		SELECT @custid, bettype, Sporttype, 0
+		FROM Custoverridegame WITH (NOLOCK) 
+		WHERE custid = @mrecommend AND Sporttype = 255 AND Bettype =1701
 		
 		if @@error <> 0
 		BEGIN
@@ -2172,7 +2232,7 @@ SET NOCOUNT ON
                END
              , mcg.IsDisabled
 		  FROM dbo.CustGameType mcg WITH(NOLOCK)
-    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON mcg.GameTypeID = gt.GameTypeID
+    INNER JOIN @tmp_GameType gt ON mcg.GameTypeID = gt.GameTypeID
     INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
      LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
                                                 AND scg.CustID = @super
@@ -2180,6 +2240,9 @@ SET NOCOUNT ON
 		 WHERE mcg.CustID = @mrecommend
            AND pbs.Currency = @currency
            AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
+		
+		UNION ALL 
+		SELECT GameTypeID, @custid, StakeLevelList, 0, 0, 0, 0 FROM CustGameType WITH (NOLOCK) WHERE CustID = @mrecommend AND GameTypeID IN (1701,1702)
 
 		IF @@error <> 0
 		BEGIN
@@ -2378,8 +2441,6 @@ SET NOCOUNT ON
 		select @custid, 1231, 185, ISNULL(@v185apositiontaking_1231,0), ISNULL(@v185mpositiontaking_1231,0), ISNULL(@v185spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 1220, 186, ISNULL(@v186apositiontaking_1220,0), ISNULL(@v186mpositiontaking_1220,0), ISNULL(@v186spositiontaking_1220,0), 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
-
-
 		
 		if @@Error <> 0
 		BEGIN
@@ -2416,6 +2477,7 @@ SET NOCOUNT ON
 
 
 		INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
+
 				   (custId,groupID,sdiscount,adiscount,discount,playerdiscount)
 		SELECT @custid custId
 			,P2PGroupComm.groupID
@@ -2479,8 +2541,11 @@ SET NOCOUNT ON
 		SELECT @custid, 1509, 202, ISNULL(@v202apositiontaking_1509,0), ISNULL(@v202mpositiontaking_1509,0), ISNULL(@v202spositiontaking_1509,0), 0, ISNULL(@v202discount_1509,0), ISNULL(@v202adiscount_1509,0), ISNULL(@v202sdiscount_1509,0), 0, 0, 0, 0
 		UNION ALL
 		SELECT @custid, 1514, 202, ISNULL(@v202apositiontaking_1514,0), ISNULL(@v202mpositiontaking_1514,0), ISNULL(@v202spositiontaking_1514,0), 0, ISNULL(@v202discount_1514,0), ISNULL(@v202adiscount_1514,0), ISNULL(@v202sdiscount_1514,0), 0, 0, 0, 0
-				
-				
+		UNION ALL
+		SELECT @custid, 1701, 255, ISNULL(@v255apositiontaking_1701,0), ISNULL(@v255mpositiontaking_1701,0), ISNULL(@v255spositiontaking_1701,0), 0, ISNULL(@v255discount_1701,0), ISNULL(@v255adiscount_1701,0), ISNULL(@v255sdiscount_1701,0), 0, 0, 0, 0
+		FROM CustSettingGame 
+		WHERE custid = @recommend AND sporttype = 255 AND bettype = 1701
+								
 		if @@error <> 0
 		BEGIN
 
@@ -2495,7 +2560,7 @@ SET NOCOUNT ON
 			DELETE custsettingGame WITH (ROWLOCK) WHERE custId  =@custid
 				
 			RETURN
-		END
+		END	
 
 		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
         --      Member.MaxBet = MIN(Agent.MaxBet, Master.MaxBet, Super.MaxBet)
@@ -2547,18 +2612,18 @@ SET NOCOUNT ON
                END
              , acg.IsDisabled
 		  FROM dbo.CustGameType acg WITH(NOLOCK)
-    INNER JOIN bodb02.dbo.GameType gt WITH(NOLOCK) ON acg.GameTypeID = gt.GameTypeID
-    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
-     LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON acg.GameTypeID = scg.GameTypeID
-                                                AND scg.CustID = @super
-                                                AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
-     LEFT JOIN dbo.CustGameType mcg WITH(NOLOCK) ON acg.GameTypeID = mcg.GameTypeID
-                                                AND mcg.CustID = @master
-                                                AND NOT (mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0)
+			INNER JOIN @tmp_GameType gt ON acg.GameTypeID = gt.GameTypeID
+			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+			LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON acg.GameTypeID = scg.GameTypeID
+														AND scg.CustID = @super
+														AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
+			LEFT JOIN dbo.CustGameType mcg WITH(NOLOCK) ON acg.GameTypeID = mcg.GameTypeID
+														AND mcg.CustID = @master
+														AND NOT (mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0)
 		 WHERE pbs.Currency = @currency
            AND acg.CustID = @recommend
-           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
-
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599		
+		
 		IF @@error <> 0
 		BEGIN
 			--Error occur
@@ -2575,15 +2640,50 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
+
+		--Gold Deluxe
+		DECLARE @StakeLevelListAg_1701 VARCHAR(50), @StakeLevelListAg_1702 VARCHAR(50), @StakeLevelID_1701 VARCHAR(50),  @StakeLevelID_1702 VARCHAR(50)
+		SELECT @StakeLevelListAg_1701 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1701
+		SELECT @StakeLevelListAg_1702 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1702
+
+		IF @StakeLevelListAg_1701 IS NOT NULL AND @StakeLevelListAg_1702 IS NOT NULL
+		BEGIN
+			SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+			SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		END
+
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )		
+		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 WHERE @StakeLevelID_1701 IS NOT NULL
+		UNION ALL 
+		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 WHERE @StakeLevelID_1702 IS NOT NULL 
+		
+		IF @@error <> 0
+		BEGIN
+			--Error occur
+			SET @ErrCode = 156
+				
+			-- ROLLBACK MANUALLY
+			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
+			Delete dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid			
+				
+			RETURN
+		END
+		--End Gold Deluxe
 	END
 END
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]

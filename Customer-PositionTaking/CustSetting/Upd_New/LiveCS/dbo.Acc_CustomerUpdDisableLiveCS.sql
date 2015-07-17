@@ -1,6 +1,4 @@
-﻿USE [CustDB]
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableLiveCS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableLiveCS]
 	@custid		INT,
 	@DisabledLiveCS BIT = NULL,	
 	@EnableDownlinesLiveCS BIT = 0,
@@ -27,6 +25,7 @@ AS
 			- 20130924@Kathy: Apply Exec Rep 
 			- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)
 			- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
+			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
 		Parameters Explanation:
 	*/ 
 SET NOCOUNT ON
@@ -64,7 +63,7 @@ SET NOCOUNT ON
 --Check Allowed downlines during peak hour at weekend	
 	IF @DisabledLiveCS = 1 OR @EnableDownlinesLiveCS = 1
 	BEGIN
-		EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+		EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1,
 											@Language=@Language,

@@ -195,7 +195,7 @@ AS
 		Created: Johnson
 		Date: 2013-10-30
 		Task: Apply execrep update pt on member
-		DB: DBTXN/bodb02
+		DB: DBCUST/custDB
 		Original versions: Acc_CustomerUpdMember_Super
 					Acc_CustomerUpdMember_Master
 					Acc_CustomerUpdMember_PositionTaking
@@ -204,18 +204,23 @@ AS
 			- 20131104@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 			- 20140219@Johnson: merge code correct pt after update pt on member
 			- 20140630@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+
 			- 20150508@Johnson: fix bug update multiple members affect to HR Fixed Odds [Redmined:#35151]
+		  - 20150610@Daniel: 
+		   + Improve medthod check table existing in subscribers	
+		   + Separate custDB to new server DBCUST      			
+
 		Parameter's Explanation:
 	*/ 
 BEGIN
 SET NOCOUNT ON
 
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('custinfo', 'CustSetting', 'CustOverride')
-			AND xtype = 'U'
+     if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride') = 1 
+	   )
+     RETURN
 
-	if @IsExistTables <> 3 RETURN
 	
 	IF @roleid IN (3,4)
 	BEGIN

@@ -1,20 +1,20 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRMember_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRMember_All]
 	@custid int
 AS
 /*
 Created: 20081028@PhuongNguyen
 Task : Get Horse Racing information
-DB: DB05.bodb02
+DB: DBCUST.CustDB
 
 Revisions:
-    - 20090515@Phuc: PT for HR
-    - 20090630@Phuc: auto master PT on member level.
-    - 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
-    - 20100510@Shifu: Get OpenTote min/max bet
-    - 20110103@Johnson: Get setting for HR AU, Greyhound, Harness
-    - 20130307@Johnson: Check bet setting with setting of 3rd
-    - 20130520@Johnson: check null bet setting of 3rd
+	- 20090515@Phuc: PT for HR
+	- 20090630@Phuc: auto master PT on member level.
+	- 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
+	- 20100510@Shifu: Get OpenTote min/max bet
+	- 20110103@Johnson: Get setting for HR AU, Greyhound, Harness
+	- 20130307@Johnson: Check bet setting with setting of 3rd
+	- 20130520@Johnson: check null bet setting of 3rd
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: super ID
 */
@@ -518,6 +518,7 @@ select
 		ci.Disable153_AU,
 		ai.Disable153_AU,
 		c.recommend
+
 	
 
 

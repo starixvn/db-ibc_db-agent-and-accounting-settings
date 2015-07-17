@@ -1,14 +1,15 @@
 ﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelEditAgentLiveCS]
+ALTER PROCEDURE[dbo].[Acc_CustomerSelEditAgentLiveCS]
 	@custid		INT,
 	@mrecommend INT
 AS
 /*
 	Created: 20111226@Lukas
 	Task: Master edits agent's live casino setting
-	DB: DB053.BODB02
+	DB: DBCUST.CustDB
 	
 	Revisions:
+		- 20150609@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 	
 	Parameters Explanation
 */
@@ -18,13 +19,13 @@ BEGIN
 	DECLARE @roleID INT 
 
 		-- Check Downline Belonging
-	EXEC dbo.Age_CustomerSelCheckBelonging  
-			@SessionCustID	= @mrecommend, 
-			@Custid			= @CustID,
-			@roleID			= @roleID OUTPUT
-
-	IF @roleID = 0
-		RETURN
+--	EXEC dbo.Age_CustomerSelCheckBelonging  
+--			@SessionCustID	= @mrecommend, 
+--			@Custid			= @CustID,
+--			@roleID			= @roleID OUTPUT
+--
+--	IF @roleID = 0
+--		RETURN
 
 	DECLARE @v162adiscount_1101	DECIMAL(9,8),
 			@DisableAutoMPT		BIT,
@@ -65,6 +66,7 @@ BEGIN
 	WHERE cs.custid = @custid AND cs.sporttype = 162 AND cs.bettype = 1101
 
 END
+
 
 GO
 GRANT VIEW DEFINITION ON [Acc_CustomerSelEditAgentLiveCS] TO vnteam
