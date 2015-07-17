@@ -26,7 +26,7 @@ BEGIN
 	IF @ProductID=14 -- Microgaming
 	BEGIN
 	DECLARE @RoleId INT
-	SELECT @SupperStatus= ISNULL(~DisableMicrogame,1),@RoleId=RoleId FROM CustInfo  WITH (NOLOCK) WHERE CustID = @CustID 
+	SELECT @SupperStatus= ISNULL(~DisableMicrogame,0),@RoleId=RoleId FROM CustInfo  WITH (NOLOCK) WHERE CustID = @CustID 
 	CREATE TABLE #CustList14 ( CustID INT)	
 		IF @RoleId=4	
 		BEGIN
