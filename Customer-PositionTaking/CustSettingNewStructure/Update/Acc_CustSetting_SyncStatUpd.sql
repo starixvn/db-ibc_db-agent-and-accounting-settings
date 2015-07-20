@@ -62,7 +62,7 @@ BEGIN
 	SET @startRun = GETDATE()
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid
+	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid
 				, @ErrCode	= @ErrCode_Cur OUTPUT
 				, @ErrMsg	= @ErrMsg_Cur OUTPUT
 

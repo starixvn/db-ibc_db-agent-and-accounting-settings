@@ -76,7 +76,7 @@ BEGIN
 		,	@ErrMsg			= ''
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+	EXEC dbo.Acc_CustomerSelCheckEnable 
 										@custid		= @custid
 									,	@ErrCode	= @ErrCode OUTPUT
 									,	@ErrMsg		= @ErrMsg OUTPUT

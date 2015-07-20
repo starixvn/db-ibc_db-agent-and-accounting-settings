@@ -48,7 +48,7 @@ BEGIN
 	IF (@roleid <> 1) RETURN-- return if not member    
 	
 	--Check disable user  
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+	EXEC dbo.Acc_CustomerSelCheckEnable 
 			@custid = @custid
 			,@ErrCode=@ErrCode OUTPUT
 			,@ErrMsg=@ErrMsg OUTPUT  
