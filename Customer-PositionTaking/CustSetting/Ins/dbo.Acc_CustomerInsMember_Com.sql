@@ -1,10 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerInsMember_Com]    Script Date: 7/1/2015 9:54:22 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@custid INT OUTPUT,
 	@firstname NVARCHAR(50),
@@ -312,6 +305,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@DisableHRFixedOdds BIT = 0,
 	@DisableEsports BIT = 0,
 	@DisableGoldDeluxe BIT = 1,
+	@DisableSuperLive BIT = 0,
 	
 	@IP VARCHAR(15)='',
 	@Language VARCHAR(2)= 'E',
@@ -377,7 +371,9 @@ Revisions:
 	- 20140612@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
 	- 20140822@Logan:   Add status for Esports [Redmine: #20531]
 	- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
-	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]	
+	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
+	- 20150601@Elodie: Separate CustDB to DBCUST server (Use temp table for GameType table)
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 
 Param's Explanation:
 • @ErrCode:
@@ -387,7 +383,19 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
 SET NOCOUNT ON
+----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
 
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+
+----- /Elodie @ 01 JUN 2015 -------------------
 DECLARE @startRun DATETIME , @endRun DATETIME , @duration INT
 SET @startRun = GETDATE()
 
@@ -673,7 +681,7 @@ IF @IsAllowedHR = 0
 	SELECT @Disable151_31 = 1
 
 DECLARE @Disable180_1201 BIT, @HideVirtualSports  BIT, 
-	@isAutoResetLiveCasino BIT , @MaxWinLiveCasino SMALLMONEY, @HideKeno BIT, @HideGoldDeluxe BIT
+	@isAutoResetLiveCasino BIT , @MaxWinLiveCasino SMALLMONEY, @HideKeno BIT, @HideGoldDeluxe  BIT
 SELECT @Disable180_1201 = 0, @HideVirtualSports = 1, 
 		@isAutoResetLiveCasino = 1, @MaxWinLiveCasino =  0, @HideKeno = 1
 
@@ -746,6 +754,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@DisableEsports = @DisableEsports,
 	@DisableGoldDeluxe = @DisableGoldDeluxe,
 	@HideGoldDeluxe = @HideGoldDeluxe,
+	@DisableSuperLive = @DisableSuperLive,
 
 	@MaxPerMatch = @MaxPerMatch,
 	@MaxPerMatchv2 = @MaxPerMatchv2,
@@ -1510,7 +1519,7 @@ DECLARE @LogDataKeno NVARCHAR(4000) = ''
 SELECT @LogDataKeno = COALESCE(@LogDataKeno + 'Disable202_' + CAST(IBCBetTypeID AS VARCHAR(10)) 
 	+ '=' + '"' + CAST(1 AS VARCHAR(1)) + '"' + SPACE(1), + 'Disable202_' + CAST(IBCBetTypeID AS VARCHAR(10)) 
 	+ '=' + '"' + CAST(1 AS VARCHAR(1)) + '"' + SPACE(1))
-FROM bodb02.dbo.GameType gt WITH (NOLOCK)
+FROM @tmp_GameType gt
 WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND gt.IsDisabled = 0
 
 SET @LogDataKeno = 'HideKeno="'+ COALESCE(CAST(@HideKeno AS VARCHAR(1)), SPACE(1)) + '" ' + @LogDataKeno
@@ -1532,6 +1541,7 @@ SELECT @LogSPData = '<Acc_CustomerInsMember_Com custid="'+ COALESCE(CAST(@custid
 'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
 'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
+'DisableSuperLive="'+ COALESCE(CAST(@DisableSuperLive AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
 'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" />'
 
@@ -1561,6 +1571,7 @@ BEGIN CATCH
 	'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
+	'DisableSuperLive="'+ COALESCE(CAST(@DisableSuperLive AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
 	'ErrMsg="'+ ERROR_MESSAGE() + '" />'
@@ -2109,3 +2120,4 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
