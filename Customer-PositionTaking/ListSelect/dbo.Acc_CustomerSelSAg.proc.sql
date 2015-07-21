@@ -1,13 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSAg]    Script Date: 07/10/2015 09:44:14 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 7/1/2015 1:08:45 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 6/24/2015 10:09:54 AM ******/
-ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing BIT = NULL,
@@ -22,7 +13,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 AS
 /*
 Task : Select Super Agent list
-DB: DBAGE/bodb02, DBTXN/CustDB
+DB: DBCUST/CustDB
 Revisions:
     - @update2008/01/14 search username
     - phuong.nguyen, check customer's currency for Horseracing spottype
@@ -50,6 +41,7 @@ Revisions:
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 	- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 	- 20150709@DAniel: Enhance code get custsetting data
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -133,8 +125,9 @@ BEGIN
 
 		ci.HideKeno,
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
-		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
+		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,		
 		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+		ISNULL(ci.DisableSuperLive,1) AS DisableSuperLive,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		
 	FROM 
@@ -188,6 +181,7 @@ BEGIN
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
 		ci.DisableGoldDeluxe,
+		ci.DisableSuperLive,
 		groupa, 
 		groupb, 
 		groupc, 
@@ -260,6 +254,7 @@ BEGIN
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
 		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+		ISNULL(ci.DisableSuperLive,1) AS DisableSuperLive,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
@@ -299,10 +294,12 @@ BEGIN
 		ci.virtualmultiplier,
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe
+		ci.DisableGoldDeluxe,
+		ci.DisableSuperLive
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbAdminNet] AS [dbo]
 GO

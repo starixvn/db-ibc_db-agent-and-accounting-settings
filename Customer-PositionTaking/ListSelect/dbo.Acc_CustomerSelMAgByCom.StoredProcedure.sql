@@ -37,6 +37,7 @@ AS
 		- 20140407@Elodie: Add Keno product [Redmine:#13156]
 		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 		- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
+		- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -121,6 +122,7 @@ Select * From
 
 		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+		ISNULL(ci.DisableSuperLive,1) AS DisableSuperLive,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
@@ -164,7 +166,8 @@ Select * From
 		ci.DoubleCommLosing,
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe
+		ci.DisableGoldDeluxe,
+		ci.DisableSuperLive
 ) a
 WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 
