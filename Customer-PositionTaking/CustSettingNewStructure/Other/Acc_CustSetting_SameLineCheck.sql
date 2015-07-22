@@ -13,6 +13,7 @@ AS
 BEGIN  
 	SET NOCOUNT ON  
 	DECLARE @RoleID INT
+	DECLARE @IsSame BIT = 1
 
 	SELECT @RoleID = ISNULL(RoleID,0) 
 	FROM dbo.custinfo WITH (NOLOCK)  
@@ -29,11 +30,10 @@ BEGIN
 				OR @RoleID >= 5)
 	)
 	BEGIN  
-		SELECT 0 AS IsSameLine
-		RETURN
+		SELECT @IsSame = 0
 	END  
 	
-	SELECT 1 AS IsSameLine
+	SELECT @IsSame AS IsSameLine
 END   
   
 GO
