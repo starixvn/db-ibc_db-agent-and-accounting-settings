@@ -1,13 +1,11 @@
 ALTER PROCEDURE [dbo].[Acc_CustSetting_SameLineCheck]  
 	@CustID INT = 0 
-	,@TargetCustID INT = 0 
-	,@ErrCode INT = 0 OUTPUT
-	,@ErrMsg NVARCHAR(200) ='' OUTPUT    
+	,@TargetCustID INT = 0  
 AS  
 /*  
 	Created: 20140327@Dominic  
 	Task: Check if customer are not in the same line
-	DB: DBAGE.bodb02  
+	DB: DBCUST.CustDB  
 	Original:   
 	  
 	Revisions:  
@@ -15,7 +13,6 @@ AS
 BEGIN  
 	SET NOCOUNT ON  
 	DECLARE @RoleID INT
-	SELECT @ErrCode=0,@ErrMsg=''
 
 	SELECT @RoleID = ISNULL(RoleID,0) 
 	FROM dbo.custinfo WITH (NOLOCK)  
@@ -32,10 +29,11 @@ BEGIN
 				OR @RoleID >= 5)
 	)
 	BEGIN  
-		SELECT @ErrMsg = 'Customers are not in the same line!' 
-		SELECT @ErrCode = 4
-		RETURN  
+		SELECT 0 AS IsSameLine
+		RETURN
 	END  
+	
+	SELECT 1 AS IsSameLine
 END   
   
 GO

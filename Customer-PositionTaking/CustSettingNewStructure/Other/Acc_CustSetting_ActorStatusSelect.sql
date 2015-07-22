@@ -1,10 +1,10 @@
-CREATE PROCEDURE [dbo].[Acc_CustSetting_ActorStatusSelect]  
+ALTER PROCEDURE [dbo].[Acc_CustSetting_ActorStatusSelect]  
 	@CustID INT = 0 
 AS  
 /*  
 	Created: 20140327@Dominic  
 	Task: return distable status
-	DB: DBAGE.bodb02  
+	DB: DBCUST.CustDB  
 	Original:   
 	  
 	Revisions:  
