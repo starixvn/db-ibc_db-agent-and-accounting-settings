@@ -10,7 +10,7 @@ AS
 /*  
  Created: 20150702@Dominic  
  Task : Get Product Profile  
- DB:  DBAGE/bodb02  
+ DB:  DBCUST/custdb  
  Original:  
   
  Param's Explanation:  
@@ -20,7 +20,7 @@ AS
 BEGIN   
 	SELECT DISTINCT SettingType, SettingLevel , SettingTemplate
 	FROM dbo.ProductSettingDetail WITH(NOLOCK)
-	WHERE ProductID = 255
+	WHERE ProductID = @ProductID
 END  
   
 
