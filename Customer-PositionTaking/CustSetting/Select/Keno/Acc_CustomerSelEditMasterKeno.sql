@@ -70,8 +70,8 @@ BEGIN
 			cg.IsDisabled
 	FROM dbo.CustGameType cg WITH (NOLOCK)
 		INNER JOIN @GameType gt ON cg.GameTypeID = gt.GameTypeID
-		INNER JOIN CustSettingGame cs ON cs.CustID = cg.CustID AND cs.Sporttype = 202 AND cs.Bettype = gt.IBCBetTypeID
-		INNER JOIN CustOverrideGame co ON co.CustID = cs.CustID AND co.Sporttype = cs.Sporttype AND co.Bettype = cs.Bettype
+		LEFT JOIN CustSettingGame cs ON cs.CustID = cg.CustID AND cs.Sporttype = 202 AND cs.Bettype = gt.IBCBetTypeID
+		LEFT JOIN CustOverrideGame co ON co.CustID = cs.CustID AND co.Sporttype = cs.Sporttype AND co.Bettype = cs.Bettype
 	WHERE cg.CustID = @srecommend
 	ORDER BY gt.IBCBetTypeID
 
