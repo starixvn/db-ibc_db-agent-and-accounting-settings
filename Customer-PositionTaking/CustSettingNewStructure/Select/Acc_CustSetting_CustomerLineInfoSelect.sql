@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_CustomerLineInfoSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_CustomerLineInfoSelect] 
 	  @UserName		NVARCHAR(50)
 AS
 /*
@@ -18,7 +18,7 @@ AS
 	*/
 BEGIN
 	DECLARE @CustID INT
-		, @RoleID INT
+		, @RoleID TINYINT
 		, @SAg VARCHAR(20)
 		, @MAg VARCHAR(20)
 		, @Ag VARCHAR(20)
