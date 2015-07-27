@@ -17,7 +17,7 @@ AS
 /*
 	Created: 20141110@Dominic
 	Task : Validate enabled status
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:
@@ -94,7 +94,7 @@ BEGIN
 	
 	
 	--Check belonging
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID	= @Userid 
 		,@Custid		= @custid		
 		,@roleid		= @roleid OUTPUT
@@ -107,7 +107,7 @@ BEGIN
 	END
 	
 	--Check Allowed downlines	
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines 
+	EXEC dbo.Acc_CustomerSelCheckAllowedDownlines 
 												@custid		= @custid
 											,	@roleid		= @roleid
 											,	@isExecRep	= 1

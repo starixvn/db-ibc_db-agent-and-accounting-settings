@@ -18,7 +18,7 @@ AS
 /*
 	Created: 20141111@Dominic
 	Task : Check Customer's Bet Limits
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:

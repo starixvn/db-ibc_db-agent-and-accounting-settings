@@ -13,7 +13,7 @@ AS
 		Created: Johnson
 		Date: 2014-12-2
 		Task: Update pt on Master
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 		
@@ -39,7 +39,7 @@ BEGIN
 			
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID	= @Userid 
 		,@Custid		= @custid		
 		,@roleid		= @roleid OUTPUT
@@ -59,7 +59,7 @@ BEGIN
 	--end
 	
 	---- Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    
 		@custid			= @custid
         ,@roleid		= 3
         ,@isExecRep		= 1

@@ -12,7 +12,7 @@ AS
 /*
 	Created: 20141210@Dominic
 	Task : Check Member's PT when SMA update member
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:

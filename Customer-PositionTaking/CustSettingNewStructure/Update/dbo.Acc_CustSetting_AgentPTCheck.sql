@@ -16,7 +16,7 @@ AS
 		Created: Johnson
 		Date: 2014-12-16
 		Task:check input parameters for updating pt on Agent
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 		

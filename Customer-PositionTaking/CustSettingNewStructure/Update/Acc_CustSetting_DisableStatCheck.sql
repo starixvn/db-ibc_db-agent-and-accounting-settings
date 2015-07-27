@@ -17,7 +17,7 @@ AS
 /*
 	Created: 20141110@Dominic
 	Task : Validate enabled status
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:

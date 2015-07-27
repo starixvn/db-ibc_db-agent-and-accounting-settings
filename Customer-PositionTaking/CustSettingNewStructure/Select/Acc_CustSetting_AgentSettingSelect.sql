@@ -13,7 +13,7 @@ AS
 /*  
  Created: 20141104@Dominic  
  Task : Get Agent'setting values of a product  
- DB:  DBAGE/bodb02  
+ DB:  DBCUST/CustDB  
  Original:  
   
  Param's Explanation:  

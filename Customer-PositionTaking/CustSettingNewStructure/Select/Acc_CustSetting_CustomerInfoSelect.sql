@@ -4,13 +4,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_UserInfoSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_CustomerInfoSelect] 
 	  @CustID		INT
 AS
 /*
 	Created: 20150622@Dominic
 	Task : Get User infor
-	DB: DBAGE/bodb02
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:
@@ -31,8 +31,8 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_UserInfoSelect] TO [bodbadminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerInfoSelect] TO [bodbadminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_UserInfoSelect] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerInfoSelect] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_UserInfoSelect] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_CustomerInfoSelect] TO [bodbExtAccNet]

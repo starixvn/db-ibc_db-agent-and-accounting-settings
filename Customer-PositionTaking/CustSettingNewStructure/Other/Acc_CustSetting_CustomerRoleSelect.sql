@@ -1,10 +1,10 @@
-CREATE PROCEDURE [dbo].[Acc_CustSetting_CustomerRoleSelect]  
+ALTER PROCEDURE [dbo].[Acc_CustSetting_CustomerRoleSelect]  
 	@CustID INT = 0  
 AS  
 /*  
 	Created: 20140327@Dominic  
 	Task: Get RoleID
-	DB: DBAGE.bodb02  
+	DB: DBCUST.CustDB  
 	Original:   
 	  
 	Revisions:  

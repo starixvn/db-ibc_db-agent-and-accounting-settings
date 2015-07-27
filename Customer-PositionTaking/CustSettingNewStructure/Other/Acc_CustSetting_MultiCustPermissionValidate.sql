@@ -7,7 +7,7 @@ AS
 /*  
 	Created: 20150528@Dominic  
 	Task: Validate user permission 
-	DB: DBAGE.bodb02  
+	DB: DBCUST.CustDB  
 	Original:   
 	  
 	Revisions:  

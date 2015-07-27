@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_CustSetting_BelongingMultiCustCheck]
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_BelongingMultiCustCheck]
 	@SessionCustID INT, --uplineID	
 	@custid VARCHAR(4000),
 	@SpecialChar CHAR(1)=',',
@@ -7,7 +7,7 @@ AS
 /*
 Created:20150108@Dominic
 Task: check downline belonging
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 Original: [Age_CustomerSelCheckBelonging_MultiCust]
 	
 Revisions:

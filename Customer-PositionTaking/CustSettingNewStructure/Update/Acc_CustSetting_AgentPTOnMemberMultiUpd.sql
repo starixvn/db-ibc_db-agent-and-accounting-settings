@@ -19,7 +19,7 @@ AS
 		Created: Dominic
 		Date: 2014-12-08
 		Task: Agent multiple update member's PT
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 
 		Parameter's Explanation:	
 		• @PT:

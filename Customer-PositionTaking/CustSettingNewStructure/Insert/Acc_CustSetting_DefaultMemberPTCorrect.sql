@@ -13,7 +13,7 @@ AS
 /*
 	Created: 20141105@Dominic
 	Task : Correct default PT settings of a specific member
-	DB:  DBTXN/CustDB
+	DB:  DBCUST/CustDB
 	Original:
 
 	Param's Explanation:

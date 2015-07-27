@@ -17,7 +17,7 @@ AS
 /*
 	Created: 20141111@Dominic
 	Task : Update Customer's Discount
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original:
 
 	Param's Explanation:
@@ -87,7 +87,7 @@ BEGIN
 	END
 	
 	--Check belonging
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID	= @Userid 
 		,@Custid		= @custid		
 		,@roleid		= @roleid OUTPUT
@@ -108,7 +108,7 @@ BEGIN
 	WHERE custid = @CustID
 
 	--Check Allowed downlines	
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines 
+	EXEC dbo.Acc_CustomerSelCheckAllowedDownlines 
 												@custid		= @custid
 											,	@roleid		= @roleid
 											,	@isExecRep	= 1

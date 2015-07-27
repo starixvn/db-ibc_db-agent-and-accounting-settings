@@ -19,7 +19,7 @@ AS
 		Created: Dominic
 		Date: 2014-12-10
 		Task: Super multiple update grouped member's PT
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 
 		Parameter's Explanation:	
 		• @PT:

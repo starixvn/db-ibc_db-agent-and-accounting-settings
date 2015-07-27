@@ -4,13 +4,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect]   
+ALTER PROCEDURE [dbo].[Acc_CustSetting_GroupedPTMemberLstSelect]   
    @CustIDList VARCHAR(MAX) 
 AS  
 /*  
  Created: 20150505@Dominic  
  Task : Get setting modes of customers
- DB:  DBAGE/bodb02  
+ DB:  DBCUST/CustDB  
  Original:  
   
  Param's Explanation:  

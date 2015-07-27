@@ -11,7 +11,7 @@ AS
 /*  
  Created: 20150518@Dominic  
  Task : Get Comm Matrix
- DB:  DBAGE/bodb02  
+ DB:  DBCUST/CustDB   
  Original:  
   
  Param's Explanation:  
@@ -22,58 +22,17 @@ BEGIN
 	SET NOCOUNT ON
 	DECLARE @CustID INT
 		, @RoleID INT
-		, @SAg VARCHAR(20)
-		, @MAg VARCHAR(20)
-		, @Ag VARCHAR(20)
 		, @SRecommend INT
 		, @MRecommend INT
 		, @Recommend INT
-		, @currency TINYINT
-		, @SettingLevel TINYINT
 
 	SELECT @CustID = CustID
-		, @currency = currency
-	FROM Custinfo WITH (NOLOCK)
-	WHERE UserName = @UserName
-
-	SELECT @UserName = UserName
 		, @RoleID = RoleID
 		, @SRecommend = SRecommend
 		, @MRecommend = MRecommend
 		, @Recommend = Recommend
 	FROM Custinfo WITH (NOLOCK)
-	WHERE CustID = @CustID
-
-	SELECT @SAg = UserName
-	FROM Custinfo WITH (NOLOCK)
-	WHERE CustID = @SRecommend
-
-	SELECT @MAg = UserName
-	FROM Custinfo WITH (NOLOCK)
-	WHERE CustID = @MRecommend
-
-	SELECT @Ag = UserName
-	FROM Custinfo WITH (NOLOCK)
-	WHERE CustID = @Recommend
-	
-	SELECT @SettingLevel=  
-	(SELECT TOP 1 SettingLevel
-		FROM dbo.ProductSettingDetail WITH(NOLOCK)
-		WHERE ProductID = @ProductID AND SettingType = 3
-	)
-	
-	--Return Customer Infor
-	SELECT @CustID CustID
-		, @UserName UserName
-		, @RoleID RoleID
-		, @currency Currency
-		, @SRecommend SuperID
-		, @MRecommend MasterID
-		, @Recommend AgentID
-		, @SAg SuperName
-		, @MAg MasterName
-		, @Ag AgentName
-		, @SettingLevel SettingLevel
+	WHERE UserName = @UserName	
 	
 	
 	DECLARE @CommMatrix TABLE (

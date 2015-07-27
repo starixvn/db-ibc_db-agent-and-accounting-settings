@@ -19,7 +19,7 @@ AS
 		Created: Dominic
 		Date: 2014-12-15
 		Task: Agent update member's PT
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 
 		Parameter's Explanation:	
 		• @PT:
@@ -114,7 +114,7 @@ BEGIN
 	WHERE custid = @CustID
 
 	--Check belonging
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC dbo.Age_CustomerSelCheckBelonging 
 		@SessionCustID	= @Userid 
 		,@Custid		= @custid		
 		,@roleid		= @roleid OUTPUT

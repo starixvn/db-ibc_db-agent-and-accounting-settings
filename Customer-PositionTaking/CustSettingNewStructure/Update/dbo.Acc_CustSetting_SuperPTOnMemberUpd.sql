@@ -14,7 +14,7 @@ AS
 		Created: Johnson
 		Date: 2014-12-16
 		Task: Update super's pt on member
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 		
@@ -40,7 +40,7 @@ BEGIN
 			
 	SET @startRun = GETDATE()
 	
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging   
+	EXEC dbo.Age_CustomerSelCheckBelonging   
 		 @SessionCustID = @Userid,   
 		 @Custid = @custid,  		 
 		 @roleid = @roleid OUTPUT  

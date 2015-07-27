@@ -4,25 +4,26 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_AllowMasterPTSelect]   
-	@CustID			INT  
+ALTER PROCEDURE [dbo].[Acc_CustSetting_AllowMasterPTSelect]   
+	@UserName	NVARCHAR(50)  
 AS  
 /*  
  Created: 20141104@Dominic  
  Task : Get automasterPT  
- DB:  DBAGE/bodb02  
+ DB:  DBCUST/CustDB  
  Original:  
   
  Param's Explanation:  
- • @CustID: Master ID 
+ • @CustID: Master Username
    
  */  
 BEGIN   	
 
 	--Disable auto master PT  
-	SELECT ISNULL(DisableAutoMPT, 0)  
-	FROM CustMaster WITH (NOLOCK)  
-	WHERE CustID = @CustID 
+	SELECT ISNULL(cm.DisableAutoMPT, 0)  
+	FROM Custinfo ci WITH(NOLOCK)
+	INNER JOIN CustMaster cm WITH (NOLOCK) ON ci.custid = cm.custid
+	WHERE ci.username = @UserName 
 	
 
 END  

@@ -6,7 +6,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_MemberPTCorrect]
 	, @CorrectedPT_XML VARCHAR(MAX) OUTPUT
 	/* Created: 2014-12-09@Dominic 
     Task: Correct member's PT when SMA update member
-    DB: DBTXN/CUSTDB
+    DB: DBCUST/CUSTDB
     • @PT,@CorrectedPT_XML:
 			<ROOT>
 					<PT 

@@ -4,13 +4,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_SettingDetailSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_SettingDetailSelect] 
 	  @ProductID TINYINT
 AS
 /*
 	Created: 20150304@Dominic
 	Task : Get sport/bet types that belong to a specified product
-	DB:  DBAGE/bodb02
+	DB:  DBCUST/CustDB
 	Original:
 
 	Param's Explanation:
