@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
+ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
 	@ProductID	TINYINT  
 AS  
 /*  
@@ -18,9 +18,10 @@ AS
    
  */  
 BEGIN   
-	SELECT DISTINCT SettingType, SettingLevel , SettingTemplate
+	SELECT DISTINCT SettingType, SettingLevel , SettingTemplate, DisplayOrder
 	FROM dbo.ProductSettingDetail WITH(NOLOCK)
 	WHERE ProductID = @ProductID
+	ORDER BY DisplayOrder
 END  
   
 
