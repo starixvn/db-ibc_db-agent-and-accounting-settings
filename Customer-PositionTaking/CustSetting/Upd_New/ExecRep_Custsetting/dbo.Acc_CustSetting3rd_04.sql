@@ -5323,6 +5323,7 @@ BEGIN
                 INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid 
 														AND mb.recommend=@recommend 
 														AND mb.roleid=1  
+				INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype														
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend  
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5331,8 +5332,7 @@ BEGIN
 																		AND acs.sporttype=cs.sporttype 
 																		AND acs.bettype=cs.bettype  
 																		AND acs.isLive = cs.isLive
-            WHERE cs.AgentPT < acs.MinPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.AgentPT < acs.MinPT				
                              
              --grouped settings
              UPDATE cs  
@@ -5403,6 +5403,7 @@ BEGIN
             FROM  
                 CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)  
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid  
+                INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5415,8 +5416,7 @@ BEGIN
                 c.recommend = @recommend  
                 AND c.roleid = 1  
                 AND (acs.isAutoMasterPT = 1 OR cs.IsAutoMasterPT = 1)
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-                
+				                
 			--grouped settings
 			UPDATE cs  
             SET MasterPT =   
@@ -5457,12 +5457,12 @@ BEGIN
                 INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid 
 														AND mb.recommend=@recommend 
 														AND mb.roleid=1  
+				INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype														
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend  
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
 																		AND mcs.isLive = cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT<mcs.MinPT  
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+            WHERE cs.AgentPT+cs.MasterPT<mcs.MinPT  				
             
             --grouped settings
             UPDATE cs  
@@ -5528,6 +5528,7 @@ BEGIN
             FROM  
                 CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)  
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid  
+                INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5538,8 +5539,7 @@ BEGIN
 																		AND scs.isLive = cs.isLive
             WHERE  
                 c.recommend = @recommend  
-                AND c.roleid = 1
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)  
+                AND c.roleid = 1				
                 AND (cs.IsAutoSuperPT=1 OR mcs.IsAutoSuperPT=1)  
                   
              --grouped settings
@@ -5641,6 +5641,7 @@ BEGIN
                 INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid 
 														AND mb.recommend=@recommend 
 														AND mb.roleid=1  
+				INNER JOIN @tmpSport t ON cs.sporttype = t.sporttype														
                 INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend  
 																		AND scs.sporttype=cs.sporttype 
 																		AND scs.bettype=cs.bettype  
@@ -5654,7 +5655,7 @@ BEGIN
 																		AND acs.bettype=cs.bettype  
 																		AND acs.isLive=cs.isLive
             WHERE cs.SuperPT+cs.AgentPT+cs.MasterPT>scs.SuperPT
-				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
+				
             
             --grouped settings
             UPDATE cs  
