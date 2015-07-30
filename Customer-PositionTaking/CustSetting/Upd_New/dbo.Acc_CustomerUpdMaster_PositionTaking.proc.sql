@@ -337,6 +337,7 @@ Revisions:
     - 20140725@Logan: 1. Exclude disabled agents, members while updating super or master's seting [Redmine: #19631]
                       2. Code aligning
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Use temp table for sports, bettype table)
+	- 20150714@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -5391,7 +5392,272 @@ end
 
 Declare @LogSPData varchar(MAX)
 Declare @TrackingValue2 varchar(MAX)
+----------
+-- 20150715@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
+---------------------------------
+SELECT  @spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_1 ELSE @spositiontaking_1 END,
+    @spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_2 ELSE @spositiontaking_2 END,
+    @spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_3 ELSE @spositiontaking_3 END,
+    @spositiontaking_4 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_4 ELSE @spositiontaking_4 END,
+    @spositiontaking_5 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_5 ELSE @spositiontaking_5 END,
+    @spositiontaking_6 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_6 ELSE @spositiontaking_6 END,
+    @spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_7 ELSE @spositiontaking_7 END,
+    @spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_8 ELSE @spositiontaking_8 END,
+    @spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_9 ELSE @spositiontaking_9 END,
+    @spositiontaking_10 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_10 ELSE @spositiontaking_10 END,
+    @spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_spositiontaking_9999 ELSE @spositiontaking_9999 END,
+    @slivepositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_slivepositiontaking_1 ELSE @slivepositiontaking_1 END,
+    @slivepositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_slivepositiontaking_3 ELSE @slivepositiontaking_3 END,
+    @slivepositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_slivepositiontaking_7 ELSE @slivepositiontaking_7 END,
+    @slivepositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_slivepositiontaking_8 ELSE @slivepositiontaking_8 END,
     
+	@auto_spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_1 ELSE @auto_spositiontaking_1 END,
+    @auto_spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_2 ELSE @auto_spositiontaking_2 END,
+    @auto_spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_3 ELSE @auto_spositiontaking_3 END,
+    @auto_spositiontaking_4 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_4 ELSE @auto_spositiontaking_4 END,
+    @auto_spositiontaking_5 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_5 ELSE @auto_spositiontaking_5 END,
+    @auto_spositiontaking_6 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_6 ELSE @auto_spositiontaking_6 END,
+    @auto_spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_7 ELSE @auto_spositiontaking_7 END,
+    @auto_spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_8 ELSE @auto_spositiontaking_8 END,
+    @auto_spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_9 ELSE @auto_spositiontaking_9 END,
+    @auto_spositiontaking_10 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_10 ELSE @auto_spositiontaking_10 END,
+    @auto_spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_spositiontaking_9999 ELSE @auto_spositiontaking_9999 END,
+    @auto_slivepositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_slivepositiontaking_1 ELSE @auto_slivepositiontaking_1 END,
+    @auto_slivepositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_slivepositiontaking_3 ELSE @auto_slivepositiontaking_3 END,
+    @auto_slivepositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_slivepositiontaking_7 ELSE @auto_slivepositiontaking_7 END,
+    @auto_slivepositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_auto_slivepositiontaking_8 ELSE @auto_slivepositiontaking_8 END,
+
+	@isauto_spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_1 ELSE @isauto_spositiontaking_1 END,
+    @isauto_spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_2 ELSE @isauto_spositiontaking_2 END,
+    @isauto_spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_3 ELSE @isauto_spositiontaking_3 END,
+    @isauto_spositiontaking_4 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_4 ELSE @isauto_spositiontaking_4 END,
+    @isauto_spositiontaking_5 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_5 ELSE @isauto_spositiontaking_5 END,
+    @isauto_spositiontaking_6 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_6 ELSE @isauto_spositiontaking_6 END,
+    @isauto_spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_7 ELSE @isauto_spositiontaking_7 END,
+    @isauto_spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_8 ELSE @isauto_spositiontaking_8 END,
+    @isauto_spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_9 ELSE @isauto_spositiontaking_9 END,
+    @isauto_spositiontaking_10 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_10 ELSE @isauto_spositiontaking_10 END,
+    @isauto_spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_isauto_spositiontaking_9999 ELSE @isauto_spositiontaking_9999 END,
+    @isauto_slivepositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_isauto_slivepositiontaking_1 ELSE @isauto_slivepositiontaking_1 END,
+    @isauto_slivepositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_isauto_slivepositiontaking_3 ELSE @isauto_slivepositiontaking_3 END,
+    @isauto_slivepositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_isauto_slivepositiontaking_7 ELSE @isauto_slivepositiontaking_7 END,
+    @isauto_slivepositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @Old_isauto_slivepositiontaking_8 ELSE @isauto_slivepositiontaking_8 END,
+
+	@mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_1 ELSE @mpositiontaking_1 END,
+    @mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_2 ELSE @mpositiontaking_2 END,
+    @mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_3 ELSE @mpositiontaking_3 END,
+    @mpositiontaking_4 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_4 ELSE @mpositiontaking_4 END,
+    @mpositiontaking_5 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_5 ELSE @mpositiontaking_5 END,
+    @mpositiontaking_6 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_6 ELSE @mpositiontaking_6 END,
+    @mpositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_7 ELSE @mpositiontaking_7 END,
+    @mpositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_8 ELSE @mpositiontaking_8 END,
+    @mpositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_9 ELSE @mpositiontaking_9 END,
+    @mpositiontaking_10 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_10 ELSE @mpositiontaking_10 END,
+    @mpositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mpositiontaking_9999 ELSE @mpositiontaking_9999 END,
+    @mlivepositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mlivepositiontaking_1 ELSE @mlivepositiontaking_1 END,
+    @mlivepositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mlivepositiontaking_3 ELSE @mlivepositiontaking_3 END,
+    @mlivepositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mlivepositiontaking_7 ELSE @mlivepositiontaking_7 END,
+    @mlivepositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontaking = 0 THEN @old_mlivepositiontaking_8 ELSE @mlivepositiontaking_8 END,
+
+    @v2spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_1 ELSE @v2spositiontaking_1 END,
+    @v2spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_2 ELSE @v2spositiontaking_2 END,
+    @v2spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_3 ELSE @v2spositiontaking_3 END,
+    @v2spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_7 ELSE @v2spositiontaking_7 END,
+    @v2spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_8 ELSE @v2spositiontaking_8 END,
+--  @v2spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_9 ELSE @v2spositiontaking_9 END,
+    @v2spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2spositiontaking_20 ELSE @v2spositiontaking_20 END,
+    
+	@auto_v2spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_1 ELSE @auto_v2spositiontaking_1 END,
+    @auto_v2spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_2 ELSE @auto_v2spositiontaking_2 END,
+    @auto_v2spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_3 ELSE @auto_v2spositiontaking_3 END,
+    @auto_v2spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_7 ELSE @auto_v2spositiontaking_7 END,
+    @auto_v2spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_8 ELSE @auto_v2spositiontaking_8 END,
+--    @auto_v2spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_9 ELSE @auto_v2spositiontaking_9 END,
+    @auto_v2spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_auto_v2spositiontaking_20 ELSE @auto_v2spositiontaking_20 END,
+
+	@isauto_v2spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_1 ELSE @isauto_v2spositiontaking_1 END,
+    @isauto_v2spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_2 ELSE @isauto_v2spositiontaking_2 END,
+    @isauto_v2spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_3 ELSE @isauto_v2spositiontaking_3 END,
+    @isauto_v2spositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_7 ELSE @isauto_v2spositiontaking_7 END,
+    @isauto_v2spositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_8 ELSE @isauto_v2spositiontaking_8 END,
+--    @isauto_v2spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_9 ELSE @isauto_v2spositiontaking_9 END,
+    @isauto_v2spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_isauto_v2spositiontaking_20 ELSE @isauto_v2spositiontaking_20 END,
+    
+	@v2mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_1 ELSE @v2mpositiontaking_1 END,
+    @v2mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_2 ELSE @v2mpositiontaking_2 END,
+    @v2mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_3 ELSE @v2mpositiontaking_3 END,
+    @v2mpositiontaking_7 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_7 ELSE @v2mpositiontaking_7 END,
+    @v2mpositiontaking_8 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_8 ELSE @v2mpositiontaking_8 END,
+--    @v2mpositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_9 ELSE @v2mpositiontaking_9 END,
+    @v2mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv2 = 0 THEN @old_v2mpositiontaking_20 ELSE @v2mpositiontaking_20 END,
+	
+    @v3spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3spositiontaking_1 ELSE @v3spositiontaking_1 END,
+    @v3spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3spositiontaking_2 ELSE @v3spositiontaking_2 END,
+    @v3spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3spositiontaking_3 ELSE @v3spositiontaking_3 END,
+    @v3spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3spositiontaking_20 ELSE @v3spositiontaking_20 END,
+    
+	@auto_v3spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_auto_v3spositiontaking_1 ELSE @auto_v3spositiontaking_1 END,
+    @auto_v3spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_auto_v3spositiontaking_2 ELSE @auto_v3spositiontaking_2 END,
+    @auto_v3spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_auto_v3spositiontaking_3 ELSE @auto_v3spositiontaking_3 END,
+    @auto_v3spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_auto_v3spositiontaking_20 ELSE @auto_v3spositiontaking_20 END,
+
+	@isauto_v3spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_isauto_v3spositiontaking_1 ELSE @isauto_v3spositiontaking_1 END,
+    @isauto_v3spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_isauto_v3spositiontaking_2 ELSE @isauto_v3spositiontaking_2 END,
+    @isauto_v3spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_isauto_v3spositiontaking_3 ELSE @isauto_v3spositiontaking_3 END,
+    @isauto_v3spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_isauto_v3spositiontaking_20 ELSE @isauto_v3spositiontaking_20 END,
+
+	@v3mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3mpositiontaking_1 ELSE @v3mpositiontaking_1 END,
+    @v3mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3mpositiontaking_2 ELSE @v3mpositiontaking_2 END,
+    @v3mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3mpositiontaking_3 ELSE @v3mpositiontaking_3 END,
+    @v3mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv3 = 0 THEN @old_v3mpositiontaking_20 ELSE @v3mpositiontaking_20 END,
+
+    @v5spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5spositiontaking_1 ELSE @v5spositiontaking_1 END,
+    @v5spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5spositiontaking_2 ELSE @v5spositiontaking_2 END,
+    @v5spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5spositiontaking_3 ELSE @v5spositiontaking_3 END,
+    @v5spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5spositiontaking_20 ELSE @v5spositiontaking_20 END,
+    @v5spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5spositiontaking_9999 ELSE @v5spositiontaking_9999 END,
+    
+	@auto_v5spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_auto_v5spositiontaking_1 ELSE @auto_v5spositiontaking_1 END,
+    @auto_v5spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_auto_v5spositiontaking_2 ELSE @auto_v5spositiontaking_2 END,
+    @auto_v5spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_auto_v5spositiontaking_3 ELSE @auto_v5spositiontaking_3 END,
+    @auto_v5spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_auto_v5spositiontaking_20 ELSE @auto_v5spositiontaking_20 END,
+    @auto_v5spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_auto_v5spositiontaking_9999 ELSE @auto_v5spositiontaking_9999 END,
+
+	@isauto_v5spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_isauto_v5spositiontaking_1 ELSE @isauto_v5spositiontaking_1 END,
+    @isauto_v5spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_isauto_v5spositiontaking_2 ELSE @isauto_v5spositiontaking_2 END,
+    @isauto_v5spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_isauto_v5spositiontaking_3 ELSE @isauto_v5spositiontaking_3 END,
+    @isauto_v5spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_isauto_v5spositiontaking_20 ELSE @isauto_v5spositiontaking_20 END,
+    @isauto_v5spositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_isauto_v5spositiontaking_9999 ELSE @isauto_v5spositiontaking_9999 END,
+
+	@v5mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5mpositiontaking_1 ELSE @v5mpositiontaking_1 END,
+    @v5mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5mpositiontaking_2 ELSE @v5mpositiontaking_2 END,
+    @v5mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5mpositiontaking_3 ELSE @v5mpositiontaking_3 END,
+    @v5mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5mpositiontaking_20 ELSE @v5mpositiontaking_20 END,
+    @v5mpositiontaking_9999 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv5 = 0 THEN @old_v5mpositiontaking_9999 ELSE @v5mpositiontaking_9999 END,
+
+    @v8spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8spositiontaking_1 ELSE @v8spositiontaking_1 END,
+    @v8spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8spositiontaking_3 ELSE @v8spositiontaking_3 END,
+    @v8spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8spositiontaking_20 ELSE @v8spositiontaking_20 END,
+    
+	@auto_v8spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_1 ELSE @auto_v8spositiontaking_1 END,
+    @auto_v8spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_3 ELSE @auto_v8spositiontaking_3 END,
+    @auto_v8spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_20 ELSE @auto_v8spositiontaking_20 END,
+
+	@isauto_v8spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_1 ELSE @auto_v8spositiontaking_1 END,
+    @isauto_v8spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_3 ELSE @auto_v8spositiontaking_3 END,
+    @isauto_v8spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_auto_v8spositiontaking_20 ELSE @auto_v8spositiontaking_20 END,
+
+	@v8mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8mpositiontaking_1 ELSE @v8mpositiontaking_1 END,
+    @v8mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8mpositiontaking_3 ELSE @v8mpositiontaking_3 END,
+    @v8mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv8 = 0 THEN @old_v8mpositiontaking_20 ELSE @v8mpositiontaking_20 END,
+
+    @v10spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10spositiontaking_1 ELSE @v10spositiontaking_1 END,
+    @v10spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10spositiontaking_2 ELSE @v10spositiontaking_2 END,
+    @v10spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10spositiontaking_3 ELSE @v10spositiontaking_3 END,
+    @v10spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10spositiontaking_20 ELSE @v10spositiontaking_20 END,
+    
+	@auto_v10spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_auto_v10spositiontaking_1 ELSE @auto_v10spositiontaking_1 END,
+    @auto_v10spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_auto_v10spositiontaking_2 ELSE @auto_v10spositiontaking_2 END,
+    @auto_v10spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_auto_v10spositiontaking_3 ELSE @auto_v10spositiontaking_3 END,
+    @auto_v10spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_auto_v10spositiontaking_20 ELSE @auto_v10spositiontaking_20 END,
+
+	@isauto_v10spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_isauto_v10spositiontaking_1 ELSE @isauto_v10spositiontaking_1 END,
+    @isauto_v10spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_isauto_v10spositiontaking_2 ELSE @isauto_v10spositiontaking_2 END,
+    @isauto_v10spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_isauto_v10spositiontaking_3 ELSE @isauto_v10spositiontaking_3 END,
+    @isauto_v10spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_isauto_v10spositiontaking_20 ELSE @isauto_v10spositiontaking_20 END,
+
+	@v10mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10mpositiontaking_1 ELSE @v10mpositiontaking_1 END,
+    @v10mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10mpositiontaking_2 ELSE @v10mpositiontaking_2 END,
+    @v10mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10mpositiontaking_3 ELSE @v10mpositiontaking_3 END,
+    @v10mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv10 = 0 THEN @old_v10mpositiontaking_20 ELSE @v10mpositiontaking_20 END,
+
+    @v11spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_v11spositiontaking_1 ELSE @v11spositiontaking_1 END,
+    @v11spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_v11spositiontaking_20 ELSE @v11spositiontaking_20 END,
+    
+	@auto_v11spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_auto_v11spositiontaking_1 ELSE @auto_v11spositiontaking_1 END,
+    @auto_v11spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_auto_v11spositiontaking_20 ELSE @auto_v11spositiontaking_20 END,
+
+	@isauto_v11spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_isauto_v11spositiontaking_1 ELSE @isauto_v11spositiontaking_1 END,
+    @isauto_v11spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_isauto_v11spositiontaking_20 ELSE @isauto_v11spositiontaking_20 END,
+
+	@v11mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_v11mpositiontaking_1 ELSE @v11mpositiontaking_1 END,
+    @v11mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv11 = 0 THEN @old_v11mpositiontaking_20 ELSE @v11mpositiontaking_20 END,
+
+    @v99spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99spositiontaking_1 ELSE @v99spositiontaking_1 END,
+    @v99spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99spositiontaking_2 ELSE @v99spositiontaking_2 END,
+    @v99spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99spositiontaking_3 ELSE @v99spositiontaking_3 END,
+    @v99spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99spositiontaking_20 ELSE @v99spositiontaking_20 END,
+
+	@auto_v99spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_auto_v99spositiontaking_1 ELSE @auto_v99spositiontaking_1 END,
+    @auto_v99spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_auto_v99spositiontaking_2 ELSE @auto_v99spositiontaking_2 END,
+    @auto_v99spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_auto_v99spositiontaking_3 ELSE @auto_v99spositiontaking_3 END,
+    @auto_v99spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_auto_v99spositiontaking_20 ELSE @auto_v99spositiontaking_20 END,
+
+	@isauto_v99spositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_isauto_v99spositiontaking_1 ELSE @isauto_v99spositiontaking_1 END,
+    @isauto_v99spositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_isauto_v99spositiontaking_2 ELSE @isauto_v99spositiontaking_2 END,
+    @isauto_v99spositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_isauto_v99spositiontaking_3 ELSE @isauto_v99spositiontaking_3 END,
+    @isauto_v99spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_isauto_v99spositiontaking_20 ELSE @isauto_v99spositiontaking_20 END,
+
+	@v99mpositiontaking_1 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99mpositiontaking_1 ELSE @v99mpositiontaking_1 END,
+    @v99mpositiontaking_2 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99mpositiontaking_2 ELSE @v99mpositiontaking_2 END,
+    @v99mpositiontaking_3 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99mpositiontaking_3 ELSE @v99mpositiontaking_3 END,
+    @v99mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99 = 0 THEN @old_v99mpositiontaking_20 ELSE @v99mpositiontaking_20 END,
+
+    -- mixed sports
+    @v99spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99mp = 0 THEN @old_v99spositiontaking_9 ELSE @v99spositiontaking_9 END,    
+	@auto_v99spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99mp = 0 THEN @old_auto_v99spositiontaking_9 ELSE @auto_v99spositiontaking_9 END,
+	@isauto_v99spositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99mp = 0 THEN @old_isauto_v99spositiontaking_9 ELSE @isauto_v99spositiontaking_9 END,
+	@v99mpositiontaking_9 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv99mp = 0 THEN @old_v99mpositiontaking_9 ELSE @v99mpositiontaking_9 END,
+
+    --HR Fixed Odds
+    @v154spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv154 = 0 THEN @old_v154spositiontaking_20 ELSE @v154spositiontaking_20 END,    
+    @auto_v154spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv154 = 0 THEN @old_auto_v154spositiontaking_20 ELSE @auto_v154spositiontaking_20 END,    
+	@isauto_v154spositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv154 = 0 THEN @old_isauto_v154spositiontaking_20 ELSE @isauto_v154spositiontaking_20 END,    
+	@v154mpositiontaking_20 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv154 = 0 THEN @old_v154mpositiontaking_20 ELSE @v154mpositiontaking_20 END,    
+
+    -- number game
+    @v161spositiontaking_81 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161spositiontaking_81 ELSE @v161spositiontaking_81 END,    
+    @v161spositiontaking_83 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161spositiontaking_83 ELSE @v161spositiontaking_83 END,    
+    @v161spositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161spositiontaking_86 ELSE @v161spositiontaking_86 END,    
+    @v161spositiontaking_88 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161spositiontaking_88 ELSE @v161spositiontaking_88 END,    
+    @v161slivepositiontaking_85 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161slivepositiontaking_85 ELSE @v161slivepositiontaking_85 END,    
+    @v161slivepositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161slivepositiontaking_86 ELSE @v161slivepositiontaking_86 END,    
+    @v161slivepositiontaking_87 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161slivepositiontaking_87 ELSE @v161slivepositiontaking_87 END,    
+    @v161slivepositiontaking_89 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161slivepositiontaking_89 ELSE @v161slivepositiontaking_89 END,    
+    @v161slivepositiontaking_90 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161slivepositiontaking_90 ELSE @v161slivepositiontaking_90 END,    
+    
+    @auto_v161spositiontaking_81 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161spositiontaking_81 ELSE @auto_v161spositiontaking_81 END,    
+    @auto_v161spositiontaking_83 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161spositiontaking_83 ELSE @auto_v161spositiontaking_83 END,    
+    @auto_v161spositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161spositiontaking_86 ELSE @auto_v161spositiontaking_86 END,    
+    @auto_v161spositiontaking_88 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161spositiontaking_88 ELSE @auto_v161spositiontaking_88 END,    
+    @auto_v161slivepositiontaking_85 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161slivepositiontaking_85 ELSE @auto_v161slivepositiontaking_85 END,    
+    @auto_v161slivepositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161slivepositiontaking_86 ELSE @auto_v161slivepositiontaking_86 END,    
+    @auto_v161slivepositiontaking_87 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161slivepositiontaking_87 ELSE @auto_v161slivepositiontaking_87 END,    
+    @auto_v161slivepositiontaking_89 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161slivepositiontaking_89 ELSE @auto_v161slivepositiontaking_89 END,    
+    @auto_v161slivepositiontaking_90 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_auto_v161slivepositiontaking_90 ELSE @auto_v161slivepositiontaking_90 END,    
+    
+    @isauto_v161spositiontaking_81 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161spositiontaking_81 ELSE @isauto_v161spositiontaking_81 END,    
+    @isauto_v161spositiontaking_83 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161spositiontaking_83 ELSE @isauto_v161spositiontaking_83 END,    
+    @isauto_v161spositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161spositiontaking_86 ELSE @isauto_v161spositiontaking_86 END,    
+    @isauto_v161spositiontaking_88 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161spositiontaking_88 ELSE @isauto_v161spositiontaking_88 END,    
+    @isauto_v161slivepositiontaking_85 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161slivepositiontaking_85 ELSE @isauto_v161slivepositiontaking_85 END,    
+    @isauto_v161slivepositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161slivepositiontaking_86 ELSE @isauto_v161slivepositiontaking_86 END,
+    @isauto_v161slivepositiontaking_87 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161slivepositiontaking_87 ELSE @isauto_v161slivepositiontaking_87 END,
+    @isauto_v161slivepositiontaking_89 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161slivepositiontaking_89 ELSE @isauto_v161slivepositiontaking_89 END,
+    @isauto_v161slivepositiontaking_90 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_isauto_v161slivepositiontaking_90 ELSE @isauto_v161slivepositiontaking_90 END,
+    
+    @v161mpositiontaking_81 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mpositiontaking_81 ELSE @v161mpositiontaking_81 END,
+    @v161mpositiontaking_83 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mpositiontaking_83 ELSE @v161mpositiontaking_83 END,
+    @v161mpositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mpositiontaking_86 ELSE @v161mpositiontaking_86 END,
+    @v161mpositiontaking_88 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mpositiontaking_88 ELSE @v161mpositiontaking_88 END,
+    @v161mlivepositiontaking_85 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mlivepositiontaking_85 ELSE @v161mlivepositiontaking_85 END,
+    @v161mlivepositiontaking_86 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mlivepositiontaking_86 ELSE @v161mlivepositiontaking_86 END,
+    @v161mlivepositiontaking_87 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mlivepositiontaking_87 ELSE @v161mlivepositiontaking_87 END,
+    @v161mlivepositiontaking_89 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mlivepositiontaking_89 ELSE @v161mlivepositiontaking_89 END,
+    @v161mlivepositiontaking_90 = CASE WHEN @UpdateMultiple= 1 AND @UpdatePositiontakingv161 = 0 THEN @old_v161mlivepositiontaking_90 ELSE @v161mlivepositiontaking_90 END
+------------------------------------------
+
+
 Select @LogSPData = '<Acc_CustomerUpdMaster_PositionTaking><info Updallmembers="'+ coalesce(cast(@updateallmembers as varchar(50)),space(1)) + '" ' +
 'newspt="'+ coalesce(cast(@newspositiontaking as varchar(50)),space(1)) + '" ' +
 'UpdMultiple="'+ coalesce(cast(@UpdateMultiple as varchar(50)),space(1)) + '" ' +
