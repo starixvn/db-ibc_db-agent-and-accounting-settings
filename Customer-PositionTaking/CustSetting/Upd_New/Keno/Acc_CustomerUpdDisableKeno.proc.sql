@@ -1,6 +1,4 @@
-﻿USE [CustDB]
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableKeno] 
 	@CustID INT
 	,@Bettype INT
 	,@Disable BIT			
@@ -24,6 +22,7 @@ AS
 		20140227@Bobby: Implement upd disabled keno gaming for credit customers
 		20140320@Bobby: Implement tracking values & cheking HasDownline
 		20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 
 	Param's Explanation:
 		• @custid: customer id.   
@@ -73,7 +72,7 @@ BEGIN
 	BEGIN
 		---------------------------
 		-- ***Check Downline Belonging***
-		EXEC dbo.Age_CustomerSelCheckBelonging 
+		EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
 			@SessionCustID = @Userid, 
 			@Custid = @custid,
 			@roleid = @RoleID_Ck OUTPUT
@@ -173,7 +172,7 @@ BEGIN
 				)
 			)
 		BEGIN
-			EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
+			EXEC Acc_CustomerSelCheckAllowedDownlines @custid = @custid
 				,@roleid = @roleid
 				,@isExecRep = 1
 				,@Language = @Language
@@ -322,6 +321,7 @@ BEGIN
 
 	RETURN
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableKeno] TO [bodbAdminNet] AS [dbo]
 GO

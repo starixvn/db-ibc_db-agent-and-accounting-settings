@@ -1,16 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_CommissionHR    Script Date: 8/21/2014 3:12:18 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_CommissionHR    Script Date: 8/21/2014 2:58:07 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMaster_CommissionHR    Script Date: 12/5/2013 5:35:47 PM ******/
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_CommissionHR]
     @custid INT,-- masterId
     @v151discount_31 DECIMAL(9,8),--commission for tote.
     @v151discount_41 DECIMAL(9,8),--commission for OT.
@@ -56,6 +44,8 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
     - 20130226@Johnson: write log on DBTXN if DBLOG failure
     - 20131030@Kathy: Apply exec rep to update commission [Redmine:#3244]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -72,7 +62,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=3,--@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -253,7 +243,7 @@ BEGIN
         SELECT @v153discount_51 = @db_v153discount_51    
 
     -- Apply exec rep
-    exec dbo.Acc_CustSetting3rd_06
+                exec dbo.Acc_CustSetting3rd_06
             @CustId = @custid,
             @RoleId = @RoleId ,
             @v151discount_31 = @v151discount_31,
@@ -368,16 +358,6 @@ BEGIN CATCH
         @TrackingValue2 = @TrackingValueDB,
         @duration = @duration
 END CATCH
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMaster_CommissionHR] TO [vnteam]

@@ -1,20 +1,14 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelEditAgentGoldDeluxe]    Script Date: 05/12/2015 17:03:31 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerSelEditAgentGoldDeluxe]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditAgentGoldDeluxe]
 	@custid		INT,
 	@mrecommend INT
 AS
 /*
 	Created: 20150422@Elodie
 	Task: Master edits agent's Gold Deluxe setting
-	DB: DBAGE/BODB02
+	DB: DBCUST.CustDB
 	
 	Revisions:
+		- 20150612@Kathy: Move sp from DBAGE.bodb02 to DBCUST.CustDB [Redmine:#36216]
 	
 	Parameters Explanation
 */
@@ -73,8 +67,8 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,@DisableUpline					AS DisableUpline
-			,ISNULL(@DisableGoldDeluxe,0)	AS DisableGoldDeluxe
+			,ISNULL(@DisableUpline,1) 		AS DisableUpline
+			,ISNULL(@DisableGoldDeluxe,1)	AS DisableGoldDeluxe
 			,@Downlines						AS Downlines
 			,@DisableDownlines				AS DisableDownlines
 	FROM	dbo.Customer WITH (NOLOCK)
@@ -110,25 +104,16 @@ BEGIN
 			AND cs.bettype = 1701
 	
 	-- bet setting
-	EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
+		EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
 		@custid		= @custid
 		,@UplineId	= @mrecommend
 
 END
-
-
-
-
-
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditAgentGoldDeluxe] TO [vnteam] AS [dbo]

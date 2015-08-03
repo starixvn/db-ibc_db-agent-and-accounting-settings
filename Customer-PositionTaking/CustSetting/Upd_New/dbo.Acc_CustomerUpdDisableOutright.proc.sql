@@ -25,6 +25,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20121206@Scott : Check Allowed downlines during peak hour at weekend  
 	- 20130218@Dan: Change linked server DB053 to DBAGE; Write more log on DBTXN server in case of DBLOG server failure
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
 Param's Explanation:
 */
 
@@ -36,7 +37,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
@@ -55,7 +56,7 @@ where custid = @custid
 
 
 -- Check Allowed downlines during peak hour at weekend 
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=0,
 											@Language=@Language,
@@ -192,6 +193,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
 		
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableOutright] TO [bodbAdminNet]

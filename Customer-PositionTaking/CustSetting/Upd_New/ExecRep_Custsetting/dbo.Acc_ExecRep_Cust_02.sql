@@ -23,6 +23,9 @@ Original:
 
 Revisions:
 	- 20131023@Hannah: offer Live Casino commission
+	- 20150610@Daniel: 
+	    + Improve medthod check table existing in subscribers	
+	    + Separate custDB to new server DBCUST 	
    
 Param's Explanation:
 • @ErrCode:
@@ -32,9 +35,13 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
 
-IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'Dep_CustSetting', 'Dep_CustSetting3rd') AND (type = 'U' OR type = 'V')) <3 
-	OR ((SELECT COUNT(1) FROM sysobjects WHERE name IN ('custinfo', 'CustSettingGame') AND (type = 'U' OR type = 'V')) < 2) 
-	RETURN
+if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+     AND dbo.f_CheckRepTable('Dep_CustSetting') = 1 
+     AND dbo.f_CheckRepTable('Dep_CustSetting3rd') = 1 
+     AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+ )
+   	RETURN 
+
 
 DECLARE @res AS TABLE (custid INT)
 DECLARE @splitter CHAR(1), @string VARCHAR(MAX)

@@ -1,12 +1,3 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting_06    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustSetting_06    Script Date: 8/21/2014 2:58:10 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustSetting_06]
     @CustId              INT
   , @RoleId              INT
@@ -16,7 +7,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_06]
   , @groupd              DECIMAL(9, 8) = 0
   , @discountcs          DECIMAL(9, 8) = 0
   , @discountHRFixedOdds DECIMAL(9, 8) = 0
-  ,    @discount1x2         DECIMAL(9, 8) = 0
+  , @discount1x2         DECIMAL(9, 8) = 0
 
 AS
     /*
@@ -37,16 +28,24 @@ AS
         - 20140729@Logan:   1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
                             2.Code aligning on modified parts
 		- 20141113@Johnson: Hardcode agent list not give commission for downlines [Redmine #25787]                      
+		- 20150610@Daniel: 
+			+ Improve medthod check table existing in subscribers	
+			+ Separate custDB to new server DBCUST   
+		- 20150616@Johnson: Add more hard customers not give commission [Redmine: #34798]
+	    		
     Param's Explanation: 
 
     */
 BEGIN
     SET NOCOUNT ON;
-    -- check existing tables
-    IF (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting', 'custinfo', 'customer') AND type = 'U') < 3
-        AND (SELECT COUNT(1) FROM sysobjects WHERE name IN ('custsetting', 'custinfo', 'customer') AND type = 'V') < 3
-        RETURN
     
+    if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('customer') = 1 
+	   )
+     RETURN    
+   
+   
     --20141113@Johnson: hardcode customer list not give commission for downlines	   
     DECLARE @tblCustList TABLE(custid INT, roleid INT)
 	
@@ -80,9 +79,30 @@ BEGIN
 	UNION SELECT	8679169		,	1	--	585RMB
 	UNION SELECT	13885522	,	1	--	688HKK
 	
+	--20150616@Johnson: add more customers into list
+	UNION SELECT 	1098992		,	1	-- 	007P
+	UNION SELECT 	12295775	,	1	-- 	10BA
+	UNION SELECT 	4706215		,	1	-- 	168rmb
+	UNION SELECT 	1686		,	1	-- 	239RMB
+	UNION SELECT 	1280		,	1	-- 	312rmb
+	UNION SELECT 	1241353		,	1	-- 	315RMB
+	UNION SELECT 	1981797		,	1	-- 	318RMB
+	UNION SELECT 	4230489		,	1	-- 	319RMB
+	UNION SELECT 	10409086	,	1	-- 	388rmb
+	UNION SELECT 	4396024		,	1	-- 	527RMB
+	UNION SELECT 	11405172	,	1	-- 	556RMB
+	UNION SELECT 	8679169		,	1	-- 	585RMB
+	UNION SELECT 	13885522	,	1	-- 	688HKK
+	UNION SELECT 	16698297	,	1	-- 	789RMB
+	UNION SELECT 	753422		,	1	-- 	MOONSHK
+	UNION SELECT 	1540595		,	1	-- 	08HK
+	UNION SELECT 	15976531	,	1	-- 	6666AHK005
+	UNION SELECT 	640041		,	1	-- 	M3000
+ 
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
-	UNION SELECT	14228293	,	1	--	supertestUAT20101001
+	UNION SELECT	14228743	,	1	--	SUPERTEST20000000
+	UNION SELECT	14497432	,	1	--	SUPERTEST20000001
 	--End customer list------------------------------------------
 	   
     IF @RoleId = 4
@@ -561,12 +581,3 @@ END
 
 
 
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 

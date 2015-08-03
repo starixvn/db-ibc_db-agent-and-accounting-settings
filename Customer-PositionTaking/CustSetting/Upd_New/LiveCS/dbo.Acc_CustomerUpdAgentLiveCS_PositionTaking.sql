@@ -35,6 +35,8 @@ AS
 				and check total downlines before UPDATEs 
 		- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)				
 		- 20140925@Johnson: remove bettype name out of error message
+		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+
 	Parameters Explanation:
 */
 BEGIN
@@ -53,7 +55,7 @@ BEGIN
 			@ErrType			VARCHAR(4000)			
 	
 	---- Johnson@20131104: Checking total downlines before UPDATEs 
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 		@roleid=2,
 		@isExecRep=1,
 		@isUpdatePT = 1,
@@ -397,6 +399,7 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH	
 END
+
 
 
 GO

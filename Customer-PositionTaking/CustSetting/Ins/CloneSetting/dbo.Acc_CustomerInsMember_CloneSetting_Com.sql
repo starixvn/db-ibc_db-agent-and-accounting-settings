@@ -33,7 +33,8 @@ AS
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
 	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
-	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]                              
+	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]     
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]                         
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -279,6 +280,7 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,DisableSuperLive
 				)
 		 SELECT
 				@CustID
@@ -353,6 +355,7 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,DisableSuperLive
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
 	END TRY	
@@ -371,7 +374,7 @@ BEGIN
 	END CATCH
 	
 	BEGIN TRY
-	EXEC dbo.Acc_CustomerInfo_Execrep_02
+								EXEC dbo.Acc_CustomerInfo_Execrep_02
 		@custid = @custid,
 		@ExistingCustid = @ExistingCustid,
 		@Language = @Language,
@@ -440,6 +443,7 @@ BEGIN
            ,[bettype]
            ,[isLive]
            ,[virtualMultiplier])
+
 		SELECT @custid
            ,[sporttype]
            ,[bettype]
@@ -539,6 +543,7 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
 GO

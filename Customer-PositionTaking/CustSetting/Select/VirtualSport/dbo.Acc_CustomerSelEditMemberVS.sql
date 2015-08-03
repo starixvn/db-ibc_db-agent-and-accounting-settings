@@ -1,56 +1,56 @@
-﻿ALTER PROCEDURE [Acc_CustomerSelEditMemberVS] 
-	@custid		INT	
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelEditMemberVS] 
+	@custid		INT
 AS
-	/*
-		Created: Johnson
-		Date: 2012-08-09
-		Task: Agent get setting virtual sports for agent edit member
-		DB: DB053.bodb02
-		
-		Revisions:
-			- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
-			- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
-			- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
-			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
-		Parameter's Explanation:
-	*/
+/*
+	Created: Johnson
+	Date: 2012-08-09
+	Task: Agent get setting virtual sports for agent edit member
+	DB: DBCUST.CustDB
+
+	Revisions:
+		- 20121130@Tom: Add  virtual tennis setting (sporttype : 186 , bettype : 1220)
+		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
+		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
+		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+	Parameter's Explanation:
+*/
 SET NOCOUNT ON 
 ---------------------------
 	DECLARE	@srecommend INT,
 			@mrecommend INT,
 			@recommend	INT,
 			
-			@DisableVirtualSports			BIT,
-			@HideVirtualSports				BIT,
-			@v180MaxPerMatch_1201			MONEY,
-			@v181MaxPerMatch_1231			MONEY,
-			@v182MaxPerMatch_1231			MONEY,
-			@v183MaxPerMatch_1231			MONEY,
-			@v184MaxPerMatch_1231			MONEY,
-			@v185MaxPerMatch_1231			MONEY,
-			@v186MaxPerMatch_1220			MONEY,
+			@DisableVirtualSports		BIT,
+			@HideVirtualSports			BIT,
+			@v180MaxPerMatch_1201		MONEY,
+			@v181MaxPerMatch_1231		MONEY,
+			@v182MaxPerMatch_1231		MONEY,
+			@v183MaxPerMatch_1231		MONEY,
+			@v184MaxPerMatch_1231		MONEY,
+			@v185MaxPerMatch_1231		MONEY,
+			@v186MaxPerMatch_1220		MONEY,
 			@DisableUplineVirtualSports BIT
-			
-						
+
 	--setting upline
 	DECLARE @AgentSetting TABLE (	
-			sporttype			INT, 
-			bettype				INT,	
-			apositiontaking		SMALLMONEY,--a2
-			minpositiontaking	SMALLMONEY--a2_min			
+		sporttype			INT, 
+		bettype				INT,	
+		apositiontaking		SMALLMONEY,--a2
+		minpositiontaking	SMALLMONEY--a2_min
 	)
 	
 	DECLARE @MemberSetting TABLE (
 		sporttype		INT,
 		bettype			INT,
 		apositiontaking	SMALLMONEY --a1_max
-	)			
-			
+	)
+
 	SELECT @srecommend				= srecommend,
 			@mrecommend				= mrecommend,
 			@recommend				= recommend, 
-			@DisableVirtualSports	= ISNULL(DisableVirtualSports,0),
-			@HideVirtualSports		= ISNULL(HideVirtualSports,0),
+			@DisableVirtualSports	= ISNULL(DisableVirtualSports, 0),
+			@HideVirtualSports		= ISNULL(HideVirtualSports, 0),
 			@v180MaxPerMatch_1201	= MaxPerMatch180,
 			@v181MaxPerMatch_1231	= MaxPerMatch181,
 			@v182MaxPerMatch_1231	= MaxPerMatch182,
@@ -62,16 +62,16 @@ SET NOCOUNT ON
 	WHERE custid = @custid
 		
 	--upline setting	
-	select @DisableUplineVirtualSports = isnull(DisableVirtualSports,0)		   		 
+	select @DisableUplineVirtualSports = ISNULL(DisableVirtualSports,0)
 	FROM custinfo with (NOLOCK) WHERE custid = @recommend
 	
 	--a2=min(a2,l2,a4)
 	--n2
 	INSERT INTO @AgentSetting (
-			sporttype , 
-			bettype, 
-			apositiontaking, 
-			minpositiontaking 					
+		sporttype , 
+		bettype, 
+		apositiontaking, 
+		minpositiontaking
 	)
 	SELECT acs.sporttype,
 			acs.bettype,
@@ -86,7 +86,7 @@ SET NOCOUNT ON
 					ELSE scs.apositiontaking 
 				END
 			END AS apositiontaking, 	
-			aco.minpositiontaking					
+			aco.minpositiontaking
 	FROM custinfo ci WITH(NOLOCK)
 		INNER JOIN custsetting3rd acs WITH(NOLOCK) ON ci.custid = acs.custid 
 		INNER JOIN custoverride3rd aco WITH(NOLOCK) ON ci.custid = aco.custid AND acs.sporttype = aco.sporttype AND acs.bettype = aco.bettype
@@ -149,44 +149,45 @@ SET NOCOUNT ON
 			firstname,
 			lastname,
 			phone,
-			mobilephone,			
+			mobilephone,
 			fax,
 			roleid,
 			@DisableUplineVirtualSports as DisableUplineVirtualSports,
 			@DisableVirtualSports as DisableVirtualSports,
-			@HideVirtualSports as HideVirtualSports			
+			@HideVirtualSports as HideVirtualSports
 	FROM customer WITH(NOLOCK)
 	WHERE custid = @custid
 	
-	
 	SELECT cs.sporttype,
 			cs.bettype,
-			
 			cs.minbet,
 			cs.maxbet,
-			CASE cs.sporttype WHEN 180 then @v180MaxPerMatch_1201 
-								WHEN 181 then @v181MaxPerMatch_1231 
-								WHEN 182 then @v182MaxPerMatch_1231 
-								WHEN 183 then @v183MaxPerMatch_1231 
-								WHEN 184 then @v184MaxPerMatch_1231 
-								WHEN 185 then @v185MaxPerMatch_1231 
-								WHEN 186 then @v186MaxPerMatch_1220 END AS MaxPerMatch,
-			
+			CASE cs.sporttype 
+				WHEN 180 THEN @v180MaxPerMatch_1201 
+				WHEN 181 THEN @v181MaxPerMatch_1231 
+				WHEN 182 THEN @v182MaxPerMatch_1231 
+				WHEN 183 THEN @v183MaxPerMatch_1231 
+				WHEN 184 THEN @v184MaxPerMatch_1231 
+				WHEN 185 THEN @v185MaxPerMatch_1231 
+				WHEN 186 THEN @v186MaxPerMatch_1220 
+			END AS MaxPerMatch,
 			mu.MinBet_Min as minbet_min,
 			mu.MaxBet_Max as maxbet_max,
 			mu.MaxperMatch_Max as maxpermatch_max,
-			
-			cs.apositiontaking as a1,						
-			
+			cs.apositiontaking as a1,
 			acs.minpositiontaking as a1_min,
-			CASE WHEN acs.apositiontaking <= m.apositiontaking THEN acs.apositiontaking ELSE m.apositiontaking END as a1_max
-	FROM custsetting3rd cs WITH(NOLOCK)			
+			CASE 
+				WHEN acs.apositiontaking <= m.apositiontaking THEN acs.apositiontaking 
+				ELSE m.apositiontaking 
+			END as a1_max
+	FROM custsetting3rd cs WITH(NOLOCK)
 		JOIN @MinMaxBetUpline as mu on cs.sporttype=mu.sporttype and mu.bettype=cs.bettype
 		JOIN @AgentSetting acs ON cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype
 		JOIN @MemberSetting m ON cs.sporttype = m.sporttype AND cs.bettype= m.bettype
 	WHERE cs.custid = @custid
-		AND cs.sporttype  in (180, 181,182, 183, 184, 185, 186)
-		AND cs.bettype  in (1201, 1231, 1220)
+		AND cs.sporttype in (180, 181,182, 183, 184, 185, 186)
+		AND cs.bettype in (1201, 1231, 1220)
+
 	
 	
 

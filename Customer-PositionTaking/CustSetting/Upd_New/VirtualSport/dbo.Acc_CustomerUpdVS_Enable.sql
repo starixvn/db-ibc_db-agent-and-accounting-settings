@@ -1,5 +1,11 @@
 ﻿USE [CustDB]
 GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdVS_Enable]    Script Date: 06/10/2015 16:42:32 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdVS_Enable    Script Date: 11/27/2014 5:09:46 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdVS_Enable]  
 	@custid   INT,  
 	@DisableVS  BIT = 0,  
@@ -22,6 +28,7 @@ AS
 	- 20130926@Kathy: Apply exec rep
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]
   Parameters Explanation:  
   
  */   
@@ -39,7 +46,7 @@ DECLARE @startRun DATETIME,
  SET @startRun = GETDATE()  
   
  --Check disable user  
- EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output  
+ EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output  
  IF @ErrCode <>0 RETURN  
    
  SELECT @recommend = recommend,   
@@ -52,7 +59,7 @@ DECLARE @startRun DATETIME,
 --Check Allowed downlines during peak hour at weekend   
  IF  @DisableVS = 0 and @DisableDownlinesVS = 0  
  BEGIN  
-  EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid=@custid,  
+  EXEC dbo.Acc_CustomerSelCheckAllowedDownlines @custid=@custid,  
            @roleid=@roleid,  
            @isExecRep=1,  
            @Language=@Language,  

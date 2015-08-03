@@ -1,21 +1,21 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRSuper_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRSuper_All]
 	@custid int
 AS
 
 /*
 Created: 20081028@PhuongNguyen
 Task : Get Horse Racing information
-DB: DBAGE/bodb02
+DB: DBCUST.CustDB
 
 Revisions:
-    - 20090515@Phuc: PT for HR
-    - 20100414@Shifu: PT for OpenTote
-    - 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
-    - 20130305@Johnson: Get bet setting of 3rd
-    - 20130520@Johnson: check null bet setting of 3rd
+	- 20090515@Phuc: PT for HR
+	- 20100414@Shifu: PT for OpenTote
+	- 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
+	- 20130305@Johnson: Get bet setting of 3rd
+	- 20130520@Johnson: check null bet setting of 3rd
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
-â€¢ @CustID: super ID
+	@CustID: super ID
 */
 	SET NOCOUNT ON
 	Declare			
@@ -346,6 +346,7 @@ Param's Explanation:
 		ci.Disable152_UK,
 		ci.Disable152_AU,
 		ci.Disable153_AU
+
 		
 		
 		

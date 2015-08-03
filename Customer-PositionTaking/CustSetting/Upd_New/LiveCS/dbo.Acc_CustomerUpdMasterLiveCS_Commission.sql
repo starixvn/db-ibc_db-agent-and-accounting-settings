@@ -1,15 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Commission    Script Date: 8/21/2014 3:12:19 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Commission    Script Date: 8/21/2014 2:58:08 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterLiveCS_Commission    Script Date: 12/5/2013 5:35:48 PM ******/
- CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Commission]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterLiveCS_Commission]
     @custid        INT,
     @v162discount_1101        DECIMAL(9,8),
     
@@ -30,6 +19,7 @@ AS
             - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
             - 20130301@Johnson: write log on DBTXN if DBLOG failure
             - 20131031@Kathy: Apply exec rep to update commission [Redmine:#3244]
+			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
         Parameters Explanation:
     */
 SET NOCOUNT ON
@@ -85,7 +75,7 @@ FROM CustInfo WITH(NOLOCK)
 WHERE custid = @custid
 
 --Check Allowed downlines    
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+EXEC Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
             @isExecRep=1,
             @isUpdatePT = 1,
@@ -101,7 +91,7 @@ FROM CustSettingGame WITH(NOLOCK)
 WHERE custid = @srecommend AND sporttype = 162 AND bettype = 1101
 
 -- Apply exec rep
-    EXEC Acc_CustSetting3rd_06
+                EXEC Acc_CustSetting3rd_06
     @CustId = @custid,
     @RoleId = @roleid,
     @v162discount_1101 = @v162discount_1101,
@@ -161,15 +151,6 @@ BEGIN CATCH
         @TrackingValue2 = @TrackingValueDB,
         @duration = @duration
 END CATCH
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
 
 
 GO 

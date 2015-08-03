@@ -1,6 +1,4 @@
-﻿USE [CustDB]
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableVS]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableVS]
 	@CustID					INT,	
 	@Disable			BIT,
 	@DisableDownlines	BIT = true, --Disable all downline
@@ -25,6 +23,8 @@ Revisions:
 	- 20130926@Kathy: Apply execRep
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
+
 Param's Explanation:
 • @custid: customer id.   
 • @Disable: status
@@ -37,7 +37,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 Declare @RoleID tinyint , @UplineDisable bit, @Old_Disable bit
@@ -84,7 +84,7 @@ end
 --Check Allowed downlines during peak hour at weekend
 IF (@Disable = 1 or (@Disable = 0 and @DisableDownlines = 0))
 BEGIN
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1,
 											@Language=@Language,

@@ -1,5 +1,11 @@
 ﻿USE [CustDB]
 GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuspended]    Script Date: 06/10/2015 16:17:44 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuspended    Script Date: 11/27/2014 5:09:46 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuspended]
 	@CustID int,
 	@Suspended bit,	
@@ -38,6 +44,8 @@ Revisions:
 	- 20130709@Jamie: Apply Exec Rep 
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)	
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
+	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                          
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -54,7 +62,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
@@ -94,7 +102,7 @@ from Custinfo with (nolock)
 where CustID = @CustID
 
 -- Check Allowed downlines during peak hour at weekend 
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+EXEC dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1, --Use Exec Rep for UPDATE 
 											@Language=@Language,
@@ -216,6 +224,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData,
 		@duration = @duration
 END CATCH
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuspended] TO [bodbAdminNet] AS [dbo]
 GO

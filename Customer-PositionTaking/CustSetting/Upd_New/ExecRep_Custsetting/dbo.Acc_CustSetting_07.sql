@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustSetting_07    Script Date: 8/21/2014 3:12:20 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustSetting_07    Script Date: 8/21/2014 2:58:13 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustSetting_07]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_07]
     @srecommend INT= 0,
     @mrecommend iNT = 0,
     @recommend INT = 0,
@@ -24,6 +24,10 @@ AS
             
         Revision:
             - 20140818@Logan:   Exclude disabled members while updating Super, Master Setting [Redmine: #19631]
+		  - 20150610@Daniel: 
+		   + Improve medthod check table existing in subscribers	
+		   + Separate custDB to new server DBCUST                  
+            
 
         Parameter's Explanation:
     */ 
@@ -31,25 +35,12 @@ BEGIN
    
     SET NOCOUNT ON
 
-    --DECLARE @IsExistTables tinyint
-    --SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-    --WHERE    name IN ('custinfo', 'CustSetting', 'CustOverride')
-    --        AND xtype = 'U'
-
-    --if @IsExistTables <> 3 RETURN
-    
-    DECLARE @IsExistTables tinyint, @IsExistViews tinyint
-    SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-    WHERE    name IN ('custinfo', 'CustSetting', 'CustOverride')
-           AND xtype = 'U'
-    
-    SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-    WHERE    name IN ('custinfo', 'CustSetting', 'CustOverride')
-           AND xtype = 'V'
-            
-    if @IsExistTables <> 3 AND @IsExistViews <> 3
-        RETURN 
-    
+     if NOT(dbo.f_CheckRepTable('custinfo') = 1 
+	   AND dbo.f_CheckRepTable('CustSetting') = 1 
+	   AND dbo.f_CheckRepTable('CustOverride') = 1 
+	   )
+     RETURN
+        
     IF @roleid = 4
     BEGIN                
         --u = (i3 or i1)?(u3 or u1)

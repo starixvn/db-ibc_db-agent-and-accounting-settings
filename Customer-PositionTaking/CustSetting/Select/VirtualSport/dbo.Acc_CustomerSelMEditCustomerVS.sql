@@ -1,11 +1,11 @@
-ALTER PROCEDURE  [Acc_CustomerSelMEditCustomerVS]
-	@CustID int
+ALTER PROCEDURE [dbo].[Acc_CustomerSelMEditCustomerVS]
+	@CustID INT
 AS
 /*
 	Created by: Dan
 	Date: 2012-08-10
 	Task: Master get virtual sports setting of member
-	DB: DB053.BODB02 
+	DB: DBCUST.CustDB
 	Original: Acc_CustomerSelEditCustomer_MAg
 	
 	Revisions:		
@@ -13,6 +13,7 @@ AS
 		- 20130220@Johnson: get virtual horse racing setting (sporttype: 181, bettype: 1231)
 		- 20131121@Kathy: Add Virtual Greyhounds (182), Virtual Motor Racing (184) [Redmine:#7234]
 		- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
+		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 */
 SET NOCOUNT ON
 
@@ -135,9 +136,8 @@ SELECT
 						WHEN 185 then @MaxPerMatch185
 						WHEN 186 then @MaxPerMatch186 END AS MaxPerMatch,
 
-
-	cs.apositiontaking as a1,    
-	cs.mpositiontaking as m1,		
+	cs.apositiontaking as a1,
+	cs.mpositiontaking as m1,
 
 	--im2
 	acs.isautompositiontaking  as im2,
@@ -167,7 +167,6 @@ FROM
 	--JOIN @MaxPT maxPT on cs.sporttype=maxPT.sporttype and cs.bettype=maxPT.bettype	
 WHERE cs.custid=@custId 
 		AND cs.sporttype  in (180, 181, 182, 183, 184, 185, 186) and cs.bettype in (1201, 1231, 1220)
-
 
 
 GO 

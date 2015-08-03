@@ -1,20 +1,20 @@
-﻿
-ALTER PROCEDURE [dbo].[Acc_CustomerSelHRMaster_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelHRMaster_All]
 	@custid int
 AS
 /*
 Created: 20081028@PhuongNguyen
 Task : Super edit master.
-DB: DBAGE/bodb02
+DB: DBCUST.CustDB
 
 Revisions:
-    - 20090515@Phuc: PT for HR
+	- 20090515@Phuc: PT for HR
 	- 20090701@Phuc: allow super disable auto MPT.
 	- 20091128@Kiwi: Move custsetting & custoverride to the separated tables (CustSetting3rd & CustOverride3rd).
 	- 20100414@Shifu: OpenTote
 	- 20101231@Johnson: Get setting for HR AU, Greyhound, Harness
 	- 20130306@Johnson: Check bet setting  with setting of 3rd
 	- 20130520@Johnson: check null bet setting of 3rd
+	- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
 Param's Explanation:
 • @CustID: super ID
 */
@@ -680,7 +680,7 @@ Where cs.CustID = @srecommend and cs.sporttype between 151 and 153
 		si.Disable152_UK,
 		si.Disable152_AU,
 		si.Disable153_AU
-		
+
 		
 		
 

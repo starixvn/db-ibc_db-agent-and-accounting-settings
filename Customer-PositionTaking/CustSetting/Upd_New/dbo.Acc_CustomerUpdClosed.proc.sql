@@ -1,6 +1,4 @@
-﻿USE [CustDB]
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdClosed]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdClosed]
 	@CustID int,
 	@Closed bit,	
 	@SubAccID int = 0, --Sub-AccountID
@@ -40,6 +38,7 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call Acc_ExecRep_Cust_04 instead of Acc_ExecRep_04)
 	- 20140618@Thien: Prevent robot from opening back the closed accounts
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]	
+	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 
@@ -53,7 +52,7 @@ declare @duration int
 set @startRun = getdate()
 
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode output,@ErrMsg=@ErrMsg output
 if @ErrCode <>0 return
 --end
 
@@ -146,7 +145,7 @@ IF @Old_Closed = @Closed -- and @LoginCount > 5
 -- Check Allowed downlines during peak hour at weekend 
 IF @closed = 1 
 BEGIN
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
+	EXEC Acc_CustomerSelCheckAllowedDownlines	@custid=@custid,
 											@roleid=@roleid,
 											@isExecRep=1,  --Apply Exec Rep 
 											@Language=@Language,
@@ -262,6 +261,7 @@ BEGIN CATCH
 		@TrackingValue = @LogSPData	,
 		@duration = @duration
 END CATCH
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdClosed] TO [bodbAdminNet] AS [dbo]
 GO

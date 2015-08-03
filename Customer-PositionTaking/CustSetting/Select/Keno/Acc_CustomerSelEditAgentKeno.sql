@@ -4,9 +4,10 @@ AS
 /*
 	Created: 20140319@Patrick
 	Task: Master edits agent's Keno setting
-	DB: DBAGE/BODB02
+	DB: DBCust/CustDB
 	
 	Revisions:
+		- 20150608@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 	
 	Parameters Explanation
 */
@@ -16,9 +17,18 @@ BEGIN
 	DECLARE @mrecommend INT, @srecommend INT, @currency INT, @DisableAutoMPT BIT
 	SELECT @mrecommend = mrecommend, @srecommend = srecommend, @currency = currency FROM dbo.CustInfo WITH (NOLOCK) WHERE CustId = @custid
 
+	----- 20150608@Kos -------------------
 	DECLARE @GameType TABLE (GameTypeID INT, IBCBetTypeID INT)
-	INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
-	SELECT GameTypeID, IBCBetTypeID FROM dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+
+	BEGIN TRY
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @GameType (GameTypeID, IBCBetTypeID)
+		SELECT GameTypeID, IBCBetTypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK) WHERE IBCBetTypeID BETWEEN 1501 AND 1599 AND IsDisabled = 0
+	END CATCH
+	----- 20150608@Kos -------------------
 
 	--Check downline?
 	DECLARE @hasDownline BIT = 0
@@ -99,17 +109,3 @@ BEGIN
 	WHERE cs.custid = @custid AND cs.bettype BETWEEN 1501 AND 1599 AND cs.sporttype = 202
 
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [bodbDownlineNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [bodbDownlineNetView] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelEditAgentKeno] TO [vnteam] AS [dbo]
-GO
-
-

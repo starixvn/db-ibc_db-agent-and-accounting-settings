@@ -1,11 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMember_All]    Script Date: 7/21/2014 4:56:22 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
 	@custid INT,--memberid  
 
 	@firstname NVARCHAR(50),  
@@ -216,6 +209,7 @@ Revisions:
  - 20130218@Dan: Change linked server DB053 to DBAGE
  - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
  - 20140627@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+ - 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -230,7 +224,7 @@ SET NOCOUNT ON
 declare @roleid tinyint, @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000)  
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''  
   
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging   
+EXEC Age_CustomerSelCheckBelongingByCustID
  @SessionCustID = @Userid,   
  @Custid = @custid,  
  @Username = @Username OUTPUT,  
@@ -238,7 +232,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
  if (@roleid = 0) return  
   
 --Check disable user  
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
+EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output  
 IF @ErrCode_Cur > 0  
 BEGIN  
  select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7),   
@@ -398,7 +392,7 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
  if @updatecomm_old <> 0  
  begin  
     
-  EXEC dbo.Acc_CustomerUpdMember_Commission   
+        EXEC dbo.Acc_CustomerUpdMember_Commission   
    @custid = @custid,  
    @playerdiscount = @playerdiscount,  
    @playerdiscountcs = @playerdiscountcs,  
@@ -518,6 +512,7 @@ if @UpdatePositiontaking   = 1  or
  @UpdatePositiontakingv10   = 1  or  
  @UpdatePositiontakingv11   = 1  or  
  @UpdatePositiontakingv99   = 1  or  
+
  @UpdatePositiontakingv99MP  = 1 or  
  @UpdatePositiontakingv154   = 1  or  
  @UpdatePositiontakingv161  = 1  
@@ -717,7 +712,7 @@ BEGIN
      
 
  BEGIN  
-  EXEC dbo.Acc_CustomerUpdMember_PositionTaking   
+                EXEC dbo.Acc_CustomerUpdMember_PositionTaking   
    @custid = @custid,  
    @apositiontaking_1 = @apositiontaking_1,  
    @apositiontaking_2 = @apositiontaking_2,  
@@ -809,7 +804,7 @@ BEGIN
  BEGIN  
   Select @ErrCode = @ErrCode + '-107'+char(7), @ErrMsg = @ErrMsg + char(7)  
  END  
-END  
+END
 
 
 GO 

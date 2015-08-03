@@ -1,15 +1,26 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_Dep_CustomerSelInfo]    Script Date: 09/03/2015 11:23:09 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelInfo] 
 	@Custid INT
 AS
+--@Source Control
+/*
+Revisions:
+  - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+*/
+
 BEGIN	
 	SET NOCOUNT ON;
+	----- David @ 09 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
+
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+----- /David @ 09 JUN 2015 -------------------
 	--Sport book
 	SELECT dc.custid,dc.sporttype,dc.bettype,dc.islive, 
 	   dc.minbet,dc.maxbet,CASE dc.sporttype 
@@ -82,14 +93,8 @@ BEGIN
 	0 islive,b.MinBet,b.MaxBet,b.MaxPerGameType,0 MPB,a.spositiontaking,a.mpositiontaking,a.apositiontaking
 	,0,0,0
 	FROM CustSettingGame a WITH (NOLOCK)LEFT JOIN	CustGameType b WITH (NOLOCK) ON a.custid=b.custid 
-	INNER JOIN bodb02.dbo.GameType KT WITH(NOLOCK)  ON b.GameTypeID = kt.GameTypeID
+	INNER JOIN @tmp_GameType KT ON b.GameTypeID = kt.GameTypeID
 	WHERE a.custid=@custID 
 	and a.Sporttype=202
 	ORDER by sporttype	
 END
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerSelInfo] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_Dep_CustomerSelInfo] TO [bodbAdminNet]
-GO 

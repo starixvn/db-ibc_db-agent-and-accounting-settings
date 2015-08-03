@@ -1,3 +1,12 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberLiveCS_SAg]    Script Date: 06/09/2015 16:34:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberLiveCS_SAg    Script Date: 5/20/2015 10:07:55 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMemberLiveCS_SAg    Script Date: 5/19/2015 4:20:55 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] 
 	@custid		INT,	
 
@@ -30,6 +39,9 @@ AS
 			- 20140317@Johnson: Check constraint min us1, s1 with max(n4-m1-a1,0) & merge code correct pt [redmine:#11562]
 			- 20140811@Logan:   1. Add ErrCode when old & new values are the same (-107) [Redmine: #20319]
 			                    2. Code aligning
+			- 20150515@Johnson: fix bug s1_max = Max(n4-(m1+a1), s4 - m3) [Redmined: #35758]	
+			- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
+		                  
 
 		Parameters Explanation:
 	*/
@@ -117,7 +129,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC dbo.Age_CustomerSelCheckBelonging 
 	    @SessionCustID = @Userid, 
 	    @Custid = @custid,
 	    @roleid = @roleid OUTPUT
@@ -129,7 +141,7 @@ BEGIN
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable
+    EXEC dbo.Acc_CustomerSelCheckEnable
         @custid = @custid
       , @ErrCode = @ErrCode_Cur output
       , @ErrMsg = @ErrMsg_Cur output
@@ -305,12 +317,19 @@ INNER JOIN CustOverrideGame aco WITH(NOLOCK) ON acs.custid = aco.custid
 		    RETURN	
 	    END
     	
-	    --s1 <= s4 - m3
+	    --s1 <= Max(n4-(m1+a1), s4 - m3)
 	    select @ErrType = ''	
-	    SELECT @ErrType = @ErrType + 'Max: ' + CAST(scs.spositiontaking - mcs.mpositiontaking AS VARCHAR(10)) 
+	    SELECT @ErrType = @ErrType + 'Max: ' + CAST((CASE WHEN scs.spositiontaking -  mcs.mpositiontaking > scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+													THEN scs.spositiontaking -  mcs.mpositiontaking
+													ELSE scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+												END) AS VARCHAR(10)) 
 	    FROM @tmp_sag scs
 		    INNER JOIN @tmp_mag mcs ON scs.sporttype = mcs.sporttype and scs.bettype = mcs.bettype	
-	    WHERE @v162spositiontaking_1101 + mcs.mpositiontaking > scs.spositiontaking
+		    INNER JOIN CustSettingGame cs WITH(NOLOCK) ON cs.custid = @custid AND cs.sporttype = scs.sporttype and cs.bettype = scs.bettype	
+	    WHERE @v162spositiontaking_1101 > CASE WHEN scs.spositiontaking -  mcs.mpositiontaking > scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+												THEN scs.spositiontaking -  mcs.mpositiontaking
+												ELSE scs.minpositiontaking - (cs.apositiontaking+cs.mpositiontaking)
+											END
     		
 	    IF @ErrType <> ''
 	    BEGIN 
@@ -646,4 +665,12 @@ INNER JOIN CustOverrideGame aco WITH(NOLOCK) ON acs.custid = aco.custid
 
     SELECT @ErrCode = '-103' + char(7)
 END
+
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMemberLiveCS_SAg] TO [vnteam] AS [dbo]

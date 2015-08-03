@@ -12,7 +12,7 @@
 AS
 /*
 	Task : Select Direct Master Agent list
-	DB: DBAGE/bodb02, DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original: magentsite/account\customerlist.asp
 
 	Revisions:
@@ -36,6 +36,8 @@ AS
 							Output total records affect
 		- 20140407@Elodie: Add Keno product [Redmine:#13156]
 		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
+		- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
+
 	Pattern Explanation:
 	Search keyword: '%keyword%'
 	First char
@@ -45,6 +47,19 @@ AS
 */
 
 SET NOCOUNT ON
+
+----- Elodie @ 01 JUN 2015 -------------------
+DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+
+BEGIN TRY		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+END TRY
+BEGIN CATCH		
+	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+END CATCH
+----- /Elodie @ 01 JUN 2015 -------------------
 
 DECLARE @RowCount int, @RowStart int, @RowEnd int 
 SELECT @PageIndex = @PageIndex - 1, @RowStart = @PageSize * @PageIndex + 1, @RowEnd = @RowStart + @PageSize - 1 
@@ -104,8 +119,8 @@ Select * From
 		ci.HideKeno,
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
 
-		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe,
+		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
+		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
@@ -113,7 +128,7 @@ Select * From
 		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
 		LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
 		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-		LEFT JOIN bodb02.dbo.GameType g WITH (NOLOCK) on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)						
+		LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)						
 		INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
 		INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 	WHERE m.SRecommend < 100 and m.roleid=3

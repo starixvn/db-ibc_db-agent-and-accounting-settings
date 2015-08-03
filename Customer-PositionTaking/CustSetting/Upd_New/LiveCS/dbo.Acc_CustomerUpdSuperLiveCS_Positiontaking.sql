@@ -1,13 +1,16 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking]    Script Date: 06/10/2015 16:07:02 ******/
+SET ANSI_NULLS ON
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Positiontaking    Script Date: 8/29/2014 1:31:47 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Positiontaking    Script Date: 8/21/2014 3:12:20 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperLiveCS_Positiontaking    Script Date: 8/21/2014 2:58:12 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking]
     @custid        INT,
     @v162spositiontaking_1101 SMALLMONEY,
     
@@ -32,6 +35,7 @@ AS
             - 20140813@Logan:   Add sporttype(162) and bettype(1101) while checking constraint or updating PT [Redmine: #20162]
             - 20140814@Logan:   1. Exclude disabled members while updating super PT [Redmine: #19631]
                                 2. Code aligning
+			- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]                                
         Parameters Explanation:
         
         Note:
@@ -49,7 +53,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
         @SessionCustID = @Userid, 
         @Custid = @custid,
         @roleid = @roleid OUTPUT
@@ -57,7 +61,7 @@ BEGIN
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+    EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0
     BEGIN
         select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -67,7 +71,7 @@ BEGIN
     --end
 
     ---- Johnson@20131104: Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+    EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
         @roleid=4,
         @isExecRep=1,
         @isUpdatePT = 1,
@@ -241,19 +245,9 @@ INNER JOIN custinfo ci WITH(NOLOCK) ON cs.custid = ci.custid
     END CATCH
 END
 
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbDownlineNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [bodbDownlineNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperLiveCS_Positiontaking] TO [vnteam] AS [dbo]

@@ -5,9 +5,10 @@ AS
 	Created: Elodie
 	Date: 20150423
 	Task: Super edits Gold Deluxe settings on member
-	DB: BDAGE/BODB02
+	DB: DBCUST.CustDB
 		
 	Revisions:
+		- 20150612@Kathy: Move sp from DBAGE.bodb02 to DBCUST.CustDB [Redmine:#36216]
 		
 	Parameters Explanation:
 */
@@ -66,8 +67,8 @@ BEGIN
 			,phone
 			,mobilephone
 			,fax
-			,@DisableUpline				AS DisableUpline
-			,ISNULL(@DisableGoldDeluxe,0) AS DisableGoldDeluxe
+			,ISNULL(@DisableUpline,1) 		AS DisableUpline
+			,ISNULL(@DisableGoldDeluxe,1)	AS DisableGoldDeluxe
 			,0 AS Downlines
 			,0 AS DisableDownlines
 	FROM	dbo.Customer WITH (NOLOCK)
@@ -96,14 +97,11 @@ BEGIN
 		@custid		= @custid
 		,@UplineId	= @recommend
 END
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbDownlineNetView] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelSEditCustomerGoldDeluxe] TO [vnteam] AS [dbo]

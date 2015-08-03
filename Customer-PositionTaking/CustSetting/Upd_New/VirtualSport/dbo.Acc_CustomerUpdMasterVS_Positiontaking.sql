@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]    Script Date: 6/6/2015 6:03:00 PM ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterVS_Positiontaking    Script Date: 8/28/2014 2:05:04 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterVS_Positiontaking    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterVS_Positiontaking    Script Date: 8/21/2014 2:58:06 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
     @custid        INT,    
     
     @sporttype    INT,
@@ -48,6 +50,9 @@ CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
             - 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)
             - 20140728@Logan: 1.Exclude disabled agents while updating master's settings
                               2.Code aligning            
+			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB, Use temp table for sports, bettype table, 
+																Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
+
         Parameter's Explanation:
     */
 SET NOCOUNT ON 
@@ -78,9 +83,32 @@ SET NOCOUNT ON
     from custinfo with (NOLOCK) 
     where CustID = @CustID
 
+	----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
+	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
+	
+	BEGIN TRY
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBAGE.bodb02.dbo.Sports WITH (NOLOCK)		
+	END TRY
+	BEGIN CATCH
+		INSERT INTO @tmp_Sports (SportType, SportName)
+		SELECT SportType, SportName FROM DBTXN.bodb02.dbo.Sports WITH (NOLOCK)	
+	END CATCH
+
+	BEGIN TRY			
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBAGE.bodb02.dbo.Bettype WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_Bettype (TypeID, TypeNamee)
+		SELECT TypeID, TypeNamee FROM DBTXN.bodb02.dbo.Bettype WITH (NOLOCK)
+	END CATCH
+----- /Elodie @ 01 JUN 2015 -------------------
+
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC Age_CustomerSelCheckBelongingByCustID
         @SessionCustID = @Userid, 
         @Custid = @custid,
         @roleid = @roleid OUTPUT
@@ -88,7 +116,7 @@ SET NOCOUNT ON
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+    EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0
     BEGIN
         select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -98,7 +126,7 @@ SET NOCOUNT ON
     --end
     
     ---- Johnson@20131104: Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
+    EXEC Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
         @roleid=3,
         @isExecRep=1,
         @isUpdatePT = 1,
@@ -209,8 +237,8 @@ SET NOCOUNT ON
             (
                 select @bettype as bettype, @sporttype as sporttype, @s3 as spositiontaking, @m3 as mpositiontaking, @is3 as isauto_spositiontaking, @n3 as minpositiontaking
             ) as b on co.sporttype=b.sporttype and co.bettype = b.bettype
-            INNER JOIN bodb02.dbo.bettype bt with (nolock) on b.bettype = bt.typeid
-            INNER JOIN bodb02.dbo.sports s with(nolock) on b.sporttype = s.sporttype
+            INNER JOIN @tmp_Bettype bt on b.bettype = bt.typeid
+            INNER JOIN @tmp_Sports s on b.sporttype = s.sporttype
         where co.custid = @custid and (    
                             (b.mpositiontaking>co.maxpositiontaking or b.mpositiontaking<b.minpositiontaking)        
                         )
@@ -418,7 +446,7 @@ SET NOCOUNT ON
     -- update min PT
     IF @UpdateMinPositiontaking = 1
     BEGIN                
-        EXEC Acc_CustOverrideUpdVS
+                                EXEC Acc_CustOverrideUpdVS
             @custid        = @custid, 
             @sporttype    = @sporttype,
             @bettype    = @bettype,
@@ -490,7 +518,7 @@ SET NOCOUNT ON
         END        
         
         --20131101@Johnson: apply execrep when update auto pt
-        EXEC dbo.Acc_CustSetting3rd_05
+                                EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -585,7 +613,7 @@ SET NOCOUNT ON
     IF @UpdatePositiontaking=1 AND @UpdateAutoPositiontaking = 0 AND
         @Updateallmembers = 1 AND @is3=0
     BEGIN
-        EXEC dbo.Acc_CustSetting3rd_05
+                                EXEC dbo.Acc_CustSetting3rd_05
             @srecommend = @srecommend,
             @mrecommend = @custid,
             @roleid = 3,
@@ -627,7 +655,7 @@ SET NOCOUNT ON
     
     IF @UpdateAutoPositiontaking = 1 OR @UpdatePositiontaking = 1
     BEGIN
-        EXEC dbo.Acc_CustSetting3rd_07
+                                EXEC dbo.Acc_CustSetting3rd_07
             @srecommend = @srecommend , 
             @mrecommend = @custid,
             @roleid = 3,
@@ -760,17 +788,6 @@ SET NOCOUNT ON
             @TrackingValue2 = @TrackingValueDB,
             @duration = @duration
     END CATCH
-
-
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdMasterVS_Positiontaking] TO [vnteam]

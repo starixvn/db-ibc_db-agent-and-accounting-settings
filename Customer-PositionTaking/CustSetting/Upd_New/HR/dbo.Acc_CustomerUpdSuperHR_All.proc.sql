@@ -1,13 +1,15 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdSuperHR_All]    Script Date: 06/10/2015 15:34:48 ******/
+SET ANSI_NULLS ON
 GO
-
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperHR_All    Script Date: 8/28/2014 2:05:12 AM ******/
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperHR_All    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperHR_All    Script Date: 8/21/2014 2:58:08 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperHR_All]
     @custid int,-- superid
     @UserID int = 0,
     
@@ -174,6 +176,8 @@ Revisions:
     - 20110323@Johnson: check @custid must be super's ID
     - 20110709@Johnson: Change to use new server BD053 instead DB052
     - 20130227@Johnson: change linked server DB053 to DBAGE
+    - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]
+    
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -196,7 +200,7 @@ SET NOCOUNT ON
 Declare @ErrCode_Cur int, @ErrMsg_Cur nvarchar(4000), @roleid tinyint
 Select @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''
 
-EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+EXEC dbo.Age_CustomerSelCheckBelongingByCustID 
     @SessionCustID = @Userid, 
     @Custid = @custid,
     @Username = @Username OUTPUT,
@@ -204,7 +208,7 @@ EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging
     if (@roleid <> 4) return-- return if not super
     
 --Check disable user
-EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 IF @ErrCode_Cur > 0
 BEGIN
     select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -374,7 +378,7 @@ END
 IF @UpdateCommission = 1 
 BEGIN
     Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-                EXEC dbo.Acc_CustomerUpdSuper_CommissionHR
+                                                                EXEC dbo.Acc_CustomerUpdSuper_CommissionHR
         @custid=@custid, 
         @v151discount_31=@v151discount_31, 
         @v151discount_41=@v151discount_41,
@@ -560,7 +564,7 @@ END
 IF @UpdatePositiontaking = 1
 BEGIN 
     Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-                EXEC dbo.Acc_CustomerUpdSuperHR_Positiontaking
+                                                                EXEC dbo.Acc_CustomerUpdSuperHR_Positiontaking
         @custid = @custid,
         @v151spositiontaking_31 = @v151spositiontaking_31,
         @v151spositiontaking_32 = @v151spositiontaking_32,
@@ -626,20 +630,9 @@ END
 
 RETURN
 
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [bodbAdminNet] AS [dbo]
 GO
-SET ANSI_NULLS ON 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [bodbExtAccNet] AS [dbo]
 GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [bodbExtAccNet]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerUpdSuperHR_All] TO [vnteam] AS [dbo]
