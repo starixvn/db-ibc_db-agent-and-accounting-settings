@@ -40,7 +40,7 @@ BEGIN
 			
 	SET @startRun = GETDATE()
 	
-	EXEC dbo.Age_CustomerSelCheckBelonging   
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID   
 		 @SessionCustID = @Userid,   
 		 @Custid = @custid,  		 
 		 @roleid = @roleid OUTPUT  
