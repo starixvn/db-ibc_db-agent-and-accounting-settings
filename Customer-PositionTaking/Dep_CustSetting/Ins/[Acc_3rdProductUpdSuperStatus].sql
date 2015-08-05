@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 
 /****** Object:  Stored Procedure dbo.Acc_3rdProductUpdSuperStatus    Script Date: 7/17/2015 10:56:48 AM ******/
-CREATE PROCEDURE	[dbo].[Acc_3rdProductUpdSuperStatus] 
+ALTER PROCEDURE	[dbo].[Acc_3rdProductUpdSuperStatus] 
 	@ProductID			INT,
 	@CustID				INT,
 	@IsEnable			BIT,
@@ -352,6 +352,7 @@ BEGIN
 
 		WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
 		BEGIN
+			
 		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency,@AffilateId=c.[AffID]
 		FROM #tempBettrade a	
 		 INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username	
@@ -363,29 +364,10 @@ BEGIN
 		--	@Username	= @bettradeUserName,
 		--	@Username2	= @bettradeUserName,
 		--	@Currency	= @bettradeCurrency
-		EXEC Dot_Dep_CustomerInsMember_Ag_Cust_xtest
-		@FirstName='',
-		@LastName='',
-		@Email='',
-		@DepositUserName=@bettradeUserName,
-		@DepositUserID=NULL,
-		@Password='',
-		@OddsType='',
-		@AgentID=@bettradeAgentId,
-		@AffiliateID=@AffilateId,
-		@BonusCode=NULL,
-		@Country='',	
-		@Username=@bettradeUserName,
-		@CustID=@Cust_ID,
-		@ErrCode=@ErrCode,
-		@ErrMsg=@ErrMsg
-		IF @ErrCode<>0 OR @Cust_ID=0
-		RETURN
-		INSERT INTO [dbo].[BetTradeCust]([Custid])
-		VALUES (@Cust_ID)
-		DELETE FROM #tempBettrade WHERE username=@bettradeUserName
+		
 		END		
 		 --end bettrade
+		 
 		END
 	IF @IsEnable = 0
 		SET @ApplyToMember = 1
