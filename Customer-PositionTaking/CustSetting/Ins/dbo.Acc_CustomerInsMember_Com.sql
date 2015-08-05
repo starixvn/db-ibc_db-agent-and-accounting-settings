@@ -305,7 +305,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@DisableHRFixedOdds BIT = 0,
 	@DisableEsports BIT = 0,
 	@DisableGoldDeluxe BIT = 1,
-	@DisableSuperLive BIT = 0,
+	@DisableSuperLive BIT = 1,
 	
 	@IP VARCHAR(15)='',
 	@Language VARCHAR(2)= 'E',
@@ -2121,3 +2121,14 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [vnteam]
+GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_Com] TO [vnteam]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbExtAccNet]
+GO 
