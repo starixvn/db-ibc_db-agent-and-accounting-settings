@@ -350,13 +350,13 @@ BEGIN
 		
 		DECLARE @bettradeUserName VARCHAR(50), @bettradeCustId INT,@bettradeAgentId INT,@bettradeCurrency INT,@AffilateId INT,@ErrCode int=0,@Cust_ID int=0
 
-		WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
-		BEGIN
+		--WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
+		--BEGIN
 			
-		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency,@AffilateId=c.[AffID]
-		FROM #tempBettrade a	
-		 INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username	
-		 LEFT JOIN DBAFF12BET.[Affiliate_12BET].[dbo].[AffInfo] c WITH(NOLOCK)  ON b.recommend=c.[AffID]
+		--SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency,@AffilateId=c.[AffID]
+		--FROM #tempBettrade a	
+		-- INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username	
+		-- LEFT JOIN DBAFF12BET.[Affiliate_12BET].[dbo].[AffInfo] c WITH(NOLOCK)  ON b.recommend=c.[AffID]
 		--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
 		--EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
 		--	@CustID		= @bettradeCustId,
@@ -365,7 +365,7 @@ BEGIN
 		--	@Username2	= @bettradeUserName,
 		--	@Currency	= @bettradeCurrency
 		
-		END		
+		--END		
 		 --end bettrade
 		 
 		END
