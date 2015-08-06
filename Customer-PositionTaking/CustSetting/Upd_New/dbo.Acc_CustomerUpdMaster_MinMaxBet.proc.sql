@@ -1309,6 +1309,7 @@ SELECT	@maxpermatch = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 THE
 	@maxpermatchv2 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv2 = 0 THEN maxpermatch2 ELSE @maxpermatchv2 END,
 	@maxpermatchv3 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv3 = 0 THEN maxpermatch3 ELSE @maxpermatchv3 END,
 	@maxpermatchv5 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv5 = 0 THEN maxpermatch5 ELSE @maxpermatchv5 END,
+	@maxpermatchv8 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv8 = 0 THEN maxpermatch8 ELSE @maxpermatchv8 END,
 	@maxpermatchv10 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv10 = 0 THEN maxpermatch10 ELSE @maxpermatchv10 END,
 	@maxpermatchv11 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv11 = 0 THEN maxpermatch11 ELSE @maxpermatchv11 END,
 	@maxpermatchv99 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99 = 0 THEN maxpermatch99 ELSE @maxpermatchv99 END,
