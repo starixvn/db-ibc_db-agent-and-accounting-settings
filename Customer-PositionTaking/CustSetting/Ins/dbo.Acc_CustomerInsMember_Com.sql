@@ -305,6 +305,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@DisableHRFixedOdds BIT = 0,
 	@DisableEsports BIT = 0,
 	@DisableGoldDeluxe BIT = 1,
+	@DisableSuperLive BIT = 1,
 	
 	@IP VARCHAR(15)='',
 	@Language VARCHAR(2)= 'E',
@@ -372,6 +373,7 @@ Revisions:
 	- 20141225@Johnson: Separate virtual rate by sporttype, bettype [Redmine: #25840]				
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]
 	- 20150601@Elodie: Separate CustDB to DBCUST server (Use temp table for GameType table)
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 
 Param's Explanation:
 • @ErrCode:
@@ -752,6 +754,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
 	@DisableEsports = @DisableEsports,
 	@DisableGoldDeluxe = @DisableGoldDeluxe,
 	@HideGoldDeluxe = @HideGoldDeluxe,
+	@DisableSuperLive = @DisableSuperLive,
 
 	@MaxPerMatch = @MaxPerMatch,
 	@MaxPerMatchv2 = @MaxPerMatchv2,
@@ -1538,6 +1541,7 @@ SELECT @LogSPData = '<Acc_CustomerInsMember_Com custid="'+ COALESCE(CAST(@custid
 'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
 'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
+'DisableSuperLive="'+ COALESCE(CAST(@DisableSuperLive AS VARCHAR(1)),SPACE(1)) + '" ' +
 'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
 'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" />'
 
@@ -1567,6 +1571,7 @@ BEGIN CATCH
 	'DisableEsports="'+ COALESCE(CAST(@DisableEsports AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'HideGoldDeluxe="'+ COALESCE(CAST(@HideGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'DisableGoldDeluxe="'+ COALESCE(CAST(@DisableGoldDeluxe AS VARCHAR(1)),SPACE(1)) + '" ' +
+	'DisableSuperLive="'+ COALESCE(CAST(@DisableSuperLive AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'disableHRFixedOdds="'+ COALESCE(CAST(@disableHRFixedOdds AS VARCHAR(1)),SPACE(1)) + '" ' +
 	'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" ' + @LogDataKeno +
 	'ErrMsg="'+ ERROR_MESSAGE() + '" />'
@@ -2116,3 +2121,14 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [vnteam]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_Com] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_Com] TO [bodbExtAccNet]
+GO 
