@@ -1,3 +1,5 @@
+use CustDB
+go
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]	
 	@FirstName nvarchar(50),
 	@LastName nvarchar(50),
@@ -136,6 +138,7 @@ Revisions:
 	- 20141212@Jamie: Set ugroup = a for Alog (USD,GBP) [redmine:#25577]
 	- 20150325@Winnie: Set default bet setting of 3rd Product (Feature #25724)
 	- 20150609@Elodie: Separate CustDB to DBCUST server (Call Dot_BalanceDelCredit, Dot_BalanceDelCreditGame, Dot_BalanceDelDebit, Dot_BalanceDelDebitGame, GameType, sports by link server)
+	- 20150710@Patrick: Remove insert default balance value for Credit/Debit Game
 
 Param's Explanation:
 • @CustID: return new 12bet Player Cust ID
@@ -2492,7 +2495,7 @@ SET @today = convert(nvarchar(10), current_timestamp,120)
 
 --INSERT INTO BalanceCreditGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
+--EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today
 
 IF @@error <> 0
 BEGIN 
@@ -2510,7 +2513,7 @@ BEGIN
 	DELETE CustGameType WHERE CustID = @CustID
 	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
+	--EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return
@@ -2518,7 +2521,7 @@ END
 
 --INSERT INTO BalanceDebitGame (CustID, winlostdate, Balance )
 --VALUES (@CustID, @today, 0)
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
+--EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today
 
 
 IF @@error <> 0
@@ -2537,8 +2540,8 @@ BEGIN
 	DELETE CustGameType WHERE CustID = @CustID
 	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid	
 	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid	
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
-	EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
+	--EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid
+	--EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid	
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 	return

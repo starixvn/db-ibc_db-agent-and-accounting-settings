@@ -1,11 +1,5 @@
 ﻿USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdLiveCS_WinLimit]    Script Date: 6/16/2015 2:11:04 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdLiveCS_WinLimit    Script Date: 12/5/2013 5:35:48 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdLiveCS_WinLimit] 
 	@custid		INT,
 	@MaxWinLiveCasino		SMALLMONEY,
@@ -28,6 +22,8 @@ AS
 			- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 			- 20130301@Johnson: change linked server BD053 to DBAGE and write log on DBTXN if DBLOG failure
 			- 20130808@Elodie: Splitting bodb02 into CustDB (Insert/Delete BalanceCreditGame, BalanceDebitGame by link database)
+			- 20150710@Patrick: Remove insert default balance value Credit/Debit Game
+
 		Parameters Explanation:		
 	*/
 SET NOCOUNT ON
@@ -198,29 +194,27 @@ BEGIN
 	END
 END
 
+----for weekly reset, insert default balance for member if not exists to keep track balance 
+--IF @MaxWinLiveCasino > 0
+--BEGIN			
+--	-- if customer is weekly reset then insert default balance
+--	EXEC DBTXN.bodb02.dbo.Acc_CustomerInsBalanceLiveCS_WinLimit
+--		@CustID = @CustID, 
+--		@RoleID = @RoleID,
+--		@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
+--		@ErrCode = @ErrCode	OUTPUT, 
+--		@ErrMsg  = @ErrMsg	OUTPUT
 
-
---for weekly reset, insert default balance for member if not exists to keep track balance 
-IF @MaxWinLiveCasino > 0
-BEGIN			
-	-- if customer is weekly reset then insert default balance
-	EXEC DBTXN.bodb02.dbo.Acc_CustomerInsBalanceLiveCS_WinLimit 
-		@CustID = @CustID, 
-		@RoleID = @RoleID, 
-		@isAutoResetLiveCasino = @isAutoResetLiveCasino, 
-		@ErrCode = @ErrCode	OUTPUT, 
-		@ErrMsg  = @ErrMsg	OUTPUT
-
-	IF (@ErrCode <> 0)
-	BEGIN			
-		SELECT @ErrMsg = 
-					case @Language 
-						when 'E' then 'Update process is unsuccessful.'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
-					end
-		RETURN
-	END
-END	
+--	IF (@ErrCode <> 0)
+--	BEGIN			
+--		SELECT @ErrMsg = 
+--					case @Language 
+--						when 'E' then 'Update process is unsuccessful.'
+--						ELSE [dbo].[f_Get_MsgNamebyMsgID](90001,@Language)
+--					end
+--		RETURN
+--	END
+--END	
 	
 Declare @LogSPData varchar(MAX),
 		@TrackingValueDB varchar(4000)

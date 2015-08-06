@@ -1,4 +1,6 @@
-﻿ALTER PROCEDURE[dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
+﻿use custdb
+go
+ALTER PROCEDURE[dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
     @custid  INT    
 AS    
  /*    
@@ -9,6 +11,7 @@ AS
       
   Revisions:    
 	- 20150612@Kathy: Move sp from DBAGE.bodb02 to DBCUST.CustDB [Redmine:#36216]
+	- 20150721@Patrick: Add more winlimit section
 	
   Parameters Explanations:    
        
@@ -70,6 +73,11 @@ BEGIN
     EXEC dbo.Acc_CustomerSelStakeLevelGoldDeluxe
         @custid        = @custid
         ,@UplineId    = @custid
+
+	--Winlimit section
+	EXEC dbo.Acc_CustomerWinLimitSelEdit @CustId = @CustId
+		, @SportType = 255
+		, @BetType = 1701
         
 END
 

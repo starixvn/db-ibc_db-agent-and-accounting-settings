@@ -1,3 +1,6 @@
+use custdb
+go
+
 ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
 	@Custid INT OUTPUT
 	,@UserName VARCHAR(30)
@@ -33,7 +36,8 @@ AS
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
 	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
-	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]                              
+	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
+	- 20150714@Patrick: Add max win limit for Gold deluxe                              
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -369,14 +373,32 @@ BEGIN
 
 		RETURN
 	END CATCH
-	
+
 	BEGIN TRY
-	EXEC dbo.Acc_CustomerInfo_Execrep_02
-		@custid = @custid,
-		@ExistingCustid = @ExistingCustid,
-		@Language = @Language,
-		@ErrCode = @ErrCode OUTPUT,
-		@ErrMsg = @ErrMsg OUTPUT
+		--insert default value
+		INSERT INTO dbo.CustWinLimit(CustId, SportType, BetType, MaxWinLimit, IsAutoReset)
+		SELECT @custid, SportType, BetType, MaxWinLimit, IsAutoReset
+		FROM dbo.CustWinLimit WITH(NOLOCK) WHERE CustId = @ExistingCustid AND SportType = 255 AND BetType = 1701
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+					
+		-- ROLLBACK MANUALLY			
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	    
+		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID 
+	END CATCH
+
+	BEGIN TRY
+		EXEC dbo.Acc_CustomerInfo_Execrep_02
+			@custid = @custid,
+			@ExistingCustid = @ExistingCustid,
+			@Language = @Language,
+			@ErrCode = @ErrCode OUTPUT,
+			@ErrMsg = @ErrMsg OUTPUT
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrMsg = CASE @Language 
@@ -388,6 +410,7 @@ BEGIN
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID  
 		
 		RETURN
 	END CATCH
@@ -429,6 +452,7 @@ BEGIN
 		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID									
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID  
 							
 		RETURN	
 	END CATCH
@@ -469,6 +493,7 @@ BEGIN
 		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
 		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID  
 							
 		RETURN	
 	END CATCH

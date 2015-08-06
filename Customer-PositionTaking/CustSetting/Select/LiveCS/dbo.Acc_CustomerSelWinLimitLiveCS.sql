@@ -1,12 +1,6 @@
 USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelWinLimitLiveCS]    Script Date: 06/06/2015 14:52:26 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelWinLimitLiveCS    Script Date: 12/24/2013 2:47:43 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelWinLimitLiveCS    Script Date: 12/6/2013 4:14:33 PM ******/
+
 ALTER PROCEDURE  [dbo].[Acc_CustomerSelWinLimitLiveCS]
 	@custid		INT
 AS
@@ -20,6 +14,7 @@ AS
 			- 20121026@Jamie: Set Winlimit = 1 IN CASE credit = 0 
 			- 20131108@Elodie: Splitting bodb02 into CustDB (get custinfo by link database)
 			- 20150606@Kathy: Migrate custDB to new server DBCust(Get credit from DBCust.CustDB) [Redmine:#36216]
+			- 20150717@Patrick: Support Gold Deluxe
 
 		Parameters Explanation:	
 	*/
@@ -27,11 +22,11 @@ SET NOCOUNT ON
 	DECLARE @Credit MONEY, @Debit MONEY, @Balance MONEY
 	SELECT @Credit = SUM(Balance)
 	FROM BalanceCreditGame credit WITH (NOLOCK) 
-	WHERE custid=@custid
+	WHERE custid=@custid AND bettype = 1101
 	
 	SELECT @Debit = SUM(Balance)
 	FROM BalanceDebitGame credit WITH (NOLOCK) 
-	WHERE custid=@custid	
+	WHERE custid=@custid AND bettype = 1101	
 	
 	SET @Balance = ISNULL(@Credit,0) -  ISNULL(@Debit,0)
 	

@@ -1,6 +1,10 @@
-﻿ALTER PROCEDURE [dbo].[Dot_BalanceInsCreditGame]
+﻿use bodb02
+go
+
+ALTER PROCEDURE [dbo].[Dot_BalanceInsCreditGame]
 	@custid [int],
-	@winlostdate SMALLDATETIME
+	@winlostdate SMALLDATETIME,
+	@bettype SMALLINT
 WITH EXECUTE AS CALLER
 AS
 /*
@@ -10,6 +14,7 @@ AS
 	DB: DBTXN/BODB02
 
 	Revisions:
+		- 20150710@Patrick: Support Gold deluxe
 
 	Parameters Explanation:		
 	
@@ -22,7 +27,7 @@ TryAgain:
 BEGIN TRY
 	SET @Retry = @Retry + 1
 	SET @Success = 1	
-	INSERT INTO dbo.BalanceCreditGame (custid, winlostdate, balance) VALUES (@custid, @winlostdate, 0)			
+	INSERT INTO dbo.BalanceCreditGame (custid, winlostdate, balance, bettype) VALUES (@custid, @winlostdate, 0, @bettype)			
 END TRY
 BEGIN CATCH
 	SET @Success = 0	
