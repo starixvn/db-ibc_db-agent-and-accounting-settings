@@ -1,6 +1,6 @@
 use bodb02
 go
-ALTER PROCEDURE [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit_xpre]
+ALTER PROCEDURE [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit]
 	@CustID					INT,
 	@RoleID					INT,
 	@isAutoResetLiveCasino	BIT,
@@ -13,6 +13,7 @@ AS
 	DB: DBTXN/bodb02
 	
 	Revisions:		
+		- 20150723@Patrick: Support Gold deluxe
 
 	Parameters Explanation:
 */
@@ -156,10 +157,10 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit_xpre] TO [bodbadminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbadminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit_xpre] TO [bodbDownlineNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit_xpre] TO [bodbExtAccNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [bodbExtAccNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit_xpre] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsBalanceLiveCS_WinLimit] TO [vnteam] AS [dbo]

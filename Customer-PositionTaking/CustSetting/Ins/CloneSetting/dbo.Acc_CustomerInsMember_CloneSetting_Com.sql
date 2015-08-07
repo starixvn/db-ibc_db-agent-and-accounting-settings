@@ -25,7 +25,7 @@ AS
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/CustDB  
+ DB: DBCUST/CustDB  
   
  History:  
 	- 20131113@Johnson: Apply execrep WHEN insert setting INTo CustSetting/CustSetting3rd/...
@@ -37,6 +37,7 @@ AS
 	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
 	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 	- 20150714@Patrick: Add max win limit for Gold deluxe                              
 	
  Explanation's Param:  
@@ -283,6 +284,7 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,DisableSuperLive
 				)
 		 SELECT
 				@CustID
@@ -357,6 +359,7 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,DisableSuperLive
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
 	END TRY	

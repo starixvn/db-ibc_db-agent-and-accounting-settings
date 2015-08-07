@@ -1,6 +1,6 @@
 USE bodb02
 GO
-CREATE PROCEDURE dbo.Acc_CustomerWinLimitSel @CustId INT
+ALTER PROCEDURE dbo.Acc_CustomerWinLimitSel @CustId INT
 	, @SportType SMALLINT
 	, @BetType SMALLINT
 AS
