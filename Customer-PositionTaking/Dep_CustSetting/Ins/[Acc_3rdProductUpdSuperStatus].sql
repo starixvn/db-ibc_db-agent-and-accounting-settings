@@ -422,7 +422,7 @@ BEGIN
 		END
 		DROP TABLE #CustList
 	END
-	END
+	END 
 
 	-- Write log
 	SET @endRun = GETDATE()
