@@ -1,7 +1,9 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Acc_3rdProductUpdSuperStatus]    Script Date: 8/10/2015 10:22:37 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 /****** Object:  Stored Procedure dbo.Acc_3rdProductUpdSuperStatus    Script Date: 7/17/2015 10:56:48 AM ******/
@@ -22,6 +24,7 @@ AS
 	Original:
 	Revisions:
 	-20150612@Winnie: Add Microgaming & bettrade
+	-20150807@Winnie: Change way create bettrade member
 	Param's Explanation:
 */
 BEGIN
@@ -139,7 +142,7 @@ BEGIN
 		
 		IF(@ProductId=13) -- bettrade
 		BEGIN		 
-		 SELECT a.userName+'BetTrade' AS UserName,a.custid AS recommend, a.mrecommend ,a.currency,
+		 SELECT a.userName+'BetTrade' AS UserName,a.custid AS recommend, a.mrecommend ,a.currency,a.site,
 			b.[closed]
            ,b.[MatchLimit]
            ,b.[VirtualMultiplier]          
@@ -184,188 +187,197 @@ BEGIN
 		 INTO #tempBettrade
 		 FROM Customer a (NOLOCK) 
 		 INNER JOIN  custInfo b (NOLOCK) ON a.custid=b.custid
-		 WHERE a.srecommend=@CustID AND a.roleid=2 AND a.username not like '%'+a.site +'ACC%'
-		 AND (NOT EXISTS (select 1 from customer c with (NOLOCK)      
-				where c.username2 =   a.userName+'BetTrade'))			  
+		 WHERE a.srecommend=@CustID AND a.roleid=2 AND a.username not like '%'+a.site+'%' +'ACC%'
+		 AND (NOT EXISTS (select 1 from custInfo with(NOLOCK) where username = a.userName+'BetTrade') )		  
 		 AND (NOT EXISTS (select 1 from customer with(NOLOCK) where username = a.userName+'BetTrade') )
 		 AND (NOT exists (select 1 from custsub with(NOLOCK) where username = a.userName+'BetTrade') )
 
-		 --INSERT INTO [dbo].[Customer]
-   --        (          
-		 --  [username]       
-   --        ,[username2]
-		 --  ,creatdate
-		 --  ,creator
-		 --  ,currency
-		 --  ,roleid
-		 --  ,srecommend
-		 --  ,mrecommend
-		 --  ,recommend)
-		 --  SELECT 	 
-		 --  [username]          
-   --        ,[username]
-		 --  ,GETDATE()	
-		 --  ,@UserId
-		 --  ,b.Currency
-		 --  ,1
-		 --  ,@CustId
-		 --  ,b.mrecommend
-		 --  ,b.recommend
-		 --  FROM #tempBettrade b		
-		 --  WHERE NOT EXISTS (SELECT TOP 1 1 FROM Customer(NOLOCK)  WHERE username=b.username)
-		 --  	IF(@@ERROR<>0)
-			--BEGIN
-			--SELECT @ErrMsg='Could not insert customer'
-			--RETURN
-			--END
+		 INSERT INTO [dbo].[Customer]
+           (          
+		   [username]       
+           ,[username2]
+		   ,creatdate
+		   ,creator
+		   ,currency
+		   ,roleid
+		   ,srecommend
+		   ,mrecommend
+		   ,recommend		  
+		   ,site)
+		   SELECT 	 
+		   [username]          
+           ,b.site+'$'+[username]
+		   ,GETDATE()	
+		   ,@UserId
+		   ,b.Currency
+		   ,1
+		   ,@CustId
+		   ,b.mrecommend
+		   ,b.recommend		 
+		   ,b.site
+		   FROM #tempBettrade b		
+		   WHERE NOT EXISTS (SELECT TOP 1 1 FROM Customer(NOLOCK)  WHERE username=b.username)
+		   	IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert customer'
+			RETURN
+			END
 	
 
-		--INSERT INTO [dbo].[custInfo]
-  --         ([username]
-  --         ,[custid]
-  --         ,[currency]
-  --         ,[roleid]
-  --         ,[srecommend]
-  --         ,[mrecommend]
-  --         ,[recommend]         
-  --         ,[closed]
-  --         ,[MatchLimit]
-  --         ,[VirtualMultiplier]          
-  --         ,[Enabled]
-  --         ,[danger]           
-  --         ,[DisableHorseRacing]
-  --         ,[DisableFinancial]
-  --         ,[DisableCasino]
-  --         ,[SyncCasino]
-  --         ,[danger2]
-  --         ,[danger3]
-  --         ,[DisableOutright]
-  --         ,[DisableOpenTote]
-  --         ,[maxpermatch151_OT]
-  --         ,[MaxPerMatch99MP]
-  --         ,[DisableBingo]
-  --         ,[DisableNumber]
-  --         ,[maxpermatch161]
-  --         ,[SyncBingo]
-  --         ,[MaxPerBall161]
-  --         ,[MaxPerMatch151_AU]
-  --         ,[MaxPerMatch152_UK]
-  --         ,[MaxPerMatch152_AU]
-  --         ,[MaxPerMatch153_AU]
-  --         ,[Disable151_AU]
-  --         ,[Disable152_UK]
-  --         ,[Disable152_AU]
-  --         ,[Disable153_AU]
-  --         ,[MaxTransferP2P]
-  --         ,[IsAutoResetP2P]
-  --         ,[DisableP2P]
-  --         ,[DisableFunP2P]
-  --         ,[DisableLiveCasino]
-  --         ,[SyncLiveCasino]
-  --         ,[maxpermatch180]
-  --         ,[DisableVirtualSports]
-  --         ,[HideVirtualSports]
-  --         ,[Abnormal]
-  --         ,[isAutoResetLiveCasino]
-  --         ,[MaxWinLiveCasino]
-  --         ,[DoubleCommLosing]
-  --       )
-		-- SELECT 
-		--	a.[username]
-  --         ,a.[custid]
-  --         ,a.[currency]
-  --         ,a.[roleid]
-  --         ,a.[srecommend]
-  --         ,a.[mrecommend]
-  --         ,a.[recommend]  
-		--   ,b.[closed]
-  --         ,b.[MatchLimit]
-  --         ,b.[VirtualMultiplier]          
-  --         ,b.[Enabled]
-  --         ,b.[danger]           
-  --         ,b.[DisableHorseRacing]
-  --         ,b.[DisableFinancial]
-  --         ,b.[DisableCasino]
-  --         ,b.[SyncCasino]
-  --         ,b.[danger2]
-  --         ,b.[danger3]
-  --         ,b.[DisableOutright]
-  --         ,b.[DisableOpenTote]
-  --         ,b.[maxpermatch151_OT]
-  --         ,b.[MaxPerMatch99MP]
-  --         ,b.[DisableBingo]
-  --         ,b.[DisableNumber]
-  --         ,b.[maxpermatch161]
-  --         ,b.[SyncBingo]
-  --         ,b.[MaxPerBall161]
-  --         ,b.[MaxPerMatch151_AU]
-  --         ,b.[MaxPerMatch152_UK]
-  --         ,b.[MaxPerMatch152_AU]
-  --         ,b.[MaxPerMatch153_AU]
-  --         ,b.[Disable151_AU]
-  --         ,b.[Disable152_UK]
-  --         ,b.[Disable152_AU]
-  --         ,b.[Disable153_AU]
-  --         ,b.[MaxTransferP2P]
-  --         ,b.[IsAutoResetP2P]
-  --         ,b.[DisableP2P]
-  --         ,b.[DisableFunP2P]
-  --         ,b.[DisableLiveCasino]
-  --         ,b.[SyncLiveCasino]
-  --         ,b.[maxpermatch180]
-  --         ,b.[DisableVirtualSports]
-  --         ,b.[HideVirtualSports]
-  --         ,b.[Abnormal]
-  --         ,b.[isAutoResetLiveCasino]
-  --         ,b.[MaxWinLiveCasino]
-  --         ,b.[DoubleCommLosing]
-		-- FROM Customer(NOLOCK) a 
-		-- INNER JOIN #tempBettrade b ON a.username=b.username
-		-- WHERE NOT EXISTS (SELECT TOP 1 1 FROM custInfo(NOLOCK) WHERE username=a.username OR custid=a.custid)	
-		 --	IF(@@ERROR<>0)
-			--BEGIN
-			--SELECT @ErrMsg='Could not insert custinfo'
-			--DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
-			--DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
-			--RETURN
-			--END
+		INSERT INTO [dbo].[custInfo]
+           ([username]
+           ,[custid]
+           ,[currency]
+           ,[roleid]
+           ,[srecommend]
+           ,[mrecommend]
+           ,[recommend]         
+           ,[closed]
+           ,[MatchLimit]
+           ,[VirtualMultiplier]          
+           ,[Enabled]
+           ,[danger]           
+           ,[DisableHorseRacing]
+           ,[DisableFinancial]
+           ,[DisableCasino]
+           ,[SyncCasino]
+           ,[danger2]
+           ,[danger3]
+           ,[DisableOutright]
+           ,[DisableOpenTote]
+           ,[maxpermatch151_OT]
+           ,[MaxPerMatch99MP]
+           ,[DisableBingo]
+           ,[DisableNumber]
+           ,[maxpermatch161]
+           ,[SyncBingo]
+           ,[MaxPerBall161]
+           ,[MaxPerMatch151_AU]
+           ,[MaxPerMatch152_UK]
+           ,[MaxPerMatch152_AU]
+           ,[MaxPerMatch153_AU]
+           ,[Disable151_AU]
+           ,[Disable152_UK]
+           ,[Disable152_AU]
+           ,[Disable153_AU]
+           ,[MaxTransferP2P]
+           ,[IsAutoResetP2P]
+           ,[DisableP2P]
+           ,[DisableFunP2P]
+           ,[DisableLiveCasino]
+           ,[SyncLiveCasino]
+           ,[maxpermatch180]
+           ,[DisableVirtualSports]
+           ,[HideVirtualSports]
+           ,[Abnormal]
+           ,[isAutoResetLiveCasino]
+           ,[MaxWinLiveCasino]
+           ,[DoubleCommLosing]
+		   ,credit
+         )
+		 SELECT 
+			a.[username]
+           ,a.[custid]
+           ,a.[currency]
+           ,a.[roleid]
+           ,a.[srecommend]
+           ,a.[mrecommend]
+           ,a.[recommend]  
+		   ,b.[closed]
+           ,b.[MatchLimit]
+           ,b.[VirtualMultiplier]          
+           ,b.[Enabled]
+           ,b.[danger]           
+           ,b.[DisableHorseRacing]
+           ,b.[DisableFinancial]
+           ,b.[DisableCasino]
+           ,b.[SyncCasino]
+           ,b.[danger2]
+           ,b.[danger3]
+           ,b.[DisableOutright]
+           ,b.[DisableOpenTote]
+           ,b.[maxpermatch151_OT]
+           ,b.[MaxPerMatch99MP]
+           ,b.[DisableBingo]
+           ,b.[DisableNumber]
+           ,b.[maxpermatch161]
+           ,b.[SyncBingo]
+           ,b.[MaxPerBall161]
+           ,b.[MaxPerMatch151_AU]
+           ,b.[MaxPerMatch152_UK]
+           ,b.[MaxPerMatch152_AU]
+           ,b.[MaxPerMatch153_AU]
+           ,b.[Disable151_AU]
+           ,b.[Disable152_UK]
+           ,b.[Disable152_AU]
+           ,b.[Disable153_AU]
+           ,b.[MaxTransferP2P]
+           ,b.[IsAutoResetP2P]
+           ,b.[DisableP2P]
+           ,b.[DisableFunP2P]
+           ,b.[DisableLiveCasino]
+           ,b.[SyncLiveCasino]
+           ,b.[maxpermatch180]
+           ,b.[DisableVirtualSports]
+           ,b.[HideVirtualSports]
+           ,b.[Abnormal]
+           ,b.[isAutoResetLiveCasino]
+           ,b.[MaxWinLiveCasino]
+           ,b.[DoubleCommLosing]
+		   ,0
+		 FROM Customer(NOLOCK) a 
+		 INNER JOIN #tempBettrade b ON a.username=b.username
+		 WHERE NOT EXISTS (SELECT TOP 1 1 FROM custInfo(NOLOCK) WHERE username=a.username OR custid=a.custid)	
+		 	IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert custinfo'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			RETURN
+			END
 		
-		 -- INSERT INTO [dbo].[BetTradeCust]([Custid])
-		 -- SELECT 
-		 --   b.[Custid]
-		 -- 	 FROM #tempBettrade a	
-			-- INNER JOIN Customer(NOLOCK) b ON a.username=b.username	
-		 --WHERE NOT EXISTS (SELECT TOP 1 1 FROM  [BetTradeCust](NOLOCK) WHERE custid=b.custid)	
-		 -- IF(@@ERROR<>0)
-			--BEGIN
-			--SELECT @ErrMsg='Could not insert BetTradeCust'
-			--DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
-			--DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
-			--DELETE a FROM [BetTradeCust] a(NOLOCK) 
-			--INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
-			--INNER JOIN  #tempBettrade b ON c.username=b.username
+		  INSERT INTO [dbo].[BetTradeCust]([Custid])
+		  SELECT 
+		    b.[Custid]
+		  	 FROM #tempBettrade a	
+			 INNER JOIN Customer(NOLOCK) b ON a.username=b.username	
+		 WHERE NOT EXISTS (SELECT TOP 1 1 FROM  [BetTradeCust](NOLOCK) WHERE custid=b.custid)	
+		  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeCust'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
 			
-			--RETURN
-			--END 
+			RETURN
+			END 
 		
-		DECLARE @bettradeUserName VARCHAR(50), @bettradeCustId INT,@bettradeAgentId INT,@bettradeCurrency INT,@AffilateId INT,@ErrCode int=0,@Cust_ID int=0
+		DECLARE @bettradeUserName VARCHAR(50), @bettradeCustId INT,@bettradeAgentId INT,@bettradeCurrency INT
 
-		--WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
-		--BEGIN
+		WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
+		BEGIN
 			
-		--SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency,@AffilateId=c.[AffID]
-		--FROM #tempBettrade a	
-		-- INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username	
-		-- LEFT JOIN DBAFF12BET.[Affiliate_12BET].[dbo].[AffInfo] c WITH(NOLOCK)  ON b.recommend=c.[AffID]
-		--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
-		--EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
-		--	@CustID		= @bettradeCustId,
-		--	@Recommend	= @bettradeAgentId,
-		--	@Username	= @bettradeUserName,
-		--	@Username2	= @bettradeUserName,
-		--	@Currency	= @bettradeCurrency
+		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency
+		FROM #tempBettrade a	
+		 INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username			 
+		----
+				---------------------------------------------------------------------------------  
 		
-		--END		
+						---------------------------------------------------------------------------------  
+  
+					
+		--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
+		EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
+			@CustID		= @bettradeCustId,
+			@Recommend	= @bettradeAgentId,
+			@Username	= @bettradeUserName,
+			@Username2	= @bettradeUserName,
+			@Currency	= @bettradeCurrency
+		DELETE FROM #tempBettrade WHERE UserName=@bettradeUserName
+		
+		END		
 		 --end bettrade
 		 
 		END
@@ -445,20 +457,3 @@ BEGIN
 END
 
 
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_3rdProductUpdSuperStatus] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_3rdProductUpdSuperStatus] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_3rdProductUpdSuperStatus] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Acc_3rdProductUpdSuperStatus] TO [bodbExtAccNet]
-GO 
