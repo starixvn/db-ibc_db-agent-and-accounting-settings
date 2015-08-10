@@ -74,21 +74,21 @@ BEGIN
 					INSERT INTO #CustList (CustID)
 					SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 					INNER JOIN Customer ag WITH (NOLOCK) ON rm.srecommend=ag.Custid
-					WHERE rm.srecommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'	
+					WHERE rm.srecommend = @CustID AND ag.Username not like '%'+ag.site +'%' +'ACC%'	
 					END
 					ELSE IF @RoleId=3
 					BEGIN
 					INSERT INTO #CustList (CustID)
 					SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 					INNER JOIN Customer ag WITH (NOLOCK) ON rm.srecommend=ag.Custid
-					WHERE rm.mrecommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'
+					WHERE rm.mrecommend = @CustID AND ag.Username not like '%'+ag.site +'%' +'ACC%'
 					END
 					ELSE
 					BEGIN
 					INSERT INTO #CustList (CustID)
 					SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 					INNER JOIN Customer ag WITH (NOLOCK) ON rm.srecommend=ag.Custid
-					WHERE rm.recommend = @CustID AND ag.Username not like '%'+ag.site +'ACC%'
+					WHERE rm.recommend = @CustID AND ag.Username not like '%'+ag.site +'%' +'ACC%'
 					END
 
 				SELECT @RowCount = @@rowcount
@@ -393,7 +393,7 @@ BEGIN
 		INSERT INTO #CustList (CustID)
 		SELECT rm.CustID FROM Customer rm WITH (NOLOCK) 
 		INNER JOIN Customer ag WITH (NOLOCK) ON rm.recommend=ag.Custid
-		WHERE rm.srecommend = @CustID AND rm.roleid = 1 AND ag.Username not like '%'+ag.site +'ACC%'
+		WHERE rm.srecommend = @CustID AND rm.roleid = 1 AND ag.Username not like '%'+ag.site +'%' +'ACC%'
 
 		SELECT @RowCount = @@rowcount
 
