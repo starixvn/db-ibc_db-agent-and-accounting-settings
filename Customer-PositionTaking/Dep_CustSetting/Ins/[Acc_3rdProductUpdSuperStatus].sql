@@ -143,6 +143,7 @@ BEGIN
 		IF(@ProductId=13) -- bettrade
 		BEGIN		 
 		 SELECT a.userName+'BetTrade' AS UserName,a.custid AS recommend, a.mrecommend ,a.currency,a.site,
+			a.refcode1,a.refcode2,a.ugroup,
 			b.[closed]
            ,b.[MatchLimit]
            ,b.[VirtualMultiplier]          
@@ -203,7 +204,11 @@ BEGIN
 		   ,srecommend
 		   ,mrecommend
 		   ,recommend		  
-		   ,site)
+		   ,site
+		   ,refcode1
+		   ,refcode2
+		   ,ugroup
+		  )
 		   SELECT 	 
 		   [username]          
            ,b.site+'$'+[username]
@@ -215,6 +220,10 @@ BEGIN
 		   ,b.mrecommend
 		   ,b.recommend		 
 		   ,b.site
+		   ,refcode1
+		   ,refcode2
+		   ,ugroup
+		  
 		   FROM #tempBettrade b		
 		   WHERE NOT EXISTS (SELECT TOP 1 1 FROM Customer(NOLOCK)  WHERE username=b.username)
 		   	IF(@@ERROR<>0)
@@ -335,7 +344,7 @@ BEGIN
 			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
 			RETURN
 			END
-		
+	
 		  INSERT INTO [dbo].[BetTradeCust]([Custid])
 		  SELECT 
 		    b.[Custid]
@@ -362,11 +371,87 @@ BEGIN
 		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency
 		FROM #tempBettrade a	
 		 INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username			 
-		----
+		----Insert Dep_Custsetting
+				
+			INSERT INTO [dbo].[Dep_CustSetting]
+           ([custid]
+           ,[bettype]
+           ,[sporttype]
+           ,[islive]
+           ,[apositiontaking]
+           ,[mpositiontaking]
+           ,[spositiontaking]
+           ,[playerdiscount]
+           ,[discount]
+           ,[adiscount]
+           ,[sdiscount]
+           ,[minbet]
+           ,[maxbet])
+		   SELECT @bettradeCustId
+           ,[bettype]
+           ,[sporttype]
+           ,[islive]
+           ,[apositiontaking]
+           ,[mpositiontaking]
+           ,[spositiontaking]
+           ,[playerdiscount]
+           ,[discount]
+           ,[adiscount]
+           ,[sdiscount]
+           ,[minbet]
+           ,[maxbet]
+		   FROM [Dep_CustSetting] a (NOLOCK)WHERE custid=@bettradeAgentId
+		   AND NOT EXISTS (SELECT TOP 1 1 FROM [Dep_CustSetting] b(NOLOCK) WHERE b.custid=@bettradeCustId 
+								AND a.bettype=b.bettype AND a.sporttype=b.sporttype AND a.islive=b.islive)
 				---------------------------------------------------------------------------------  
-		
-						---------------------------------------------------------------------------------  
-  
+			  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeCust'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			
+			RETURN
+			END 
+		---------------------------------------------------------------------------------  
+		-- Insert Balance
+		EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCredit @CustID = @CustID  
+		  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeCust'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
+			
+			RETURN
+			END 
+		EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebit @CustID = @CustID 
+		  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeCust'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
+			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID 
+			RETURN
+			END 
 					
 		--Copy Customer Info to DBLIC.bodb_Licensee.dbo.LicenseeCustinfo
 		EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerInfoIns
