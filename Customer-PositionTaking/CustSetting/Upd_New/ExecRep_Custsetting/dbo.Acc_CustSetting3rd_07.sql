@@ -1078,7 +1078,7 @@ BEGIN
 															AND scs.bettype=cs.bettype
 															AND scs.isLive = cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
+				AND 1*cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT--convert datatype to ignore sql exception
                 
             --update on grouped settings
               UPDATE cs
@@ -1094,7 +1094,7 @@ BEGIN
 															AND scs.bettype=cs.bettype
 															AND scs.isLive = cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
+				AND 1*cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
             
             
             --update s1,m1,a1 in case s1+m1+a1>s4
@@ -1133,7 +1133,7 @@ BEGIN
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
-				AND cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
+				AND 1*cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
             
             --update on grouped settings
             UPDATE cs 
@@ -1165,7 +1165,7 @@ BEGIN
 																			AND acs.bettype=cs.bettype
 																			AND acs.isLive = cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)   
-				AND cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
+				AND 1*cs.SuperPT + cs.AgentPT + cs.MasterPT > scs.SuperPT
                            
         END
     END
@@ -2035,7 +2035,7 @@ BEGIN
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
+				AND 1*cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT--convert datatype to ignore sql exception
             
             --grouped settings
             UPDATE cs
@@ -2049,7 +2049,7 @@ BEGIN
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
+				AND 1*cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
                 
             --Nonlive(max)
             UPDATE cs
@@ -2064,7 +2064,7 @@ BEGIN
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT     
+				AND 1*cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT     
             
             --grouped settings
             UPDATE cs
@@ -2078,7 +2078,7 @@ BEGIN
 																			AND scs.bettype=cs.bettype
 																			AND scs.isLive=cs.isLive
             WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
-            AND cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT
+            AND 1*cs.AgentPT+cs.MasterPT+cs.SuperPT>scs.MaxPT
 				             
 
         END--end mode ='Others'

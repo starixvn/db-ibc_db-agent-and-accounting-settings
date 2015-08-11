@@ -183,7 +183,7 @@ BEGIN
 				WHERE c.srecommend = @custid
 					AND c.roleid     = 1
 					AND c.Enabled    = 1
-					AND (cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT
+					AND (1*cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT--convert datatype to ignore sql exception
 						OR (cs.IsAutoSuperPT = 1
 							AND cs.AutoSuperPT > b.SuperPT
 						   )  
@@ -217,7 +217,7 @@ BEGIN
 			WHERE c.srecommend = @custid
 				AND c.roleid     = 2
 				AND c.Enabled    = 1
-				AND (cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT
+				AND (1*cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT
 					OR (cs.IsAutoSuperPT = 1
 						AND cs.AutoSuperPT > b.SuperPT
 					   )  

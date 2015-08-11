@@ -364,7 +364,7 @@ BEGIN
     WHERE mb.srecommend=@srecommend 
 		AND mb.roleid=1
 		AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-		AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+		AND 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT--convert datatype to ignore sql exception
 	    
 	
 	--correct pt on group settings
@@ -426,7 +426,7 @@ BEGIN
 																	AND aco.bettype=cs.bettype 
 																	AND aco.isLive = cs.isLive
     WHERE cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-    AND cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+    AND 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 	     
     
     RETURN

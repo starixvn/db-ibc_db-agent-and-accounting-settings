@@ -2198,7 +2198,7 @@ BEGIN
                                                    AND sco.sporttype = cs.sporttype
                                                    AND sco.bettype = cs.bettype
                                                    AND sco.isLive = cs.isLive
-             WHERE cs.AgentPT + cs.MasterPT + cs.SuperPT < sco.MinPT 
+             WHERE 1*cs.AgentPT + cs.MasterPT + cs.SuperPT < sco.MinPT --convert datatype to ignore sql exception
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
              
 			---------------------------------------------------------------
@@ -2270,7 +2270,7 @@ BEGIN
                                                    AND aco.sporttype = cs.sporttype
                                                    AND aco.bettype = cs.bettype
                                                    AND aco.isLive = cs.isLive
-             WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+             WHERE 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
              
 			UPDATE cs
@@ -2333,7 +2333,7 @@ BEGIN
                                                    AND aco.sporttype = cs.sporttype
                                                    AND aco.bettype = cs.bettype
                                                    AND aco.isLive = cs.isLive
-             WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+             WHERE 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
              
             RETURN
@@ -4425,7 +4425,7 @@ BEGIN
                                                    AND scs.sporttype = cs.sporttype
                                                    AND scs.bettype = cs.bettype
                                                    AND scs.isLive = cs.isLive
-             WHERE cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
+             WHERE 1*cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT--convert datatype to ignore sql exception
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
              
              -- grouped settings
@@ -4440,7 +4440,7 @@ BEGIN
                                                    AND scs.sporttype = cs.sporttype
                                                    AND scs.bettype = cs.bettype
                                                    AND scs.isLive = cs.isLive
-             WHERE cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
+             WHERE 1*cs.AgentPT + cs.MasterPT + cs.SuperPT < scs.MinPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
               
 
@@ -4506,7 +4506,7 @@ BEGIN
                                                    AND acs.sporttype = cs.sporttype
                                                    AND acs.bettype = cs.bettype
                                                    AND acs.isLive = cs.isLive
-             WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+             WHERE 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
              
              --grouped settings
@@ -4565,7 +4565,7 @@ BEGIN
                                                    AND acs.sporttype = cs.sporttype
                                                    AND acs.bettype = cs.bettype
                                                    AND acs.isLive = cs.isLive
-             WHERE cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
+             WHERE 1*cs.SuperPT + cs.MasterPT + cs.AgentPT > scs.SuperPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
 
 
@@ -5323,7 +5323,7 @@ BEGIN
                 INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid 
 														AND mb.recommend=@recommend 
 														AND mb.roleid=1  
-				INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype														
+				INNER JOIN @tmpSport t ON cs.sporttype = t.sporttype														
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend  
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5403,7 +5403,7 @@ BEGIN
             FROM  
                 CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)  
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid  
-                INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype
+                INNER JOIN @tmpSport t ON cs.sporttype = t.sporttype
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5457,7 +5457,7 @@ BEGIN
                 INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid 
 														AND mb.recommend=@recommend 
 														AND mb.roleid=1  
-				INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype														
+				INNER JOIN @tmpSport t ON cs.sporttype = t.sporttype														
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend  
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5528,7 +5528,7 @@ BEGIN
             FROM  
                 CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)  
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid  
-                INNER JOIN @tmpSports t ON cs.sporttype = t.sporttype
+                INNER JOIN @tmpSport t ON cs.sporttype = t.sporttype
                 INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
 																		AND mcs.sporttype=cs.sporttype 
 																		AND mcs.bettype=cs.bettype  
@@ -5584,7 +5584,7 @@ BEGIN
 																		AND scs.sporttype=cs.sporttype 
 																		AND scs.bettype=cs.bettype  
 																		AND scs.isLive = cs.isLive
-            WHERE cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT
+            WHERE 1*cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT--convert datatype to ignore sql exception
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport) 
             
             --grouped settings
@@ -5598,7 +5598,7 @@ BEGIN
 																		AND scs.isLive = cs.isLive
             WHERE cs.AgentID = @recommend
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
-				AND cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT                
+				AND 1*cs.AgentPT+cs.MasterPT+cs.SuperPT<scs.MinPT                
               
             --UPDATE s1,m1,a1 IN CASE s1+m1+a1>s4  
             --s1=max(0,s4-m1-a1)  
@@ -5654,7 +5654,7 @@ BEGIN
 																		AND acs.sporttype=cs.sporttype 
 																		AND acs.bettype=cs.bettype  
 																		AND acs.isLive=cs.isLive
-            WHERE cs.SuperPT+cs.AgentPT+cs.MasterPT>scs.SuperPT
+            WHERE 1*cs.SuperPT+cs.AgentPT+cs.MasterPT>scs.SuperPT
 				
             
             --grouped settings
@@ -5701,7 +5701,7 @@ BEGIN
 																		AND acs.bettype=cs.bettype  
 																		AND acs.isLive=cs.isLive
             WHERE cs.AgentID = @recommend 
-				AND cs.SuperPT+cs.AgentPT+cs.MasterPT>scs.SuperPT
+				AND 1*cs.SuperPT+cs.AgentPT+cs.MasterPT>scs.SuperPT
 				AND cs.sporttype IN (SELECT sporttype FROM @tmpSport)
                 
         END--end mode = 'Others'

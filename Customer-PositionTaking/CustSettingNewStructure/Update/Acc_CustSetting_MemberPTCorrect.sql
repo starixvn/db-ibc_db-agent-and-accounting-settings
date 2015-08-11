@@ -258,7 +258,7 @@ BEGIN
 			AND spt.BetType = main.BetType
 			AND spt.IsLive = main.IsLive
 			AND spt.CustID = @SuperID
-	WHERE main.AgentPT + main.MasterPT + main.SuperPT < spt.MinPT
+	WHERE 1*main.AgentPT + main.MasterPT + main.SuperPT < spt.MinPT--*1 to ignore sql exception
 
 	--if s1+ m1 + a1> s4 then
 	--s1=max(0,s4-m1-a1)
@@ -327,7 +327,7 @@ BEGIN
 			AND spt.BetType = main.BetType
 			AND spt.IsLive = main.IsLive
 			AND spt.CustID = @SuperID
-	WHERE main.SuperPT + main.AgentPT + main.MasterPT > spt.SuperPT
+	WHERE 1*main.SuperPT + main.AgentPT + main.MasterPT > spt.SuperPT
 
 	--Return XML result
 	SELECT @CorrectedPT_XML = (

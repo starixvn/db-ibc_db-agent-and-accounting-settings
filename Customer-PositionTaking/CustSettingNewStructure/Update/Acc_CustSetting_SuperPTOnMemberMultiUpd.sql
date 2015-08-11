@@ -224,7 +224,7 @@ BEGIN
 					AND spt.BetType=main.BetType
 					AND spt.IsLive=main.IsLive
 					AND spt.CustID=@SuperID
-	WHERE main.SuperPT+main.MasterPT+main.AgentPT > spt.SuperPT
+	WHERE 1*main.SuperPT+main.MasterPT+main.AgentPT > spt.SuperPT--*1 to ignore sql exception
 	
 	--AdjustPT: s1=s1<0?:0:s1
 	UPDATE main

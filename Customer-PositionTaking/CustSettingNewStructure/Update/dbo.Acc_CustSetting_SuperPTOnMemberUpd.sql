@@ -326,7 +326,7 @@ BEGIN
 																AND b.BetType = scs.bettype
 																AND b.IsLive = scs.isLive
 	WHERE scs.custid = @srecommend
-		AND b.SuperPT + b.MasterPT + b.AgentPT > scs.SuperPT	
+		AND 1*b.SuperPT + b.MasterPT + b.AgentPT > scs.SuperPT--*1 to ignore sql exception	
 		
 	--begin update pt change
 																	
