@@ -18,10 +18,19 @@ AS
    
  */  
 BEGIN   
-	SELECT DISTINCT SettingType, SettingLevel , SettingTemplate, DisplayOrder
-	FROM dbo.ProductSettingDetail WITH(NOLOCK)
-	WHERE ProductID = @ProductID
-	ORDER BY DisplayOrder
+	SELECT * INTO #SportBettypeFilter
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL)
+	
+	SELECT DISTINCT pdt.SettingType, pdt.SettingLevel , pdt.SettingTemplate, pdt.DisplayOrder
+	FROM dbo.ProductSettingDetail pdt WITH(NOLOCK)
+	INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType
+	ORDER BY pdt.DisplayOrder
+	
+	DROP TABLE #SportBettypeFilter
 END  
   
 

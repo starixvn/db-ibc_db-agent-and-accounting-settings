@@ -22,6 +22,9 @@ AS
 BEGIN  
 	DECLARE @SuperID INT  
 
+	SELECT * INTO #SportBettypeFilter
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
+	
 	SELECT @SuperID=ci.srecommend  
 	FROM dbo.custInfo ci WITH(NOLOCK)  
 	WHERE ci.custid=@CustID  
@@ -41,6 +44,11 @@ BEGIN
 			, superpt.MasterPT AS M4  
 			, superpt.MinPT  AS N4  
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+		INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType
 		INNER JOIN dbo.CustPTSetting3rd_Agent pt WITH (NOLOCK)  
 			ON pdt.SportType = pt.sporttype  
 			AND pdt.BetType = pt.bettype  
@@ -50,9 +58,7 @@ BEGIN
 			ON pdt.SportType = superpt.sporttype  
 			AND pdt.BetType = superpt.bettype  
 			AND pdt.IsLive = superpt.islive  
-			AND superpt.custid = @SuperID  
-		WHERE pdt.ProductID = @ProductID  
-			AND pdt.SettingType = @SettingType  
+			AND superpt.custid = @SuperID   
 	END
 	--Bet Limit Setting
 	ELSE IF @SettingType = 2
@@ -75,7 +81,12 @@ BEGIN
 		END AS MinBetMin  
 		, sbl.maxbet AS MaxBetMax  
 		, sbl.maxpermatch AS MaxPerMatchMax  
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+		INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
 		INNER JOIN dbo.CustBetSetting3rd_Agent bl WITH (NOLOCK)  
 			ON pdt.SportType = bl.sporttype  
 			AND pdt.BetType = bl.bettype  
@@ -88,8 +99,6 @@ BEGIN
 			ON pdt.SportType = sbl.sporttype  
 			AND pdt.BetType = sbl.bettype  
 			AND sbl.custid = @SuperID  
-		WHERE pdt.ProductID = @ProductID  
-			AND pdt.SettingType = @SettingType 
 	END 
 	--Discount Setting  
 	ELSE IF @SettingType = 3
@@ -99,6 +108,11 @@ BEGIN
 			, dc.Discount AS MasterDiscount  
 			, sdc.Discount AS SuperDiscount  
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+		INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType
 		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)  
 			ON pdt.SportType = dc.sporttype  
 			AND pdt.BetType = dc.bettype  
@@ -107,8 +121,6 @@ BEGIN
 			ON pdt.SportType = sdc.sporttype  
 			AND pdt.BetType = sdc.bettype  
 			AND sdc.custid = @SuperID  
-		WHERE pdt.ProductID = @ProductID  
-			AND pdt.SettingType = @SettingType  
 	END
 	--Product Status  
 	ELSE IF @SettingType = 4
@@ -150,6 +162,11 @@ BEGIN
 			END AS IsDisabledDownline  
 			, ISNULL(Superstt.IsDisabled, 0) AS IsDisabledUpline  
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+		INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType
 		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
 			ON stt.SportType = pdt.SportType  
 			AND stt.BetType = pdt.BetType  
@@ -158,10 +175,8 @@ BEGIN
 			ON Superstt.SportType = pdt.SportType  
 			AND Superstt.BetType = pdt.BetType  
 			AND Superstt.CustID = @SuperID  
-		WHERE pdt.ProductID = @ProductID  
-		AND pdt.SettingType = @SettingType  
 	END    
-
+	DROP TABLE #SportBettypeFilter
 END  
   
 

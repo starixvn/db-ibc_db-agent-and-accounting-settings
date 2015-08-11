@@ -18,13 +18,21 @@ AS
 	
 	*/
 BEGIN
-	SELECT [SettingType]
-      ,[SportType]
-      ,[BetType]
-      ,[IsLive]
-  FROM [dbo].[ProductSettingDetail]
-  WHERE[ProductID]=@ProductID
+	SELECT * INTO #SportBettypeFilter
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL) -- comm
+	
+	SELECT pdt.[SettingType]
+	  ,pdt.[SportType]
+	  ,pdt.[BetType]
+	  ,pdt.[IsLive]
+	FROM [dbo].[ProductSettingDetail] pdt
+	INNER JOIN #SportBettypeFilter ft 
+			ON ft.SportType = pdt.sporttype
+				AND ft.BetType = pdt.bettype
+				AND ft.[IsLive] = pdt.[IsLive]
+				AND ft.[SettingType] = pdt.[SettingType]
 
+	DROP TABLE #SportBettypeFilter
 END
 
 GO

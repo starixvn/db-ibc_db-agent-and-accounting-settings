@@ -19,6 +19,10 @@ AS
    
  */  
 BEGIN  
+
+	SELECT * INTO #SportBettypeFilter
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,3) -- comm
+	
 	SET NOCOUNT ON
 	DECLARE @CustID INT
 		, @RoleID INT
@@ -50,12 +54,10 @@ BEGIN
 	  ,comm.[BetType]
 	  ,comm.Discount
 	FROM [dbo].CustDiscount3rd_Agent comm WITH(NOLOCK)
-	JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-		ON pdt.SportType = comm.SportType
-			AND pdt.BetType = comm.BetType
-			AND pdt.IsLive = 0
-			AND pdt.SettingType = 3
-	WHERE CustID = @SRecommend AND pdt.ProductID = @ProductID
+	INNER JOIN #SportBettypeFilter pdt 
+				ON pdt.SportType = comm.sporttype
+					AND pdt.BetType = comm.bettype
+	WHERE CustID = @SRecommend
 	
 	IF @RoleID IN (3, 2, 1)
 	BEGIN
@@ -66,12 +68,10 @@ BEGIN
 		  ,comm.[BetType]
 		  ,comm.Discount
 		FROM [dbo].CustDiscount3rd_Agent comm WITH(NOLOCK)
-		JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-			ON pdt.SportType = comm.SportType
-				AND pdt.BetType = comm.BetType
-				AND pdt.IsLive = 0
-				AND pdt.SettingType = 3
-		WHERE CustID = @MRecommend AND pdt.ProductID = @ProductID
+		INNER JOIN #SportBettypeFilter pdt 
+				ON pdt.SportType = comm.sporttype
+					AND pdt.BetType = comm.bettype
+		WHERE CustID = @MRecommend
 		
 		IF @RoleID IN (2, 1)
 		BEGIN
@@ -82,12 +82,10 @@ BEGIN
 			  ,comm.[BetType]
 			  ,comm.Discount
 			FROM [dbo].CustDiscount3rd_Agent comm WITH(NOLOCK)
-			JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-				ON pdt.SportType = comm.SportType
-					AND pdt.BetType = comm.BetType
-					AND pdt.IsLive = 0
-					AND pdt.SettingType = 3
-			WHERE CustID = @Recommend AND pdt.ProductID = @ProductID
+			INNER JOIN #SportBettypeFilter pdt 
+				ON pdt.SportType = comm.sporttype
+					AND pdt.BetType = comm.bettype
+			WHERE CustID = @Recommend
 			
 			IF @RoleID = 1
 			BEGIN
@@ -98,12 +96,10 @@ BEGIN
 				  ,comm.[BetType]
 				  ,comm.PlayerDiscount
 				FROM [dbo].CustDiscount3rd_Member comm WITH(NOLOCK)
-				JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-					ON pdt.SportType = comm.SportType
-						AND pdt.BetType = comm.BetType
-						AND pdt.IsLive = 0
-						AND pdt.SettingType = 3
-				WHERE CustID = @CustID AND pdt.ProductID = @ProductID
+				INNER JOIN #SportBettypeFilter pdt 
+					ON pdt.SportType = comm.sporttype
+						AND pdt.BetType = comm.bettype
+				WHERE CustID = @CustID
 			END
 		END
 	END
@@ -117,6 +113,7 @@ BEGIN
 	ORDER BY [SportType]
 		, [BetType] , [RoleID] DESC
 
+	DROP TABLE #SportBettypeFilter
 END  
   
 

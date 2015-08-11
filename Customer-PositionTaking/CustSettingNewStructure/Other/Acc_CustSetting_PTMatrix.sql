@@ -25,7 +25,10 @@ BEGIN
 		, @SRecommend INT
 		, @MRecommend INT
 		, @Recommend INT
-
+	
+	SELECT * INTO #SportBettypeFilter
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1) -- comm
+	
 	SELECT @CustID = CustID
 		, @RoleID = RoleID
 		, @SRecommend = SRecommend
@@ -67,12 +70,11 @@ BEGIN
 	  ,spt.[MinPT]
 	  ,spt.[MaxPT]
 	FROM [dbo].[CustPTSetting3rd_Agent] spt WITH(NOLOCK)
-	JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-		ON pdt.SportType = spt.SportType
-			AND pdt.BetType = spt.BetType
+	INNER JOIN #SportBettypeFilter pdt 
+		ON pdt.SportType = spt.sporttype
+			AND pdt.BetType = spt.bettype
 			AND pdt.IsLive = spt.IsLive
-			AND pdt.SettingType = 1
-	WHERE CustID = @SRecommend AND pdt.ProductID = @ProductID
+	WHERE CustID = @SRecommend
 	
 	IF @RoleID IN (3, 2, 1)
 	BEGIN
@@ -91,12 +93,11 @@ BEGIN
 		  ,mpt.[MinPT]
 		  ,mpt.[MaxPT]
 		FROM [dbo].[CustPTSetting3rd_Agent] mpt WITH(NOLOCK)
-		JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-		ON pdt.SportType = mpt.SportType
-			AND pdt.BetType = mpt.BetType
-			AND pdt.IsLive = mpt.IsLive
-			AND pdt.SettingType = 1
-		WHERE CustID = @MRecommend AND pdt.ProductID = @ProductID
+		INNER JOIN #SportBettypeFilter pdt 
+			ON pdt.SportType = mpt.sporttype
+				AND pdt.BetType = mpt.bettype
+				AND pdt.IsLive = mpt.IsLive
+		WHERE CustID = @MRecommend
 		
 		IF @RoleID IN (2, 1)
 		BEGIN
@@ -115,12 +116,11 @@ BEGIN
 			  ,apt.[MinPT]
 			  ,apt.[MaxPT]
 			FROM [dbo].[CustPTSetting3rd_Agent] apt WITH(NOLOCK)
-			JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-			ON pdt.SportType = apt.SportType
-				AND pdt.BetType = apt.BetType
-				AND pdt.IsLive = apt.IsLive
-				AND pdt.SettingType = 1
-			WHERE CustID = @Recommend AND pdt.ProductID = @ProductID
+				INNER JOIN #SportBettypeFilter pdt 
+					ON pdt.SportType = apt.sporttype
+						AND pdt.BetType = apt.bettype
+						AND pdt.IsLive = apt.IsLive
+			WHERE CustID = @Recommend
 			
 			IF @RoleID = 1
 			BEGIN
@@ -143,12 +143,11 @@ BEGIN
 						, NULL
 						, NULL
 					FROM [dbo].CustPTSetting3rd_Member mempt WITH (NOLOCK)
-					JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-					ON pdt.SportType = mempt.SportType
-						AND pdt.BetType = mempt.BetType
+					INNER JOIN #SportBettypeFilter pdt 
+					ON pdt.SportType = mempt.sporttype
+						AND pdt.BetType = mempt.bettype
 						AND pdt.IsLive = mempt.IsLive
-						AND pdt.SettingType = 1
-					WHERE CustID = @CustID AND pdt.ProductID = @ProductID
+					WHERE CustID = @CustID
 				END
 				ELSE
 				BEGIN
@@ -167,12 +166,11 @@ BEGIN
 						, NULL
 						, NULL
 					FROM [dbo].CustPTGroupSetting3rd_Member mempt WITH (NOLOCK)
-					JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-					ON pdt.SportType = mempt.SportType
-						AND pdt.BetType = mempt.BetType
+					INNER JOIN #SportBettypeFilter pdt 
+					ON pdt.SportType = mempt.sporttype
+						AND pdt.BetType = mempt.bettype
 						AND pdt.IsLive = mempt.IsLive
-						AND pdt.SettingType = 1
-					WHERE AgentID = @Recommend AND pdt.ProductID = @ProductID
+					WHERE AgentID = @Recommend
 				END
 			END
 		END
@@ -198,6 +196,8 @@ BEGIN
 		, [BetType]
 		, [IsLive]
 		, [RoleID] DESC
+		
+	DROP TABLE #SportBettypeFilter
 END  
   
 
