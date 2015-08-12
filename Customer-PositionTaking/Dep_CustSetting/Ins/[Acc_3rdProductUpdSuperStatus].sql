@@ -1,6 +1,6 @@
 USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_3rdProductUpdSuperStatus]    Script Date: 8/10/2015 10:22:37 AM ******/
+/****** Object:  StoredProcedure [dbo].[Acc_3rdProductUpdSuperStatus]    Script Date: 8/12/2015 1:38:00 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -226,9 +226,10 @@ BEGIN
 		  
 		   FROM #tempBettrade b		
 		   WHERE NOT EXISTS (SELECT TOP 1 1 FROM Customer(NOLOCK)  WHERE username=b.username)
+		  
 		   	IF(@@ERROR<>0)
 			BEGIN
-			SELECT @ErrMsg='Could not insert customer'
+			SELECT @ErrMsg='Could not insert customer 1'
 			RETURN
 			END
 	
@@ -362,13 +363,48 @@ BEGIN
 			
 			RETURN
 			END 
+
+		 INSERT INTO [dbo].[BetTradeComm]([Agentid],[IsBA],[BetTradeComm],[Licenseecomm])
+		  SELECT 
+		    a.recommend,0,0.04,0.03
+		  	 FROM #tempBettrade a				
+		 WHERE NOT EXISTS (SELECT TOP 1 1 FROM  [BetTradeComm] (NOLOCK) WHERE [Agentid]=a.recommend AND [IsBA]=0 )	
+		  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeComm'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [BetTradeComm] a(NOLOCK) 			
+			INNER JOIN  #tempBettrade b ON a.AgentId=b.recommend WHERE IsBA=0
+			RETURN
+			END 
+		 INSERT INTO [dbo].[BetTradeComm]([Agentid],[IsBA],[BetTradeComm],[Licenseecomm])
+		  SELECT 
+		    a.recommend,1,0.04,0
+		  	 FROM #tempBettrade a				
+		 WHERE NOT EXISTS (SELECT TOP 1 1 FROM  [BetTradeComm] (NOLOCK) WHERE [Agentid]=a.recommend AND [IsBA]=1 )	
+		  IF(@@ERROR<>0)
+			BEGIN
+			SELECT @ErrMsg='Could not insert BetTradeComm'
+			DELETE a FROM Customer a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username
+			DELETE a FROM custInfo a(NOLOCK) INNER JOIN  #tempBettrade b ON a.username=b.username			
+			DELETE a FROM [BetTradeCust] a(NOLOCK) 
+			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
+			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [BetTradeComm] a(NOLOCK) 			
+			INNER JOIN  #tempBettrade b ON a.AgentId=b.recommend 
+			RETURN
+			END 
 		
-		DECLARE @bettradeUserName VARCHAR(50), @bettradeCustId INT,@bettradeAgentId INT,@bettradeCurrency INT
+		DECLARE @bettradeUserName VARCHAR(50), @bettradeCustId INT,@bettradeAgentId INT,@bettradeCurrency INT, @Site VARCHAR(100),@ErrCode VARCHAR(100)
 
 		WHILE EXISTS (SELECT TOP 1 1 FROM #tempBettrade)
 		BEGIN
 			
-		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency
+		SELECT TOP 1 @bettradeUserName=a.UserName,@bettradeCustId=b.custid,@bettradeAgentId=b.recommend,@bettradeCurrency=b.currency,@Site=b.site
 		FROM #tempBettrade a	
 		 INNER JOIN Customer b WITH(NOLOCK)  ON a.username=b.username			 
 		----Insert Dep_Custsetting
@@ -415,7 +451,8 @@ BEGIN
 			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
 			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
 			INNER JOIN  #tempBettrade b ON c.username=b.username
-			
+			DELETE a FROM [BetTradeComm] a(NOLOCK) 			
+			INNER JOIN  #tempBettrade b ON a.AgentId=b.recommend 
 			RETURN
 			END 
 		---------------------------------------------------------------------------------  
@@ -432,6 +469,8 @@ BEGIN
 			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
 			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
 			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [BetTradeComm] a(NOLOCK) 			
+			INNER JOIN  #tempBettrade b ON a.AgentId=b.recommend 
 			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
 			
 			RETURN
@@ -448,6 +487,8 @@ BEGIN
 			DELETE a FROM [Dep_CustSetting] a(NOLOCK) 
 			INNER JOIN Customer(NOLOCK) c ON a.custid=c.Custid
 			INNER JOIN  #tempBettrade b ON c.username=b.username
+			DELETE a FROM [BetTradeComm] a(NOLOCK) 			
+			INNER JOIN  #tempBettrade b ON a.AgentId=b.recommend 
 			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
 			EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID 
 			RETURN
@@ -460,6 +501,13 @@ BEGIN
 			@Username	= @bettradeUserName,
 			@Username2	= @bettradeUserName,
 			@Currency	= @bettradeCurrency
+		--Set default player comm  
+		EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm  
+		 @LicenseeName=@site,  
+		 @CustID = @CustID,  
+		 @ErrCode = @ErrCode OUTPUT,  
+		 @ErrMsg = @ErrMsg OUTPUT  
+
 		DELETE FROM #tempBettrade WHERE UserName=@bettradeUserName
 		
 		END		
@@ -531,13 +579,25 @@ BEGIN
 						
 						'ErrMsg="'+ COALESCE(CAST(@ErrMsg as VARCHAR(8000)),SPACE(1))+ '" />'
 	
-	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+	BEGIN TRY
+			EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 				@UserID = @UserID,
 				@CustID = @CustID,
 				@ActionID = 1154,
 				@TrackingValue = @LogSPData,
 				@TrackingValue2 = @TrackingValue2,
-				@duration = @duration 
+				@duration = @duration
+	END TRY
+		
+	BEGIN CATCH
+			EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+				@UserID = @UserID,
+				@CustID = @CustID,
+				@ActionID = 1154,
+				@TrackingValue = @LogSPData,
+				@TrackingValue2 = @TrackingValue2,
+				@duration = @duration
+	END CATCH		
 	
 END
 
