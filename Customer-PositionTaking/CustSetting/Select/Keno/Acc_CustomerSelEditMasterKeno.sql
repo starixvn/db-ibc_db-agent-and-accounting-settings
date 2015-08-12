@@ -9,6 +9,7 @@ AS
 		
 	Revisions:
 		- 20150608@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
+		- 20150801@Elodie: LEFT JOIN CustSettingGame, CustOverrideGame to show Power Keno [Redmine:#39192]
 	Parameters Explanations:
 			
 */
