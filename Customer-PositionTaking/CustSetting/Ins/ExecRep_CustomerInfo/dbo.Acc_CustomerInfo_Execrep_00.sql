@@ -1206,6 +1206,9 @@ SET NOCOUNT ON
 		--end keno
 		
 		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+		SELECT * INTO #SportBettypeFilter
+		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,NULL)
+		
 		--POSTION TAKING
 		INSERT INTO [dbo].[CustPTSetting3rd_Agent]
            ([CustID]
@@ -1222,9 +1225,14 @@ SET NOCOUNT ON
            ,[MinPT]
            ,[MaxPT])
 		SELECT 
-		@custid,SportType,BetType,IsLive,
-			0,0,0,0,0,0,0,0,MaxPT
+		@custid,dtl.SportType,dtl.BetType,dtl.IsLive,
+			0,0,0,0,0,0,0,0,dtl.MaxPT
 		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		INNER JOIN #SportBettypeFilter ft 
+			ON dtl.SportType = ft.SportType
+				AND dtl.BetType = ft.BetType
+				AND dtl.IsLive = ft.IsLive
+				AND dtl.SettingType = ft.SettingType
 		WHERE dtl.SettingType = 1
 		
 		IF @@ERROR <> 0
@@ -1255,8 +1263,13 @@ SET NOCOUNT ON
            ,[MaxBet]
            ,[MaxPerMatch])
 		SELECT
-		@custid,SportType,BetType,0,0,0
+		@custid,dtl.SportType,dtl.BetType,0,0,0
 		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		INNER JOIN #SportBettypeFilter ft 
+			ON dtl.SportType = ft.SportType
+				AND dtl.BetType = ft.BetType
+				AND dtl.IsLive = ft.IsLive
+				AND dtl.SettingType = ft.SettingType
 		WHERE dtl.SettingType = 2
 		
 		IF @@ERROR <> 0
@@ -1287,9 +1300,14 @@ SET NOCOUNT ON
            ,[BetType]
            ,[Discount])
 		SELECT 
-		@CustID,SportType,BetType,0
+		@CustID,dtl.SportType,dtl.BetType,0
 		FROM dbo.ProductSettingDetail WITH (NOLOCK)
-		WHERE SettingType = 3
+		INNER JOIN #SportBettypeFilter ft 
+			ON dtl.SportType = ft.SportType
+				AND dtl.BetType = ft.BetType
+				AND dtl.IsLive = ft.IsLive
+				AND dtl.SettingType = ft.SettingType
+		WHERE dtl.SettingType = 3
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1312,6 +1330,8 @@ SET NOCOUNT ON
 			
 			RETURN
 		END
+		
+		DROP TABLE #SportBettypeFilter
 		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	END--end roleid = 4
 	ELSE IF @roleid = 3
@@ -1790,10 +1810,14 @@ SET NOCOUNT ON
            ,[MinPT]
            ,[MaxPT])
 		SELECT 
-		@custid,SportType,BetType,IsLive,
-			0,0,0,0,0,0,0,0,MaxPT
+		@custid,dtl.SportType,dtl.BetType,dtl.IsLive,
+			0,0,0,0,0,0,0,0,dtl.MaxPT
 		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
-		WHERE dtl.SettingType = 1
+		INNER JOIN CustPTSetting3rd_Agent spt 
+			ON dtl.SportType = spt.SportType
+				AND dtl.BetType = spt.BetType
+				AND dtl.IsLive = spt.IsLive
+		WHERE dtl.SettingType = 1 AND spt.CustID = @srecommend
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1854,9 +1878,12 @@ SET NOCOUNT ON
            ,[BetType]
            ,[Discount])
 		SELECT 
-		@CustID,SportType,BetType,0
-		FROM dbo.ProductSettingDetail WITH (NOLOCK)
-		WHERE SettingType = 3
+		@CustID,dtl.SportType,dtl.BetType,0
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		INNER JOIN CustDiscount3rd_Agent sdc 
+			ON dtl.SportType = sdc.SportType
+				AND dtl.BetType = sdc.BetType
+		WHERE dtl.SettingType = 3 AND sdc.CustID = @srecommend
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -2347,10 +2374,14 @@ SET NOCOUNT ON
            ,[MinPT]
            ,[MaxPT])
 		SELECT 
-		@custid,SportType,BetType,IsLive,
-			0,0,0,0,0,0,0,0,MaxPT
+		@custid,dtl.SportType,dtl.BetType,dtl.IsLive,
+			0,0,0,0,0,0,0,0,dtl.MaxPT
 		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
-		WHERE dtl.SettingType = 1
+		INNER JOIN CustPTSetting3rd_Agent mpt 
+			ON dtl.SportType = mpt.SportType
+				AND dtl.BetType = mpt.BetType
+				AND dtl.IsLive = mpt.IsLive
+		WHERE dtl.SettingType = 1 AND mpt.custid = @mrecommend
 		
 		IF @@error <> 0
 		BEGIN
@@ -2427,9 +2458,12 @@ SET NOCOUNT ON
            ,[BetType]
            ,[Discount])
 		SELECT 
-		@CustID,SportType,BetType,0
-		FROM dbo.ProductSettingDetail WITH (NOLOCK)
-		WHERE SettingType = 3
+		@CustID,dtl.SportType,dtl.BetType,0
+		FROM dbo.ProductSettingDetail dtl WITH (NOLOCK)
+		INNER JOIN CustDiscount3rd_Agent mdc 
+			ON dtl.SportType = mdc.SportType
+				AND dtl.BetType = mdc.BetType
+		WHERE dtl.SettingType = 3 AND mdc.custid=@mrecommend
 		
 		IF @@error <> 0
 		BEGIN
