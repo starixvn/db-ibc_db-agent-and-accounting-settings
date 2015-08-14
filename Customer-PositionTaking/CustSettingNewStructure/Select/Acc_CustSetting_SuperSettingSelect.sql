@@ -52,7 +52,7 @@ BEGIN
 		DECLARE @Currency TINYINT
 	
 		SELECT @Currency = Currency
-		FROM dbo.Customer c
+		FROM dbo.Customer c WITH(NOLOCK)
 		WHERE c.custID = @CustID
 	
 		SELECT pdt.SportType
