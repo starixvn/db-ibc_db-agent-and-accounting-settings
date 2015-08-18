@@ -1,6 +1,6 @@
 ﻿use custdb
 go
-ALTER PROCEDURE[dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
+ALTER PROCEDURE [dbo].[Acc_CustomerSelEditSuperGoldDeluxe]    
     @custid  INT    
 AS    
  /*    
