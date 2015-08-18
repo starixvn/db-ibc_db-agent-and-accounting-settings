@@ -98,6 +98,7 @@ Revisions:
 	- 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20130218@Dan: Change linked server DB03 to DBONUSER; Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
+	- 20150714@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -1188,6 +1189,129 @@ END
 Declare @LogSPData varchar(8000)
 Declare @TrackingValue2 varchar(8000)
 
+
+----------
+-- 20150714@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
+---------------------------------
+SELECT @minbet = MAX(CASE WHEN sporttype = 1 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 
+											THEN minbet ELSE @minbet END) 
+							ELSE 0 END),
+	@maxbet = MAX(CASE WHEN sporttype = 1 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 
+											THEN maxbet ELSE @maxbet END) 
+							ELSE 0 END),
+	
+	@minbetv2 = MAX(CASE WHEN sporttype = 2 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv2 = 0 
+											THEN minbet ELSE @minbetv2 END) 
+							ELSE 0 END),
+	@maxbetv2 = MAX(CASE WHEN sporttype = 2 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv2 = 0 
+											THEN maxbet ELSE @maxbetv2 END) 
+							ELSE 0 END),
+
+	@minbetv3 = MAX(CASE WHEN sporttype = 3 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv3 = 0 
+											THEN minbet ELSE @minbetv3 END) 
+							ELSE 0 END),
+	@maxbetv3 = MAX(CASE WHEN sporttype = 3 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv3 = 0 
+											THEN maxbet ELSE @maxbetv3 END) 
+							ELSE 0 END),
+								
+	@minbetv5 = MAX(CASE WHEN sporttype = 5 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv5 = 0 
+											THEN minbet ELSE @minbetv5 END) 
+							ELSE 0 END),
+	@maxbetv5 = MAX(CASE WHEN sporttype = 5 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv5 = 0 
+											THEN maxbet ELSE @maxbetv5 END) 
+							ELSE 0 END),
+
+	@minbetv8 = MAX(CASE WHEN sporttype = 8 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv8 = 0 
+											THEN minbet ELSE @minbetv8 END) 
+							ELSE 0 END),
+	@maxbetv8 = MAX(CASE WHEN sporttype = 8 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv8 = 0 
+											THEN maxbet ELSE @maxbetv8 END) 
+							ELSE 0 END),
+
+	@minbetv10 = MAX(CASE WHEN sporttype = 10 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv10 = 0 
+											THEN minbet ELSE @minbetv10 END) 
+							ELSE 0 END),
+	@maxbetv10 = MAX(CASE WHEN sporttype = 10 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv10 = 0 
+											THEN maxbet ELSE @maxbetv10 END) 
+							ELSE 0 END),
+	
+	@minbetv11 = MAX(CASE WHEN sporttype = 11 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv11 = 0 
+											THEN minbet ELSE @minbetv11 END) 
+							ELSE 0 END),
+	@maxbetv11 = MAX(CASE WHEN sporttype = 11 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv11 = 0 
+											THEN maxbet ELSE @maxbetv11 END) 
+							ELSE 0 END),
+	
+	@minbetv99 = MAX(CASE WHEN sporttype = 99 AND bettype <> 9 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99 = 0 
+											THEN minbet ELSE @minbetv99 END) 
+							ELSE 0 END),
+	@maxbetv99 = MAX(CASE WHEN sporttype = 99 AND bettype <> 9 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99 = 0 
+											THEN maxbet ELSE @maxbetv99 END) 
+							ELSE 0 END),
+	
+	@minbetv99mp = MAX(CASE WHEN sporttype = 99 AND bettype = 9 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99mp = 0 
+											THEN minbet ELSE @minbetv99 END) 
+							ELSE 0 END),
+	@maxbetv99mp = MAX(CASE WHEN sporttype = 99 AND bettype = 9 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99mp = 0 
+											THEN maxbet ELSE @maxbetv99 END) 
+							ELSE 0 END),
+	
+	@minbetv154 = MAX(CASE WHEN sporttype = 154 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv154 = 0 
+											THEN minbet ELSE @minbetv154 END) 
+							ELSE 0 END),
+	@maxbetv154 = MAX(CASE WHEN sporttype = 154 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv154 = 0 
+											THEN maxbet ELSE @maxbetv154 END) 
+							ELSE 0 END)
+FROM custSetting WITH(NOLOCK)
+WHERE custid = @custid
+
+SELECT @minbetv161 = MAX(CASE WHEN sporttype = 161 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv161 = 0 
+											THEN minbet ELSE @minbetv161 END) 
+							ELSE 0 END),
+	@maxbetv161 = MAX(CASE WHEN sporttype = 161 THEN 
+									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv161 = 0 
+											THEN maxbet ELSE @maxbetv161 END) 
+							ELSE 0 END)
+FROM custSetting3rd WITH(NOLOCK)
+WHERE custid = @custid
+
+SELECT	@maxpermatch = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 THEN maxpermatch ELSE @maxpermatch END,
+	@maxpermatchv2 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv2 = 0 THEN maxpermatch2 ELSE @maxpermatchv2 END,
+	@maxpermatchv3 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv3 = 0 THEN maxpermatch3 ELSE @maxpermatchv3 END,
+	@maxpermatchv5 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv5 = 0 THEN maxpermatch5 ELSE @maxpermatchv5 END,
+	@maxpermatchv8 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv8 = 0 THEN maxpermatch8 ELSE @maxpermatchv8 END,
+	@maxpermatchv10 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv10 = 0 THEN maxpermatch10 ELSE @maxpermatchv10 END,
+	@maxpermatchv11 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv11 = 0 THEN maxpermatch11 ELSE @maxpermatchv11 END,
+	@maxpermatchv99 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99 = 0 THEN maxpermatch99 ELSE @maxpermatchv99 END,
+	@maxpermatchv99MP = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99MP = 0 THEN maxpermatch99MP ELSE @maxpermatchv99MP END,
+	@maxpermatchv154 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv154 = 0 THEN maxpermatch154 ELSE @maxpermatchv154 END,
+	@maxpermatchv161 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv161 = 0 THEN maxpermatch161 ELSE @maxpermatchv161 END,
+	@MaxPerBallv161 = CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv161 = 0 THEN MaxPerBall161 ELSE @MaxPerBallv161 END	
+FROM custInfo WITH(NOLOCK)
+WHERE custid = @custid		
+---------------------------------
+
 Select @LogSPData ='<Acc_CustomerUpdAgent_MinMaxBet custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
 'MinB="'+ coalesce(cast(@minbet as varchar(50)),space(1)) + '" ' +
 'MaxB="'+ coalesce(cast(@maxbet as varchar(50)),space(1)) + '" ' +
@@ -1427,7 +1551,6 @@ BEGIN CATCH
 		@duration = @duration
 END CATCH
 ---------------------------------------------------------
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdAgent_MinMaxBet] TO [bodbAdminNet] AS [dbo]

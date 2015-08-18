@@ -151,6 +151,9 @@ Begin DataProject = "AgentPT"
             Script = "dbo.Acc_CustOverrideUpd_CheckParam_MAg.StoredProcedure.sql"
             Script = "dbo.Acc_CustOverrideUpd_CheckParam_SAg.StoredProcedure.sql"
             Script = "dbo.Acc_CustOverrideUpd_CheckParam_V.StoredProcedure.sql"
+            Begin Folder = "GoldDeluxe"
+               Script = "Acc_CustOverrideUpdGoldDeluxe.sql"
+            End
             Begin Folder = "HR"
                Script = "dbo.Acc_CustOverrideUpdHR.StoredProcedure.sql"
             End

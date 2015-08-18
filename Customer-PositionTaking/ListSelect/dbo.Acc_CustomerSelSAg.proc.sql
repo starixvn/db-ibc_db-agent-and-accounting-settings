@@ -1,4 +1,13 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSAg]    Script Date: 07/10/2015 09:44:14 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 7/1/2015 1:08:45 PM ******/
+/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 6/24/2015 10:09:54 AM ******/
+ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing BIT = NULL,
@@ -40,6 +49,7 @@ Revisions:
 	- 20140407@Elodie: Add Keno product [Redmine:#13156]
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 	- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
+	- 20150709@DAniel: Enhance code get custsetting data
 
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -109,15 +119,15 @@ BEGIN
 		m.iplogin as lastloginip,
 		m.currency,
 		m.roleid,
-		max(cs.groupa) as groupa, 
-		max(cs.groupb) as groupb, 
-		max(cs.groupc) as groupc, 
-		max(cs.groupd) as groupd, 
-
-		max(case when cs.bettype = 4 and cs.sporttype=1 then cs.sdiscount else 0 end) as discountcs,
-		max(case when cs.bettype = 5 and cs.sporttype=1 then cs.sdiscount else 0 end) as discount1x2,
+		groupa, 
+		groupb, 
+		groupc, 
+		groupd,
+		
+		discountcs,
+		discount1x2,	
 		max(case when cs3rd.bettype = 81 and cs3rd.sporttype = 161 then cs3rd.sdiscount else 0 end) as discountNumber,	
-		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds,
+		discountHRFixedOdds,
 		ci.matchlimit,
 		ci.virtualmultiplier-1 as VirtualMultiplier,
 
@@ -130,7 +140,20 @@ BEGIN
 	FROM 
 		customer AS m with (NOLOCK)
 		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
+		LEFT JOIN
+		(
+			select
+				custid, 
+				max(cs.groupa) as groupa, 
+				max(cs.groupb) as groupb, 
+				max(cs.groupc) as groupc, 
+				max(cs.groupd) as groupd,
+				max(case when cs.bettype = 4 and cs.sporttype=1 then cs.sdiscount else 0 end) as discountcs,
+				max(case when cs.bettype = 5 and cs.sporttype=1 then cs.sdiscount else 0 end) as discount1x2,
+				max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds			
+			from custsetting cs with (nolock)
+			group by custid
+		) cs on m.custid = cs.custid	
 		LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
 		LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)			
@@ -164,7 +187,14 @@ BEGIN
 		ci.virtualmultiplier,
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe
+		ci.DisableGoldDeluxe,
+		groupa, 
+		groupb, 
+		groupc, 
+		groupd,		
+		discountcs,
+		discount1x2,
+		discountHRFixedOdds		
 	--ORDER BY ci.closed, m.username
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
@@ -273,8 +303,6 @@ BEGIN
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelSAg] TO [bodbAdminNet] AS [dbo]
 GO
