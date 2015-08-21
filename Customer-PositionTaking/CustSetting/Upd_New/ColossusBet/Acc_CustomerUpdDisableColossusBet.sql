@@ -1,29 +1,31 @@
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustomerUpdDisableColossusBet]') AND type in (N'P', N'PC'))
-		DROP PROCEDURE [dbo].[Acc_CustomerUpdDisableColossusBet]
 
-GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableColossusBet]  
+(
+	@custid  INT,  
+	@Disable BIT = NULL,   
+	@EnableDownlines BIT = 0,  
 
-/*  
-    Created By: Helen  
-    Created Date: Aug 18, 2015
-    Description: Colossus Bet Product  
-    
-    DB: DBTXN/CUSTDB  
-*/  
-
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdDisableColossusBet]  
- @custid  INT,  
- @Disable BIT = NULL,   
- @EnableDownlines BIT = 0,  
-   
- @UserID  INT = 0,  
- @SubAccID INT = 0, --Sub-AccountID  
- @IP   VARCHAR(20)= '',  
- @Language VARCHAR(2) = 'E',  
- @ErrCode INT = 0 OUTPUT,  
- @ErrMsg  VARCHAR(4000) = '' OUTPUT  
+	@UserID  INT = 0,  
+	@SubAccID INT = 0, --Sub-AccountID  
+	@IP   VARCHAR(20)= '',  
+	@Language VARCHAR(2) = 'E',  
+	@ErrCode INT = 0 OUTPUT,  
+	@ErrMsg  VARCHAR(4000) = '' OUTPUT  
+) 
  AS  
+ 
+ /*  
+    Created: Helen  
+    Date: 20150821
+    Task: #42208 - Updating: Colossus Bet Status
+    DB: DBCUST / CustDB
+    
+    
+	Revisions:
+	
+	Parameters Explanation:
+	
+*/ 
  
 BEGIN  
  SET NOCOUNT ON   

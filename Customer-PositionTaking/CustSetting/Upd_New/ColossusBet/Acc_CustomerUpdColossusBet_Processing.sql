@@ -1,28 +1,30 @@
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustomerUpdColossusBet_Processing]') AND type in (N'P', N'PC'))
-		DROP PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Processing]
 
-GO
-
-/*  
-    Created By: Helen  
-    Created Date: Aug 18, 2015
-    Description: Colossus Bets Product
-    
-    DB: DBTXN/CUSTDB  
-*/  
-
-
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Processing]   
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Processing]   
     @custid    INT,  
     @v204discountValue DECIMAL(9,8) = NULL,  
     @v204DiscountType INT = NULL,
-      
+    @roleID INT = NULL,  
     @IP     VARCHAR(50)  = '',      
     @UserID    INT    = 0,  
     @Language   VARCHAR(20)  = 'E',          
     @ErrCode   INT    = 0   OUTPUT,  
     @ErrMsg    NVARCHAR(4000) = ''  OUTPUT  
-AS  
+AS 
+/*  
+    Created: Helen  
+    Date: 20150821
+    Task: #42208 - Updating: Commission/Cash In Share
+    DB: DBCUST / CustDB
+    
+    
+	Revisions:
+	
+	Parameters Explanation:
+		@v204discountValue: New discount value needs to be updated
+		@v204DiscountType: to detect commission OR Cash in Share
+	
+*/ 
+ 
 BEGIN  
   
 	SET NOCOUNT ON  
@@ -33,8 +35,7 @@ BEGIN
 
 	SET @startRun = GETDATE()  
 
-	DECLARE @roleid   TINYINT  
-		,@ErrCode_Cur INT  
+	DECLARE @ErrCode_Cur INT  
 		,@ErrMsg_Cur NVARCHAR(4000)  
 		,@ErrAcc  NVARCHAR(4000)  
 		 
@@ -44,12 +45,6 @@ BEGIN
 		,@ErrMsg = ''  
 
 	---------------------------  
-	-- ***Check Downline Belonging***  
-	EXEC Age_CustomerSelCheckBelongingByCustID   
-		@SessionCustID = @Userid,   
-		@Custid   = @custid,  
-		@roleid   = @roleid OUTPUT  
-
 	IF (@roleid = 0 OR @roleid = 1) RETURN  
 	---------------------------  
 
@@ -87,13 +82,13 @@ BEGIN
 	DECLARE @db_v204discountValue DECIMAL(9,8)  
 	DECLARE @v204MaxdiscountValue DECIMAL(9,8)  
 	   
-	 IF @v204DiscountType IS NOT NULL
+	 IF @v204DiscountType IS NOT NULL  
 	 BEGIN         
-		 SELECT @db_v204discountValue = sdiscount   
+		 SELECT @db_v204discountValue = sdiscount + adiscount + adiscount  
 		 FROM CustSettingGame WITH(NOLOCK)  
 		 WHERE custid = @custid   
-		   AND sporttype = 204   
-		   AND bettype = @v204DiscountType
+			   AND sporttype = 204   
+			   AND bettype = @v204DiscountType
 		  
 		 IF @db_v204discountValue = @v204discountValue   
 			RETURN  
@@ -115,7 +110,7 @@ BEGIN
 		  EXEC Acc_CustSetting3rd_06  
 			   @CustId    = @custid,  
 			   @RoleId    = @roleid,  
-			   @Discount   = @v204MaxdiscountValue,  
+			   @Discount   = @v204discountValue,  
 			   @mode    = 'ColossusBet',  
 			   @Sporttype   = 204,  
 			   @Bettype   = @v204DiscountType  

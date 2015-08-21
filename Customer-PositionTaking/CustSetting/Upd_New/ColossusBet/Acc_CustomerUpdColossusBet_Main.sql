@@ -1,18 +1,5 @@
 
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustomerUpdColossusBet_Main]') AND type in (N'P', N'PC'))
-		DROP PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Main]
-
-GO
-
-/*  
-    Created By: Helen  
-    Created Date: Aug 18, 2015
-    Description: Colossus Bet Product
-    
-    DB: DBCUST/CUSTDB  
-*/  
-
-CREATE PROCEDURE [dbo].Acc_CustomerUpdColossusBet_Main
+ALTER PROCEDURE [dbo].Acc_CustomerUpdColossusBet_Main
 (    
     @custid        INT,          
     
@@ -22,10 +9,11 @@ CREATE PROCEDURE [dbo].Acc_CustomerUpdColossusBet_Main
     @IsUpdateDisable BIT = NULL,
     @IsUpdateCustInfo BIT = NULL,
     
+    
     -- updated Value for Commission & Cash In Share
     @v204Commission_18001 SMALLMONEY = NULL,  
     @v204CashInShare_18002 SMALLMONEY = NULL,  
-    
+    @EnableDownlines BIT = 0,
     -- Cust Info
     @disCasino bit = 0,      
     @firstname NVARCHAR(50),  
@@ -46,7 +34,18 @@ CREATE PROCEDURE [dbo].Acc_CustomerUpdColossusBet_Main
       
 )
 AS  
-
+/*  
+    Created: Helen  
+    Date: 20150821
+    Task: #42208 - Updating Colossus Bet Module: Disable/Commission/Cash In Share
+    DB: DBCUST / CustDB
+    
+    
+	Revisions:
+	
+	Parameters Explanation
+	
+*/ 
 BEGIN  
 	SET NOCOUNT ON   
 
@@ -89,9 +88,10 @@ BEGIN
 	BEGIN          
 		EXEC Acc_CustomerUpdColossusBet_Processing  
 			@custid    = @custid  
+			,@roleid = @roleid
 			,@v204discountValue = @v204Commission_18001
 			,@v204DiscountType =  18001
-			,@IP    = @IP   
+			,@IP    = @IP 
 			,@UserID   = @userid  
 			,@Language   = @Language  
 			,@ErrCode   = @ErrCode_Cur OUTPUT  

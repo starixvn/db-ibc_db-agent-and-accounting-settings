@@ -1,7 +1,4 @@
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustSetting3rd_06]') AND type in (N'P', N'PC'))
-		DROP PROCEDURE [dbo].[Acc_CustSetting3rd_06]
-GO
-CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_06]
+ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
     @CustId int,
     @RoleId int,
     @discountNumber decimal(9,8)    = 0, -- Number game

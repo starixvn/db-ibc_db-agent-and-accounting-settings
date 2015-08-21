@@ -1,21 +1,21 @@
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustomerSelEditSuperColossusBet]') AND type in (N'P', N'PC'))
-		DROP PROCEDURE [dbo].[Acc_CustomerSelEditSuperColossusBet]
-
-GO
-
- /*  
-    Created By: Helen  
-    Created Date: Aug 18, 2015
-    Description: # Colossus Bet Product
-    
-    DB: DBCUST / CustDB
-*/ 
-
-CREATE PROCEDURE [dbo].[Acc_CustomerSelEditSuperColossusBet]      
+ALTER PROCEDURE [dbo].[Acc_CustomerSelEditSuperColossusBet]      
 (
     @custid  INT      
 )
 AS      
+/*  
+    Created: Helen  
+    Date: 20150821
+    Task: #42208 - Super: Getting data before updating in Update Colossus Bet Module 
+    DB: DBCUST / CustDB
+    
+    
+	Revisions:
+	
+	Parameters Explanation
+	
+*/ 
+
 BEGIN  
           
     SET NOCOUNT ON      
