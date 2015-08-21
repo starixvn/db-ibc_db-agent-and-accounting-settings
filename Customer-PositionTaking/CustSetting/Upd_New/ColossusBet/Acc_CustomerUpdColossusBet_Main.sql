@@ -84,38 +84,6 @@ BEGIN
 		RETURN  
 	END  
 
-	-- Update Cust Info
-	IF @IsUpdateCustInfo = 1
-	BEGIN
-        
-        EXEC dbo.Acc_CustomerUpdUserInfo   
-                @CustID = @CustID,  
-                @firstname = @firstname,  
-                @lastname = @lastname,  
-                @phone = @phone,  
-                @mobilephone = @mobilephone,  
-                @fax = @fax,  
-                @email = @email,  
-                @SubAccID = @SubAccID,  
-                @disCasino = @disCasino,                  
-                @UserID = @UserID,  
-                @ErrMsg = @ErrMsg_Cur OUTPUT,  
-                @ErrCode = @ErrCode_Cur OUTPUT,  
-                @IP = @IP              
-      
-		IF @ErrCode_Cur > 0  
-		BEGIN  
-			SELECT @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7),   
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)  
-	          
-		END  
-		ELSE  
-		BEGIN  
-			SELECT @ErrCode = @ErrCode + '-101'+CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)  
-		END  
-		
-	END	
-	
 	-- Update Comission Processing
 	IF @IsUpdateCommission_18001 = 1  
 	BEGIN          
