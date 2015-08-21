@@ -1,12 +1,14 @@
 USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 8/6/2015 1:53:07 PM ******/
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 08/06/2015 03:20:22 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust_xtest    Script Date: 7/21/2015 10:42:44 AM ******/
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust_xtest    Script Date: 7/3/2015 4:54:43 PM ******/  
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/24/2015 1:51:24 AM ******/
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/23/2015 9:21:05 AM ******/
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/21/2015 10:42:44 AM ******/
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/3/2015 4:54:43 PM ******/  
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]   
  @FirstName nvarchar(50),  
  @LastName nvarchar(50),  
@@ -149,6 +151,7 @@ Revisions:
       Move Lrf_AGC_Customer_SetDefaultSetting to DBCUST  
  - 20150721@Winnie: Change for support Bettrade
  - 20150722@Winnie: support Microgaming
+ - 20150806@Patrick: Remove insert default balance value for Credit/Debit Game (merge code)
 
 Param's Explanation:  
 • @CustID: return new 12bet Player Cust ID  
@@ -373,6 +376,7 @@ Declare @apositiontaking_1 smallmoney,
  @apositiontaking_6 smallmoney,  
  @apositiontaking_7 smallmoney,  
  @apositiontaking_8 smallmoney,  
+
  @apositiontaking_9 smallmoney,  
  @apositiontaking_10 smallmoney,  
    
@@ -2507,7 +2511,7 @@ SET @today = convert(nvarchar(10), current_timestamp,120)
   
 --INSERT INTO BalanceCreditGame (CustID, winlostdate, Balance )  
 --VALUES (@CustID, @today, 0)  
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today  
+--EXEC DBTXN.bodb02.dbo.Dot_BalanceInsCreditGame @CustID = @CustID, @winlostdate = @today  
   
 IF @@error <> 0  
 BEGIN   
@@ -2525,7 +2529,7 @@ BEGIN
  DELETE CustGameType WHERE CustID = @CustID  
  EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
  EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid   
- EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid   
+ --EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid   
    
  EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID  
  return  
@@ -2533,7 +2537,7 @@ END
   
 --INSERT INTO BalanceDebitGame (CustID, winlostdate, Balance )  
 --VALUES (@CustID, @today, 0)  
-EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today  
+--EXEC DBTXN.bodb02.dbo.Dot_BalanceInsDebitGame @CustID = @CustID, @winlostdate = @today  
   
   
 IF @@error <> 0  
@@ -2552,8 +2556,8 @@ BEGIN
  DELETE CustGameType WHERE CustID = @CustID  
  EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCredit @CustID = @CustID --DELETE BalanceCredit WITH (ROWLOCK) WHERE custid = @custid   
  EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebit @CustID = @CustID --DELETE BalanceDebit WITH (ROWLOCK) WHERE custid = @custid   
- EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid  
- EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid   
+ --EXEC DBTXN.bodb02.dbo.Dot_BalanceDelCreditGame @CustID = @CustID --DELETE BalanceCreditGame WITH (ROWLOCK) WHERE custid = @custid  
+ --EXEC DBTXN.bodb02.dbo.Dot_BalanceDelDebitGame @CustID = @CustID --DELETE BalanceDebitGame WITH (ROWLOCK) WHERE custid = @custid   
    
  EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID  
  return  
@@ -2617,6 +2621,7 @@ ELSE IF @site='Zzun88'
 BEGIN  
  SET @ErrMsg=''  
  SET @ErrCode=0  
+
    
  IF (SELECT EnableBA FROM DBLIC.bodb_licensee.dbo.LicenseeBAConfig WITH (NOLOCK) WHERE LicenseeID = 10) = 1  
  BEGIN  
@@ -2817,3 +2822,15 @@ BEGIN CATCH
   @TrackingValue = @LogSPData,  
   @duration = @duration  
 END CATCH
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
