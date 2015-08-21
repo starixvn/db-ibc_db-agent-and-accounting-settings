@@ -1,4 +1,7 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Acc_CustSetting3rd_06]') AND type in (N'P', N'PC'))
+		DROP PROCEDURE [dbo].[Acc_CustSetting3rd_06]
+GO
+CREATE PROCEDURE [dbo].[Acc_CustSetting3rd_06]
     @CustId int,
     @RoleId int,
     @discountNumber decimal(9,8)    = 0, -- Number game
@@ -22,6 +25,11 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
     @Discount DECIMAL(9,8) = 0
 AS
 /*
+	Modified By: Helen  
+	Modified Date: Aug 18, 2015
+	Description: Colossus Bet Product
+	DB: DBCUST/CUSTDB  
+	
     Created: Kathy
     Date: 20131029
     Task : Update commission [Redmine:#3244]
@@ -1311,7 +1319,7 @@ BEGIN
 		END             
     END
 
-	IF @mode = 'Keno' or @mode = 'GoldDeluxe'
+	IF @mode = 'Keno' or @mode = 'GoldDeluxe' OR @mode = 'ColossusBet'
     BEGIN
         IF @RoleId = 4
         BEGIN
@@ -1353,44 +1361,48 @@ BEGIN
                AND cs.Sporttype = @Sporttype
                AND cs.sdiscount <> @Discount
 
-
+			
             --At member level, update adiscount = sdiscount if adiscount > sdiscount
-            UPDATE cs
-               SET cs.adiscount = cs.sdiscount
-              FROM dbo.CustSettingGame cs WITH(UPDLOCK,ROWLOCK)
-        INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-             WHERE ci.srecommend = @custid
-               AND ci.roleid = 1
-               AND ci.Enabled = 1
-               AND cs.Bettype = @Bettype
-               AND cs.Sporttype = @Sporttype
-               AND cs.adiscount > cs.sdiscount
+            IF @mode <> 'ColossusBet'
+            BEGIN
+	            
+				UPDATE cs
+				   SET cs.adiscount = cs.sdiscount
+				  FROM dbo.CustSettingGame cs WITH(UPDLOCK,ROWLOCK)
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				 WHERE ci.srecommend = @custid
+				   AND ci.roleid = 1
+				   AND ci.Enabled = 1
+				   AND cs.Bettype = @Bettype
+				   AND cs.Sporttype = @Sporttype
+				   AND cs.adiscount > cs.sdiscount
 
 
-            --At member level, update discount = adiscount if discount > adiscount
-            UPDATE cs
-               SET cs.discount = cs.adiscount
-              FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
-        INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-             WHERE ci.srecommend = @custid
-               AND ci.roleid = 1
-               AND ci.Enabled = 1
-               AND cs.Bettype = @Bettype
-               AND cs.Sporttype = @Sporttype 
-               AND cs.discount > cs.adiscount
+				--At member level, update discount = adiscount if discount > adiscount
+				UPDATE cs
+				   SET cs.discount = cs.adiscount
+				  FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				 WHERE ci.srecommend = @custid
+				   AND ci.roleid = 1
+				   AND ci.Enabled = 1
+				   AND cs.Bettype = @Bettype
+				   AND cs.Sporttype = @Sporttype 
+				   AND cs.discount > cs.adiscount
 
 
-            --At member level, update playerdiscount = discount  if playerdiscount > discount
-            UPDATE cs
-               SET cs.playerdiscount = cs.discount 
-              FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
-        INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-             WHERE ci.srecommend = @custid
-               AND ci.roleid = 1
-               AND ci.Enabled = 1
-               AND cs.Bettype = @Bettype
-               AND cs.Sporttype = @Sporttype
-               AND cs.playerdiscount > cs.discount
+				--At member level, update playerdiscount = discount  if playerdiscount > discount
+				UPDATE cs
+				   SET cs.playerdiscount = cs.discount 
+				  FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				 WHERE ci.srecommend = @custid
+				   AND ci.roleid = 1
+				   AND ci.Enabled = 1
+				   AND cs.Bettype = @Bettype
+				   AND cs.Sporttype = @Sporttype
+				   AND cs.playerdiscount > cs.discount
+			END	   
         END
         
         IF @RoleId = 3
@@ -1426,30 +1438,33 @@ BEGIN
                AND ci.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
                AND cs.adiscount <> @Discount
 
+			IF @mode <> 'ColossusBet'
+            BEGIN
+	            
+				--At member level, update discount = adiscount  if discount > adiscount
+				UPDATE cs
+				   SET cs.discount = cs.adiscount
+				  FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				 WHERE ci.mrecommend = @custid
+				   AND ci.roleid = 1
+				   AND ci.Enabled = 1
+				   AND cs.bettype = @Bettype
+				   AND cs.sporttype = @Sporttype 
+				   AND cs.discount > cs.adiscount
 
-            --At member level, update discount = adiscount  if discount > adiscount
-            UPDATE cs
-               SET cs.discount = cs.adiscount
-              FROM dbo.CustSettingGame cs WITH(UPDLOCK, ROWLOCK)
-        INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-             WHERE ci.mrecommend = @custid
-               AND ci.roleid = 1
-               AND ci.Enabled = 1
-               AND cs.bettype = @Bettype
-               AND cs.sporttype = @Sporttype 
-               AND cs.discount > cs.adiscount
-
-            --At member level, update playerdiscount = discount  if playerdiscount > discount
-            UPDATE cs
-               SET cs.playerdiscount = cs.discount
-              FROM dbo.CustSettingGame cs WITH (UPDLOCK, ROWLOCK)
-        INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-             WHERE ci.mrecommend = @custid
-               AND ci.roleid = 1
-               AND ci.Enabled = 1
-               AND cs.bettype = @Bettype
-               AND cs.sporttype = @Sporttype 
-               AND cs.playerdiscount > cs.discount
+				--At member level, update playerdiscount = discount  if playerdiscount > discount
+				UPDATE cs
+				   SET cs.playerdiscount = cs.discount
+				  FROM dbo.CustSettingGame cs WITH (UPDLOCK, ROWLOCK)
+					INNER JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+				 WHERE ci.mrecommend = @custid
+				   AND ci.roleid = 1
+				   AND ci.Enabled = 1
+				   AND cs.bettype = @Bettype
+				   AND cs.sporttype = @Sporttype 
+				   AND cs.playerdiscount > cs.discount
+			END
         END
         
         IF @RoleId = 2
@@ -1471,16 +1486,19 @@ BEGIN
                 AND c.roleid = 1 AND bettype = @Bettype
                 AND sporttype = @Sporttype AND cs.discount <> @Discount
 
-            --At member level, update playerdiscount = discount  if playerdiscount > discount
-            UPDATE cs 
-               SET cs.playerdiscount = cs.discount
-              FROM dbo.CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
-                INNER JOIN dbo.custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-             WHERE c.recommend = @custid AND c.roleid = 1
-                AND sporttype = @Sporttype AND bettype = @Bettype AND cs.playerdiscount > cs.discount 
+            IF @mode <> 'ColossusBet'
+            BEGIN
+				--At member level, update playerdiscount = discount  if playerdiscount > discount
+				UPDATE cs 
+				   SET cs.playerdiscount = cs.discount
+				  FROM dbo.CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
+					INNER JOIN dbo.custinfo c WITH(NOLOCK) ON cs.custid = c.custid
+				 WHERE c.recommend = @custid AND c.roleid = 1
+					AND sporttype = @Sporttype AND bettype = @Bettype AND cs.playerdiscount > cs.discount 
+			END		
         END
         
-        IF @RoleId = 1
+        IF @RoleId = 1 AND @mode <> 'ColossusBet'
         BEGIN            
             UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
             SET    playerdiscount = @Discount
