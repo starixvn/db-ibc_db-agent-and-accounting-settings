@@ -13,9 +13,15 @@ AS
    
  */  
 BEGIN  
+	DECLARE @DCSProducts TABLE(ProductID TINYINT)
+	INSERT @DCSProducts
+	SELECT DISTINCT ProductID
+	FROM DBCUST.Custdb.dbo.ProductSettingDetail
+	WHERE SettingStatus < 2
+
 	SELECT [ProductID], CASE WHEN SUBSTRING([Language],12,LEN([Language]) - 11) = '' THEN 'EN' ELSE UPPER(SUBSTRING([Language],12,LEN([Language]) - 11)) END [Language], Name
 	FROM 
-	   (SELECT [ProductID]  
+	   (SELECT p.[ProductID]  
 			  ,CAST([ProductName]   AS NVARCHAR(50)) [ProductName]
 			  ,[ProductNameCh]  
 			  ,[ProductNameCs]  
@@ -28,8 +34,9 @@ BEGIN
 			  ,[ProductNameEL]  
 			  ,[ProductNameRU]  
 			  ,[ProductNameID]  
-		  FROM [dbo].[Products]  
-		  WHERE @ProductID IS NULL OR [ProductID]=@ProductID  ) p
+		  FROM [dbo].[Products] p 
+		  INNER JOIN @DCSProducts f ON f.ProductID = p.ProductID
+		  WHERE @ProductID IS NULL OR p.[ProductID]=@ProductID  ) p
 	UNPIVOT
 	   (Name FOR [Language] IN 
 		  ([ProductName],[ProductNameCh]  
