@@ -17,7 +17,8 @@
 		DB: DBTXN/CustDB
 		
 		Revisions:
-		
+			- 20150821@Elodie: Exclude WON currency for GoldDeluxe [Redmine: #41785]
+
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -39,10 +40,12 @@ BEGIN
 	DECLARE @roleid INT,
 			@Disable_Old BIT,
 			@UplineDisable BIT,			
-			@HasDownline BIT = 0
+			@HasDownline BIT = 0,
+			@Currency INT
 	
 	SELECT @roleid = roleid,
-			@Disable_Old = DisableGoldDeluxe			
+			@Disable_Old = DisableGoldDeluxe,
+			@Currency = currency
 	FROM custInfo WITH(NOLOCK)
 	WHERE custid = @custid
 	
@@ -57,6 +60,17 @@ BEGIN
 		RETURN
 	END
 	
+	IF (@Currency = 45) --Gold Deluxe doesn't support WON currency [Redmine: #41785]
+	BEGIN
+		SELECT @ErrMsg = CASE @Language
+				WHEN 'E' THEN 'Gold Deluxe doesn''t support WON currency'
+				ELSE [dbo].[f_Get_MsgNamebyMsgID](40002, @Language)
+				END
+			,@ErrCode = 103
+
+		RETURN
+	END
+
 	IF @Disable_old = @Disable
 		RETURN
 	
