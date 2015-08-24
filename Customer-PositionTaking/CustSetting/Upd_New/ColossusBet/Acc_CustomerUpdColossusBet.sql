@@ -1,29 +1,17 @@
 
-ALTER PROCEDURE [dbo].Acc_CustomerUpdColossusBet_Main
+ALTER PROCEDURE [dbo].Acc_CustomerUpdColossusBet
 (    
     @custid        INT,          
     
     -- Update Flags 
-    @IsUpdateCommission_18001 BIT = NULL,
-    @IsUpdateCashInShare_18002 BIT = NULL,
+    @IsUpdateCommission BIT = NULL,
+    @IsUpdateCashInShare BIT = NULL,
     @IsUpdateDisable BIT = NULL,
-    @IsUpdateCustInfo BIT = NULL,
-    
-    
+        
     -- updated Value for Commission & Cash In Share
     @v204Commission_18001 SMALLMONEY = NULL,  
     @v204CashInShare_18002 SMALLMONEY = NULL,  
     @EnableDownlines BIT = 0,
-    -- Cust Info
-    @disCasino bit = 0,      
-    @firstname NVARCHAR(50),  
-    @lastname NVARCHAR(50),  
-    @phone NVARCHAR(50),      
-    @mobilephone NVARCHAR(50),  
-    @email NVARCHAR(50) = '',  
-    @fax NVARCHAR(50), 
-    @SubAccID       int = 0, --Sub-AccountID   
-    
  
     @IP         VARCHAR(50)  = '',      
     @UserID        INT    = 0,  
@@ -37,7 +25,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: #42208 - Updating Colossus Bet Module: Disable/Commission/Cash In Share
+    Task: Updating Colossus Bet Module: Disable/Commission/Cash In Share (Redmine: #42208)
     DB: DBCUST / CustDB
     
     
@@ -66,7 +54,7 @@ BEGIN
 		@Custid   = @custid,  
 		@roleid   = @roleid OUTPUT  
 
-	IF (@roleid = 0)   
+	IF (@roleid = 0 OR @roleid = 1)   
 		RETURN  
 	
 	--Check disable user  
@@ -83,14 +71,53 @@ BEGIN
 		RETURN  
 	END  
 
+	-- Find parent
+	DECLARE @ParentCustID INT = NULL
+	
+	IF @roleid <> 4
+	BEGIN
+		SELECT @ParentCustID = CASE 
+									WHEN @roleid = 2 THEN mrecommend
+									WHEN @roleid = 3 THEN srecommend
+								END	
+		FROM custInfo WITH (NOLOCK)
+		WHERE custid = @custid
+	END 	
+	
+	-- Reset discount value in case its value > upline
+	IF @ParentCustID IS NOT NULL
+	BEGIN
+		-- Commission
+		SELECT @v204Commission_18001 = CASE 
+											WHEN @v204Commission_18001 > commRate THEN commRate
+											ELSE @v204Commission_18001   
+										END  
+		FROM AgentCommRate WITH(NOLOCK)  
+		WHERE custid = @ParentCustID   
+			AND sporttype = 204   
+			AND bettype = 18001  
+		
+		-- Cash In Share
+		SELECT @v204CashInShare_18002 = CASE 
+											WHEN @v204CashInShare_18002 > commRate THEN commRate
+											ELSE @v204CashInShare_18002   
+										END  
+		FROM AgentCommRate WITH(NOLOCK)  
+		WHERE custid = @ParentCustID   
+			AND sporttype = 204   
+			AND bettype = 18002  	
+		
+	
+	END
 	-- Update Comission Processing
-	IF @IsUpdateCommission_18001 = 1  
+	IF @IsUpdateCommission = 1  
 	BEGIN          
-		EXEC Acc_CustomerUpdColossusBet_Processing  
+		EXEC Acc_CustomerUpdColossusBet_Commission  
 			@custid    = @custid  
 			,@roleid = @roleid
-			,@v204discountValue = @v204Commission_18001
-			,@v204DiscountType =  18001
+			,@DiscountValue = @v204Commission_18001
+			,@DiscountType =  18001
+			,@ActionID = 242
 			,@IP    = @IP 
 			,@UserID   = @userid  
 			,@Language   = @Language  
@@ -107,12 +134,25 @@ BEGIN
 	END  
 
 	-- Update Cash In Share Processing 
-	IF @IsUpdateCashInShare_18002 = 1  
-	BEGIN          
-		EXEC Acc_CustomerUpdColossusBet_Processing  
+	IF @IsUpdateCashInShare = 1  
+	BEGIN
+		  
+		-- Reset discount value
+		/*
+		SELECT @v204discountValue = CASE WHEN @v204discountValue > sdiscount THEN sdiscount   
+			  ELSE @v255discount_1701   
+			 END  
+		FROM AgentCommRate WITH(NOLOCK)  
+		WHERE custid = @srecommend   
+			AND sporttype = 204   
+			AND bettype = 18001  
+		*/
+	          
+		EXEC Acc_CustomerUpdColossusBet_Commission  
 			@custid    = @custid  
-			,@v204discountValue = @v204CashInShare_18002
-			,@v204DiscountType =  18002
+			,@DiscountValue = @v204CashInShare_18002
+			,@DiscountType =  18002
+			,@ActionID = 243
 			,@UserID   = @userid  
 			,@Language   = @Language  
 			,@ErrCode   = @ErrCode_Cur OUTPUT  

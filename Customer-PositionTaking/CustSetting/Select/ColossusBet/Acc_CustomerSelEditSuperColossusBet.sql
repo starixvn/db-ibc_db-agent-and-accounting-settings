@@ -6,7 +6,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: #42208 - Super: Getting data before updating in Update Colossus Bet Module 
+    Task: Super: Getting data before updating in Update Colossus Bet Module - (Redmine: #42208) 
     DB: DBCUST / CustDB
     
     

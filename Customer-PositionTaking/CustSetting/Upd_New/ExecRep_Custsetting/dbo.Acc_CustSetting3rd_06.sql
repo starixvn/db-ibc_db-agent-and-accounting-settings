@@ -23,8 +23,8 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_06]
 AS
 /*
 	Modified By: Helen  
-	Modified Date: Aug 18, 2015
-	Description: Colossus Bet Product
+	Date: Aug 18, 2015
+	Task: Colossus Bet Product - (Redmine: #42208)
 	DB: DBCUST/CUSTDB  
 	
     Created: Kathy
