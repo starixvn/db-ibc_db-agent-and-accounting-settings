@@ -62,12 +62,7 @@ BEGIN
 	
 	IF (@Currency = 45) --Gold Deluxe doesn't support WON currency [Redmine: #41785]
 	BEGIN
-		SELECT @ErrMsg = CASE @Language
-				WHEN 'E' THEN 'Gold Deluxe doesn''t support WON currency'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](40002, @Language)
-				END
-			,@ErrCode = 103
-
+		SELECT @ErrMsg = 'Gold Deluxe doesn''t support customers under WON currency', @ErrCode = 103
 		RETURN
 	END
 
