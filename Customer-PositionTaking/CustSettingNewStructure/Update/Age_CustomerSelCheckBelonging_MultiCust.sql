@@ -17,8 +17,12 @@ SET NOCOUNT ON
 DECLARE @tblCust TABLE (CustID INT )
 DECLARE @Cust_UP INT, @Cust_DO INT
 
+--Parse CustID List
+DECLARE @XML XML
+SET @XML = N'<root><r>' + REPLACE(@custid, ',', '</r><r>') + '</r></root>'
 INSERT INTO @tblCust (CustID )
-SELECT CONVERT(INT,val) FROM dbo.strSplit(@custid,@SpecialChar) 
+SELECT r.value('.','INT')
+FROM @xml.nodes('//root/r') AS RECORDS(r)
 
 SELECT @Cust_DO = @@Rowcount ;	 
 
