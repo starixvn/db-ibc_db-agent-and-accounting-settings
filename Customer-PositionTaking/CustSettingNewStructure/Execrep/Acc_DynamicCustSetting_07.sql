@@ -3,7 +3,7 @@ GO
 SET ANSI_NULLS ON 
 GO
 
-CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting_07] 
+ALTER PROCEDURE [dbo].[Acc_DynamicCustSetting_07] 
     @SuperID			INT	= 0,
     @MasterID			INT = 0,
     @AgentID			INT = 0,
@@ -122,7 +122,7 @@ BEGIN
 			@_Temp7				TINYINT
 --******************************************VARIABLE INITITATES****************************************************** 
 	--Get SMA Info
-	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @AgentID = @_AgentID, @_RoleID = @RoleID
+	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @_AgentID = @AgentID , @_RoleID = @RoleID
 	
 	--Parse affected SportType/BetType/islive
 	INSERT @_SportBetTypeTbl(
@@ -148,7 +148,7 @@ BEGIN
 	WHERE CustID = @_SuperID
 
 --******************************************START CORRECTING PT SETTING VALUES***************************************  
-    IF @roleid = 4 --When Super Update Members
+    IF @_Roleid = 4 --When Super Update Members
     BEGIN 
 		--Get master PT Setting Values
 		INSERT @_MasterPTTbl(CustID,SportType,BetType,IsLive,S3,M3,A3
@@ -238,7 +238,7 @@ BEGIN
 		WHERE mcs.CustID = @_MasterID
 		
 		--Get Agent PT Setting Values
-		IF @roleid = 2
+		IF @_RoleID = 2
 		BEGIN	
 			INSERT @_AgentPTTbl(CustID,SportType,BetType,IsLive,S2,M2,A2
 						,IM2,UM2,IS2,US2,N2,L2)	
@@ -267,7 +267,7 @@ BEGIN
 			WHERE c.mrecommend = @_MasterID AND c.RoleID = 2
 		END
 		
-		IF @RoleID = 2
+		IF @_RoleID = 2
 		BEGIN
 			--Individual Settings
 			UPDATE cs
