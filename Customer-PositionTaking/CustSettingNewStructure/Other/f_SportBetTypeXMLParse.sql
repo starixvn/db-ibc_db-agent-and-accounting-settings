@@ -1,16 +1,43 @@
-ALTER FUNCTION f_SportBetTypeXMLParse(@SportBetTypeXML	NVARCHAR(MAX), @Mode TINYINT) 
-RETURNS @SportBetTypeTbl TABLE (SportType SMALLINT, Bettype SMALLINT, IsLive BIT)
+ALTER FUNCTION f_SportBetTypeXMLParse(@SportBetTypeXML	NVARCHAR(MAX)) 
+RETURNS @SportBetTypeTbl TABLE (SportType SMALLINT
+						, Bettype SMALLINT
+						, IsLive BIT
+						, IsAuto_New BIT
+						, IsAuto_Old BIT
+						, IsUpdAllMems BIT
+						, UpdAllMems_Value TINYINT)
+/*
+    Created: Dominic
+    Date: 20150901
+    Task: Parse XML (Dynamic Customer Setting)
+    DB: DBCUST/CustDB
+    Original versions:                
+    Revision:
+
+    Parameter's Explanation:
+		- @SportBetTypeXML
+						<ROOT>
+							<PT SportType="180" BetType="1201" IsLive="0" ... />
+							<PT SportType="181" BetType="1202" IsLive="0" ... />
+							<PT SportType="183" BetType="1203" IsLive="0" ... />
+						</ROOT>
+*/
 BEGIN 
 	DECLARE @XML XML =  @SportBetTypeXML
 	
-	IF @Mode = 1 -- XML has only 3 columns : SportType,BetType,IsLive
-	BEGIN
-		INSERT @SportBetTypeTbl
-		SELECT r.value('./@SportType','SMALLINT')
-				, r.value('./@BetType','SMALLINT')
-				, r.value('./@IsLive','BIT')
-		FROM @xml.nodes('//ROOT/PT') AS RECORDS(r)
-	END
+
+	INSERT @SportBetTypeTbl
+	SELECT r.value('./@SportType','SMALLINT')
+			, r.value('./@BetType','SMALLINT')
+			, r.value('./@IsLive','BIT')
+			
+			--AutoPT: Acc_DynamicCustSetting_05
+			, r.value('./@IsAuto_New','BIT')
+			, r.value('./@IsAuto_Old','BIT')
+			, r.value('./@IsUpdAllMems','BIT')
+			, r.value('./@UpdAllMems_Value','TINYINT')
+	FROM @xml.nodes('//ROOT/PT') AS RECORDS(r)
+
  
 	RETURN
 END
