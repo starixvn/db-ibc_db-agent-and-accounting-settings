@@ -8,7 +8,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: Master: Getting data before updating in Update Colossus Bet Module - (Redmine: #42208)
+    Task: Master: Getting data before updating in Update Colossus Bet Module - (Redmine: #41264)
     DB: DBCUST / CustDB
     
     
@@ -41,14 +41,14 @@ BEGIN
 	FROM dbo.custInfo WITH(NOLOCK)  
 	WHERE custid = @srecommend  
 
-	SELECT @max_discount_comm = sdiscount  
-	FROM CustSettingGame cs WITH(NOLOCK)  
+	SELECT @max_discount_comm = CommRate  
+	FROM AgentCommRate cs WITH(NOLOCK)  
 	WHERE custid = @srecommend   
 		AND sporttype = 204   
 		AND bettype = 18001  
 
-	SELECT @max_discount_CashInShare = sdiscount  
-	FROM CustSettingGame cs WITH(NOLOCK)  
+	SELECT @max_discount_CashInShare = CommRate  
+	FROM AgentCommRate cs WITH(NOLOCK)  
 	WHERE custid = @srecommend   
 		AND sporttype = 204   
 		AND bettype = 18002  
@@ -69,20 +69,29 @@ BEGIN
 	WHERE custID = @CustID        
 
 	--Commission  
-	SELECT adiscount AS v204discount_18001
+	SELECT CommRate AS v204discount_18001
 		, ISNULL(@max_discount_comm,0)  AS v204discount_18001_max
-	FROM CustsettingGame WITH(NOLOCK)  
+	FROM AgentCommRate WITH(NOLOCK)  
 	WHERE custid = @custid   
 		AND sporttype = 204   
 		AND bettype = 18001  
 		
 	-- Cash In Share
-	SELECT adiscount AS v204discount_18001
+	SELECT CommRate AS v204discount_18002
 		, ISNULL(@max_discount_CashInShare,0)  AS v204discount_18002_max
-	FROM CustsettingGame WITH(NOLOCK)  
+	FROM AgentCommRate WITH(NOLOCK)  
 	WHERE custid = @custid   
 		AND sporttype = 204   
 		AND bettype = 18002  
 
 	SET NOCOUNT OFF
 END
+
+GO
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterColossusBet] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterColossusBet]  TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMasterColossusBet]  TO [bodbExtAccNet]
+GO 

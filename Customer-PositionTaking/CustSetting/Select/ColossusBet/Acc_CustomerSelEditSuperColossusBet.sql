@@ -1,3 +1,4 @@
+
 ALTER PROCEDURE [dbo].[Acc_CustomerSelEditSuperColossusBet]      
 (
     @custid  INT      
@@ -6,7 +7,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: Super: Getting data before updating in Update Colossus Bet Module - (Redmine: #42208) 
+    Task: Super: Getting data before updating in Update Colossus Bet Module - (Redmine: #41264) 
     DB: DBCUST / CustDB
     
     
@@ -29,7 +30,7 @@ BEGIN
     ELSE IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo WITH(NOLOCK) WHERE srecommend = @custid AND roleid = 3 AND DisableColossusBet = 1)  
         SET @DisableDownlines = 1  
           
-    SELECT  @DisableColossusBet = @DisableColossusBet  
+    SELECT  @DisableColossusBet = DisableColossusBet  
     FROM    dbo.custInfo WITH(NOLOCK)  
     WHERE   custid = @custid  
           
@@ -51,19 +52,19 @@ BEGIN
            
      -- Commission 
      
-     SELECT  cs.sdiscount AS v204sdiscount_18001
-			, gs.Maxsdiscount AS v204sdicount_18001_max      
-     FROM    CustSettingGame cs WITH (NOLOCK)  
-		JOIN ProductGlobalSetting gs WITH (NOLOCK) ON gs.Sporttype =  cs.Sporttype AND gs.IsDep = 0  
+     SELECT  cs.CommRate AS v204discount_18001
+			, gs.Maxsdiscount AS v204discount_18001_max      
+     FROM    AgentCommRate cs WITH (NOLOCK)  
+		JOIN ProductGlobalSetting gs WITH (NOLOCK) ON gs.Sporttype =  cs.Sporttype AND CS.Bettype = GS.Bettype AND gs.IsDep = 0  
      WHERE custid = @custid 
 			AND cs.sporttype = 204   
             AND cs.bettype = 18001      
             
     -- Cash In Share          
-    SELECT  cs.sdiscount AS v204sdiscount_18002,      
-            gs.Maxsdiscount AS v204sdicount_18002_max      
-     FROM    CustSettingGame cs WITH (NOLOCK)  
-		JOIN ProductGlobalSetting gs WITH (NOLOCK) ON gs.Sporttype =  cs.Sporttype AND gs.IsDep = 0  
+    SELECT  cs.CommRate AS v204discount_18002,      
+            gs.Maxsdiscount AS v204discount_18002_max      
+     FROM    AgentCommRate cs WITH (NOLOCK)  
+		JOIN ProductGlobalSetting gs WITH (NOLOCK) ON gs.Sporttype =  cs.Sporttype AND CS.Bettype = GS.Bettype AND gs.IsDep = 0  
      WHERE custid = @custid   
             AND cs.sporttype = 204   
             AND cs.bettype = 18002      
@@ -71,3 +72,11 @@ BEGIN
 	SET NOCOUNT OFF
           
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO [bodbExtAccNet]
+GO 

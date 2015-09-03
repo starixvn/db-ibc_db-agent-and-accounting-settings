@@ -50,6 +50,7 @@ Revisions:
 	- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 	- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 	- 20150709@DAniel: Enhance code get custsetting data
+	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -135,6 +136,8 @@ BEGIN
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
 		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+		ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
+		ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		
 	FROM 
@@ -188,6 +191,10 @@ BEGIN
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
 		ci.DisableGoldDeluxe,
+		
+		ci.HideColossusBet,
+		ci.DisableColossusBet,
+		
 		groupa, 
 		groupb, 
 		groupc, 
@@ -260,6 +267,10 @@ BEGIN
 		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
 		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+		
+		ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
+		ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
+		
 		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 	FROM 
 		customer AS m with (NOLOCK)
@@ -299,7 +310,9 @@ BEGIN
 		ci.virtualmultiplier,
 		ci.HideKeno,
 		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe
+		ci.DisableGoldDeluxe,
+		ci.HideColossusBet,
+		ci.DisableColossusBet
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END

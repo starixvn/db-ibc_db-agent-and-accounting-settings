@@ -17,7 +17,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableColossusBet]
  /*  
     Created: Helen  
     Date: 20150821
-    Task: Updating Colossus Bet Status - Redmine: #42208
+    Task: Updating Colossus Bet Status - Redmine: #41264
     DB: DBCUST / CustDB
     
     
@@ -49,7 +49,7 @@ BEGIN
 			@HasDownline BIT = 0  
 
 	SELECT @roleid = roleid,  
-	@Disable_Old = DisableColossusBet
+			@Disable_Old = DisableColossusBet
 	FROM custInfo WITH(NOLOCK)  
 	WHERE custid = @custid  
 
@@ -97,8 +97,8 @@ BEGIN
 	IF @UplineDisable = 1  
 	BEGIN  
 		SELECT @ErrMsg =  CASE @Language   
-								WHEN 'E' THEN 'Account was disabled Colossus Bet. Unable to edit downlines.'  
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](60031,@Language)  
+								WHEN 'E' THEN 'Account was disabled Colossus Bets. Unable to edit downlines.'  
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](60032,@Language)  
 						END, @ErrCode = 101  
 		RETURN  
 	END   
@@ -172,7 +172,7 @@ BEGIN
 	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP    
 		@UserID = @UserID,    
 		@CustID = @CustID,    
-		@ActionID = 1155,    
+		@ActionID = 1157,    
 		@TrackingValue = @LogSPData  ,   
 		@TrackingValue2 = @LogSPData_old  ,    
 		@duration = @duration    
@@ -192,7 +192,7 @@ BEGIN
 	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP    
 		@UserID = @UserID,    
 		@CustID = @CustID,    
-		@ActionID = 1155,    
+		@ActionID = 1157,    
 		@TrackingValue = @LogSPData,    
 		@TrackingValue2 = @LogSPData_old,    
 		@duration = @duration  
@@ -200,3 +200,11 @@ BEGIN
 	END CATCH  
 
 END
+
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableColossusBet] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableColossusBet] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableColossusBet] TO [bodbExtAccNet]
+GO 

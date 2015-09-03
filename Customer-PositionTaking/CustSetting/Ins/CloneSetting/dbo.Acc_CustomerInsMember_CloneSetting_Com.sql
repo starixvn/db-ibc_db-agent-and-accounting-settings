@@ -39,6 +39,7 @@ AS
 	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
 	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
 	- 20150714@Patrick: Add max win limit for Gold deluxe                              
+	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -284,6 +285,8 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,HideColossusBet
+				,DisableColossusBet
 				,DisableSuperLive
 				)
 		 SELECT
@@ -359,6 +362,8 @@ BEGIN
 				,DisableEsports
 				,HideGoldDeluxe
 				,DisableGoldDeluxe
+				,HideColossusBet
+				,DisableColossusBet
 				,DisableSuperLive
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  

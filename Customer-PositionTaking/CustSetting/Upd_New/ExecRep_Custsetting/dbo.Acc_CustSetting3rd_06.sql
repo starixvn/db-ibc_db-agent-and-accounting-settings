@@ -56,7 +56,7 @@ AS
 			+ Improve medthod check table existing in subscribers	
 			+ Separate custDB to new server DBCUST  
 		- 20150616@Johnson: Add more hard customers not give commission [Redmine: #34798]	
-		- 20150825@Helen: Colossus Bet - [Redmine: #42208]
+		- 20150825@Helen: Colossus Bet - [Redmine: #41264]
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
@@ -75,7 +75,9 @@ BEGIN
 	     AND dbo.f_CheckRepTable('CustSettingGame') = 1 
 	     AND dbo.f_CheckRepTable('customer') = 1 
 	     AND dbo.f_CheckRepTable('Dep_CustSuper') = 1 
-     )
+	     AND dbo.f_CheckRepTable('AgentCommRate') = 1 
+	     AND dbo.f_CheckRepTable('CustCommRate') = 1 
+     ) 
 	   	RETURN    
     
 
@@ -1527,7 +1529,7 @@ BEGIN
                AND ac.CommRate   > @Discount
 
 			-- Update table CustCommRate 
-			IF EXISTS (SELECT 1 FROM CustInfo WHERE srecommend = @CustId AND roleid = 1)
+			IF EXISTS (SELECT 1 FROM CustInfo WITH(NOLOCK) WHERE srecommend = @CustId AND roleid = 1)
 			BEGIN
 				UPDATE cs
 					SET sdiscount = @Discount,
@@ -1578,7 +1580,7 @@ BEGIN
                AND ac.CommRate   > @Discount
 
 			-- Update table CustCommRate
-			IF EXISTS (SELECT 1 FROM CustInfo WHERE mrecommend = @CustId AND roleid = 1)
+			IF EXISTS (SELECT 1 FROM CustInfo WITH (NOLOCK) WHERE mrecommend = @CustId AND roleid = 1)
 			BEGIN
 				UPDATE cs
 					SET sdiscount = SuperComm.CommRate,

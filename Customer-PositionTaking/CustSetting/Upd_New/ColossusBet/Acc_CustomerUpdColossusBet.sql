@@ -1,5 +1,5 @@
 
-ALTER PROCEDURE [dbo].Acc_CustomerUpdColossusBet
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet]
 (    
     @custid        INT,          
     
@@ -12,7 +12,8 @@ ALTER PROCEDURE [dbo].Acc_CustomerUpdColossusBet
     @v204Commission_18001 SMALLMONEY = NULL,  
     @v204CashInShare_18002 SMALLMONEY = NULL,  
     @EnableDownlines BIT = 0,
- 
+	@Disable BIT = NULL,
+	  
     @IP         VARCHAR(50)  = '',      
     @UserID        INT    = 0,  
     @Language       VARCHAR(20)  = 'E',          
@@ -25,7 +26,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: Updating Colossus Bet Module: Disable/Commission/Cash In Share (Redmine: #42208)
+    Task: Updating Colossus Bet Module: Disable/Commission/Cash In Share (Redmine: #41264)
     DB: DBCUST / CustDB
     
     
@@ -110,14 +111,23 @@ BEGIN
 	
 	END
 	-- Update Comission Processing
+	DECLARE @ActionID_Commission INT
+	
 	IF @IsUpdateCommission = 1  
-	BEGIN          
+	BEGIN 
+		IF @roleid = 4
+			SET @ActionID_Commission = 242
+		ELSE IF @roleid = 3 
+			SET @ActionID_Commission = 243
+		ELSE IF @roleid = 2
+			SET @ActionID_Commission = 244
+			
 		EXEC Acc_CustomerUpdColossusBet_Commission  
 			@custid    = @custid  
 			,@roleid = @roleid
 			,@DiscountValue = @v204Commission_18001
 			,@DiscountType =  18001
-			,@ActionID = 242
+			,@ActionID = @ActionID_Commission
 			,@IP    = @IP 
 			,@UserID   = @userid  
 			,@Language   = @Language  
@@ -134,25 +144,22 @@ BEGIN
 	END  
 
 	-- Update Cash In Share Processing 
+	DECLARE @ActionID_CashInShare INT
 	IF @IsUpdateCashInShare = 1  
 	BEGIN
-		  
-		-- Reset discount value
-		/*
-		SELECT @v204discountValue = CASE WHEN @v204discountValue > sdiscount THEN sdiscount   
-			  ELSE @v255discount_1701   
-			 END  
-		FROM AgentCommRate WITH(NOLOCK)  
-		WHERE custid = @srecommend   
-			AND sporttype = 204   
-			AND bettype = 18001  
-		*/
-	          
+		IF @roleid = 4
+			SET @ActionID_CashInShare = 245
+		ELSE IF @roleid = 3 
+			SET @ActionID_CashInShare = 246
+		ELSE IF @roleid = 2
+			SET @ActionID_CashInShare = 247
+		
 		EXEC Acc_CustomerUpdColossusBet_Commission  
 			@custid    = @custid  
 			,@DiscountValue = @v204CashInShare_18002
 			,@DiscountType =  18002
-			,@ActionID = 243
+			,@roleid = @roleid
+			,@ActionID = @ActionID_CashInShare
 			,@UserID   = @userid  
 			,@Language   = @Language  
 			,@ErrCode   = @ErrCode_Cur OUTPUT  
@@ -172,7 +179,7 @@ BEGIN
 	IF @IsUpdateDisable = 1
 	BEGIN
 		
-		EXEC Acc_CustomerUpdDisableColossusBet @custid=@custid,@Disable=@IsUpdateDisable,@EnableDownlines=@EnableDownlines,@UserID=@UserID,@SubAccID=default,@IP=@IP,@Language='E',@ErrCode=@ErrCode_Cur OUTPUT,@ErrMsg=@ErrMsg_Cur OUTPUT  
+		EXEC Acc_CustomerUpdDisableColossusBet @custid=@custid,@Disable=@Disable,@EnableDownlines=@EnableDownlines,@UserID=@UserID,@SubAccID=default,@IP=@IP,@Language='E',@ErrCode=@ErrCode_Cur OUTPUT,@ErrMsg=@ErrMsg_Cur OUTPUT  
 		
 		IF @ErrCode_Cur <> 0  
 		BEGIN  
@@ -191,3 +198,10 @@ BEGIN
   
 END
 
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet] TO [bodbExtAccNet]
+GO 

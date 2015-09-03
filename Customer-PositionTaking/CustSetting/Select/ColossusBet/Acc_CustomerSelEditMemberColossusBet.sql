@@ -8,7 +8,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: Member: Getting data before updating in Update Colossus Bet Module - (Redmine: #42208) 
+    Task: Member: Getting data before updating in Update Colossus Bet Module - (Redmine: #41264) 
     DB: DBCUST / CustDB
     
     
@@ -65,15 +65,15 @@ BEGIN
 
 	--Commission  
 	
-	SELECT discount AS v204discount_18001 
-	FROM dbo.custsettingGame WITH(NOLOCK)  
+	SELECT CommRate AS v204discount_18001 
+	FROM dbo.AgentCommRate WITH(NOLOCK)  
 	WHERE custid = @recommend   
 		AND sporttype = 204   
 		AND bettype = 18001  
 	
 	-- Cash In Share
-	SELECT discount AS v204discount_18002 
-	FROM dbo.custsettingGame WITH(NOLOCK)  
+	SELECT CommRate AS v204discount_18002 
+	FROM dbo.AgentCommRate WITH(NOLOCK)  
 	WHERE custid = @recommend   
 		AND sporttype = 204   
 		AND bettype = 18002
@@ -81,3 +81,12 @@ BEGIN
 	SET NOCOUNT OFF
 	
 END  
+GO
+
+
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberColossusBet] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberColossusBet]  TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditMemberColossusBet]  TO [bodbExtAccNet]
+GO 

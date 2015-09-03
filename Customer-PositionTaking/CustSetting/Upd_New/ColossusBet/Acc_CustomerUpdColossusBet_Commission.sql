@@ -1,4 +1,3 @@
-
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Commission]   
 
     @custid    INT,  
@@ -15,7 +14,7 @@ AS
 /*  
     Created: Helen  
     Date: 20150821
-    Task: Updating: Commission/Cash In Share (Redmine: #42208)
+    Task: Updating: Commission/Cash In Share (Redmine: #41264)
     DB: DBCUST / CustDB
     
 	Revisions:
@@ -74,19 +73,19 @@ BEGIN
 		 BEGIN      
 			  SELECT @ErrMsg = CASE 
 									WHEN @Language = 'E' AND @DiscountType = 18001 THEN 'Invalid commission rate.' 
-									WHEN @Language = 'E' AND @DiscountType = 18002 THEN 'Invalid cash in share rate.'
+									WHEN @Language = 'E' AND @DiscountType = 18002 THEN 'Invalid Cash-In Share rate.'
 									
 									WHEN @Language <> 'E' AND @DiscountType = 18001 THEN [dbo].[f_Get_MsgNamebyMsgID](1,@Language)
 									  
-									ELSE [dbo].[f_Get_MsgNamebyMsgID](1 -- update  SELECT * FROM MsgError
-												 ,@Language)  
+									ELSE [dbo].[f_Get_MsgNamebyMsgID](10,@Language)  
 								END  
 				   ,@ErrCode = 103  
 			  RETURN  
+		 
 		 END  
 		 
 		 -- Apply exec rep  
-		  EXEC Acc_CustSetting3rd_06  
+		  EXEC [Acc_CustSetting3rd_06]  
 			   @CustId    = @custid,  
 			   @RoleId    = @roleid,  
 			   @Discount   = @DiscountValue,  
@@ -148,3 +147,10 @@ BEGIN
 	 SET NOCOUNT OFF
 	   
 END
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet_Commission] TO [bodbAdminNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet_Commission] TO [bodbDownlineNet]
+GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdColossusBet_Commission] TO [bodbExtAccNet]
+GO 
