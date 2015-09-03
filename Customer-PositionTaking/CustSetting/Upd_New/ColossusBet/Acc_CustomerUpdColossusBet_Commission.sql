@@ -25,8 +25,8 @@ AS
 			+ @v204DiscountType = 18001: Commision
 			+ @v204DiscountType =	18002: Cash In Share
 		@ActionID: only for Log action
-			+ @ActionID = 242: Commission
-			+ @ActionID = 243: Cash In Share
+			+ @ActionID = 242,243,244: Commission
+			+ @ActionID = 245,246,247: Cash In Share
 	
 */ 
  
