@@ -95,7 +95,7 @@ BEGIN
 	 
 		        
 		 SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-			  '@v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  'v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -103,7 +103,7 @@ BEGIN
 			  'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />'  
 		  
 		 SELECT @TrackingValueDB = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-			  '@v204discountValue="' + COALESCE(CAST(@db_v204discountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  'v204discountValue="' + COALESCE(CAST(@db_v204discountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -126,7 +126,7 @@ BEGIN
 		 END TRY  
 		 BEGIN CATCH  
 			  SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-				  '@v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+				  'v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 				  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
