@@ -84,6 +84,11 @@ BEGIN
 		 
 		 END  
 		 
+		 DECLARE @DiscountValueText VARCHAR(30)  = ''
+		 IF @DiscountType = 18001
+			SET @DiscountValueText = 'v204discountValue_Commission'
+		 IF @DiscountType = 18002	
+			SET @DiscountValueText = 'v204discountValue_CashInShare'
 		 -- Apply exec rep  
 		  EXEC [Acc_CustSetting3rd_06]  
 			   @CustId    = @custid,  
@@ -95,7 +100,7 @@ BEGIN
 	 
 		        
 		 SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-			  'v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  @DiscountValueText + '="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -103,7 +108,7 @@ BEGIN
 			  'ErrMsg="'+ COALESCE(CAST(@ErrMsg AS VARCHAR(5000)),SPACE(1)) + '" />'  
 		  
 		 SELECT @TrackingValueDB = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-			  'v204discountValue="' + COALESCE(CAST(@db_v204discountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  @DiscountValueText + '="' + COALESCE(CAST(@db_v204discountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -126,7 +131,7 @@ BEGIN
 		 END TRY  
 		 BEGIN CATCH  
 			  SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
-				  'v204discountValue="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
+				  @DiscountValueText + '="' + + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 				  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
