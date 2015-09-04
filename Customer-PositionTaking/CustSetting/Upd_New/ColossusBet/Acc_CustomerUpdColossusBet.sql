@@ -9,8 +9,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet]
     @IsUpdateDisable BIT = NULL,
         
     -- updated Value for Commission & Cash In Share
-    @v204Commission_18001 SMALLMONEY = NULL,  
-    @v204CashInShare_18002 SMALLMONEY = NULL,  
+    @v204Commission_18001 DECIMAL(9,8) = NULL,  
+    @v204CashInShare_18002 DECIMAL(9,8)= NULL,  
     @EnableDownlines BIT = 0,
 	@Disable BIT = NULL,
 	  
