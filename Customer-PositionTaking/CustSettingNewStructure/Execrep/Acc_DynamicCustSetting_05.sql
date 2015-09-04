@@ -9,11 +9,7 @@ CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting_05]
     @MasterID			INT = 0,
     @AgentID			INT = 0,
     @RoleID				INT	= 0,
-    @SportBetTypeXML	NVARCHAR(MAX) = '' ,
-    @IsUpdateAllMembers BIT = 0,
-    @IsUpdateMultiple	BIT = 0,
-    @NewS1				TINYINT =0 ,
-    @NewM1				TINYINT =0
+    @AutoPT				NVARCHAR(MAX) = ''
 AS
 /*
     Created: Dominic
@@ -24,12 +20,11 @@ AS
     Revision:
 
     Parameter's Explanation:
-		- @SportBetTypeXML
-						<ROOT>
-							<PT SportType="180" BetType="1201" IsLive="0" />
-							<PT SportType="181" BetType="1202" IsLive="0" />
-							<PT SportType="183" BetType="1203" IsLive="0" />
-						</ROOT>
+		- @AutoPT
+			<ROOT>
+				<PT SportType="180" BetType="1201" IsLive="0" IsAuto_New="0" IsAuto_Old="1" IsUpdAllMems="1" UpdAllMems_Value="10"/>
+				<PT SportType="180" BetType="1201" IsLive="1" IsAuto_New="0" IsAuto_Old="1" IsUpdAllMems="1" UpdAllMems_Value="10"/>
+			</ROOT>
 */ 
 BEGIN
     SET NOCOUNT ON
@@ -44,10 +39,14 @@ BEGIN
 	DECLARE @_SuperID INT, @_MasterID INT, @_AgentID INT, @_RoleID  INT
 	
 	--Affected sport/BetType/islive
-	DECLARE @_SportBetTypeTbl TABLE (
-					SportType		SMALLINT,
-					BetType			SMALLINT,
-					IsLive			BIT
+	DECLARE @_SportBetTypeAutoPTTbl TABLE (
+					SportType			SMALLINT,
+					BetType				SMALLINT,
+					IsLive				BIT,
+					IsAuto_New			BIT,
+					IsAuto_Old			BIT,
+					IsUpdAllMems		BIT,
+					UpdAllMems_Value	TINYINT
 					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
 				)
 				
@@ -56,424 +55,255 @@ BEGIN
 					SportType		SMALLINT  ,
 					BetType			SMALLINT  ,
 					IsLive			BIT  ,
-					S4				TINYINT  ,
-					M4				TINYINT  ,
-					A4				TINYINT  ,
-					IM4				BIT  ,
-					UM4				TINYINT  ,
-					IS4				BIT  ,
-					US4				TINYINT  ,
-					N4				TINYINT  ,
-					L4				TINYINT  
+					S4				TINYINT
 					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
 				)
+	DECLARE @_MasterPTTbl TABLE(
+					SportType		SMALLINT  ,
+					BetType			SMALLINT  ,
+					IsLive			BIT  ,
+					S3				TINYINT,
+					M3				TINYINT,
+					IS3				BIT,
+					US3				TINYINT
+					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
+				)
+	DECLARE @_AgentPTTbl TABLE(
+					SportType		SMALLINT  ,
+					BetType			SMALLINT  ,
+					IsLive			BIT  ,
+					M2				TINYINT,
+					IM2				BIT,
+					UM2				TINYINT
+					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
+				)
+				
+	DECLARE @_S1 TINYINT, @_S1_auto TINYINT, @_S1_notauto TINYINT,
+			@_M1 TINYINT, @_M1_auto TINYINT, @_M1_notauto TINYINT,
+			@_A1 TINYINT
 --******************************************VARIABLE INITITATES****************************************************** 
 	--Get SMA Info
 	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @_AgentID = @AgentID , @_RoleID = @RoleID
 	
 	--Parse affected SportType/BetType/islive
-	INSERT @_SportBetTypeTbl(
+	INSERT @_SportBetTypeAutoPTTbl(
 				SportType,
 				BetType,
-				IsLive
+				IsLive,
+				IsAuto_New,
+				IsAuto_Old,
+				IsUpdAllMems,
+				UpdAllMems_Value
 			)
 	SELECT SportType,
 			BetType,
-			IsLive
-	FROM dbo.f_SportBetTypeXMLParse(@SportBetTypeXML,1)  
+			IsLive,
+			IsAuto_New,
+			IsAuto_Old,
+			IsUpdAllMems,
+			UpdAllMems_Value
+	FROM dbo.f_DCS_PT_XMLParse(@AutoPT)  
+	
+	IF @_RoleID = 3
+	BEGIN
+		--Get Super PT Setting Values
+		INSERT @_SuperPTTbl(SportType,BetType,IsLive,S4)	
+		SELECT cs.SportType,cs.BetType,cs.IsLive,SuperPT
+		FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
+		INNER JOIN @_SportBetTypeAutoPTTbl mt 
+			ON mt.SportType = cs.SportType
+				AND mt.BetType = cs.BetType
+				AND mt.IsLive = cs.IsLive
+		WHERE CustID = @_SuperID
+	END
+	ELSE
+	BEGIN
+		--Get Master PT Setting Values
+		INSERT @_AgentPTTbl(SportType,BetType,IsLive,M2,IM2,UM2)	
+		SELECT cs.SportType,cs.BetType,cs.IsLive,MasterPT,IsAutoMasterPT,AutoMasterPT
+		FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
+		INNER JOIN @_SportBetTypeAutoPTTbl mt 
+			ON mt.SportType = cs.SportType
+				AND mt.BetType = cs.BetType
+				AND mt.IsLive = cs.IsLive
+		WHERE CustID = @_AgentID
+	END
 
-	--Get Super PT Setting Values
-	INSERT @_SuperPTTbl(SportType,BetType,IsLive,S4,M4,A4
-							,IM4,UM4,IS4,US4,N4,L4)	
-	SELECT cs.SportType,cs.BetType,cs.IsLive,SuperPT,MasterPT,AgentPT
-							,IsAutoMasterPT,AutoMasterPT,IsAutoSuperPT,AutoSuperPT,MinPT,MaxPT 
+	--Get Master PT Setting Values
+	INSERT @_MasterPTTbl(SportType,BetType,IsLive,S3,M3,IS3,US3)	
+	SELECT cs.SportType,cs.BetType,cs.IsLive,SuperPT,MasterPT,IsAutoSuperPT,AutoSuperPT
 	FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
-	INNER JOIN @_SportBetTypeTbl mt 
+	INNER JOIN @_SportBetTypeAutoPTTbl mt 
 		ON mt.SportType = cs.SportType
 			AND mt.BetType = cs.BetType
 			AND mt.IsLive = cs.IsLive
-	WHERE CustID = @_SuperID
+	WHERE CustID = @_MasterID
 
 
 
---******************************************START CORRECTING PT SETTING VALUES***************************************  								
+--******************************************START CORRECTING AUTO PT SETTING VALUES***************************************  								
     --UPDATE min/max pt ON master
     IF @_RoleID = 3
-    BEGIN			
-		IF EXISTS (
-				SELECT TOP 1 1
-				FROM @tblPT
-				WHERE isUpdateAutoPT = 1
-				)
-		BEGIN
-			--UPDATE use Auto_SPT at master for all members only when:
-			--(autoSPT at master changes AND isauto at master = 1
-			--OR isauto at master changes FROM 0 to 1)
-			--AND isauto at member = 0
-			UPDATE cs
-			SET cs.SuperPT = CASE 
-					WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT > b.AutoSuperPT
-						THEN b.AutoSuperPT
-					ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
-					END
-			FROM CustPTSetting3rd_Member cs WITH (
-					UPDLOCK
-					, ROWLOCK
-					)
-			INNER JOIN CustInfo ci WITH (NOLOCK)
-				ON cs.custid = ci.custid
-			INNER JOIN @tblPT b
-				ON b.sporttype = cs.sporttype
-					AND b.bettype = cs.bettype
-					AND b.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK)
-				ON scs.custid = @srecommend
-					AND scs.sporttype = cs.sporttype
-					AND scs.bettype = cs.bettype
-					AND scs.isLive = cs.isLive
-			WHERE ci.mrecommend = @mrecommend
-				AND ci.roleid = 1
-				AND ci.Enabled = 1
-				AND b.isUpdateAutoPT = 1
-				AND b.isAutoSuperPT > 0 --auto PT is used	
-				AND cs.isAutoSuperPT = 0 -- only UPDATE members without AutoSPT at member	
-
-			--update grouped settings	
-			UPDATE cs
-			SET cs.SuperPT = CASE 
-					WHEN scs.SuperPT - cs.MasterPT - cs.AgentPT > b.AutoSuperPT
-						THEN b.AutoSuperPT
-					ELSE scs.SuperPT - cs.MasterPT - cs.AgentPT
-					END
-			FROM CustPTGroupSetting3rd_Member cs WITH (
-					UPDLOCK
-					, ROWLOCK
-					)
-			INNER JOIN CustInfo ci WITH (NOLOCK)
-				ON cs.AgentID = ci.custid
-			INNER JOIN @tblPT b
-				ON b.sporttype = cs.sporttype
-					AND b.bettype = cs.bettype
-					AND b.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK)
-				ON scs.custid = @srecommend
-					AND scs.sporttype = cs.sporttype
-					AND scs.bettype = cs.bettype
-					AND scs.isLive = cs.isLive
-			WHERE ci.mrecommend = @mrecommend
-				AND ci.roleid = 2
-				AND ci.Enabled = 1
-				AND b.isUpdateAutoPT = 1
-				AND b.isAutoSuperPT > 0 --auto PT is used	
-				AND cs.isAutoSuperPT = 0 -- only UPDATE members without AutoSPT at member	
-
-			--IF @Updateallmembers = 1				
-			--UPDATE a specific SPT for all members only when:
-			-- @updateallmembers = 1
-			-- isauto at master = 0
-			--AND isauto at master change FROM 1 to 0
-			--AND isauto at member = 0
-			UPDATE cs
-			SET cs.SuperPT = CASE 
-					WHEN b.NewSuperPT > scs.SuperPT - mcs.MasterPT
-						THEN scs.SuperPT - mcs.MasterPT
-					ELSE b.NewSuperPT
-					END
-			FROM CustPTSetting3rd_Member cs WITH (
-					UPDLOCK
-					, ROWLOCK
-					)
-			INNER JOIN CustInfo ci WITH (NOLOCK)
-				ON cs.custid = ci.custid
-			INNER JOIN @tblPT b
-				ON b.sporttype = cs.sporttype
-					AND b.bettype = cs.bettype
-					AND b.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent mcs WITH (NOLOCK)
-				ON mcs.custid = @mrecommend
-					AND mcs.sporttype = cs.sporttype
-					AND mcs.bettype = cs.bettype
-					AND mcs.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK)
-				ON scs.custid = @srecommend
-					AND scs.sporttype = cs.sporttype
-					AND scs.bettype = cs.bettype
-					AND scs.isLive = cs.isLive
-			WHERE ci.mrecommend = @mrecommend
-				AND ci.roleid = 1
-				AND ci.Enabled = 1
-				AND b.isUpdateAutoPT = 1
-				AND b.UpdAllMems = 1
-				AND b.isAutoSuperPT = 0 --auto PT is NOT used
-				AND b.isAutoSuperPTOld = 1
-				AND cs.IsAutoSuperPT = 0
-
-			--grouped settings
-			UPDATE cs
-			SET cs.SuperPT = CASE 
-					WHEN b.NewSuperPT > scs.SuperPT - mcs.MasterPT
-						THEN scs.SuperPT - mcs.MasterPT
-					ELSE b.NewSuperPT
-					END
-			FROM CustPTGroupSetting3rd_Member cs WITH (
-					UPDLOCK
-					, ROWLOCK
-					)
-			INNER JOIN CustInfo ci WITH (NOLOCK)
-				ON cs.AgentID = ci.custid
-			INNER JOIN @tblPT b
-				ON b.sporttype = cs.sporttype
-					AND b.bettype = cs.bettype
-					AND b.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent mcs WITH (NOLOCK)
-				ON mcs.custid = @mrecommend
-					AND mcs.sporttype = cs.sporttype
-					AND mcs.bettype = cs.bettype
-					AND mcs.isLive = cs.isLive
-			INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK)
-				ON scs.custid = @srecommend
-					AND scs.sporttype = cs.sporttype
-					AND scs.bettype = cs.bettype
-					AND scs.isLive = cs.isLive
-			WHERE ci.mrecommend = @mrecommend
-				AND ci.roleid = 2
-				AND ci.Enabled = 1
-				AND b.isUpdateAutoPT = 1
-				AND b.UpdAllMems = 1
-				AND b.isAutoSuperPT = 0 --auto PT is NOT used
-				AND b.isAutoSuperPTOld = 1
-				AND cs.IsAutoSuperPT = 0
-		END
-
-		IF EXISTS (
-				SELECT TOP 1 1
-				FROM @tblPT
-				WHERE isUpdateAutoPT = 0
-				)
-		BEGIN
-			--apply new value position taking for super on members
-			--@Updateallmembers = 1				
-			UPDATE cs
-			SET SuperPT = b.NewSuperPT
-			FROM CustPTSetting3rd_Member cs WITH (
-					ROWLOCK
-					, UPDLOCK
-					)
-			INNER JOIN custinfo ci WITH (NOLOCK)
-				ON ci.custid = cs.custid
-					AND ci.mrecommend = @mrecommend
-					AND ci.roleid = 1
-			INNER JOIN @tblPT b
-				ON b.bettype = cs.bettype
-					AND b.sporttype = cs.sporttype
-					AND b.isLive = cs.isLive
-			WHERE b.isUpdateAutoPT = 0
-				AND b.isAutoSuperPT = 0
-				AND b.UpdAllMems = 1
-				AND cs.isAutoSuperPT = 0
-
-			--grouped settings
-			UPDATE cs
-			SET SuperPT = @newspositiontaking
-			FROM CustPTGroupSetting3rd_Member cs WITH (
-					ROWLOCK
-					, UPDLOCK
-					)
-			INNER JOIN custinfo ci WITH (NOLOCK)
-				ON ci.custid = cs.AgentID
-					AND ci.mrecommend = @mrecommend
-					AND ci.roleid = 2
-			INNER JOIN @tblPT b
-				ON b.bettype = cs.bettype
-					AND b.sporttype = cs.sporttype
-					AND b.isLive = cs.isLive
-			WHERE b.isUpdateAutoPT = 0
-				AND b.isAutoSuperPT = 0
-				AND b.UpdAllMems = 1
-				AND cs.isAutoSuperPT = 0
-		END			
+    BEGIN
+		--Update Individual Settings
+		UPDATE cs
+		SET
+			--Get S1, M1, A1
+			@_S1 = cs.SuperPT,
+			@_M1 = cs.MasterPT,
+			@_A1 = cs.AgentPT,
+			
+			--Calculate SuperAuto PT : min(s4-m1-a1,us3)
+			@_S1_auto = CASE WHEN S4 - @_M1 - @_A1 > US3 THEN US3 ELSE S4 - @_M1 - @_A1 END,
+			--Calculate Non Auto PT: min(s3,newspt)
+			@_S1_notauto = CASE WHEN S3 > UpdAllMems_Value THEN UpdAllMems_Value ELSE S3 END,
+			--if is3>0 s1 = @_S1_auto
+			@_S1 = CASE WHEN IsAuto_New = 1 THEN @_S1_auto ELSE @_S1 END,
+			--if is3 is updated from 1 to 0 AND updateallmember=1  then s1 = @_S1_notauto
+			@_S1 = CASE WHEN IsAuto_Old = 1 
+								AND IsAuto_New = 0 
+								AND IsUpdAllMems = 1 THEN @_S1_notauto ELSE @_S1 END,
+			--Aplly changes
+			cs.SuperPT = @_S1
+		FROM CustInfo ci WITH(NOLOCK)
+            INNER JOIN CustPTSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) 
+					ON ci.CustID = cs.CustID
+            INNER JOIN @_SuperPTTbl scs 
+					ON scs.SportType = cs.SportType 
+						AND scs.BetType = cs.BetType 
+						AND scs.IsLive = cs.IsLive
+			INNER JOIN @_MasterPTTbl mcs
+					ON mcs.SportType = cs.SportType 
+						AND mcs.BetType = cs.BetType 
+						AND mcs.IsLive = cs.IsLive
+			INNER JOIN @_SportBetTypeAutoPTTbl autopt
+					ON autopt.SportType = cs.SportType 
+						AND autopt.BetType = cs.BetType 
+						AND autopt.IsLive = cs.IsLive
+        WHERE ci.mrecommend = @_MasterID 
+			AND ci.Roleid = 1
+            AND ci.Enabled = 1 
+            AND cs.IsAutoSuperPT = 0
+            
+		
+		--Update Grouped Settings
+		UPDATE cs
+		SET
+			--Get S1, M1, A1
+			@_S1 = cs.SuperPT,
+			@_M1 = cs.MasterPT,
+			@_A1 = cs.AgentPT,
+			
+			--Calculate SuperAuto PT : min(s4-m1-a1,us3)
+			@_S1_auto = CASE WHEN S4 - @_M1 - @_A1 > US3 THEN US3 ELSE S4 - @_M1 - @_A1 END,
+			--Calculate Non Auto PT: min(s3,newspt)
+			@_S1_notauto = CASE WHEN S3 > UpdAllMems_Value THEN UpdAllMems_Value ELSE S3 END,
+			--if is3>0 s1 = @_S1_auto
+			@_S1 = CASE WHEN IsAuto_New = 1 THEN @_S1_auto ELSE @_S1 END,
+			--if is3 is updated from 1 to 0 AND updateallmember=1  then s1 = @_S1_notauto
+			@_S1 = CASE WHEN IsAuto_Old = 1 
+								AND IsAuto_New = 0 
+								AND IsUpdAllMems = 1 THEN @_S1_notauto ELSE @_S1 END,
+			--Aplly changes
+			cs.SuperPT = @_S1
+		FROM CustInfo ci WITH(NOLOCK)
+            INNER JOIN CustPTGroupSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) 
+					ON ci.CustID = cs.AgentID
+            INNER JOIN @_SuperPTTbl scs 
+					ON scs.SportType = cs.SportType 
+						AND scs.BetType = cs.BetType 
+						AND scs.IsLive = cs.IsLive
+			INNER JOIN @_MasterPTTbl mcs
+					ON mcs.SportType = cs.SportType 
+						AND mcs.BetType = cs.BetType 
+						AND mcs.IsLive = cs.IsLive
+			INNER JOIN @_SportBetTypeAutoPTTbl autopt
+					ON autopt.SportType = cs.SportType 
+						AND autopt.BetType = cs.BetType 
+						AND autopt.IsLive = cs.IsLive
+        WHERE ci.mrecommend = @_MasterID 
+			AND ci.Roleid = 2
+            AND ci.Enabled = 1 
+            AND cs.IsAutoSuperPT = 0
     END--end roleid = 3  
     ELSE
     BEGIN
-		IF @mode = 'Others'
-		BEGIN
-		  -- For read xml					
-			EXEC sp_xml_preparedocument @DocHandler OUTPUT, @AutoPT
+		--Update Individual Settings
+		UPDATE cs
+		SET
+			--Get S1, M1, A1
+			@_S1 = cs.SuperPT,
+			@_M1 = cs.MasterPT,
+			@_A1 = cs.AgentPT,
 			
-			INSERT INTO @tblPT(
-						SportType,
-						BetType,
-						IsLive,
-						MasterPT,						
-						IsAutoMasterPT,
-						IsAutoMasterPTOld,
-						AutoMasterPT,
-						isUpdateAutoPT,
-						UpdAllMems,
-						NewMasterPT
-					)
-			SELECT
-				Data.SportType,
-				Data.BetType,
-				Data.IsLive,
-				Data.MasterPT,				
-				Data.isAutoMasterPT,
-				Data.isAutoMasterPTOld,
-				Data.AutoMasterPT,
-				Data.IsUpdateAutoPT,
-				Data.UpdAllMems,
-				Data.NewMasterPT
-			FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
-			WITH (
-				SportType		SMALLINT,
-				BetType			SMALLINT,
-				IsLive			BIT,
-				MasterPT		SMALLINT,
-				IsAutoMasterPT	BIT,
-				IsAutoMasterPTOld BIT,
-				AutoMasterPT	SMALLINT,
-				IsUpdateAutoPT	BIT,
-				UpdAllMems		BIT,
-				NewMasterPT		SMALLINT	
-			) AS Data
-			OPTION(OPTIMIZE FOR UNKNOWN)
+			--Calculate SuperAuto PT : min(m3-a1,um2)
+			@_M1_auto = CASE WHEN M3 - @_A1 > UM2 THEN UM2 ELSE M3 - @_A1 END,
+			--Calculate Non Auto PT: m1=min(m2,@newmpositiontaking)
+			@_M1_notauto = CASE WHEN M2 > UpdAllMems_Value THEN UpdAllMems_Value ELSE M2 END,
+			--if im2>0 m1 = @_M1_auto
+			@_M1 = CASE WHEN IsAuto_New = 1 THEN @_M1_auto ELSE @_M1 END,
+			--if im2 is updated from 1 to 0 AND updateallmember=1 then s1 = @_M1_notauto
+			@_M1 = CASE WHEN IsAuto_Old = 1 
+								AND IsAuto_New = 0 
+								AND IsUpdAllMems = 1 THEN @_M1_notauto ELSE @_M1 END,
+			--Aplly changes
+			cs.MasterPT = @_M1
+		FROM CustInfo ci WITH(NOLOCK)
+            INNER JOIN CustPTSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) 
+					ON ci.CustID = cs.CustID
+			INNER JOIN @_MasterPTTbl mcs
+					ON mcs.SportType = cs.SportType 
+						AND mcs.BetType = cs.BetType 
+						AND mcs.IsLive = cs.IsLive
+			INNER JOIN @_AgentPTTbl acs 
+					ON acs.SportType = cs.SportType 
+						AND acs.BetType = cs.BetType 
+						AND acs.IsLive = cs.IsLive
+			INNER JOIN @_SportBetTypeAutoPTTbl autopt
+					ON autopt.SportType = cs.SportType 
+						AND autopt.BetType = cs.BetType 
+						AND autopt.IsLive = cs.IsLive
+        WHERE ci.recommend = @_AgentID 
+			AND ci.Roleid = 1
+            AND ci.Enabled = 1 
+            AND cs.IsAutoMasterPT = 0
+            
+        --Update Grouped Settings
+		UPDATE cs
+		SET
+			--Get S1, M1, A1
+			@_S1 = cs.SuperPT,
+			@_M1 = cs.MasterPT,
+			@_A1 = cs.AgentPT,
 			
-			EXEC sp_xml_removedocument @DocHandler
-			-- end read xml	
-			
-			IF EXISTS(SELECT TOP 1 1 FROM @tblPT WHERE isUpdateAutoPT =1)
-			BEGIN
-				--Use AUTO MPT 
-				--m1=min(m3-a1,u2) 
-				UPDATE cs       
-				SET MasterPT =
-						CASE
-							WHEN mcs.MasterPT - cs.AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
-							ELSE mcs.MasterPT - cs.AgentPT
-						END        
-				FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)        
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid 
-					INNER JOIN @tblPT b ON b.sporttype = cs.sporttype
-											AND b.bettype = cs.bettype
-											AND b.isLive = cs.isLive
-					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend
-																			AND b.sporttype = cs.sporttype
-																			AND b.bettype = cs.bettype
-																			AND b.isLive = cs.isLive										
-				WHERE c.recommend = @recommend 
-						AND c.roleid = 1
-						AND b.isAutoMasterPT > 0
-						AND b.isUpdateAutoPT = 1
-				
-				--update grouped settings
-				UPDATE cs       
-				SET MasterPT =
-						CASE
-							WHEN mcs.MasterPT - cs.AgentPT > b.AutoMasterPT THEN b.AutoMasterPT
-							ELSE mcs.MasterPT - cs.AgentPT
-						END        
-				FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)        
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid 
-					INNER JOIN @tblPT b ON b.sporttype = cs.sporttype
-											AND b.bettype = cs.bettype
-											AND b.isLive = cs.isLive
-					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend
-																			AND b.sporttype = cs.sporttype
-																			AND b.bettype = cs.bettype
-																			AND b.isLive = cs.isLive										
-				WHERE c.custid = @recommend 				
-						AND b.isAutoMasterPT > 0
-						AND b.isUpdateAutoPT = 1
-				
-				IF EXISTS(SELECT TOP (1) 1 FROM @tblPT WHERE UpdAllMems = 1)--all member       
-				BEGIN
-					--Not use AUTO MPT
-					--m1=min(m3-a2,@m1)
-					UPDATE cs             
-					SET MasterPT =
-									CASE
-									WHEN mcs.MasterPT - acs.AgentPT < b.NewMasterPT THEN mcs.MasterPT - acs.AgentPT
-									ELSE b.NewMasterPT END        
-					FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)         
-							INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid   
-							INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-													AND cs.bettype=b.bettype        
-													AND cs.isLive = b.isLive     
-							INNER JOIN CustPTSetting3rd_Agent as acs WITH(NOLOCK) ON acs.custid = @recommend 
-																					AND cs.sporttype=acs.sporttype 
-																					AND cs.bettype=acs.bettype        
-																					AND cs.isLive = acs.isLive
-							INNER JOIN CustPTSetting3rd_Agent as mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
-																					AND mcs.sporttype = cs.sporttype 
-																					AND mcs.bettype = cs.bettype
-																					AND mcs.isLive = cs.isLive        
-					WHERE c.recommend = @recommend 
-							AND c.roleid = 1 
-							AND b.UpdAllMems = 1
-							AND b.isUpdateAutoPT = 1
-							AND b.isAutoMasterPT = 0
-							AND b.isAutoMasterPTOld = 1
-					
-					--update grouped settings
-					 UPDATE cs             
-					SET MasterPT =
-									CASE
-									WHEN mcs.MasterPT - acs.AgentPT < b.NewMasterPT THEN mcs.MasterPT - acs.AgentPT
-									ELSE b.NewMasterPT END        
-					FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)         
-							INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid   
-							INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-													AND cs.bettype=b.bettype        
-													AND cs.isLive = b.isLive     
-							INNER JOIN CustPTSetting3rd_Agent as acs WITH(NOLOCK) ON acs.custid = @recommend 
-																					AND cs.sporttype=acs.sporttype 
-																					AND cs.bettype=acs.bettype        
-																					AND cs.isLive = acs.isLive
-							INNER JOIN CustPTSetting3rd_Agent as mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
-																					AND mcs.sporttype = cs.sporttype 
-																					AND mcs.bettype = cs.bettype
-																					AND mcs.isLive = cs.isLive        
-					WHERE c.custid = @recommend 
-							AND b.UpdAllMems = 1
-							AND b.isUpdateAutoPT = 1
-							AND b.isAutoMasterPT = 0
-							AND b.isAutoMasterPTOld = 1
-				END
-			END
-			
-			IF EXISTS(SELECT TOP 1 1 FROM @tblPT WHERE isUpdateAutoPT = 0 AND UpdAllMems = 1) 
-			BEGIN
-				--IF @updateallmembers =  1			
-				UPDATE cs
-				SET cs.MasterPT = b.NewMasterPT
-				FROM CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid   
-					INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-											AND cs.bettype=b.bettype        
-											AND cs.isLive = b.isLive  
-				WHERE c.recommend = @recommend 
-					AND c.roleid = 1
-					AND b.isUpdateAutoPT = 0
-					AND b.UpdAllMems = 1
-					AND b.IsAutoMasterPT = 0					
-					AND cs.IsAutoMasterPT = 0
-				
-				--update grouped settings	
-				UPDATE cs
-				SET cs.MasterPT = b.NewMasterPT
-				FROM CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK)
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid   
-					INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
-											AND cs.bettype=b.bettype        
-											AND cs.isLive = b.isLive  
-				WHERE c.custid = @recommend 
-					AND b.isUpdateAutoPT = 0
-					AND b.UpdAllMems = 1
-					AND b.IsAutoMasterPT = 0					
-					AND cs.IsAutoMasterPT = 0
-				
-			END
-	END--end mode = 'Others'
+			--Calculate SuperAuto PT : min(m3-a1,um2)
+			@_M1_auto = CASE WHEN M3 - @_A1 > UM2 THEN UM2 ELSE M3 - @_A1 END,
+			--Calculate Non Auto PT: m1=min(m2,@newmpositiontaking)
+			@_M1_notauto = CASE WHEN M2 > UpdAllMems_Value THEN UpdAllMems_Value ELSE M2 END,
+			--if im2>0 m1 = @_M1_auto
+			@_M1 = CASE WHEN IsAuto_New = 1 THEN @_M1_auto ELSE @_M1 END,
+			--if im2 is updated from 1 to 0 AND updateallmember=1 then s1 = @_M1_notauto
+			@_M1 = CASE WHEN IsAuto_Old = 1 
+								AND IsAuto_New = 0 
+								AND IsUpdAllMems = 1 THEN @_M1_notauto ELSE @_M1 END,
+			--Aplly changes
+			cs.MasterPT = @_M1
+		FROM CustPTGroupSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) 
+			INNER JOIN @_MasterPTTbl mcs
+					ON mcs.SportType = cs.SportType 
+						AND mcs.BetType = cs.BetType 
+						AND mcs.IsLive = cs.IsLive
+			INNER JOIN @_AgentPTTbl acs 
+					ON acs.SportType = cs.SportType 
+						AND acs.BetType = cs.BetType 
+						AND acs.IsLive = cs.IsLive
+			INNER JOIN @_SportBetTypeAutoPTTbl autopt
+					ON autopt.SportType = cs.SportType 
+						AND autopt.BetType = cs.BetType 
+						AND autopt.IsLive = cs.IsLive
+        WHERE cs.AgentID = @_AgentID 
+            AND cs.IsAutoMasterPT = 0
+	END
 END
 
 

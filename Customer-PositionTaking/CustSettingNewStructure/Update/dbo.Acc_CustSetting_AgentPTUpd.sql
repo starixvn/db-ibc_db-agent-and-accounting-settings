@@ -173,17 +173,15 @@ BEGIN
 		SELECT cs.sporttype AS '@SportType'
 			,cs.bettype AS '@BetType'
 			,cs.isLive AS '@IsLive'						
-			,t.isAutoMasterPT AS '@IsAutoMasterPT'
-			,cs.isAutoMasterPT AS '@IsAutoMasterPTOld'
-			,t.AutoMasterPT AS '@AutoMasterPT'			
-			,CASE WHEN t.IsAutoMasterPT = cs.IsAutoMasterPT AND t.AutoMasterPT = cs.AutoMasterPT THEN 0 ELSE 1 END AS '@IsUpdateAutoPT'	
-			,t.UpdAllMems AS '@UpdAllMems'		
-			,t.NewMasterPT AS '@NewMasterPT'
+			,t.isAutoMasterPT AS '@IsAuto_New'
+			,cs.isAutoMasterPT AS '@IsAuto_Old'	
+			,t.UpdAllMems AS '@IsUpdAllMems'		
+			,t.NewMasterPT AS '@UpdAllMems_Value'
 		FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 			INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 									AND cs.bettype = t.BetType 
 									AND cs.isLive = t.IsLive
-		WHERE custid = @custid
+		WHERE custid = @custid AND (t.IsAutoMasterPT <> cs.IsAutoMasterPT OR t.AutoMasterPT <> cs.AutoMasterPT)
 		FOR XML PATH('PT'), ROOT('ROOT')
 	 )
 	 
@@ -267,7 +265,7 @@ BEGIN
 	
 	IF @UpdateMinPT = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_04 
+		EXEC dbo.Acc_DynamicCustSetting_04 
 			@recommend = @custid
 			,@mrecommend = @mrecommend
 			,@srecommend = @srecommend
@@ -281,7 +279,7 @@ BEGIN
 	
 	IF @UpdatePresetPT = 1
 	BEGIN
-		EXEC dbo.Acc_CustSetting3rd_05
+		EXEC dbo.Acc_DynamicCustSetting_05
             @mrecommend = @mrecommend
 			,@recommend = @custid
 			,@roleid = 2
@@ -289,7 +287,7 @@ BEGIN
             
             ,@AutoPT = @AutoPT
             
-       EXEC dbo.Acc_CustSetting3rd_07 
+       EXEC dbo.Acc_DynamicCustSetting_07 
 			@recommend = @custid
 			,@roleid = 2
 			,@mode = 'Others'

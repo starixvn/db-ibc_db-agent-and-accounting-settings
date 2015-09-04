@@ -133,7 +133,7 @@ BEGIN
 	SELECT SportType,
 			BetType,
 			IsLive
-	FROM dbo.f_SportBetTypeXMLParse(@SportBetTypeXML)  
+	FROM dbo.f_DCS_PT_XMLParse(@SportBetTypeXML)  
 	
 	--Get Super PT Setting Values
 	INSERT @_SuperPTTbl(SportType,BetType,IsLive,S4,M4,A4

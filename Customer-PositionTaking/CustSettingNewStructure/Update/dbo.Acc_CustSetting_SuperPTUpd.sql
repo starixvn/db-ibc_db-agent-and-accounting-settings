@@ -236,13 +236,13 @@ BEGIN
     
     IF @UpdatePresetPT = 1
     BEGIN
-		EXEC dbo.Acc_CustSetting3rd_07 
+		EXEC dbo.Acc_DynamicCustSetting_07 
 			@srecommend = @custid
 			,@roleid = 4
 			,@mode = 'Others'
 			,@sports = @sports 
 		
-		EXEC dbo.Acc_CustSetting3rd_01 
+		EXEC dbo.Acc_DynamicCustSetting_01 
 			@srecommend = @custid
 			,@mode = 'Others'
 			,@sports = @sports 
@@ -250,7 +250,7 @@ BEGIN
     
     IF @UpdateMinPT = 1
     BEGIN
-		EXEC dbo.Acc_CustSetting3rd_04 
+		EXEC dbo.Acc_DynamicCustSetting_04 
 			@srecommend = @custid
 			,@roleid = 4
 			,@mode = 'Others'
