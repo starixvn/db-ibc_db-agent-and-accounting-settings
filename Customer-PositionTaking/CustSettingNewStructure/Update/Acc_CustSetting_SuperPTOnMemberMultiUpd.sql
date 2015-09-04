@@ -141,11 +141,6 @@ BEGIN
 	
 --******************************************PREPARE SETTING FOR UPDATE*************************************** 
 	--Parse XML	for PT settings
-	DECLARE @iDoc INT
-
-	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT
-
 	INSERT @NewPTTble
 	SELECT SportType
 			,BetType
@@ -156,17 +151,8 @@ BEGIN
 			,0
 			,0
 			,IsAutoSuperPT
-			,AutoSUperPT
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType		SMALLINT
-			, BetType		SMALLINT
-			, IsLive		BIT
-			, SuperPT		TINYINT
-			, IsAutoSuperPT BIT
-			, AutoSuperPT	TINYINT
-			)
-
-	EXEC sp_xml_removedocument @iDoc
+			,AutoSuperPT
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 			
 	--Get line infor : SMA accounts
 	SELECT TOP 1 @RepresentCustID=CustID

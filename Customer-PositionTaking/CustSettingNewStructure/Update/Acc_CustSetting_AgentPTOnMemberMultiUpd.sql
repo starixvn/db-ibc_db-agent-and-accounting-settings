@@ -137,24 +137,12 @@ BEGIN
 	
 --******************************************PREPARE SETTING FOR UPDATE*************************************** 		
 	--Parse XML	
-	DECLARE @iDoc INT
-
-	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT
-
 	INSERT @NewPTTble
 	SELECT SportType
 			,BetType
 			,IsLive
 			,0,0,AgentPT,0,0,0,0,0,0
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType	SMALLINT
-			, BetType	SMALLINT
-			, IsLive	BIT
-			, AgentPT	TINYINT
-			)
-
-	EXEC sp_xml_removedocument @iDoc
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 			
 	--Get line infor : SMA accounts
 	SELECT TOP 1 @RepresentCustID=CustID

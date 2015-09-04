@@ -95,10 +95,6 @@ BEGIN
 	WHERE custid = @custid 
 	
 	--Parse XML	
-	DECLARE @iDoc INT
-
-	EXEC sp_xml_preparedocument @iDoc OUTPUT, @PT
-
 	INSERT @tblPT(
 					SportType		
 					, BetType		
@@ -121,16 +117,7 @@ BEGIN
 			,AutoSuperPT
 			,0
 			,0
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType	SMALLINT
-			, BetType	SMALLINT
-			, IsLive	BIT
-			, SuperPT	TINYINT
-			, AutoSuperPT TINYINT
-			, IsAutoSuperPT BIT
-			)
-
-	EXEC sp_xml_removedocument @iDoc
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 		
 	SELECT @SettingMode = IsGrouped
 	FROM dbo.CustSettingMode3rd
