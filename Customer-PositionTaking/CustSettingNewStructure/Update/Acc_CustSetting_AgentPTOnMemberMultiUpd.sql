@@ -99,7 +99,7 @@ BEGIN
 					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
 				)
 				
-	--Super PT Setting Values
+	--Master PT Setting Values
 	DECLARE @_MasterPTTbl TABLE(
 					SportType		SMALLINT  ,
 					BetType			SMALLINT  ,
@@ -116,7 +116,7 @@ BEGIN
 					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
 				)
 				
-	--Super PT Setting Values
+	--Agent PT Setting Values
 	DECLARE @_AgentPTTbl TABLE(
 					SportType		SMALLINT  ,
 					BetType			SMALLINT  ,
@@ -273,10 +273,10 @@ BEGIN
 	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @RepresentCustID
 						, @RoleID		= 2
-						, @_AgentID		= @_AgentID
-						, @_MasterID		= @_MasterID
-						, @_SuperID		= @_SuperID
-						, @PT = @PT
+						, @AgentID		= @_AgentID
+						, @MasterID		= @_MasterID
+						, @SuperID		= @_SuperID
+						, @PT			= @PT
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @MsgType		= @MsgType	OUTPUT
 						, @ErrMsg		= @ErrMsg	OUTPUT
@@ -312,16 +312,6 @@ BEGIN
 			,@a1 = CASE WHEN @im1 = 0 AND @im2 = 0 AND @m1 + @a1 > @m3 THEN @m3 - @a1 ELSE @a1 END
 			--Adjust PT: a1=max(a1,0)
 			,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
-			--Adjust PT: m1= (im2=0 ? m1 : min(um2,m3-a1))
-			,@m_new = CASE WHEN @um2 > @m3 - @a1 THEN @m3 - @a1 ELSE @um2 END
-			,@m1 = CASE WHEN @im2 = 0 THEN @m_new ELSE @m1 END
-			--Adjust PT: s1=min((is3=is1=0 ? s1 : min(is1=1 ? us1 : us3,s4-m1-a1)))
-			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE @us3 END
-			,@s_new = CASE WHEN @temp1 > @s4 - @m1 - @a1 THEN @temp1 ELSE @temp1 END
-			,@s1 = CASE WHEN @i1 = 0 AND mcs.IS3 = 0 THEN @s1 ELSE @s_new END
-			--Adjust PT : Update s1 = min (s1, (is3=1||is1=1) ? s4 : s4-m1-a1)
-			,@temp1 = CASE WHEN @i1 = 1 OR mcs.IS3 = 1 THEN @s4 ELSE @s4 - @m1 - @a1 END
-			,@s1 = CASE WHEN @s1 > @temp1 THEN @temp1 ELSE @s1 END
 			-- rule #1: a1 = max(a1,n2); m1 = (a1<n2) ? m3-n2 : m1 -- agent min
 			,@a_new = CASE WHEN @a1 < @n2 THEN @n2 ELSE @a1 END
 			,@m_new = CASE WHEN @a1 < @n2 AND @m1 +@n2 > mcs.m3 THEN mcs.m3-@n2 ELSE @m1 END
