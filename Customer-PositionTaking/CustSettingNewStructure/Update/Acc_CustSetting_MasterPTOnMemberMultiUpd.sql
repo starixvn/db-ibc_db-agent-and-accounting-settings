@@ -276,9 +276,9 @@ BEGIN
 	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 						@CustID = @RepresentCustID
 						, @RoleID		= 3
-						, @_AgentID		= @_AgentID
-						, @_MasterID	= @_MasterID
-						, @_SuperID		= @_SuperID
+						, @AgentID		= @_AgentID
+						, @MasterID	= @_MasterID
+						, @SuperID		= @_SuperID
 						, @PT			= @PT
 						, @ErrCode		= @ErrCode	OUTPUT
 						, @MsgType		= @MsgType  OUTPUT
