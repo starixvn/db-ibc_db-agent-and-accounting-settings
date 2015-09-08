@@ -28,12 +28,15 @@ AS
 */ 
 BEGIN
     SET NOCOUNT ON
+    
 --******************************************CHECK EXISTING TABLES*****************************************************    
     IF dbo.f_CheckRepTable('custinfo') = 0 RETURN  
     IF dbo.f_CheckRepTable('CustPTSetting3rd_Agent') = 0 RETURN  
     IF dbo.f_CheckRepTable('CustPTSetting3rd_Member') = 0 RETURN  
-    IF dbo.f_CheckRepTable('CustPTGroupSetting3rd_Member') = 0 RETURN   				            
-
+    IF dbo.f_CheckRepTable('CustPTGroupSetting3rd_Member') = 0 RETURN   
+    
+    --Check Invalid RoleID				            
+	IF @RoleID NOT IN (2,3) RETURN
 --******************************************VARIABLE DECLARATION****************************************************** 
 	--Line info 
 	DECLARE @_SuperID INT, @_MasterID INT, @_AgentID INT, @_RoleID  INT

@@ -19,8 +19,8 @@
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
-					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0" UpdAllMems="0" NewMasterPT="0"/>
-					<PT SportType="1" BetType="1" IsLive="1" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" AgentMinPT="0" UpdAllMems="0" NewMasterPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" MinPT="0" IsUpdAllMems="0" UpdAllMems_Value="0"/>
+					<PT SportType="1" BetType="1" IsLive="1" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" MinPT="0" IsUpdAllMems="0" UpdAllMems_Value="0"/>
 				</ROOT>
 	*/
 BEGIN
@@ -31,8 +31,7 @@ BEGIN
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
-			,@AutoPT		VARCHAR(MAX)
-			,@sports		VARCHAR(500)	
+			,@AutoPT		VARCHAR(MAX)	
 			,@UpdateMinPT	BIT
 			,@UpdatePresetPT BIT		
 			,@xml			XML
@@ -99,11 +98,6 @@ BEGIN
 				)	
 				
 	-- For read xml
-	DECLARE @DocHandler INT    
-	
-	-- For read xml					
-	EXEC sp_xml_preparedocument @DocHandler OUTPUT, @PT
-	
 	INSERT INTO @tblPT(
 				SportType,
 				BetType,
@@ -117,31 +111,17 @@ BEGIN
 				NewMasterPT
 			)
 	SELECT
-		Data.SportType,
-		Data.BetType,
-		Data.IsLive,
-		Data.MasterPT,
-		Data.isAutoMasterPT,
-		Data.AutoMasterPT,	
-		Data.AgentPT,			
-		Data.AgentMinPT,
-		Data.UpdAllMems,
-		Data.NewMasterPT
-	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
-	WITH (
-		SportType		SMALLINT,
-		BetType			SMALLINT,
-		IsLive			BIT,
-		MasterPT		SMALLINT,
-		IsAutoMasterPT	BIT,
-		AutoMasterPT	SMALLINT,
-		AgentPT			SMALLINT,			
-		AgentMinPT		SMALLINT,
-		UpdAllMems		BIT,
-		NewMasterPT		SMALLINT		
-	) AS Data
-	
-	EXEC sp_xml_removedocument @DocHandler
+		SportType,
+		BetType,
+		IsLive,
+		MasterPT,
+		IsAutoMasterPT,
+		AutoMasterPT,	
+		AgentPT,			
+		MinPT,
+		IsUpdAllMems,
+		UpdAllMems_Value
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	-- end read xml	
 	
 	 --log old data
@@ -185,11 +165,7 @@ BEGIN
 		FOR XML PATH('PT'), ROOT('ROOT')
 	 )
 	 
-	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)    
-    	    
-    SELECT @sports = ''
-    SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
-    FROM @tblPT 			
+	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)     			
     
      --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -266,12 +242,11 @@ BEGIN
 	IF @UpdateMinPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_04 
-			@recommend = @custid
-			,@mrecommend = @mrecommend
-			,@srecommend = @srecommend
-			,@mode = 'Others'
-			,@roleid = 2
-			,@sports = @sports
+			@AgentID = @custid
+			,@MasterID = @mrecommend
+			,@SuperID = @srecommend
+			,@RoleID = 2
+			,@SportBettypeXML = @PT
 
 		-- The minimum position taking value of agent was modified by agent's upline
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID 
@@ -280,18 +255,15 @@ BEGIN
 	IF @UpdatePresetPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_05
-            @mrecommend = @mrecommend
-			,@recommend = @custid
-			,@roleid = 2
-			,@mode = 'Others'
-            
+            @MasterID = @mrecommend
+			,@AgentID = @custid
+			,@RoleID = 2
             ,@AutoPT = @AutoPT
             
        EXEC dbo.Acc_DynamicCustSetting_07 
-			@recommend = @custid
-			,@roleid = 2
-			,@mode = 'Others'
-			,@sports = @sports
+			@SuperID = @custid
+			,@RoleID = 2
+			,@SportBettypeXML = @PT
 	END	
 	
 	 -- Write log after update

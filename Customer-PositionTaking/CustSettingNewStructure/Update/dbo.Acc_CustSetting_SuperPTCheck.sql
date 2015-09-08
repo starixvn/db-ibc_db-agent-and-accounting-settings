@@ -45,11 +45,6 @@ BEGIN
 							)
 				
 	-- For read xml
-	DECLARE @DocHandler INT    
-	
-	-- For read xml					
-	EXEC sp_xml_preparedocument @DocHandler OUTPUT, @PT
-	
 	INSERT INTO @tblPT(
 				SportType,
 				BetType,
@@ -60,25 +55,15 @@ BEGIN
 				SuperMinPT
 			)
 	SELECT
-		Data.SportType,
-		Data.BetType,
-		Data.IsLive,
-		Data.SuperPT,
-		Data.MasterPT,
-		Data.AgentPT,
-		Data.SuperMinPT
-	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
-	WITH (
-		SportType	SMALLINT,
-		BetType		SMALLINT,
-		IsLive		BIT,
-		SuperPT		SMALLINT,
-		MasterPT	SMALLINT,
-		AgentPT		SMALLINT,
-		SuperMinPT	SMALLINT		
-	) AS Data
+		SportType,
+		BetType,
+		IsLive,
+		SuperPT,
+		MasterPT,
+		AgentPT,
+		SuperMinPT
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	
-	EXEC sp_xml_removedocument @DocHandler
 	-- end read xml				
 	
 	SET @ErrType =
