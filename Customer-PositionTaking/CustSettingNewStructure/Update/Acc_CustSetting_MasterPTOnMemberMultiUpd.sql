@@ -230,7 +230,7 @@ BEGIN
 			, cs.IsAutoSuperPT 
 			, cs.AutoSuperPT 
 	FROM @NewPTTble main
-		JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
+		INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
 			ON cs.SportType=main.SportType
 					AND cs.BetType=main.BetType
 					AND cs.IsLive=main.IsLive
@@ -242,10 +242,10 @@ BEGIN
 	SELECT cs.SportType,cs.BetType,cs.IsLive,cs.SuperPT,cs.MasterPT,cs.AgentPT
 							,cs.IsAutoMasterPT,cs.AutoMasterPT,cs.IsAutoSuperPT,cs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = cs.SportType
-			AND mt.BetType = cs.BetType
-			AND mt.IsLive = cs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = cs.SportType
+				AND mt.BetType = cs.BetType
+				AND mt.IsLive = cs.IsLive
 	WHERE cs.CustID = @_SuperID
 	
 	--Get master PT Setting Values
@@ -254,10 +254,10 @@ BEGIN
 	SELECT mcs.SportType,mcs.BetType,mcs.IsLive,mcs.SuperPT,mcs.MasterPT,mcs.AgentPT
 				,mcs.IsAutoMasterPT,mcs.AutoMasterPT,mcs.IsAutoSuperPT,mcs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = mcs.SportType
-			AND mt.BetType = mcs.BetType
-			AND mt.IsLive = mcs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = mcs.SportType
+				AND mt.BetType = mcs.BetType
+				AND mt.IsLive = mcs.IsLive
 	WHERE mcs.CustID = @_MasterID
 	
 	--Get Agent PT Setting Values
@@ -266,10 +266,10 @@ BEGIN
 	SELECT acs.SportType,acs.BetType,acs.IsLive,acs.SuperPT,acs.MasterPT,acs.AgentPT
 				,acs.IsAutoMasterPT,acs.AutoMasterPT,acs.IsAutoSuperPT,acs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = acs.SportType
-			AND mt.BetType = acs.BetType
-			AND mt.IsLive = acs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = acs.SportType
+				AND mt.BetType = acs.BetType
+				AND mt.IsLive = acs.IsLive
 	WHERE acs.CustID = @_AgentID			
 --******************************************VALIDATE PT VALUES*************************************** 			
 	--Check error		
@@ -417,10 +417,10 @@ BEGIN
 	--Get total members that are different from group
 	IF NOT EXISTS (SELECT TOP 1 1
 	FROM @NewPTTble npt
-	JOIN @OldPTTble opt
-	ON npt.SportType=opt.SportType
-	AND npt.BetType=opt.BetType
-	AND npt.IsLive=opt.IsLive
+		INNER JOIN @OldPTTble opt
+			ON npt.SportType=opt.SportType
+			AND npt.BetType=opt.BetType
+			AND npt.IsLive=opt.IsLive
 	WHERE (
 		npt.SuperPT <> opt.SuperPT
 		OR npt.MasterPT <> opt.MasterPT
@@ -462,8 +462,8 @@ BEGIN
 		main.IsAutoMasterPT=npt.IsAutoMasterPT,
 		main.AutoMasterPT=npt.AutoMasterPT
 	FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
-		JOIN @tblCust cust ON main.CustID=cust.CustID
-		JOIN @NewPTTble npt ON  npt.SportType=main.SportType
+		INNER JOIN @tblCust cust ON main.CustID=cust.CustID
+		INNER JOIN @NewPTTble npt ON  npt.SportType=main.SportType
 					AND npt.BetType=main.BetType
 					AND npt.IsLive=main.IsLive
 	WHERE 
@@ -478,8 +478,8 @@ BEGIN
 	UPDATE main
 	SET main.IsGrouped=0
 	FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
-	JOIN @tblCust cust
-	ON cust.CustID=main.CustID
+		INNER JOIN @tblCust cust
+			ON cust.CustID=main.CustID
 	
 --***************************************WRITE LOGS*******************************************		
 	--**START LOGGING**--

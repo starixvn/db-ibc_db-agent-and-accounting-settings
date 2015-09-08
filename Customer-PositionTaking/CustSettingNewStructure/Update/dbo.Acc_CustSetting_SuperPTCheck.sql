@@ -17,8 +17,8 @@ AS
 		
 		Parameter's Explanations:
 			- @PT = <ROOT>
-					<PT SportType="1" BetType="1" IsLive="0" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
-					<PT SportType="1" BetType="1" IsLive="1" SuperPT="90" MasterPT ="90" AgentPT = "90" SuperMinPT="0"/>
+						<PT SportType="1" BetType="1" IsLive="0" SuperPT="90" MasterPT ="90" AgentPT = "90" MinPT="0"/>
+						<PT SportType="1" BetType="1" IsLive="1" SuperPT="90" MasterPT ="90" AgentPT = "90" MinPT="0"/>
 				</ROOT>
 			- @MsgType : xml format of error message return						
 			
@@ -61,7 +61,7 @@ BEGIN
 		SuperPT,
 		MasterPT,
 		AgentPT,
-		SuperMinPT
+		MinPT
 	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	
 	-- end read xml				
