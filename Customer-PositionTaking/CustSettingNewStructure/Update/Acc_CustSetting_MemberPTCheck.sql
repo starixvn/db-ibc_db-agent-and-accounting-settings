@@ -61,13 +61,8 @@ BEGIN
 		, AutoSuperPT		TINYINT)
 		
 	DECLARE @IsGrouped BIT = 0
-	
-	DECLARE @iDoc INT
 
 --******************************************PARSE INPUT SETTINGS*************************************** 	
-	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @PT
-
 	INSERT @NewPTTble
 	SELECT SportType 
 		, BetType 
@@ -81,20 +76,8 @@ BEGIN
 		, AutoMasterPT 
 		, IsAutoSuperPT 
 		, AutoSuperPT 
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType			SMALLINT
-			, BetType			SMALLINT
-			, IsLive			BIT
-			, SuperPT			TINYINT
-			, MasterPT			TINYINT
-			, AgentPT			TINYINT
-			, IsAutoMasterPT	TINYINT
-			, AutoMasterPT		TINYINT
-			, IsAutoSuperPT		BIT
-			, AutoSuperPT		TINYINT
-			)
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 
-	EXEC sp_xml_removedocument @iDoc
 
 --******************************************START CHECKING SETTINGS*************************************** 	
 	--Get member's PT Setting Mode
