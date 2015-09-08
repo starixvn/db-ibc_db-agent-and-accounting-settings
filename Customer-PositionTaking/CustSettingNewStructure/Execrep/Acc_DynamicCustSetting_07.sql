@@ -40,11 +40,10 @@ BEGIN
 		UNIQUE CLUSTERED (custid, sporttype, bettype, islive)
 	)
 
-	--DECLARE @a2 smallmoney, @m2 smallmoney, @s2 smallmoney, @n2 smallmoney, @l2 smallmoney
-	--DECLARE @im2 bit, @um2 smallmoney
-	--DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
-	--DECLARE @temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
-	--DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
+	DECLARE @n2 smallmoney, @l2 smallmoney, @im2 bit, @um2 smallmoney
+	DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
+	DECLARE @temp0 smallmoney,@temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
+	DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
 	---------------------------------
 
 	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @_AgentID = @AgentID
@@ -61,51 +60,215 @@ BEGIN
 
 	IF @RoleID = 4
 	BEGIN		
-		-- rule #1: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
-		/*
-			@x1 = (i1=1) ? u1 : u3
-			s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
-		*/
+		INSERT INTO @temp_mag (custid, bettype, sporttype, islive, m3, u3, i3, n3, l3)
+		SELECT mcs.custid, mcs.bettype, mcs.sporttype, mcs.IsLive, mcs.MasterPT, mcs.AutoSuperPT, mcs.IsAutoSuperPT, mcs.MinPT, mcs.MaxPT
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON c.custid = mcs.custid
+			INNER JOIN @tmpSportBettype tmp ON tmp.sporttype = mcs.SportType AND tmp.bettype = mcs.BetType AND tmp.islive = mcs.IsLive
+		WHERE c.srecommend = @_SuperID AND c.roleid = 3
+
+		--*** START: update PT on member ***-----------------------	
+		UPDATE cs
+		SET	@a1 = cs.AgentPT
+			,@m1 = cs.MasterPT
+			,@s1 = cs.SuperPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
+			-- rule #1: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
+			/*
+				@x1 = (i1=1) ? u1 : u3
+				s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
+			*/	
+			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.u3 END			
+			,@s1 = CASE 
+						WHEN @i1 = 1 OR m.i3 = 1 
+						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
+						ELSE @s1
+					END	
+
+			,cs.AgentPT = @a1
+			,cs.MasterPT = @m1
+			,cs.SuperPT = @s1								       
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.custid
+			INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+			INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+			INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.srecommend = @_SuperID AND c.roleid = 1 and c.enabled = 1
+		--*** END: update PT on member ***-------------------------
+
+		--*** START: update PT group on member ***-----------------------	
+		UPDATE cs
+		SET	@a1 = cs.AgentPT
+			,@m1 = cs.MasterPT
+			,@s1 = cs.SuperPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
+			-- rule #1: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
+			/*
+				@x1 = (i1=1) ? u1 : u3
+				s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
+			*/	
+			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.u3 END			
+			,@s1 = CASE 
+						WHEN @i1 = 1 OR m.i3 = 1 
+						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
+						ELSE @s1
+					END	
+
+			,cs.AgentPT = @a1
+			,cs.MasterPT = @m1
+			,cs.SuperPT = @s1								       
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.AgentID
+			INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+			INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+			INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.srecommend = @_SuperID AND c.roleid = 2 and c.enabled = 1
+		--*** END: update PT group on member ***-------------------------
 	END	
 	
 	IF @RoleID In (2,3)
-	BEGIN		
+	BEGIN
+		INSERT INTO @temp_mag (custid, bettype, sporttype, islive, m3, u3, i3, n3, l3)
+		SELECT mcs.custid, mcs.bettype, mcs.sporttype, mcs.IsLive, mcs.MasterPT, mcs.AutoSuperPT, mcs.IsAutoSuperPT, mcs.MinPT, mcs.MaxPT
+		FROM dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK) 
+			INNER JOIN @tmpSportBettype tmp ON tmp.sporttype = mcs.SportType AND tmp.bettype = mcs.BetType AND tmp.islive = mcs.IsLive
+		WHERE mcs.custid = @MasterID
+
+		declare @agList AS TABLE (custid INT)
+
 		IF @RoleID = 2
 		BEGIN
-			-- rule #1: a1 = max(a1,n2) -- agent min
-			-- rule #2: a1 = min(a1,l2) -- agent max 
-			-- rule #3: m1 = min(m3-a1,m1)
+			INSERT INTO @agList (custid)
+			SELECT @AgentID
+
+			--*** START: update PT on member ***-----------------------	
+			UPDATE cs
+			SET @a1 = cs.AgentPT
+				,@m1 = cs.MasterPT
+				,@n2 = acs.MinPT
+				,@l2 = acs.MaxPT
+				-- rule #1: a1 = max(a1,n2) -- agent min
+				,@a1 = CASE WHEN @a1 < @n2 THEN @n2 ELSE @a1 END
+				-- rule #2: a1 = min(a1,l2) -- agent max 
+				,@a1 = CASE WHEN @a1 > @l2 THEN @l2 ELSE @a1 END	
+				-- rule #3: m1 = min(m3-a1,m1)
+				,@m1 = CASE WHEN @a1+@m1 > m.m3 THEN m.m3-@a1 ELSE @m1 END	
+				
+				--------------------------------	
+				-- done apply all rule, then update to destination table
+				,cs.AgentPT = @a1
+				,cs.MasterPT = @m1
+			FROM dbo.custinfo c WITH(NOLOCK)
+				INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.AgentID
+				INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+				INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+				INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive		
+			WHERE c.recommend IN (select custid FROM @agList) AND c.roleid = 2 and c.enabled = 1	
+			--*** END: update PT on member ***-------------------------	
+		END
+		ELSE IF @roleid = 3
+		BEGIN
+			INSERT INTO @agList (custid)
+			SELECT ag.custid
+			FROM dbo.custinfo ag WITH(NOLOCK)
+			WHERE mrecommend = @MasterID AND roleid = 2
 		END
 
-		-- rule #1: m1 = min(m3-a1,u2) if master auto -- Recalculate AUTO MPT 
-		-- rule #2: m1 = max(m1,n3-a1) -- master min   
-		-- rule #3: check master max 
-		/*	@x1 = min(m3,l3) -- mpt max
-			@x2 = max(@x1-a1,0) --mpt
-			m1 = (a1+m1>l3) ? @x2 : m1
-			@x3 = (a1+@x2 > @x1) ? @x1-@x2 : a1
-			a1 = (a1+m1>l3) ? max(@x3, n2) : a1
-		*/ 
-		-- rule #4: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
-		/*
-			@x1 = (i1=1) ? u1 : u3
-			s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
-		*/
-		-- rule #5: s1 = max(n4-m1-a1,s1) --super min
-		-- rule #6: check super max
-		/* -- explanation
-			@x0 = min(s4,l4) -- spt max
-			@x1 = (@x0-m1-a1 < 0) ? 0 : @x0-m1-a1
-			s1 = (s1+a1+m1 > @x0) ? @x1 : s1
-			@x1 = (@x1+m1+a1 > @x0) ? @x0-@x1 : m1+a1
-			@x2 = (m3 > l3) ? l3 : m3
-			@x2 = (@x1 > @x2) ? @x2 : @x1
-			@x2 = (@x2 < n3) ? n3 : @x2
-			@x3 = (@x2-a1 < 0) ? 0 : @x2-a1
-			m1 = (s1+a1+m1 > @x0) ? @x3 : m1
-			@x3 = (a1+@x3>@x2) ? @x2-@x3 : a1
-			@x3 =  (@x3 < n2) ? n2 : @x3
-			a1 = (s1+a1+m1 > @x0) ? @x3 : a1				
-		*/ 
+		--*** START: update PT on member ***-----------------------	
+		UPDATE cs
+		SET	@a1 = cs.AgentPT
+			,@m1 = cs.MasterPT
+			,@s1 = cs.SuperPT
+			,@um1 = cs.IsAutoMasterPT
+			,@um2 = acs.AutoMasterPT
+			,@im1 = cs.IsAutoMasterPT
+			,@im2 = acs.IsAutoMasterPT
+			,@n2 = acs.MinPT
+			-- rule #1: m1 = min(m3-a1,u2) if master auto -- Recalculate AUTO MPT 
+			,@temp1 = CASE WHEN @im1 = 1 THEN @um1 ELSE @um2 END
+			,@m1 = CASE 
+						WHEN @im2 = 1 OR @im1 = 1 
+						THEN CASE WHEN m.m3-@a1 > @temp1 THEN @temp1 ELSE m.m3-@a1 END 
+						ELSE @m1 
+					END
+
+			-- rule #2: m1 = max(m1,n3-a1) -- master min   
+			,@m1 = CASE WHEN @a1+@m1 < m.n3 THEN m.n3-@a1 ELSE @m1 END	
+			-- rule #3: check master max 
+			/*	@x1 = min(m3,l3) -- mpt max
+				@x2 = max(@x1-a1,0) --mpt
+				m1 = (a1+m1>l3) ? @x2 : m1
+				@x3 = (a1+@x2 > @x1) ? @x1-@x2 : a1
+				a1 = (a1+m1>l3) ? max(@x3, n2) : a1
+			*/ 
+			,@temp1 = CASE WHEN m.m3 > m.l3 THEN m.l3 ELSE m.m3 END
+			,@temp2 = CASE WHEN @temp1-@a1 < 0 THEN 0 ELSE @temp1-@a1 END
+			,@m_new = CASE WHEN @a1+@m1 > m.l3 THEN @temp2 ELSE @m1 END
+			,@temp3 = CASE WHEN @a1+@temp2 > @temp1 THEN @temp1-@temp2 ELSE @a1 END
+			,@a_new = CASE 
+						WHEN @a1+@m1 > m.l3 
+						THEN CASE WHEN @temp3 < @n2 THEN @n2 ELSE @temp3 END
+						ELSE @a1 
+					END	
+			,@m1 = @m_new
+			,@a1 = @a_new
+			-- rule #4: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
+			/*
+				@x1 = (i1=1) ? u1 : u3
+				s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
+			*/
+			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.u3 END			
+			,@s1 = CASE 
+						WHEN @i1 = 1 OR m.i3 = 1 
+						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
+						ELSE @s1
+					END
+			-- rule #5: s1 = max(n4-m1-a1,s1) --super min
+			,@s1 = CASE WHEN @a1+@m1+@s1 < s.n4 THEN s.n4-@m1-@a1 ELSE @s1 END
+			-- rule #6: check super max
+			/* -- explanation
+				@x0 = min(s4,l4) -- spt max
+				@x1 = (@x0-m1-a1 < 0) ? 0 : @x0-m1-a1
+				s1 = (s1+a1+m1 > @x0) ? @x1 : s1
+				@x1 = (@x1+m1+a1 > @x0) ? @x0-@x1 : m1+a1
+				@x2 = (m3 > l3) ? l3 : m3
+				@x2 = (@x1 > @x2) ? @x2 : @x1
+				@x2 = (@x2 < n3) ? n3 : @x2
+				@x3 = (@x2-a1 < 0) ? 0 : @x2-a1
+				m1 = (s1+a1+m1 > @x0) ? @x3 : m1
+				@x3 = (a1+@x3>@x2) ? @x2-@x3 : a1
+				@x3 =  (@x3 < n2) ? n2 : @x3
+				a1 = (s1+a1+m1 > @x0) ? @x3 : a1				
+			*/ 
+			,@temp0 = CASE WHEN s.s4 < s.l4 THEN s.s4 ELSE s.l4 END
+			,@temp1 = CASE WHEN @temp0-@m1-@a1 < 0 THEN 0 ELSE @temp0-@m1-@a1 END
+			,@s_new = CASE WHEN @s1+@a1+@m1 > @temp0 THEN @temp1 ELSE @s1 END
+			,@temp1 = CASE WHEN @temp1+@m1+@a1 > @temp0 THEN @temp0-@temp1 ELSE @m1+@a1 END
+			,@temp2 = CASE WHEN m.m3 > m.l3 THEN m.l3 ELSE m.m3 END
+			,@temp2 = CASE WHEN @temp1 > @temp2 THEN @temp2 ELSE @temp1 END
+			,@temp2 = CASE WHEN @temp2 < m.n3 THEN m.n3 ELSE @temp2 END
+			,@temp3 = CASE WHEN @temp2-@a1 < 0 THEN 0 ELSE @temp2-@a1 END
+			,@m_new = CASE WHEN @s1+@a1+@m1 > @temp0 THEN @temp3 ELSE @m1 END
+			,@temp3 = CASE WHEN @a1+@temp3 > @temp2 THEN @temp2-@temp3 ELSE @a1 END
+			,@temp3 = CASE WHEN @temp3 < @n2 THEN @n2 ELSE @temp3 END
+			,@a_new = CASE WHEN @s1+@a1+@m1 > s.s4 THEN @temp3 ELSE @a1 END
+			,@s1 = @s_new
+			,@m1 = @m_new
+			,@a1 = @a_new     
+
+			--------------------------------	
+			-- done apply all rule, then update to destination table
+			,cs.AgentPT = @a1
+			,cs.MasterPT = @m1
+			,cs.SuperPT = @s1
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.AgentID
+			INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+			INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+			INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive		
+		WHERE c.recommend IN (select custid FROM @agList) AND c.roleid = 2 and c.enabled = 1			
+		--*** END: update PT on member ***-------------------------	
 	END
 END
