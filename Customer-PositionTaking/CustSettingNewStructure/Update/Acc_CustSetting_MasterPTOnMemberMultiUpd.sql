@@ -45,9 +45,8 @@ BEGIN
 	    , @Old_PT_XML	VARCHAR(MAX)
 		
 	--Temp variables for PT adjustment	
-	DECLARE @ErrType		NVARCHAR(4000)
-		, @_AgentID			INT
-		, @_MasterID			INT
+	DECLARE @_AgentID		INT
+		, @_MasterID		INT
 		, @_SuperID			INT
 		, @RepresentCustID	INT
 		, @RoleID			INT
@@ -57,28 +56,28 @@ BEGIN
 	
 	--Temp table variables being used for calculation
 	DECLARE @NewPTTble TABLE (
-		  SportType			SMALLINT
-		, BetType			SMALLINT
-		, IsLive			BIT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, AgentPT			TINYINT
-		, IsAutoMasterPT	TINYINT
-		, AutoMasterPT		TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, SuperPT			TINYINT
+			, MasterPT			TINYINT
+			, AgentPT			TINYINT
+			, IsAutoMasterPT	TINYINT
+			, AutoMasterPT		TINYINT
+			, IsAutoSuperPT		BIT
+			, AutoSuperPT		TINYINT
 		)
 	DECLARE @OldPTTble TABLE (
 		   SportType			SMALLINT
-		, BetType			SMALLINT
-		, IsLive			BIT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, AgentPT			TINYINT
-		, IsAutoMasterPT	TINYINT
-		, AutoMasterPT		TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
+			, BetType			SMALLINT
+			, IsLive			BIT
+			, SuperPT			TINYINT
+			, MasterPT			TINYINT
+			, AgentPT			TINYINT
+			, IsAutoMasterPT	TINYINT
+			, AutoMasterPT		TINYINT
+			, IsAutoSuperPT		BIT
+			, AutoSuperPT		TINYINT
 		)
 		
 	--Super PT Setting Values		
@@ -287,12 +286,12 @@ BEGIN
 		RETURN		
 
 --******************************************ADJUST PT SETTINGS*************************************** 	
-	DECLARE @m3 TINYINT,@us3 TINYINT, @s4 TINYINT
-	DECLARE @n2 smallmoney, @l2 smallmoney
-	DECLARE @im2 bit, @um2 smallmoney
-	DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
-	DECLARE @temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
-	DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
+	DECLARE @m3 SMALLMONEY,@us3 SMALLMONEY, @s4 SMALLMONEY
+	DECLARE @n2 SMALLMONEY, @l2 SMALLMONEY
+	DECLARE @im2 BIT, @um2 SMALLMONEY
+	DECLARE @a1 SMALLMONEY, @m1 SMALLMONEY, @s1 SMALLMONEY, @i1 BIT, @u1 SMALLMONEY, @im1 BIT, @um1 SMALLMONEY
+	DECLARE @temp1 SMALLMONEY, @temp2 SMALLMONEY, @temp3 SMALLMONEY
+	DECLARE @s_new SMALLMONEY, @m_new SMALLMONEY, @a_new SMALLMONEY
 
 	UPDATE cs
 		SET @a1 = cs.AgentPT
@@ -309,7 +308,7 @@ BEGIN
 			,@m3 = mcs.M3
 			,@s4 = scs.S4
 			--Adjust: m1=m1+a1>min(m3,m4)?min(m3,m4)-a1:m1
-			,@temp1 = CASE WHEN M3 > M4 THEN M3 ELSE M4 END
+			,@temp1 = CASE WHEN M3 < M4 THEN M3 ELSE M4 END
 			,@m1 = CASE WHEN @m1 > @temp1 - @a1 THEN @temp1 - @a1 ELSE @m1 END
 			--Adjust: m1=m1+a1<n3?n3-a1:m1
 			,@m1 = CASE WHEN N3 - @a1 > @m1 THEN N3 - @a1 ELSE @m1 END

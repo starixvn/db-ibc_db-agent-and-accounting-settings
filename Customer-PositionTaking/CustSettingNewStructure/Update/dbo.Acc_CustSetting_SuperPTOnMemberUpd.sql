@@ -1,8 +1,6 @@
 ﻿ ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTOnMemberUpd]
 	@custid		INT,
-	
 	@PT			VARCHAR(MAX),
-	
 	@UserID		INT = 0,    
 	@SubAccID	INT = 0, --Sub-AccountID  
     @IP			VARCHAR(15)='',
@@ -26,38 +24,16 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON 
+--******************************************VARIABLE DECLARATION*************************************** 	
+	DECLARE @StartRun		DATETIME
+			, @EndRun		DATETIME
+			, @Duration		INT 
+			, @_RoleID		TINYINT
+			, @logSPData		VARCHAR(5000)
+			, @logSPDataOld	VARCHAR(5000)
+			, @xml			XML
+			, @SettingMode	BIT = 0
 	
-	DECLARE @startRun		DATETIME  
-			,@endRun		DATETIME  	
-			,@duration		INT  
-			,@roleid		TINYINT
-			,@logSPData		VARCHAR(5000)
-			,@logSPDataOld	VARCHAR(5000)
-			,@PT_Adjusted	VARCHAR(5000)
-			,@PT_Corrected	VARCHAR(5000)
-			,@xml			XML
-			,@SettingMode	BIT = 0
-			
-	SET @startRun = GETDATE()
-	
-	EXEC dbo.Age_CustomerSelCheckBelongingByCustID   
-		 @SessionCustID = @Userid,   
-		 @Custid = @custid,  		 
-		 @roleid = @roleid OUTPUT  
-	
-	IF (@roleid <> 1) RETURN-- return if not member    
-	
-	--Check disable user  
-	EXEC dbo.Acc_CustomerSelCheckEnable 
-			@custid = @custid
-			,@ErrCode=@ErrCode OUTPUT
-			,@ErrMsg=@ErrMsg OUTPUT  
-			
-	IF @ErrCode > 0	
-	BEGIN
-		SELECT @MsgType = 101
-		RETURN
-	END 
 	
 	DECLARE @tblPT TABLE (
 		SportType			SMALLINT
@@ -85,12 +61,84 @@ BEGIN
 		, AutoMasterPT		TINYINT
 		)	
 		
-	DECLARE @mrecommend INT
-			,@recommend INT
-			,@srecommend INT
-			,@username VARCHAR(30)
-							
-	SELECT @srecommend = srecommend, @mrecommend = mrecommend, @recommend = recommend, @username = username   
+	DECLARE @_MasterID INT
+			,@_AgentID INT
+			,@_SuperID INT
+	
+	--Super PT Setting Values		
+	DECLARE @_SuperPTTbl TABLE(
+					SportType		SMALLINT  ,
+					BetType			SMALLINT  ,
+					IsLive			BIT  ,
+					S4				TINYINT  ,
+					M4				TINYINT  ,
+					A4				TINYINT  ,
+					IM4				BIT  ,
+					UM4				TINYINT  ,
+					IS4				BIT  ,
+					US4				TINYINT  ,
+					N4				TINYINT  ,
+					L4				TINYINT  
+					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
+				)
+				
+	--Master PT Setting Values
+	DECLARE @_MasterPTTbl TABLE(
+					SportType		SMALLINT  ,
+					BetType			SMALLINT  ,
+					IsLive			BIT  ,
+					S3				TINYINT  ,
+					M3				TINYINT  ,
+					A3				TINYINT  ,
+					IM3				BIT  ,
+					UM3				TINYINT  ,
+					IS3				BIT  ,
+					US3				TINYINT  ,
+					N3				TINYINT  ,
+					L3				TINYINT  
+					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
+				)
+				
+	--Agent PT Setting Values
+	DECLARE @_AgentPTTbl TABLE(
+					SportType		SMALLINT  ,
+					BetType			SMALLINT  ,
+					IsLive			BIT  ,
+					S2				TINYINT  ,
+					M2				TINYINT  ,
+					A2				TINYINT  ,
+					IM2				BIT  ,
+					UM2				TINYINT  ,
+					IS2				BIT  ,
+					US2				TINYINT  ,
+					N2				TINYINT  ,
+					L2				TINYINT  
+					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
+				)
+--******************************************PERMISSION CHECKING*************************************** 				
+	SET @StartRun = GETDATE()
+	
+	EXEC dbo.Age_CustomerSelCheckBelongingByCustID   
+		 @SessionCustID = @Userid,   
+		 @Custid = @custid,  		 
+		 @_RoleID = @_RoleID OUTPUT  
+	
+	IF (@_RoleID <> 1) RETURN-- return if not member    
+	
+	--Check disable user  
+	EXEC dbo.Acc_CustomerSelCheckEnable 
+			@custid = @custid
+			,@ErrCode=@ErrCode OUTPUT
+			,@ErrMsg=@ErrMsg OUTPUT  
+			
+	IF @ErrCode > 0	
+	BEGIN
+		SELECT @MsgType = 101
+		RETURN
+	END 
+	
+--******************************************PREPARE SETTING FOR UPDATE*************************************** 							
+	SELECT @_SuperID = srecommend, @_MasterID = mrecommend, @_AgentID = recommend
 	FROM customer WITH (NOLOCK)   
 	WHERE custid = @custid 
 	
@@ -123,6 +171,43 @@ BEGIN
 	FROM dbo.CustSettingMode3rd
 	WHERE CustID= @CustID
 	
+	--Get Super PT Setting Values
+	INSERT @_SuperPTTbl(SportType,BetType,IsLive,S4,M4,A4
+							,IM4,UM4,IS4,US4,N4,L4)	
+	SELECT cs.SportType,cs.BetType,cs.IsLive,cs.SuperPT,cs.MasterPT,cs.AgentPT
+							,cs.IsAutoMasterPT,cs.AutoMasterPT,cs.IsAutoSuperPT,cs.AutoSuperPT,MinPT,MaxPT 
+	FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
+		INNER JOIN @tblPT mt 
+			ON mt.SportType = cs.SportType
+				AND mt.BetType = cs.BetType
+				AND mt.IsLive = cs.IsLive
+	WHERE cs.CustID = @_SuperID
+	
+	--Get master PT Setting Values
+	INSERT @_MasterPTTbl(SportType,BetType,IsLive,S3,M3,A3
+				,IM3,UM3,IS3,US3,N3,L3)	
+	SELECT mcs.SportType,mcs.BetType,mcs.IsLive,mcs.SuperPT,mcs.MasterPT,mcs.AgentPT
+				,mcs.IsAutoMasterPT,mcs.AutoMasterPT,mcs.IsAutoSuperPT,mcs.AutoSuperPT,MinPT,MaxPT 
+	FROM dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK)
+		INNER JOIN @tblPT mt 
+			ON mt.SportType = mcs.SportType
+				AND mt.BetType = mcs.BetType
+				AND mt.IsLive = mcs.IsLive
+	WHERE mcs.CustID = @_MasterID
+	
+	--Get Agent PT Setting Values
+	INSERT @_AgentPTTbl(SportType,BetType,IsLive,S2,M2,A2
+				,IM2,UM2,IS2,US2,N2,L2)	
+	SELECT acs.SportType,acs.BetType,acs.IsLive,acs.SuperPT,acs.MasterPT,acs.AgentPT
+				,acs.IsAutoMasterPT,acs.AutoMasterPT,acs.IsAutoSuperPT,acs.AutoSuperPT,MinPT,MaxPT 
+	FROM dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK)
+		INNER JOIN @tblPT mt 
+			ON mt.SportType = acs.SportType
+				AND mt.BetType = acs.BetType
+				AND mt.IsLive = acs.IsLive
+	WHERE acs.CustID = @_AgentID		
+	
+------------------------------------------------------------------------------------------------------------------	
 	IF @SettingMode = 0
 	BEGIN
 		UPDATE b
@@ -199,7 +284,7 @@ BEGIN
 			INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON b.SportType = cs.sporttype
 																	AND b.BetType = cs.bettype
 																	AND b.ISLive = cs.isLive
-		WHERE cs.AgentID = @recommend
+		WHERE cs.AgentID = @_AgentID
 		
 		INSERT @NewPT(
 					SportType		
@@ -227,7 +312,7 @@ BEGIN
 			INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON b.SportType = cs.sporttype
 																	AND b.BetType = cs.bettype
 																	AND b.ISLive = cs.isLive
-		WHERE cs.AgentID = @recommend
+		WHERE cs.AgentID = @_AgentID
 				
 		 --log old data
 		SET @xml =(
@@ -246,7 +331,7 @@ BEGIN
 							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 													AND cs.bettype = t.BetType 
 													AND cs.isLive = t.IsLive
-						WHERE AgentID = @recommend
+						WHERE AgentID = @_AgentID
 						FOR XML PATH('pt'), TYPE
 					)
 			FOR XML PATH('r'), TYPE
@@ -286,13 +371,13 @@ BEGIN
 				)
 		RETURN--no pt change
 	
-	--Check error		
+--******************************************VALIDATE PT VALUES*************************************** 	
 	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 				@CustID = @CustID
 				, @RoleID		= 4
-				, @AgentID		= @recommend
-				, @MasterID		= @mrecommend
-				, @SuperID		= @srecommend
+				, @AgentID		= @_AgentID
+				, @MasterID		= @_MasterID
+				, @SuperID		= @_SuperID
 				, @PT			= @PT
 								
 				, @ErrCode		= @ErrCode	OUTPUT
@@ -301,107 +386,88 @@ BEGIN
 
 	IF @ErrCode <> 0
 		RETURN		
-	
-	--correct s1 if s1 + m1+ a1>s4	
-	UPDATE b
-	SET b.SuperPT = CASE WHEN scs.SuperPT - b.MasterPT - b.AgentPT > 0 
-								THEN scs.SuperPT - b.MasterPT - b.AgentPT 
-								ELSE 0 
-							END
-	FROM @tblPT b
-		INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON b.SportType = scs.sporttype
-																AND b.BetType = scs.bettype
-																AND b.IsLive = scs.isLive
-	WHERE scs.custid = @srecommend
-		AND 1*b.SuperPT + b.MasterPT + b.AgentPT > scs.SuperPT--*1 to ignore sql exception	
-		
-	--begin update pt change
-																	
-	--don't update s1 for member under master was set i3=1(normal) 
-	 UPDATE cs
-	 SET cs.SuperPT = b.SuperPT  
-	 FROM @NewPT cs
-		INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON  mcs.custid = @mrecommend
-																AND cs.sporttype = mcs.sporttype 
-																AND cs.bettype = mcs.bettype  
-																AND cs.IsLive = mcs.isLive
-		INNER JOIN @tblPT b ON b.SportType = cs.SportType
-								AND b.BetType = cs.BetType
-								AND b.IsLive = cs.IsLive															
-	 WHERE mcs.IsAutoSuperPT = 0	
-	 		 
-	UPDATE cs
-	SET	AutoSuperPT = b.AutoSuperPT,  
-		IsAutoSuperPT = b.IsAutoSuperPT
-	FROM @NewPT cs 
-	INNER JOIN @tblPT b ON b.SportType = cs.SportType
-							AND b.BetType = cs.BetType
-							AND b.IsLive = cs.IsLive	  
-  
-	--correct pt
-	SET @PT_Adjusted = 
-		(
-			SELECT SportType		
-				, BetType		
-				, IsLive	
-				, SuperPT							
-				, MasterPT	
-				, AgentPT		
-				, IsAutoSuperPT	
-				, AutoSuperPT	
-				, IsAutoMasterPT
-				, AutoMasterPT
-			FROM @tblPT
-			FOR XML RAW('PT'), ROOT('ROOT')
-		)
-	
-	EXEC Acc_CustSetting_MemberPTCorrect
-			@AgentID = @recommend
-			, @MasterID = @mrecommend
-			, @SuperID = @srecommend
-			, @PT	 = @PT_Adjusted
-			, @CorrectedPT_XML = @PT_Corrected OUTPUT
-	
-	DELETE @NewPT
-	
-	EXEC sp_xml_preparedocument @iDoc OUTPUT, @PT_Corrected
+--******************************************ADJUST PT SETTINGS*************************************** 
+	DECLARE @n2 SMALLMONEY
+	DECLARE @a1 SMALLMONEY, @m1 SMALLMONEY, @s1 SMALLMONEY, @i1 BIT, @u1 SMALLMONEY, @im1 BIT, @um1 SMALLMONEY
+	DECLARE @temp1 SMALLMONEY, @temp2 SMALLMONEY, @temp3 SMALLMONEY
+	DECLARE @s_new SMALLMONEY, @m_new SMALLMONEY, @a_new SMALLMONEY
 
-	INSERT @NewPT(
-					SportType		
-					, BetType		
-					, IsLive	
-					, SuperPT							
-					, MasterPT	
-					, AgentPT		
-					, IsAutoSuperPT	
-					, AutoSuperPT	
-					, IsAutoMasterPT
-					, AutoMasterPT			
-				)
-	SELECT SportType
-			,BetType
-			,IsLive
-			,SuperPT
-			,MasterPT
-			,AgentPT
-			,IsAutoSuperPT
-			,AutoSuperPT
-			,IsAutoMasterPT
-			,AutoMasterPT
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType	SMALLINT
-			, BetType	SMALLINT
-			, IsLive	BIT
-			, SuperPT	TINYINT
-			, MasterPT	TINYINT
-			, AgentPT	TINYINT
-			, AutoMasterPT TINYINT
-			, IsAutoMasterPT BIT
-			, AutoSuperPT TINYINT
-			, IsAutoSuperPT BIT
-			)
+	UPDATE cs
+		SET @a1 = cs.AgentPT
+			,@m1 = cs.MasterPT
+			,@s1 = cs.SuperPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
+			,@im1 = cs.IsAutoMasterPT
+			,@um1 = cs.IsAutoMasterPT
+			,@n2 = acs.N2
+			--Adjust PT : s1= s1+m1+ a1> s4?s4-m1-a1:s1
+			,@s1 = CASE WHEN @s1 > S4 - @m1 - @a1 THEN S4 - @m1 - @a1 ELSE @s1 END
+			--Adjust PT : s1=s1<0?:0:s1
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			-- rule #1 s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
+			/*
+				@x1 = (i1=1) ? u1 : u3
+				s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
+			*/
+			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE mcs.US3 END			
+			,@s1 = CASE 
+						WHEN @i1 = 1 OR mcs.IS3 = 1 
+						THEN CASE WHEN scs.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE scs.s4-@m1-@a1 END
+						ELSE @s1
+					END
+
+            -- rule #2: s1 = max(n4-m1-a1,s1) --super min
+			,@s1 = CASE WHEN @a1+@m1+@s1 < scs.n4 THEN scs.n4-@m1-@a1 ELSE @s1 END
+            -- rule #3: UPDATE s1,m1,a1 IN case s1+m1+a1>s4
+			/* -- explanation
+				@x1 = (s4-m1-a1 < 0) ? 0 : s4-m1-a1
+				s1 = (s1+a1+m1 > s4) ? @x1 : s1
+				@x1 = (@x1+m1+a1 > s4) ? s4-@x1 : m1+a1
+				@x2 = (m3 > l3) ? l3 : m3
+				@x2 = (@x1 > @x2) ? @x2 : @x1
+				@x2 = (@x2 < n3) ? n3 : @x2
+				@x3 = (@x2-a1 < 0) ? 0 : @x2-a1
+				m1 = (s1+a1+m1 > s4) ? @x3 : m1
+				@x3 = (a1+@x3>@x2) ? @x2-@x3 : a1
+				@x3 =  (@x3 < n2) ? n2 : @x3
+				a1 = (s1+a1+m1 > s4) ? @x3 : a1				
+			*/         
+			,@temp1 = CASE WHEN scs.s4-@m1-@a1 < 0 THEN 0 ELSE scs.s4-@m1-@a1 END
+			,@s_new = CASE WHEN @s1+@a1+@m1 > scs.s4 THEN @temp1 ELSE @s1 END
+			,@temp1 = CASE WHEN @temp1+@m1+@a1 > scs.s4 THEN scs.s4-@temp1 ELSE @m1+@a1 END
+			,@temp2 = CASE WHEN mcs.m3 > mcs.l3 THEN mcs.l3 ELSE mcs.m3 END
+			,@temp2 = CASE WHEN @temp1 > @temp2 THEN @temp2 ELSE @temp1 END
+			,@temp2 = CASE WHEN @temp2 < mcs.n3 THEN mcs.n3 ELSE @temp2 END
+			,@temp3 = CASE WHEN @temp2-@a1 < 0 THEN 0 ELSE @temp2-@a1 END
+			,@m_new = CASE WHEN @s1+@a1+@m1 > scs.s4 THEN @temp3 ELSE @m1 END
+			,@temp3 = CASE WHEN @a1+@temp3 > @temp2 THEN @temp2-@temp3 ELSE @a1 END
+			,@temp3 = CASE WHEN @temp3 < @n2 THEN @n2 ELSE @temp3 END
+			,@a_new = CASE WHEN @s1+@a1+@m1 > scs.s4 THEN @temp3 ELSE @a1 END
+			,@s1 = @s_new
+			,@m1 = @m_new
+			,@a1 = @a_new     
+
+			--------------------------------	
+			-- done apply all rule, then update to destination table
+			,cs.AgentPT = @a1
+			,cs.MasterPT = @m1
+			,cs.SuperPT = @s1
+	FROM @NewPT cs
+	INNER JOIN @_SuperPTTbl scs
+		ON scs.SportType = cs.SportType
+			AND scs.BetType = cs.BetType
+			AND scs.IsLive = cs.IsLive
+	INNER JOIN @_MasterPTTbl mcs
+		ON mcs.SportType = cs.SportType
+			AND mcs.BetType = cs.BetType
+			AND mcs.IsLive = cs.IsLive
+	INNER JOIN @_AgentPTTbl acs
+		ON acs.SportType = cs.SportType
+			AND acs.BetType = cs.BetType
+			AND acs.IsLive = cs.IsLive	
 	
-	EXEC sp_xml_removedocument @iDoc
+--***************************************UPDATE PT SETTINGS*******************************************
 		
 	IF @SettingMode = 0
 	BEGIN
@@ -435,7 +501,7 @@ BEGIN
 						INNER JOIN @NewPT b ON cs.sporttype = b.SportType	
 												AND cs.bettype = b.BetType
 												AND cs.isLive = b.IsLive
-					WHERE cs.AgentID = @recommend
+					WHERE cs.AgentID = @_AgentID
 						AND (
 								cs.SuperPT <> b.SuperPT
 							OR cs.MasterPT <> b.MasterPT
@@ -467,7 +533,7 @@ BEGIN
 															AND grpt.SportType=mempt.SportType
 															AND grpt.BetType=mempt.BetType
 															AND grpt.IsLive=mempt.IsLive
-		WHERE grpt.AgentID=@recommend AND mempt.CustID IS NULL
+		WHERE grpt.AgentID=@_AgentID AND mempt.CustID IS NULL
 		
 		--Update Adjusted PT for indiviual setting
 		UPDATE cs
@@ -502,7 +568,7 @@ BEGIN
 	
 	-- end write log
 	SET @endRun		= GETDATE()  
-	SET @duration	= DATEDIFF(MILLISECOND, @startRun, @endRun) 
+	SET @duration	= DATEDIFF(MILLISECOND, @StartRun, @endRun) 
 						
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 

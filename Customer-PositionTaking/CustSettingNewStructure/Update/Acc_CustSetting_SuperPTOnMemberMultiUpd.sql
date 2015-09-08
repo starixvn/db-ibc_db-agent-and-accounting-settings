@@ -47,9 +47,7 @@ BEGIN
 	DECLARE @tblCust TABLE (CustID INT)		
 	
 	--Get line info, get SMA accounts
-	DECLARE 
-		 @ErrType			NVARCHAR(4000)
-		, @_AgentID			INT
+	DECLARE @_AgentID		INT
 		, @_MasterID		INT
 		, @_SuperID			INT
 		, @RepresentCustID	INT
@@ -288,10 +286,10 @@ BEGIN
 		RETURN		
 
 --******************************************ADJUST PT SETTINGS*************************************** 
-	DECLARE @n2 smallmoney
-	DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
-	DECLARE @temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
-	DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
+	DECLARE @n2 SMALLMONEY
+	DECLARE @a1 SMALLMONEY, @m1 SMALLMONEY, @s1 SMALLMONEY, @i1 BIT, @u1 SMALLMONEY, @im1 BIT, @um1 SMALLMONEY
+	DECLARE @temp1 SMALLMONEY, @temp2 SMALLMONEY, @temp3 SMALLMONEY
+	DECLARE @s_new SMALLMONEY, @m_new SMALLMONEY, @a_new SMALLMONEY
 
 	UPDATE cs
 		SET @a1 = cs.AgentPT
