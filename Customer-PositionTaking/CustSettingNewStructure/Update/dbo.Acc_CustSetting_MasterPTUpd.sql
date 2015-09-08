@@ -19,8 +19,8 @@ AS
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
-					<PT SportType="1" BetType="1" IsLive="0" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0" UpdAllMems="1" NewSuperPT="20"/>
-					<PT SportType="1" BetType="1" IsLive="1" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MasterMinPT="0" UpdAllMems="0" NewSuperPT="0"/>
+					<PT SportType="1" BetType="1" IsLive="0" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MinPT="0" IsUpdAllMems="1" UpdAllMems_Value="20"/>
+					<PT SportType="1" BetType="1" IsLive="1" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MinPT="0" IsUpdAllMems="0" UpdAllMems_Value="0"/>
 				</ROOT>
 				
 	*/
@@ -96,12 +96,7 @@ BEGIN
 				NewSuperPT		SMALLINT
 				)			
 	
-	-- For read xml
-	DECLARE @DocHandler INT    
-	
-	-- For read xml					
-	EXEC sp_xml_preparedocument @DocHandler OUTPUT, @PT
-	
+	-- For read xml 				
 	INSERT INTO @tblPT(
 				SportType,
 				BetType,
@@ -115,31 +110,18 @@ BEGIN
 				NewSuperPT
 			)
 	SELECT
-		Data.SportType,
-		Data.BetType,
-		Data.IsLive,
-		Data.SuperPT,
-		Data.isAutoSuperPT,
-		Data.AutoSuperPT,
-		Data.MasterPT,		
-		Data.MasterMinPT,
-		Data.UpdAllMems,
-		Data.NewSuperPT
-	FROM OPENXML (@DocHandler, '/ROOT/PT',1) 
-	WITH (
-		SportType		SMALLINT,
-		BetType			SMALLINT,
-		IsLive			BIT,
-		SuperPT			SMALLINT,
-		IsAutoSuperPT	BIT,
-		AutoSuperPT		SMALLINT,
-		MasterPT		SMALLINT,		
-		MasterMinPT		SMALLINT,
-		UpdAllMems		BIT,
-		NewSuperPT		SMALLINT		
-	) AS Data
+		SportType,
+		BetType,
+		IsLive,
+		SuperPT,
+		IsAutoSuperPT,
+		AutoSuperPT,
+		MasterPT,		
+		MinPT,
+		IsUpdAllMems,
+		UpdAllMems_Value
+	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	
-	EXEC sp_xml_removedocument @DocHandler
 	-- end read xml	
    
    --log old data
