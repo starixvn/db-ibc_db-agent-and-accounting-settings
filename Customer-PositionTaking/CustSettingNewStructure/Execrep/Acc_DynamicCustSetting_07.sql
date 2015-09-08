@@ -1,10 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_DynamicCustSetting_07]    Script Date: 9/7/2015 6:20:26 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER PROCEDURE [dbo].[Acc_DynamicCustSetting_07]
 	@SuperID INT = 0
 	,@MasterID INT = 0
@@ -37,21 +30,21 @@ BEGIN
 
 	-- declare variable table to keep super's settings 
 	DECLARE @temp_sag TABLE (custid int, bettype smallint, sporttype smallint, islive bit,
-		a4 smallmoney, m4 smallmoney, s4 smallmoney, n4 smallmoney, l4 smallmoney
+		s4 smallmoney, n4 smallmoney, l4 smallmoney
 		UNIQUE CLUSTERED (custid, sporttype, bettype, islive)
 	)
 	
 	-- declare variable table to keep master's settings 
 	DECLARE @temp_mag TABLE (custid int, bettype smallint, sporttype smallint, islive bit,
-		a3 smallmoney, m3 smallmoney, s3 smallmoney, u3 smallmoney, i3 bit, n3 smallmoney, l3 smallmoney
+		m3 smallmoney, u3 smallmoney, i3 bit,n3 smallmoney, l3 smallmoney
 		UNIQUE CLUSTERED (custid, sporttype, bettype, islive)
 	)
 
-	DECLARE @a2 smallmoney, @m2 smallmoney, @s2 smallmoney, @n2 smallmoney, @l2 smallmoney
-	DECLARE @im2 bit, @um2 smallmoney
-	DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
-	DECLARE @temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
-	DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
+	--DECLARE @a2 smallmoney, @m2 smallmoney, @s2 smallmoney, @n2 smallmoney, @l2 smallmoney
+	--DECLARE @im2 bit, @um2 smallmoney
+	--DECLARE @a1 smallmoney, @m1 smallmoney, @s1 smallmoney, @i1 bit, @u1 smallmoney, @im1 bit, @um1 smallmoney
+	--DECLARE @temp1 smallmoney, @temp2 smallmoney, @temp3 smallmoney
+	--DECLARE @s_new smallmoney, @m_new smallmoney, @a_new smallmoney
 	---------------------------------
 
 	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @_AgentID = @AgentID
@@ -60,32 +53,96 @@ BEGIN
 	SELECT SportType,Bettype,IsLive
 	FROM dbo.f_SportBetTypeXMLParse(@SportBetTypeXML)
 
-	INSERT INTO @temp_sag (custid, bettype, sporttype, islive, a4, m4, s4, n4, l4)
-	SELECT scs.custid, scs.bettype, scs.sporttype, scs.IsLive, scs.AgentPT, scs.MasterPT, scs.SuperPT, scs.MinPT, scs.MaxPT
+	INSERT INTO @temp_sag (custid, bettype, sporttype, islive, s4, n4, l4)
+	SELECT scs.custid, scs.bettype, scs.sporttype, scs.IsLive, scs.SuperPT, scs.MinPT, scs.MaxPT
 	FROM dbo.CustPTSetting3rd_Agent scs WITH(NOLOCK)
 		INNER JOIN @tmpSportBettype tmp ON tmp.sporttype = scs.SportType AND tmp.bettype = scs.BetType AND tmp.islive = scs.IsLive
 	WHERE scs.custid = @_SuperID
 
 	IF @RoleID = 4
 	BEGIN		
-		-- rule #1: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
-		/*
-			@x1 = (i1=1) ? u1 : u3
-			s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
-		*/	
-		SELECT 1	
+		INSERT INTO @temp_mag (custid, bettype, sporttype, islive, m3, u3, i3, n3, l3)
+		SELECT mcs.custid, mcs.bettype, mcs.sporttype, mcs.IsLive, mcs.MasterPT, mcs.AutoSuperPT, mcs.IsAutoSuperPT, mcs.MinPT, mcs.MaxPT
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON c.custid = mcs.custid
+			INNER JOIN @tmpSportBettype tmp ON tmp.sporttype = mcs.SportType AND tmp.bettype = mcs.BetType AND tmp.islive = mcs.IsLive
+		WHERE c.srecommend = @_SuperID AND c.roleid = 3
+
+		--*** START: update PT on member ***-----------------------	
+		UPDATE cs
+		SET	@a1 = cs.AgentPT
+			,@m1 = cs.MasterPT
+			,@s1 = cs.SuperPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
+			-- rule #1: s1 = min(s4-m1-a1, i1?u1:u3) --Recalculate auto pt
+			/*
+				@x1 = (i1=1) ? u1 : u3
+				s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
+			*/	
+			,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.u3 END			
+			,@s1 = CASE 
+						WHEN @i1 = 1 OR m.i3 = 1 
+						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
+						ELSE @s1
+					END	
+
+			,cs.AgentPT = @a1
+			,cs.MasterPT = @m1
+			,cs.SuperPT = @s1								       
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.custid
+			INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+			INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+			INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.srecommend = @_SuperID AND c.roleid = 1 and c.enabled = 1
+		--*** END: update PT on member ***-------------------------
 	END	
 	
 	IF @RoleID In (2,3)
 	BEGIN
+		INSERT INTO @temp_mag (custid, bettype, sporttype, islive, a3, m3, s3, u3, i3, n3, l3)
+		SELECT mcs.custid, mcs.bettype, mcs.sporttype, mcs.IsLive, mcs.AgentPT, mcs.MasterPT, mcs.SuperPT, mcs.AutoSuperPT, mcs.IsAutoSuperPT, mcs.MinPT, mcs.MaxPT
+		FROM dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK) 
+			INNER JOIN @tmpSportBettype tmp ON tmp.sporttype = mcs.SportType AND tmp.bettype = mcs.BetType AND tmp.islive = mcs.IsLive
+		WHERE mcs.custid = @MasterID
+
+		declare @agList AS TABLE (custid INT)
+
 		IF @RoleID = 2
 		BEGIN
-			-- rule #1: a1 = max(a1,n2) -- agent min
-			-- rule #2: a1 = min(a1,l2) -- agent max 
-			-- rule #3: m1 = min(m3-a1,m1)
-			SELECT 1
+			INSERT INTO @agList (custid)
+			SELECT @AgentID
+
+			--*** START: update PT on member ***-----------------------	
+			UPDATE cs
+			SET @a1 = cs.AgentPT
+				,@m1 = cs.MasterPT
+				,@n2 = acs.MinPT
+				,@l2 = acs.MaxPT
+				-- rule #1: a1 = max(a1,n2) -- agent min
+				,@a1 = CASE WHEN @a1 < @n2 THEN @n2 ELSE @a1 END
+				-- rule #2: a1 = min(a1,l2) -- agent max 
+				,@a1 = CASE WHEN @a1 > @l2 THEN @l2 ELSE @a1 END	
+				-- rule #3: m1 = min(m3-a1,m1)
+				,@m1 = CASE WHEN @a1+@m1 > m.m3 THEN m.m3-@a1 ELSE @m1 END	
+				
+				--------------------------------	
+				-- done apply all rule, then update to destination table
+				,cs.AgentPT = @a1
+				,cs.MasterPT = @m1
+			FROM dbo.custinfo c WITH(NOLOCK)
+				INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.custid
+				INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK) on c.recommend = acs.custid AND cs.sporttype = acs.sporttype AND cs.bettype = acs.bettype AND cs.IsLive = acs.IsLive
+				INNER JOIN @temp_mag m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
+				INNER JOIN @temp_sag s ON c.srecommend = s.custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive		
+			WHERE c.recommend IN (select custid FROM @agList) AND c.roleid = 1 and c.enabled = 1	
+			--*** END: update PT on member ***-------------------------	
 		END
 
+		--*** START: update PT on member ***-----------------------	
+		UPDATE cs
+		SET
 		-- rule #1: m1 = min(m3-a1,u2) if master auto -- Recalculate AUTO MPT 
 		-- rule #2: m1 = max(m1,n3-a1) -- master min   
 		-- rule #3: check master max 
@@ -105,6 +162,11 @@ BEGIN
 
 		IF @RoleID = 3
 		BEGIN
+			INSERT INTO @agList (custid)
+			SELECT ag.custid
+			FROM dbo.custinfo ag WITH(NOLOCK)
+			WHERE mrecommend = @MasterID AND roleid = 2
+
 			-- rule #6: UPDATE s1,m1,a1 in case s1+m1+a1>s4
 			/* -- explanation
 				@x1 = (s4-m1-a1 < 0) ? 0 : s4-m1-a1
