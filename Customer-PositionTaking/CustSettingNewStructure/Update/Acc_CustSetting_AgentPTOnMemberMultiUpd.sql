@@ -225,11 +225,11 @@ BEGIN
 			, cs.IsAutoSuperPT 
 			, cs.AutoSuperPT
 	FROM @NewPTTble main
-	INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
-		ON cs.SportType=main.SportType
-				AND cs.BetType=main.BetType
-				AND cs.IsLive=main.IsLive
-				AND cs.AgentID=@_AgentID	
+		INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH (NOLOCK)
+			ON cs.SportType=main.SportType
+					AND cs.BetType=main.BetType
+					AND cs.IsLive=main.IsLive
+					AND cs.AgentID=@_AgentID	
 				
 	--Get Super PT Setting Values
 	INSERT @_SuperPTTbl(SportType,BetType,IsLive,S4,M4,A4
@@ -237,10 +237,10 @@ BEGIN
 	SELECT cs.SportType,cs.BetType,cs.IsLive,cs.SuperPT,cs.MasterPT,cs.AgentPT
 							,cs.IsAutoMasterPT,cs.AutoMasterPT,cs.IsAutoSuperPT,cs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent cs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = cs.SportType
-			AND mt.BetType = cs.BetType
-			AND mt.IsLive = cs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = cs.SportType
+				AND mt.BetType = cs.BetType
+				AND mt.IsLive = cs.IsLive
 	WHERE cs.CustID = @_SuperID
 	
 	--Get master PT Setting Values
@@ -249,10 +249,10 @@ BEGIN
 	SELECT mcs.SportType,mcs.BetType,mcs.IsLive,mcs.SuperPT,mcs.MasterPT,mcs.AgentPT
 				,mcs.IsAutoMasterPT,mcs.AutoMasterPT,mcs.IsAutoSuperPT,mcs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent mcs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = mcs.SportType
-			AND mt.BetType = mcs.BetType
-			AND mt.IsLive = mcs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = mcs.SportType
+				AND mt.BetType = mcs.BetType
+				AND mt.IsLive = mcs.IsLive
 	WHERE mcs.CustID = @_MasterID
 	
 	--Get Agent PT Setting Values
@@ -261,10 +261,10 @@ BEGIN
 	SELECT acs.SportType,acs.BetType,acs.IsLive,acs.SuperPT,acs.MasterPT,acs.AgentPT
 				,acs.IsAutoMasterPT,acs.AutoMasterPT,acs.IsAutoSuperPT,acs.AutoSuperPT,MinPT,MaxPT 
 	FROM dbo.CustPTSetting3rd_Agent acs WITH(NOLOCK)
-	INNER JOIN @NewPTTble mt 
-		ON mt.SportType = acs.SportType
-			AND mt.BetType = acs.BetType
-			AND mt.IsLive = acs.IsLive
+		INNER JOIN @NewPTTble mt 
+			ON mt.SportType = acs.SportType
+				AND mt.BetType = acs.BetType
+				AND mt.IsLive = acs.IsLive
 	WHERE acs.CustID = @_AgentID	
 	
 
@@ -396,18 +396,18 @@ BEGIN
 			,cs.MasterPT = @m1
 			,cs.SuperPT = @s1
 	FROM @NewPTTble cs
-	INNER JOIN @_SuperPTTbl scs
-		ON scs.SportType = cs.SportType
-			AND scs.BetType = cs.BetType
-			AND scs.IsLive = cs.IsLive
-	INNER JOIN @_MasterPTTbl mcs
-		ON mcs.SportType = cs.SportType
-			AND mcs.BetType = cs.BetType
-			AND mcs.IsLive = cs.IsLive
-	INNER JOIN @_AgentPTTbl acs
-		ON acs.SportType = cs.SportType
-			AND acs.BetType = cs.BetType
-			AND acs.IsLive = cs.IsLive	
+		INNER JOIN @_SuperPTTbl scs
+			ON scs.SportType = cs.SportType
+				AND scs.BetType = cs.BetType
+				AND scs.IsLive = cs.IsLive
+		INNER JOIN @_MasterPTTbl mcs
+			ON mcs.SportType = cs.SportType
+				AND mcs.BetType = cs.BetType
+				AND mcs.IsLive = cs.IsLive
+		INNER JOIN @_AgentPTTbl acs
+			ON acs.SportType = cs.SportType
+				AND acs.BetType = cs.BetType
+				AND acs.IsLive = cs.IsLive	
 	
 --***************************************UPDATE PT SETTINGS*******************************************	
 	--**START UPDATING DB**--	
@@ -415,7 +415,7 @@ BEGIN
 	IF NOT EXISTS (
 		SELECT TOP 1 1
 		FROM @NewPTTble npt
-			JOIN @OldPTTble opt
+			INNER JOIN @OldPTTble opt
 				ON npt.SportType=opt.SportType
 				AND npt.BetType=opt.BetType
 				AND npt.IsLive=opt.IsLive
@@ -456,8 +456,8 @@ BEGIN
 		main.MasterPT=npt.MasterPT,
 		main.AgentPT=npt.AgentPT
 	FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
-		JOIN @tblCust cust ON main.CustID=cust.CustID
-		JOIN @NewPTTble npt ON  npt.SportType=main.SportType
+		INNER JOIN @tblCust cust ON main.CustID=cust.CustID
+		INNER JOIN @NewPTTble npt ON  npt.SportType=main.SportType
 			AND npt.BetType=main.BetType
 			AND npt.IsLive=main.IsLive
 	WHERE 
@@ -470,7 +470,7 @@ BEGIN
 	UPDATE main
 	SET main.IsGrouped=0
 	FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
-		JOIN @tblCust cust
+		INNER JOIN @tblCust cust
 			ON cust.CustID=main.CustID
 	
 --***************************************WRITE LOGS*******************************************			
