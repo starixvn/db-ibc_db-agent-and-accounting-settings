@@ -32,8 +32,7 @@ BEGIN
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
-			,@AutoPT		VARCHAR(MAX)
-			,@sports		VARCHAR(500)=''			
+			,@AutoPT		VARCHAR(MAX)		
 			,@xml			XML
 	  SET @startRun = GETDATE()
 			
@@ -172,9 +171,6 @@ BEGIN
     --Check Param
     DECLARE @UpdateMinPT BIT
 			,@UpdatePresetPT BIT
-	
-    SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
-    FROM @tblPT
     
     --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -250,28 +246,25 @@ BEGIN
 	IF @UpdateMinPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_04 
-				@mrecommend = @custid
-				,@srecommend = @srecommend
-				,@mode = 'Others'
-				,@roleid = 3
-				,@sports = @sports
+				@MasterID = @custid
+				,@SuperID = @srecommend
+				,@RoleID = 3
+				,@SportBettypeXML = @PT
 	END
 	
 	IF @UpdatePresetPT = 1
 	BEGIN
 		 EXEC dbo.Acc_DynamicCustSetting_05
-            @srecommend = @srecommend,
-            @mrecommend = @custid,
-            @roleid = 3,
-            @mode = 'Others',            
+            @SuperID = @srecommend,
+            @MasterID = @custid,
+            @RoleID = 3,          
             @AutoPT = @AutoPT
            
          EXEC dbo.Acc_DynamicCustSetting_07
-            @srecommend = @srecommend
-            ,@mrecommend = @custid
-            ,@roleid = 3
-            ,@mode = 'Others'
-            ,@sports = @sports
+            @SuperID = @srecommend
+            ,@MasterID = @custid
+            ,@RoleID = 3
+            ,@SportBettypeXML = @PT
 	END
 	
 	 -- Write log after update

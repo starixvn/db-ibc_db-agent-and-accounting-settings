@@ -31,8 +31,7 @@ BEGIN
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
 			,@logSPDataOld	VARCHAR(5000)
-			,@AutoPT		VARCHAR(MAX)
-			,@sports		VARCHAR(500)	
+			,@AutoPT		VARCHAR(MAX)	
 			,@UpdateMinPT	BIT
 			,@UpdatePresetPT BIT		
 			,@xml			XML
@@ -166,11 +165,7 @@ BEGIN
 		FOR XML PATH('PT'), ROOT('ROOT')
 	 )
 	 
-	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)    
-    	    
-    SELECT @sports = ''
-    SELECT @sports = @sports + CAST(sporttype AS VARCHAR(5)) + ','
-    FROM @tblPT 			
+	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)     			
     
      --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
@@ -247,12 +242,11 @@ BEGIN
 	IF @UpdateMinPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_04 
-			@recommend = @custid
-			,@mrecommend = @mrecommend
-			,@srecommend = @srecommend
-			,@mode = 'Others'
-			,@roleid = 2
-			,@sports = @sports
+			@AgentID = @custid
+			,@MasterID = @mrecommend
+			,@SuperID = @srecommend
+			,@RoleID = 2
+			,@SportBettypeXML = @PT
 
 		-- The minimum position taking value of agent was modified by agent's upline
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID 
@@ -261,18 +255,15 @@ BEGIN
 	IF @UpdatePresetPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_05
-            @mrecommend = @mrecommend
-			,@recommend = @custid
-			,@roleid = 2
-			,@mode = 'Others'
-            
+            @MasterID = @mrecommend
+			,@AgentID = @custid
+			,@RoleID = 2
             ,@AutoPT = @AutoPT
             
        EXEC dbo.Acc_DynamicCustSetting_07 
-			@recommend = @custid
-			,@roleid = 2
-			,@mode = 'Others'
-			,@sports = @sports
+			@SuperID = @custid
+			,@RoleID = 2
+			,@SportBettypeXML = @PT
 	END	
 	
 	 -- Write log after update
