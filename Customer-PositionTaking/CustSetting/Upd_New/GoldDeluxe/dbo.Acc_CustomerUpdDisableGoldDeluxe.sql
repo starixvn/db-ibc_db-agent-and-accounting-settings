@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableGoldDeluxe]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableGoldDeluxe]
 	@custid		INT,
 	@Disable	BIT = NULL,	
 	@EnableDownlines BIT = 0,
@@ -17,7 +17,9 @@
 		DB: DBTXN/CustDB
 		
 		Revisions:
-		
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST)
+			- 20150821@Elodie: Exclude WON currency for GoldDeluxe [Redmine: #41785]
+
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -39,10 +41,12 @@ BEGIN
 	DECLARE @roleid INT,
 			@Disable_Old BIT,
 			@UplineDisable BIT,			
-			@HasDownline BIT = 0
+			@HasDownline BIT = 0,
+			@Currency INT
 	
 	SELECT @roleid = roleid,
-			@Disable_Old = DisableGoldDeluxe			
+			@Disable_Old = DisableGoldDeluxe, 
+			@Currency = currency		
 	FROM custInfo WITH(NOLOCK)
 	WHERE custid = @custid
 	
@@ -57,6 +61,12 @@ BEGIN
 		RETURN
 	END
 	
+	IF (@Currency = 45) --Gold Deluxe doesn't support WON currency [Redmine: #41785]
+	BEGIN
+		SELECT @ErrMsg = 'Gold Deluxe doesn''t support customers under WON currency', @ErrCode = 103
+		RETURN
+	END
+
 	IF @Disable_old = @Disable
 		RETURN
 	
@@ -105,7 +115,7 @@ BEGIN
 			)
 		)
 	BEGIN
-		EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines @custid = @custid
+		EXEC Acc_CustomerSelCheckAllowedDownlines @custid = @custid
 				,@roleid = @roleid
 				,@isExecRep = 1
 				,@Language = @Language
@@ -135,8 +145,9 @@ BEGIN
 			@LogSPData_Old VARCHAR(2000)  
 	  
 	 Select @LogSPData = '<Acc_CustomerUpdDisableGoldDeluxe CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
+
 		  'Disable="'+ coalesce(cast(@Disable as varchar(50)),space(1)) + '" '+  
-		  'ApplyDownlines="'+ coalesce(cast(CASE WHEN @EnableDownlines = 1 THEN 0 ELSE 1 END as varchar(50)),space(1)) + '" '+  
+		  'ApplyDownlines="'+ coalesce(cast(@EnableDownlines as varchar(50)),space(1)) + '" '+  
 		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
 		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
 		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
@@ -146,7 +157,7 @@ BEGIN
 	  
 	  SELECT @LogSPData_Old = '<Acc_CustomerUpdDisableGoldDeluxe CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 		  'Disable="'+ coalesce(cast(@Disable_old as varchar(50)),space(1)) + '" '+  
-		  'ApplyDownlines="'+ coalesce(cast(CASE WHEN @EnableDownlines = 1 THEN 0 ELSE 1 END as varchar(50)),space(1)) + '" '+  
+		  'ApplyDownlines="'+ coalesce(cast(@EnableDownlines as varchar(50)),space(1)) + '" '+  
 		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
 		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
 		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
@@ -169,7 +180,7 @@ BEGIN
 	BEGIN CATCH
 		Select @LogSPData = '<Acc_CustomerUpdDisableGoldDeluxe CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1)) + '" '+  
 		  'Disable="'+ coalesce(cast(@Disable as varchar(50)),space(1)) + '" '+  
-		  'ApplyDownlines="'+ coalesce(cast(CASE WHEN @EnableDownlines = 1 THEN 0 ELSE 1 END as varchar(50)),space(1)) + '" '+  
+		  'ApplyDownlines="'+ coalesce(cast(@EnableDownlines as varchar(50)),space(1)) + '" '+  
 		  'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1)) + '" '+  
 		  'SubAccName="' + coalesce(cast(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), space(1)) + '" ' +
 		  'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+'" '+  
@@ -187,6 +198,7 @@ BEGIN
 	END CATCH
 		
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdDisableGoldDeluxe] TO [bodbAdminNet] 
 GO

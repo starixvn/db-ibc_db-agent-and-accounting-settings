@@ -1,6 +1,3 @@
-use custdb
-go
-
 ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
 	@Custid INT OUTPUT
 	,@UserName VARCHAR(30)
@@ -38,7 +35,8 @@ AS
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
 	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
 	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
-	- 20150714@Patrick: Add max win limit for Gold deluxe                              
+	- 20150714@Patrick: Add max win limit for Gold deluxe    
+	- 20150821@Elodie: Set HideGoldDeluxe = 1 for 789y site                    
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -357,8 +355,8 @@ BEGIN
 				,maxpermatch154
 				,HideKeno
 				,DisableEsports
-				,HideGoldDeluxe
-				,DisableGoldDeluxe
+				,CASE WHEN @Site = '789y' THEN 1 ELSE HideGoldDeluxe END
+				,CASE WHEN @Site = '789y' THEN 1 ELSE DisableGoldDeluxe END
 				,DisableSuperLive
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
@@ -420,10 +418,7 @@ BEGIN
 
     DECLARE @isForcedChangeSecurityCode BIT = 0
 
-	SELECT @isForcedChangeSecurityCode = CASE
-                                           WHEN @Site LIKE '789y%' THEN 0
-                                           ELSE 1
-                                         END
+	SELECT @isForcedChangeSecurityCode = CASE WHEN @Site LIKE '789y%' THEN 0 ELSE 1 END
 
 	BEGIN TRY
 		INSERT INTO dbo.CustLoginInfo
@@ -567,6 +562,7 @@ BEGIN
 		
 	SET NOCOUNT OFF
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet] AS [dbo]
 GO
