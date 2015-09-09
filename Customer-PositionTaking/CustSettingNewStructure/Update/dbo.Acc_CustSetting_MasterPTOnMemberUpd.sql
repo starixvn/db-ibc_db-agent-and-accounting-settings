@@ -374,7 +374,7 @@ BEGIN
 				)
 		RETURN--no pt change
 		
-	--Check error		
+--******************************************VALIDATE PT VALUES*************************************** 		
 	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 				@CustID = @CustID
 				, @_RoleID		= 3
