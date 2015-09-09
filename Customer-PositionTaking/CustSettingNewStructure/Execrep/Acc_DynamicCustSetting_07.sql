@@ -86,6 +86,11 @@ BEGIN
 						ELSE @s1
 					END	
 			
+			--PT values must be in [0,100]
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
+			
+			--Aplly changes
 			,cs.SuperPT = @s1								       
 		FROM dbo.custinfo c WITH(NOLOCK)
 			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.custid
@@ -113,7 +118,11 @@ BEGIN
 						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
 						ELSE @s1
 					END	
-			
+			--PT values must be in [0,100]
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
+
+			--Apply changes
 			,cs.SuperPT = @s1								       
 		FROM dbo.custinfo c WITH(NOLOCK)
 			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(ROWLOCK, UPDLOCK) ON c.custid = cs.AgentID
@@ -152,6 +161,11 @@ BEGIN
 				-- rule #3: m1 = min(m3-a1,m1)
 				,@m1 = CASE WHEN @a1+@m1 > m.m3 THEN m.m3-@a1 ELSE @m1 END	
 				
+				--PT values must be in [0,100]
+				,@m1 = CASE WHEN @m1 < 0 THEN 0 ELSE @m1 END
+				,@m1 = CASE WHEN @m1 > 100 THEN 100 ELSE @m1 END
+				,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
+				,@a1 = CASE WHEN @a1 > 100 THEN 100 ELSE @a1 END
 				--------------------------------	
 				-- done apply all rule, then update to destination table
 				,cs.AgentPT = @a1
@@ -177,6 +191,11 @@ BEGIN
 				-- rule #3: m1 = min(m3-a1,m1)
 				,@m1 = CASE WHEN @a1+@m1 > m.m3 THEN m.m3-@a1 ELSE @m1 END	
 				
+				--PT values must be in [0,100]
+				,@m1 = CASE WHEN @m1 < 0 THEN 0 ELSE @m1 END
+				,@m1 = CASE WHEN @m1 > 100 THEN 100 ELSE @m1 END
+				,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
+				,@a1 = CASE WHEN @a1 > 100 THEN 100 ELSE @a1 END
 				--------------------------------	
 				-- done apply all rule, then update to destination table
 				,cs.AgentPT = @a1
@@ -279,6 +298,14 @@ BEGIN
 			,@m1 = @m_new
 			,@a1 = @a_new     
 
+			--PT values must be in [0,100]
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
+			,@m1 = CASE WHEN @m1 < 0 THEN 0 ELSE @m1 END
+			,@m1 = CASE WHEN @m1 > 100 THEN 100 ELSE @m1 END
+			,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
+			,@a1 = CASE WHEN @a1 > 100 THEN 100 ELSE @a1 END
+			
 			--------------------------------	
 			-- done apply all rule, then update to destination table
 			,cs.AgentPT = @a1
@@ -374,6 +401,14 @@ BEGIN
 			,@m1 = @m_new
 			,@a1 = @a_new     
 
+			--PT values must be in [0,100]
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
+			,@m1 = CASE WHEN @m1 < 0 THEN 0 ELSE @m1 END
+			,@m1 = CASE WHEN @m1 > 100 THEN 100 ELSE @m1 END
+			,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
+			,@a1 = CASE WHEN @a1 > 100 THEN 100 ELSE @a1 END
+			
 			--------------------------------	
 			-- done apply all rule, then update to destination table
 			,cs.AgentPT = @a1

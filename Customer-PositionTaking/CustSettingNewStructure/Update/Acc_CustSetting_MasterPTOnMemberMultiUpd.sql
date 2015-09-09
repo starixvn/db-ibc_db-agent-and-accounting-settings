@@ -392,6 +392,13 @@ BEGIN
 			,@m1 = @m_new
 			,@a1 = @a_new     
 
+			--PT values must be in [0,100]
+			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
+			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
+			,@m1 = CASE WHEN @m1 < 0 THEN 0 ELSE @m1 END
+			,@m1 = CASE WHEN @m1 > 100 THEN 100 ELSE @m1 END
+			,@a1 = CASE WHEN @a1 < 0 THEN 0 ELSE @a1 END
+			,@a1 = CASE WHEN @a1 > 100 THEN 100 ELSE @a1 END
 			--------------------------------	
 			-- done apply all rule, then update to destination table
 			,cs.AgentPT = @a1

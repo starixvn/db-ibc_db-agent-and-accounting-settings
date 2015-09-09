@@ -166,6 +166,9 @@ BEGIN
 			@_S1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 
 								AND IsUpdAllMems = 1 THEN @_S1_notauto ELSE @_S1 END,
+			--PT values must be in [0,100]
+			@_S1 = CASE WHEN @_S1 < 0 THEN 0 ELSE @_S1 END,
+			@_S1 = CASE WHEN @_S1 > 100 THEN 100 ELSE @_S1 END,
 			--Aplly changes
 			cs.SuperPT = @_S1
 		FROM CustInfo ci WITH(NOLOCK)
@@ -207,6 +210,9 @@ BEGIN
 			@_S1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 
 								AND IsUpdAllMems = 1 THEN @_S1_notauto ELSE @_S1 END,
+			--PT values must be in [0,100]
+			@_S1 = CASE WHEN @_S1 < 0 THEN 0 ELSE @_S1 END,
+			@_S1 = CASE WHEN @_S1 > 100 THEN 100 ELSE @_S1 END,
 			--Aplly changes
 			cs.SuperPT = @_S1
 		FROM CustInfo ci WITH(NOLOCK)
@@ -249,6 +255,9 @@ BEGIN
 			@_M1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 
 								AND IsUpdAllMems = 1 THEN @_M1_notauto ELSE @_M1 END,
+			--PT values must be in [0,100]
+			@_M1 = CASE WHEN @_M1 < 0 THEN 0 ELSE @_M1 END,
+			@_M1 = CASE WHEN @_M1 > 100 THEN 100 ELSE @_M1 END,
 			--Aplly changes
 			cs.MasterPT = @_M1
 		FROM CustInfo ci WITH(NOLOCK)
@@ -289,6 +298,9 @@ BEGIN
 			@_M1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 
 								AND IsUpdAllMems = 1 THEN @_M1_notauto ELSE @_M1 END,
+			--PT values must be in [0,100]
+			@_M1 = CASE WHEN @_M1 < 0 THEN 0 ELSE @_M1 END,
+			@_M1 = CASE WHEN @_M1 > 100 THEN 100 ELSE @_M1 END,
 			--Aplly changes
 			cs.MasterPT = @_M1
 		FROM CustPTGroupSetting3rd_Member cs WITH (ROWLOCK, UPDLOCK) 
