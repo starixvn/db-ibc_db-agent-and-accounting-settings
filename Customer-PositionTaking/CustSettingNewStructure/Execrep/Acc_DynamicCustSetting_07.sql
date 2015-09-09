@@ -50,7 +50,7 @@ BEGIN
 
 	INSERT INTO @tmpSportBettype (sporttype, bettype, islive)
 	SELECT SportType,Bettype,IsLive
-	FROM dbo.f_SportBetTypeXMLParse(@SportBetTypeXML)
+	FROM dbo.f_DCS_PT_XMLParse(@SportBetTypeXML)
 
 	INSERT INTO @temp_sag (custid, bettype, sporttype, islive, s4, n4, l4)
 	SELECT scs.custid, scs.bettype, scs.sporttype, scs.IsLive, scs.SuperPT, scs.MinPT, scs.MaxPT
