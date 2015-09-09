@@ -5,16 +5,16 @@ RETURNS @SportBetTypeTbl TABLE (SportType SMALLINT
 						, IsAuto_New BIT
 						, IsAuto_Old BIT
 						, IsUpdAllMems BIT
-						, UpdAllMems_Value TINYINT
-						, SuperPT TINYINT
-						, MasterPT TINYINT
-						, AgentPT TINYINT
+						, UpdAllMems_Value SMALLINT
+						, SuperPT SMALLINT
+						, MasterPT SMALLINT
+						, AgentPT SMALLINT
 						, IsAutoMasterPT BIT
-						, AutoMasterPT TINYINT
+						, AutoMasterPT SMALLINT
 						, IsAutoSuperPT BIT
-						, AutoSuperPT TINYINT
-						, MinPT TINYINT
-						, MaxPT TINYINT
+						, AutoSuperPT SMALLINT
+						, MinPT SMALLINT
+						, MaxPT SMALLINT
 						)
 /*
     Created: Dominic
@@ -45,18 +45,18 @@ BEGIN
 			, r.value('./@IsAuto_New','BIT')
 			, r.value('./@IsAuto_Old','BIT')
 			, r.value('./@IsUpdAllMems','BIT')
-			, r.value('./@UpdAllMems_Value','TINYINT')
+			, r.value('./@UpdAllMems_Value','SMALLINT')
 			
 			--Setting
-			, r.value('./@SuperPT','TINYINT')
-			, r.value('./@MasterPT','TINYINT')
-			, r.value('./@AgentPT','TINYINT')
+			, r.value('./@SuperPT','SMALLINT')
+			, r.value('./@MasterPT','SMALLINT')
+			, r.value('./@AgentPT','SMALLINT')
 			, r.value('./@IsAutoMasterPT','BIT')
-			, r.value('./@AutoMasterPT','TINYINT')
+			, r.value('./@AutoMasterPT','SMALLINT')
 			, r.value('./@IsAutoSuperPT','BIT')
-			, r.value('./@AutoSuperPT','TINYINT')
-			, r.value('./@MinPT','TINYINT')
-			, r.value('./@MaxPT','TINYINT')
+			, r.value('./@AutoSuperPT','SMALLINT')
+			, r.value('./@MinPT','SMALLINT')
+			, r.value('./@MaxPT','SMALLINT')
 	FROM @xml.nodes('//ROOT/PT') AS RECORDS(r)
 
  
