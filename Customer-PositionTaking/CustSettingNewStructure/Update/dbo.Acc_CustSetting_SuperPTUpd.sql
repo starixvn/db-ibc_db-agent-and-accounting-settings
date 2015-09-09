@@ -112,7 +112,7 @@ BEGIN
 		SuperPT,
 		MasterPT,
 		AgentPT,
-		SuperMinPT
+		MinPT
 	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	
 	-- end read xml	
