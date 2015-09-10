@@ -810,7 +810,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 				+ Separate custDB to new server DBCUST: 
 				+ Improve medthod check table existing in subscribers	
 			- 20150715@Viet: remove P2P tables from replication check	
-			  
+			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]		
 			  	
 		Parameter's Explanation:
 		
@@ -2662,9 +2662,9 @@ DECLARE @currency INT
           , MaxPerGameType
           , IsDisabled
         )		
-		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 WHERE @StakeLevelID_1701 IS NOT NULL
+		SELECT 1701, @custid, ISNULL(@StakeLevelID_1701,''), 0, 0, 0, 0
 		UNION ALL 
-		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 WHERE @StakeLevelID_1702 IS NOT NULL 
+		SELECT 1702, @custid, ISNULL(@StakeLevelID_1702,''), 0, 0, 0, 0
 		
 		IF @@error <> 0
 		BEGIN
