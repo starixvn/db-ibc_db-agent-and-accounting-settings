@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTCheck_Elodie]
+﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTCheck]
 	@custid		INT,
 	@username	VARCHAR(30),
 	@PT			VARCHAR(MAX),	
