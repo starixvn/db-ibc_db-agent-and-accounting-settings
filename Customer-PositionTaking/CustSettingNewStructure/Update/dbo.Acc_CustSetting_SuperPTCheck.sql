@@ -1,6 +1,5 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperPTCheck]
 	@custid		INT,
-	@username	VARCHAR(30),
 	@PT			VARCHAR(MAX),	
 	@UpdatePresetPT INT = 0,	
 	@ErrCode	INT = 0 OUTPUT,
@@ -65,65 +64,45 @@ BEGIN
 	FROM dbo.f_DCS_PT_XMLParse(@PT)	
 	-- end read xml				
 	
-	SET @ErrType =
-		(
-			SELECT t.SportType, t.BetType, t.IsLive
-				FROM @tblPT t
-					INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON t.SportType = ps.Sporttype AND t.BetType = ps.bettype AND t.IsLive = ps.IsLive
-			WHERE ps.SettingType = 1--PT
-				AND (t.SuperPT < 0 OR t.SuperPT > ps.MaxPT
-					OR t.MasterPT < 0 OR t.MasterPT > ps.MaxPT
-					OR t.AgentPT < 0 OR t.AgentPT > ps.MaxPT
-					OR t.SuperMinPT < 0
-					OR t.SuperPT < t.MasterPT 
-					OR t.MasterPT < t.AgentPT				
-					)
-			FOR XML RAW('Row'), TYPE
-		)
+	SELECT @ErrCode = MAX (CASE	WHEN s.SuperPT < 0 OR s.SuperPT > ps.MaxPT OR s.MasterPT < 0 OR s.MasterPT > ps.MaxPT OR s.AgentPT < 0 OR s.AgentPT > ps.MaxPT
+									OR s.SuperMinPT < 0 OR s.SuperPT < s.MasterPT OR s.MasterPT < s.AgentPT THEN 200 
+								WHEN s.SuperPT < s.SuperMinPT THEN 199 --check n4<=s4								
+								ELSE 0 END)
+	FROM @tblPT s
+		INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON s.SportType = ps.Sporttype AND s.BetType = ps.bettype AND s.IsLive = ps.IsLive
+	WHERE ps.SettingType = 1
+
+	IF @ErrCode = 200
+	BEGIN
+		SET @ErrType =
+			(
+				SELECT t.SportType, t.BetType, t.IsLive
+					FROM @tblPT t
+						INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON t.SportType = ps.Sporttype AND t.BetType = ps.bettype AND t.IsLive = ps.IsLive
+				WHERE ps.SettingType = 1--PT
+					AND (t.SuperPT < 0 OR t.SuperPT > ps.MaxPT
+						OR t.MasterPT < 0 OR t.MasterPT > ps.MaxPT
+						OR t.AgentPT < 0 OR t.AgentPT > ps.MaxPT
+						OR t.SuperMinPT < 0
+						OR t.SuperPT < t.MasterPT 
+						OR t.MasterPT < t.AgentPT				
+						)
+				FOR XML RAW('Row'), TYPE
+			)
 	
-	IF @ErrType IS NOT NULL
-	BEGIN        
-        SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 101
-                    , @MsgType = 5
-        RETURN
-    END		
+		IF @ErrType IS NOT NULL
+		BEGIN        
+			SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 5
+			RETURN
+		END		
+	END
 
     IF @UpdatePresetPT = 1
 	BEGIN		
-		SELECT @ErrCode = MIN (CASE	WHEN s.SuperPT < s.SuperMinPT THEN 102 --check n4<=s4
-									WHEN ((m.IsAutoSuperPT=0) AND (m.SuperPT+m.MasterPT>s.SuperPT)) OR 
-											((m.IsAutoSuperPT=1) AND (m.MasterPT>s.SuperPT)) OR 
-											((m.IsAutoSuperPT=1) AND (m.AutoSuperPT>s.SuperPT)) THEN 103 --check s3+m3<=s4 if i3 = 0, m3<=s4 and u3<=s4 if i3=1
-									WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
-										OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 104 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
-									WHEN m.MasterPT > s.MasterPT THEN 106 --Check m3<=m4
-									WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 107 --Check m1+a1<=m4
-									WHEN a.AgentPT > s.AgentPT THEN 109 --Check a2<=a4
-									WHEN cs.AgentPT > s.AgentPT THEN 110 --Check a1<=a4
-									ELSE 500 END)
-		FROM dbo.custinfo c WITH(NOLOCK)
-			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
-			INNER JOIN dbo.CustPTSetting3rd_Agent a WITH(NOLOCK) on c.recommend = a.custid AND cs.sporttype = a.sporttype AND cs.bettype = a.bettype AND cs.IsLive = a.IsLive
-			INNER JOIN dbo.CustPTSetting3rd_Agent m ON c.mrecommend = m.custid AND cs.sporttype = m.sporttype AND cs.bettype = m.bettype AND cs.IsLive = m.IsLive
-			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
-		WHERE c.srecommend = @custid AND c.roleid = 1 and c.enabled = 1
-
-		SELECT @ErrCodeGroup = MIN(CASE WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
-											OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 105 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
-										WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 108 --Check m1+a1<=m4
-										WHEN cs.AgentPT > s.AgentPT THEN 111 --Check a1<=a4
-										ELSE 500 END)
-		FROM dbo.custinfo c WITH(NOLOCK)
-			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
-			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
-		WHERE c.srecommend = @custid AND c.roleid = 2 and c.enabled = 1
-
-		SELECT @ErrCode = CASE WHEN @ErrCode > @ErrCodeGroup THEN @ErrCodeGroup ELSE @ErrCode END -- get min ErrCode to return first error
-		SELECT @ErrCode = CASE WHEN @ErrCode = 500 THEN 0 ELSE @ErrCode END -- set @ErrCode = 0 if no error
-
-		IF @ErrCode = 102
+		-- check super level		
+		IF @ErrCode = 199
 		BEGIN
 			--check n4<=s4
 			 SELECT @ErrType = ''
@@ -145,7 +124,19 @@ BEGIN
 				RETURN
 			END
 		END
-		ELSE IF @ErrCode = 103
+
+		-- check master level
+		SELECT @ErrCode = MAX (CASE	WHEN ((m.IsAutoSuperPT=0) AND (m.SuperPT+m.MasterPT>s.SuperPT)) OR 
+											((m.IsAutoSuperPT=1) AND (m.MasterPT>s.SuperPT)) OR 
+											((m.IsAutoSuperPT=1) AND (m.AutoSuperPT>s.SuperPT)) THEN 198 --check s3+m3<=s4 if i3 = 0, m3<=s4 and u3<=s4 if i3=1
+									WHEN m.MasterPT > s.MasterPT THEN 197 --Check m3<=m4
+									ELSE 0 END)
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Agent m WITH (NOLOCK) ON c.custid = m.custid
+			INNER JOIN @tblPT s ON c.srecommend = @custid AND m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
+		WHERE c.srecommend = @custid AND c.roleid = 3
+
+		IF @ErrCode = 198
 		BEGIN
 			--check all s3+m3<=s4 if i3 = 0,
 			--m3<=s4 and u3<=s4 if i3=1
@@ -181,7 +172,94 @@ BEGIN
 				RETURN      
 			END
 		END
-		ELSE IF @ErrCode = 104
+		ELSE IF @ErrCode = 197
+		BEGIN
+			--Check all m3<=m4
+			SELECT @ErrType = ''
+		
+			SELECT @ErrType =(
+				SELECT b.SportType, b.BetType, IsLive, UserName
+				FROM
+				(
+					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
+					FROM 
+						CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
+						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
+													AND cs.bettype = b.bettype 
+													AND cs.IsLive = b.IsLive
+						INNER JOIN custinfo AS c WITH (NOLOCK) ON c.custid = cs.custid					
+					WHERE c.srecommend = @custid AND c.roleid = 3 
+						AND cs.MasterPT > b.MasterPT
+				)b	
+				WHERE b.rn<= 10
+				FOR XML RAW('Row'), TYPE
+			)
+
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20021" Msg="Existing masters exceeded new Master Max PT">' 
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+							, @MsgType = 1			        
+				RETURN		
+			END
+		END
+
+		--check agent level
+		--Check all a2<=a4
+		SELECT @ErrType = ''
+
+		SELECT @ErrType =
+		(  
+			SELECT b.SportType, b.BetType, IsLive, UserName
+			FROM
+			( 
+					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
+					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK) 
+					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
+											AND cs.bettype = b.bettype 
+											AND cs.IsLive = b.IsLive
+					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid				
+					WHERE c.srecommend = @custid
+					AND c.roleid     = 2
+					AND c.Enabled    = 1
+					AND cs.AgentPT > b.AgentPT
+			)b
+			WHERE b.rn<=10
+			FOR XML RAW('Row'), TYPE
+		)
+
+		IF @ErrType IS NOT NULL
+		BEGIN
+			SELECT @ErrMsg = '<Root MsgID="20023" Msg="Existing agents exceeded new Agent Max PT">' 
+							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @ErrCode = 196
+						, @MsgType = 1				
+			RETURN			
+		END
+
+		SELECT @ErrCode = MAX (CASE	WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
+										OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 195 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
+									WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 193 --Check m1+a1<=m4
+									WHEN cs.AgentPT > s.AgentPT THEN 191 --Check a1<=a4
+									ELSE 0 END)
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
+			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.srecommend = @custid AND c.roleid = 1 and c.enabled = 1
+
+		SELECT @ErrCodeGroup = MAX(CASE WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
+											OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 194 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
+										WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 192 --Check m1+a1<=m4
+										WHEN cs.AgentPT > s.AgentPT THEN 190 --Check a1<=a4
+										ELSE 0 END)
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
+			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.srecommend = @custid AND c.roleid = 2 and c.enabled = 1
+
+		SELECT @ErrCode = CASE WHEN @ErrCode < @ErrCodeGroup THEN @ErrCodeGroup ELSE @ErrCode END -- get max ErrCode to return first error
+
+		IF @ErrCode = 195
 		BEGIN
 			--check all s1+m1+a1 <= s4
 			--check all u1<=s4 if i1=1
@@ -218,7 +296,7 @@ BEGIN
 				RETURN
 			END
 		END
-		ELSE IF @ErrCode = 105
+		ELSE IF @ErrCode = 194
 		BEGIN
 			--check pt on grouped settings
 			--check s1+m1+a1 <= s4, check u1<=s4 if i1=1
@@ -269,39 +347,8 @@ BEGIN
 							, @MsgType = 1			        
 				RETURN						
 			END
-		END
-		ELSE IF @ErrCode = 106
-		BEGIN
-			--Check all m3<=m4
-			SELECT @ErrType = ''
-		
-			SELECT @ErrType =(
-				SELECT b.SportType, b.BetType, IsLive, UserName
-				FROM
-				(
-					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-					FROM 
-						CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
-						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
-													AND cs.bettype = b.bettype 
-													AND cs.IsLive = b.IsLive
-						INNER JOIN custinfo AS c WITH (NOLOCK) ON c.custid = cs.custid					
-					WHERE c.srecommend = @custid AND c.roleid = 3 
-						AND cs.MasterPT > b.MasterPT
-				)b	
-				WHERE b.rn<= 10
-				FOR XML RAW('Row'), TYPE
-			)
-
-			IF @ErrType IS NOT NULL
-			BEGIN
-				SELECT @ErrMsg = '<Root MsgID="20021" Msg="Existing masters exceeded new Master Max PT">' 
-								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-							, @MsgType = 1			        
-				RETURN		
-			END
-		END
-		ELSE IF @ErrCode = 107
+		END		
+		ELSE IF @ErrCode = 193
 		BEGIN
 			--Check all m1+a1<=m4
 			SELECT @ErrType = ''
@@ -333,7 +380,7 @@ BEGIN
 				RETURN
 			END
 		END
-		ELSE IF @ErrCode = 108
+		ELSE IF @ErrCode = 192
 		BEGIN
 			--check PT on grouped settings
 			--Check all m1+a1<=m4
@@ -380,41 +427,8 @@ BEGIN
 							, @MsgType = 1				
 				RETURN
 			END     
-		END
-		ELSE IF @ErrCode = 109
-		BEGIN
-			--Check all a2<=a4
-			SELECT @ErrType = ''
-
-			SELECT @ErrType =
-			(  
-				SELECT b.SportType, b.BetType, IsLive, UserName
-				FROM
-				( 
-					 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
-					 FROM CustPTSetting3rd_Agent cs WITH(NOLOCK) 
-						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-												AND cs.bettype = b.bettype 
-												AND cs.IsLive = b.IsLive
-						INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid				
-					 WHERE c.srecommend = @custid
-					   AND c.roleid     = 2
-					   AND c.Enabled    = 1
-					   AND cs.AgentPT > b.AgentPT
-				)b
-				WHERE b.rn<=10
-				FOR XML RAW('Row'), TYPE
-			)
-
-			IF @ErrType IS NOT NULL
-			BEGIN
-				SELECT @ErrMsg = '<Root MsgID="20023" Msg="Existing agents exceeded new Agent Max PT">' 
-								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-							, @MsgType = 1				
-				RETURN			
-			END
-	    END
-		ELSE IF @ErrCode = 110
+		END		
+		ELSE IF @ErrCode = 191
 		BEGIN
 			--Check all a1<=a4
 			SELECT @ErrType = ''
@@ -447,7 +461,7 @@ BEGIN
 				RETURN
 			END
 	    END
-		ELSE IF @ErrCode = 111
+		ELSE IF @ErrCode = 190
 		BEGIN
 			--check PT on grouped settings
 			--Check all a1<=a4
@@ -482,7 +496,7 @@ BEGIN
 						INNER JOIN CustSettingMode3rd cm WITH(NOLOCK) ON c.custid = cm.custid
 						INNER JOIN @tmpPTGroup b ON c.recommend = b.custid
 					WHERE roleid = 1
-						AND c.Enabled    = 1
+						AND c.Enabled = 1
 						AND IsGrouped = 1
 				)b
 				WHERE b.rn<=10

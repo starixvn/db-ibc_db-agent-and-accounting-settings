@@ -1,6 +1,5 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterPTCheck]
 	@custid		INT,	
-	@username	VARCHAR(30),
 	@srecommend INT,
 	
 	@PT			VARCHAR(MAX),
@@ -42,7 +41,8 @@ BEGIN
 				IsAutoSuperPT	BIT,
 				AutoSuperPT		SMALLINT,
 				MasterPT		SMALLINT,				
-				MasterMinPT		SMALLINT
+				MasterMinPT		SMALLINT,
+				MasterMaxPT		SMALLINT
 				)
 	
 	-- For read xml
@@ -54,51 +54,73 @@ BEGIN
 				IsAutoSuperPT,
 				AutoSuperPT,
 				MasterPT,				
-				MasterMinPT
+				MasterMinPT,
+				MasterMaxPT
 			)
 	SELECT
-		SportType,
-		BetType,
-		IsLive,
-		SuperPT,
-		IsAutoSuperPT,
-		AutoSuperPT,
-		MasterPT,		
-		MinPT
-	FROM dbo.f_DCS_PT_XMLParse(@PT)
-	
+		b.SportType,
+		b.BetType,
+		b.IsLive,
+		b.SuperPT,
+		b.IsAutoSuperPT,
+		b.AutoSuperPT,
+		b.MasterPT,		
+		b.MinPT,
+		mcs.MaxPT
+	FROM dbo.f_DCS_PT_XMLParse(@PT) b
+		INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.sporttype = b.sporttype AND mcs.bettype = b.bettype AND mcs.isLive = b.IsLive					
+	WHERE mcs.custid = @custid 
 	-- end read xml	
 	
 	--Check Param
-    DECLARE @ErrType XML
-			
-	SET @ErrType =
-		(
-			SELECT t.SportType, t.BetType, t.IsLive
-			FROM @tblPT t
-				INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON t.SportType = ps.Sporttype 
-																	AND t.BetType = ps.bettype 
-																	AND t.IsLive = ps.IsLive
-			WHERE ps.SettingType = 1--PT
-				AND (t.SuperPT < 0 OR t.MasterPT < 0 
-					OR t.SuperPT + t.MasterPT > ps.MaxPT
-					OR t.AutoSuperPT < 0 
-					OR t.AutoSuperPT > ps.MaxPT
-					OR t.MasterMinPT < 0					
-				)
-			FOR XML RAW('Row'), TYPE
-		)
+    DECLARE @ErrType XML, @ErrCodeGroup INT
 	
-	IF @ErrType IS NOT NULL
-	 BEGIN        
-         SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 101
-                    , @MsgType = 5
-        RETURN
-    END			
-    
-    IF @UpdateMinPT = 1
+	--check master level
+	SELECT @ErrCode = MAX (CASE	WHEN m.SuperPT < 0 OR m.MasterPT < 0 OR m.SuperPT + m.MasterPT > ps.MaxPT OR m.AutoSuperPT < 0 OR m.AutoSuperPT > ps.MaxPT OR m.MasterMinPT < 0 THEN 200
+								WHEN m.MasterPT < m.MasterMinPT OR s.MasterPT < m.MasterMinPT THEN 199 --check min(m3,m4)>=n3
+								WHEN (m.IsAutoSuperPT=0 AND (m.SuperPT + m.MasterPT > s.MaxPT OR m.SuperPT + m.MasterPT < s.MinPT))							
+										OR (m.IsAutoSuperPT = 1 AND (m.MasterPT>s.MaxPT OR m.MasterPT + m.AutoSuperPT < s.MinPT)) THEN 198 --check n4<=s3+m3<=l4 if i3 = 0, m3<=l4 and u3+m3>=n4 if i3 = 1
+								WHEN m.MasterPT > m.MasterMaxPT OR m.MasterPT < m.MasterMinPT  THEN 197 --check n3<=m3<=l3
+								WHEN s.MasterPT < m.MasterPT THEN 196 --check m3<=m4
+								WHEN s.SuperPT < m.AutoSuperPT THEN 195 --Check u3<=s4
+								WHEN m.IsAutoSuperPT = 1 AND m.AutoSuperPT < (CASE WHEN s.MinPT > s.MasterPT THEN s.MinPT - s.MasterPT ELSE 0 END) THEN 194 --Check u3>=Max(0, N4-M4)        
+								WHEN s.SuperPT < m.SuperPT OR m.SuperPT + m.MasterPT > s.SuperPT THEN 193 --Check s3<=s4, s3+m3<=s4
+								WHEN m.IsAutoSuperPT = 0 AND m.SuperPT < CASE WHEN s.MinPT > s.MasterPT THEN s.MinPT - s.MasterPT ELSE 0 END THEN 192 --Check s3>=Max(0, N4-M4)  
+								ELSE 0 END)
+	FROM dbo.CustPTSetting3rd_Agent s WITH (NOLOCK) 
+		INNER JOIN @tblPT m ON s.sporttype = m.sporttype AND s.bettype = m.bettype AND s.IsLive = m.IsLive
+		INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON m.SportType = ps.Sporttype AND m.BetType = ps.bettype AND m.IsLive = ps.IsLive
+	WHERE s.custid = @srecommend AND ps.SettingType = 1
+			
+	IF 	@ErrCode = 200
+	BEGIN
+		SET @ErrType =
+			(
+				SELECT t.SportType, t.BetType, t.IsLive
+				FROM @tblPT t
+					INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON t.SportType = ps.Sporttype 
+																		AND t.BetType = ps.bettype 
+																		AND t.IsLive = ps.IsLive
+				WHERE ps.SettingType = 1--PT
+					AND (t.SuperPT < 0 OR t.MasterPT < 0 
+						OR t.SuperPT + t.MasterPT > ps.MaxPT
+						OR t.AutoSuperPT < 0 
+						OR t.AutoSuperPT > ps.MaxPT
+						OR t.MasterMinPT < 0					
+					)
+				FOR XML RAW('Row'), TYPE
+			)
+	
+		IF @ErrType IS NOT NULL
+		 BEGIN        
+			 SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 5
+			RETURN
+		END			
+    END	
+
+    IF @UpdateMinPT = 1 AND @ErrCode = 199
     BEGIN
         --check min(m3,m4)>=n3
         SELECT @ErrType = ''
@@ -120,7 +142,6 @@ BEGIN
         BEGIN       
 			SELECT @ErrMsg = '<Root MsgID="20001" Msg="Wrong position taking.">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 102
                     , @MsgType = 5                                    
             RETURN
         END
@@ -128,139 +149,308 @@ BEGIN
     
     IF @UpdatePresetPT = 1
     BEGIN
-		--check n4<=s3+m3<=l4 if i3 = 0, 
-        --m3<=l4 and u3+m3>=n4 if i3 = 1
-        SELECT @ErrType = ''
+		IF @ErrCode = 198
+		BEGIN 
+			--check n4<=s3+m3<=l4 if i3 = 0, 
+			--m3<=l4 and u3+m3>=n4 if i3 = 1
+			SELECT @ErrType = ''
         
-		 SELECT @ErrType = (     			
-				SELECT b.SportType, b.BetType, b.IsLive, scs.MinPT, scs.MaxPT       
-				FROM CustPTSetting3rd_Agent as scs WITH (NOLOCK) 
-					INNER JOIN @tblPT as b ON scs.sporttype = b.sporttype 
-												AND scs.bettype = b.bettype
-												AND scs.isLive = b.isLive					
-				WHERE scs.custid = @srecommend 
-					AND (    
-							(
-								b.IsAutoSuperPT=0 
-								AND (
-									b.SuperPT + b.MasterPT > scs.MaxPT 
-									OR b.SuperPT + b.MasterPT < scs.MinPT
-									)
-							) 
-							OR 
-							(
-								b.IsAutoSuperPT >0 
-								AND (
-									b.MasterPT>scs.MaxPT 
-									OR b.MasterPT + b.AutoSuperPT < scs.MinPT
-									)
-							)
-					  )
-				FOR XML RAW('Row'), TYPE
-				)	 
+			 SELECT @ErrType = (     			
+					SELECT b.SportType, b.BetType, b.IsLive, scs.MinPT, scs.MaxPT       
+					FROM CustPTSetting3rd_Agent as scs WITH (NOLOCK) 
+						INNER JOIN @tblPT as b ON scs.sporttype = b.sporttype 
+													AND scs.bettype = b.bettype
+													AND scs.isLive = b.isLive					
+					WHERE scs.custid = @srecommend 
+						AND (    
+								(
+									b.IsAutoSuperPT=0 
+									AND (
+										b.SuperPT + b.MasterPT > scs.MaxPT 
+										OR b.SuperPT + b.MasterPT < scs.MinPT
+										)
+								) 
+								OR 
+								(
+									b.IsAutoSuperPT >0 
+									AND (
+										b.MasterPT>scs.MaxPT 
+										OR b.MasterPT + b.AutoSuperPT < scs.MinPT
+										)
+								)
+						  )
+					FOR XML RAW('Row'), TYPE
+					)	 
               
-        IF @ErrType IS NOT NULL
-        BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 103
-                    , @MsgType = 4                                   
-            RETURN            
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 4                                   
+				RETURN            
+			END
         END
-        
-        --n3<=m3<=l3
-        SELECT @ErrType = ''        
-		SELECT @ErrType = (     			
-				SELECT b.SportType, b.BetType, b.IsLive, b.MasterMinPT as MinPT, mcs.MaxPT       				
-				FROM CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) 
-					INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
-												AND mcs.bettype = b.bettype
-												AND mcs.isLive = b.IsLive					
-				WHERE mcs.custid = @custid 
-					AND (
-							b.MasterPT > mcs.MaxPT 
-						OR b.MasterPT < b.MasterMinPT
-						)        
-				FOR XML RAW('Row'), TYPE
-				)
+		ELSE IF @ErrCode = 197
+		BEGIN
+			--n3<=m3<=l3
+			SELECT @ErrType = ''        
+			SELECT @ErrType = (     			
+					SELECT b.SportType, b.BetType, b.IsLive, b.MasterMinPT as MinPT, mcs.MaxPT       				
+					FROM CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) 
+						INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
+													AND mcs.bettype = b.bettype
+													AND mcs.isLive = b.IsLive					
+					WHERE mcs.custid = @custid 
+						AND (
+								b.MasterPT > mcs.MaxPT 
+							OR b.MasterPT < b.MasterMinPT
+							)        
+					FOR XML RAW('Row'), TYPE
+					)
                         
-        IF @ErrType IS NOT NULL
-        BEGIN            
-			SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 104
-                    , @MsgType = 4                                   
-            RETURN                
+			IF @ErrType IS NOT NULL
+			BEGIN            
+				SELECT @ErrMsg = '<Root MsgID="20025" Msg="The position taking violates Upline Min/Max PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 4                                   
+				RETURN                
                        
+			END
+        END				
+		ELSE IF @ErrCode = 196
+		BEGIN
+			--check m3<=m4
+			SELECT @ErrType = ''        
+			SELECT @ErrType = (     			
+					SELECT b.SportType, b.BetType, b.IsLive, scs.MasterPT as MaxPT				       
+					FROM CustPTSetting3rd_Agent as scs WITH (NOLOCK)
+						INNER JOIN @tblPT b ON scs.sporttype = b.SportType
+												AND scs.bettype = b.BetType
+												AND scs.isLive = b.IsLive					
+					WHERE custid = @srecommend 
+						AND scs.MasterPT < b.MasterPT
+					FOR XML RAW('Row'), TYPE
+			)
+        
+			IF @ErrType IS NOT NULL
+			BEGIN           
+				SELECT @ErrMsg = '<Root MsgID="20027" Msg="The position taking violates Master Max PT set by company">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 3                                 
+				RETURN  
+			END
+        END		
+		ELSE IF @ErrCode = 195
+		BEGIN
+			--u3<=s4
+			SELECT @ErrType = ''
+			SELECT @ErrType = (
+				SELECT b.SportType, b.BetType, b.IsLive, cs.SuperPT as MaxPT 					
+				FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
+					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
+											AND cs.bettype = b.bettype
+											AND cs.isLive = b.IsLive														
+				WHERE cs.custid = @srecommend 
+					AND cs.SuperPT < b.AutoSuperPT
+				FOR XML RAW('Row'), TYPE
+			)
+            
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 3                                 
+				RETURN
+			END
         END
+		ELSE IF @ErrCode = 194
+		BEGIN
+			--u3>=Max(0, N4-M4)        
+			SELECT @ErrType = ''
+			SELECT @ErrType = (
+						SELECT b.SportType, b.BetType, b.IsLive, (CASE WHEN scs.MinPT - scs.MasterPT > 0 
+																		THEN scs.MinPT - scs.MasterPT ELSE 0 END) as MinPT 																								
+						FROM CustPTSetting3rd_Agent AS scs WITH (NOLOCK)
+							INNER JOIN @tblPT b ON scs.sporttype = b.sporttype 
+													AND scs.bettype = b.bettype
+													AND scs.isLive = b.IsLive						
+					   WHERE scs.custid = @srecommend 
+							AND (b.IsAutoSuperPT >0 
+								AND b.AutoSuperPT < (CASE WHEN scs.MinPT > scs.MasterPT
+															THEN scs.MinPT - scs.MasterPT ELSE 0 END)
+								)
+						FOR XML RAW('Row'), TYPE
+					)
         
-         --m2+a2<=m3
-        SELECT @ErrType = ''
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20029" Msg=" The position taking violates Super Min PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 2                                
+				RETURN            
+			END 
+        END
+		ELSE IF @ErrCode = 193
+		BEGIN
+			--s3<=s4,s3+m3<=s4
+			SELECT @ErrType = ''        
+			SELECT @ErrType = (
+						SELECT b.SportType, b.BetType, b.IsLive, cs.SuperPT as MaxPT
+						FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
+							INNER JOIN @tblPT b ON cs.sporttype = b.SportType
+													AND cs.bettype = b.BetType
+													AND cs.isLive = b.IsLive																									
+						WHERE custid = @srecommend 
+							AND (cs.SuperPT < b.SuperPT OR b.SuperPT + b.MasterPT > cs.SuperPT)
+						FOR XML RAW('Row'), TYPE
+					)
         
-         SELECT @ErrType =
-		(  
-			SELECT b.SportType, b.BetType, IsLive, UserName 
-			FROM
-			( 
-				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 
-				 FROM custinfo ci WITH(NOLOCK) 
-						INNER JOIN CustPTSetting3rd_Agent acs WITH(NOLOCK) ON ci.custid = acs.custid 
-						INNER JOIN @tblPT b ON acs.sporttype = b.sporttype 
-												AND acs.bettype = b.bettype
-												AND acs.isLive = b.IsLive
-				 WHERE ci.mrecommend = @custid
-				   AND ci.roleid     = 2
-				   AND ci.Enabled    = 1
-				   AND acs.MasterPT + acs.AgentPT > b.MasterPT
-			)b
-			WHERE b.rn<=10
-			FOR XML RAW('Row'), TYPE
-		)
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 3                                 
+				RETURN
+			END
+        END
+		ELSE IF @ErrCode = 192
+		BEGIN
+			--s3>=Max(0, N4-M4)        
+			SELECT @ErrType = ''
+			SELECT @ErrType = (
+						SELECT b.SportType, b.BetType, b.IsLive, 
+						CASE WHEN cs.MinPT - cs.MasterPT > 0 
+								THEN cs.MinPT - cs.MasterPT ELSE 0 END as MinPT
+			FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
+				INNER JOIN @tblPT b ON cs.sporttype = b.SportType
+										AND cs.bettype = b.BetType
+										AND cs.isLive = b.isLive            																						      									
+			WHERE cs.custid = @srecommend
+				AND (b.IsAutoSuperPT = 0 
+					AND b.SuperPT < CASE WHEN cs.MinPT > cs.MasterPT
+											THEN cs.MinPT - cs.MasterPT ELSE 0 END)
+			FOR XML RAW('Row'), TYPE									
+			)										
+        
+			IF @ErrType IS NOT NULL
+			BEGIN
+				SELECT @ErrMsg = '<Root MsgID="20029" Msg="The position taking violates Super Min PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 2                                
+				RETURN             
+			END 
+		END	
+
+		--check agent level
+		SELECT @ErrCode = MAX (CASE	WHEN a.MasterPT + a.AgentPT > m.MasterPT THEN 191 --check m2+a2<=m3
+									WHEN a.AutoMasterPT > m.MasterPT AND a.IsAutoMasterPT = 1 THEN 190 --Check m3>=u2
+									ELSE 0 END)
+		FROM dbo.custinfo c WITH(NOLOCK)
+			INNER JOIN dbo.CustPTSetting3rd_Agent a WITH(NOLOCK) on c.custid = a.custid
+			INNER JOIN @tblPT m ON a.sporttype = m.sporttype AND a.bettype = m.bettype AND a.IsLive = m.IsLive
+		WHERE c.mrecommend = @custid AND c.roleid = 2 and c.enabled = 1
+
+		IF @ErrCode = 191
+		BEGIN
+			--m2+a2<=m3
+			SELECT @ErrType = ''
+        
+			 SELECT @ErrType =
+			(  
+				SELECT b.SportType, b.BetType, IsLive, UserName 
+				FROM
+				( 
+					 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 
+					 FROM custinfo ci WITH(NOLOCK) 
+							INNER JOIN CustPTSetting3rd_Agent acs WITH(NOLOCK) ON ci.custid = acs.custid 
+							INNER JOIN @tblPT b ON acs.sporttype = b.sporttype 
+													AND acs.bettype = b.bettype
+													AND acs.isLive = b.IsLive
+					 WHERE ci.mrecommend = @custid
+					   AND ci.roleid     = 2
+					   AND ci.Enabled    = 1
+					   AND acs.MasterPT + acs.AgentPT > b.MasterPT
+				)b
+				WHERE b.rn<=10
+				FOR XML RAW('Row'), TYPE
+			)
 			
-        
-        IF @ErrType IS NOT NULL
-        BEGIN        
-			SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 105
-                    , @MsgType = 1                                   
-            RETURN   
+			IF @ErrType IS NOT NULL
+			BEGIN        
+				SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 1                                   
+				RETURN   
+			END
+		END
+		ELSE IF @ErrCode = 190
+		BEGIN
+			--m3>=u2
+			SELECT @ErrType = ''        
+			SELECT @ErrType =
+			(  
+				SELECT b.SportType, b.BetType, IsLive, UserName 
+				FROM
+				( 
+					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 				
+					FROM custinfo ci WITH(NOLOCK)
+						INNER JOIN CustPTSetting3rd_Agent cs WITH(NOLOCK) ON ci.custid = cs.custid 
+						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
+												AND cs.bettype = b.bettype
+												AND cs.isLive = b.IsLive
+					 WHERE ci.mrecommend = @custid
+					   AND ci.roleid     = 2
+					   AND ci.Enabled    = 1
+					   AND cs.AutoMasterPT > b.MasterPT
+					   AND cs.IsAutoMasterPT = 1
+				)b
+				WHERE b.rn<=10
+				FOR XML RAW('Row'), TYPE
+			)			
+
+			IF @ErrType IS NOT NULL
+			BEGIN        
+				SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT.">'
+								+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
+						, @MsgType = 1                                 
+				RETURN  
+			END
         END
-		
-		-------------------------------
+
+		--check member level
 		--m1+a1<=m3
-        SELECT @ErrType = ''
-        SELECT @ErrType =
+		SELECT @ErrType = ''
+		SELECT @ErrType =
 		( 
 			SELECT b.SportType, b.BetType, IsLive, UserName 
 			FROM
 			( 
-				 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 
-				 FROM custinfo ci WITH(NOLOCK) 
+					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 
+					FROM custinfo ci WITH(NOLOCK) 
 					INNER JOIN CustPTSetting3rd_Member cs WITH(NOLOCK) ON ci.custid = cs.custid
 					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
 											AND cs.bettype = b.bettype
 											AND cs.isLive = b.IsLive
-				 WHERE ci.mrecommend = @custid
-				   AND ci.roleid     = 1
-				   AND ci.Enabled    = 1
-				   AND cs.MasterPT + cs.AgentPT > b.MasterPT
+					WHERE ci.mrecommend = @custid
+					AND ci.roleid     = 1
+					AND ci.Enabled    = 1
+					AND cs.MasterPT + cs.AgentPT > b.MasterPT
 			)b
 			WHERE b.rn<= 10
 			FOR XML RAW('Row'), TYPE
 		)
 
-        IF @ErrType IS NOT NULL
-        BEGIN         
+		IF @ErrType IS NOT NULL
+		BEGIN         
 			SELECT @ErrMsg = '<Root MsgID="20022" Msg="Existing members exceeded new Master Max PT">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 106
-                    , @MsgType = 1                                  
-            RETURN                
-        END
-        
-        --check on grouped settings
-        
+							, @ErrCode = 189
+							, @MsgType = 1                                  
+			RETURN                
+		END
+	
+		--check on grouped settings     
+		--m1+a1<=m3   
 		INSERT INTO @tmpPTGroup(sporttype,bettype,islive,custid)
 		SELECT b.SportType, b.BetType, islive, custid 
 		FROM
@@ -271,10 +461,10 @@ BEGIN
 				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
 										AND cs.bettype = b.bettype
 										AND cs.isLive = b.IsLive
-			 WHERE ci.mrecommend = @custid
-			   AND ci.roleid     = 2
-			   AND ci.Enabled    = 1
-			   AND cs.MasterPT + cs.AgentPT > b.MasterPT
+				WHERE ci.mrecommend = @custid
+				AND ci.roleid     = 2
+				AND ci.Enabled    = 1
+				AND cs.MasterPT + cs.AgentPT > b.MasterPT
 		)b
 		WHERE b.rn<= 10      
       
@@ -300,161 +490,9 @@ BEGIN
 		BEGIN      
 			SELECT @ErrMsg = '<Root MsgID="20022" Msg="Existing members exceeded new Master Max PT">'
 							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 106
-                    , @MsgType = 1                                  
-            RETURN     
-		END
-		
-		--check m3<=m4
-       SELECT @ErrType = ''        
-		SELECT @ErrType = (     			
-				SELECT b.SportType, b.BetType, b.IsLive, scs.MasterPT as MaxPT				       
-				FROM CustPTSetting3rd_Agent as scs WITH (NOLOCK)
-					INNER JOIN @tblPT b ON scs.sporttype = b.SportType
-											AND scs.bettype = b.BetType
-											AND scs.isLive = b.IsLive					
-				WHERE custid = @srecommend 
-					AND scs.MasterPT < b.MasterPT
-				FOR XML RAW('Row'), TYPE
-		)
-        
-        IF @ErrType IS NOT NULL
-        BEGIN           
-			SELECT @ErrMsg = '<Root MsgID="20027" Msg="The position taking violates Master Max PT set by company">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 107
-                    , @MsgType = 3                                 
-            RETURN  
-        END
-        
-        --m3>=u2
-        SELECT @ErrType = ''        
-        SELECT @ErrType =
-		(  
-			SELECT b.SportType, b.BetType, IsLive, UserName 
-			FROM
-			( 
-				SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 				 				 				
-				FROM custinfo ci WITH(NOLOCK)
-					INNER JOIN CustPTSetting3rd_Agent cs WITH(NOLOCK) ON ci.custid = cs.custid 
-					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-											AND cs.bettype = b.bettype
-											AND cs.isLive = b.IsLive
-				 WHERE ci.mrecommend = @custid
-				   AND ci.roleid     = 2
-				   AND ci.Enabled    = 1
-				   AND cs.AutoMasterPT > b.MasterPT
-				   AND cs.IsAutoMasterPT = 1
-			)b
-			WHERE b.rn<=10
-			FOR XML RAW('Row'), TYPE
-		)
-			
-
-        IF @ErrType IS NOT NULL
-        BEGIN        
-			SELECT @ErrMsg = '<Root MsgID="20026" Msg="Existing agents exceeded new Master Max PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 108
-                    , @MsgType = 1                                 
-            RETURN  
-        END
-        
-        --u3<=s4
-        SELECT @ErrType = ''
-        SELECT @ErrType = (
-			SELECT b.SportType, b.BetType, b.IsLive, cs.SuperPT as MaxPT 					
-			FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
-				INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-										AND cs.bettype = b.bettype
-										AND cs.isLive = b.IsLive														
-			WHERE cs.custid = @srecommend 
-				AND cs.SuperPT < b.AutoSuperPT
-			FOR XML RAW('Row'), TYPE
-        )
-            
-        IF @ErrType IS NOT NULL
-        BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 109
-                    , @MsgType = 3                                 
-            RETURN
-        END
-        
-         --u3>=Max(0, N4-M4)        
-        SELECT @ErrType = ''
-		SELECT @ErrType = (
-					SELECT b.SportType, b.BetType, b.IsLive, (CASE WHEN scs.MinPT - scs.MasterPT > 0 
-																	THEN scs.MinPT - scs.MasterPT ELSE 0 END) as MinPT 																								
-					FROM CustPTSetting3rd_Agent AS scs WITH (NOLOCK)
-						INNER JOIN @tblPT b ON scs.sporttype = b.sporttype 
-												AND scs.bettype = b.bettype
-												AND scs.isLive = b.IsLive						
-				   WHERE scs.custid = @srecommend 
-						AND (b.IsAutoSuperPT >0 
-							AND b.AutoSuperPT < (CASE WHEN scs.MinPT > scs.MasterPT
-														THEN scs.MinPT - scs.MasterPT ELSE 0 END)
-							)
-					FOR XML RAW('Row'), TYPE
-				)
-        
-        IF @ErrType IS NOT NULL
-        BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20029" Msg=" The position taking violates Super Min PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 110
-                    , @MsgType = 2                                
-            RETURN            
-        END 
-        
-        --s3<=s4,s3+m3<=s4
-        SELECT @ErrType = ''        
-        SELECT @ErrType = (
-					SELECT b.SportType, b.BetType, b.IsLive, cs.SuperPT as MaxPT
-					FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
-						INNER JOIN @tblPT b ON cs.sporttype = b.SportType
-												AND cs.bettype = b.BetType
-												AND cs.isLive = b.IsLive																									
-					WHERE custid = @srecommend 
-						AND (cs.SuperPT < b.SuperPT OR b.SuperPT + b.MasterPT > cs.SuperPT)
-					FOR XML RAW('Row'), TYPE
-				)
-        
-        IF @ErrType IS NOT NULL
-        BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20028" Msg="The position taking violates Super Max PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 111
-                    , @MsgType = 3                                 
-            RETURN
-        END
-        
-        --s3>=Max(0, N4-M4)        
-        SELECT @ErrType = ''
-        SELECT @ErrType = (
-					SELECT b.SportType, b.BetType, b.IsLive, 
-					CASE WHEN cs.MinPT - cs.MasterPT > 0 
-							THEN cs.MinPT - cs.MasterPT ELSE 0 END as MinPT
-        FROM CustPTSetting3rd_Agent AS cs WITH (NOLOCK)
-			INNER JOIN @tblPT b ON cs.sporttype = b.SportType
-									AND cs.bettype = b.BetType
-									AND cs.isLive = b.isLive            																						      									
-        WHERE cs.custid = @srecommend
-            AND (b.IsAutoSuperPT = 0 
-				AND b.SuperPT < CASE WHEN cs.MinPT > cs.MasterPT
-										THEN cs.MinPT - cs.MasterPT ELSE 0 END)
-		FOR XML RAW('Row'), TYPE									
-		)										
-        
-        IF @ErrType IS NOT NULL
-        BEGIN
-			SELECT @ErrMsg = '<Root MsgID="20029" Msg="The position taking violates Super Min PT.">'
-							+ CONVERT(VARCHAR(MAX),@ErrType) + '</Root>'
-                    , @ErrCode = 112
-                    , @MsgType = 2                                
-            RETURN             
-        END 	
-    END								
-	
+							, @ErrCode = 188
+							, @MsgType = 1                                  
+			RETURN     
+		END	
+	END
 END 
