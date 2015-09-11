@@ -121,7 +121,7 @@ BEGIN
 	EXEC dbo.Age_CustomerSelCheckBelongingByCustID   
 		 @SessionCustID = @Userid,   
 		 @Custid = @custid,  		 
-		 @_RoleID = @_RoleID OUTPUT  
+		 @RoleID = @_RoleID OUTPUT  
 	
 	IF (@_RoleID <> 1) RETURN-- return if not member    
 	
@@ -385,7 +385,17 @@ BEGIN
 				, @ErrMsg		= @ErrMsg	OUTPUT
 
 	IF @ErrCode <> 0
-		RETURN		
+		RETURN	
+	
+	--Udpate new values	
+	UPDATE cs
+	SET	cs.AutoSuperPT = b.AutoSuperPT,  
+		cs.IsAutoSuperPT = b.IsAutoSuperPT,
+		cs.SuperPT = b.SuperPT  
+	FROM @NewPT cs 
+	INNER JOIN @tblPT b ON b.SportType = cs.SportType
+							AND b.BetType = cs.BetType
+							AND b.IsLive = cs.IsLive		
 --******************************************ADJUST PT SETTINGS*************************************** 
 	DECLARE @n2 SMALLMONEY
 	DECLARE @a1 SMALLMONEY, @m1 SMALLMONEY, @s1 SMALLMONEY, @i1 BIT, @u1 SMALLMONEY, @im1 BIT, @um1 SMALLMONEY

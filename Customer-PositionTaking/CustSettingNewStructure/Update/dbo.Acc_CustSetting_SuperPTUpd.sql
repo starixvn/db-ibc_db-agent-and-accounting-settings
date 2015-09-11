@@ -178,7 +178,6 @@ BEGIN
 	
 	EXEC Acc_CustSetting_SuperPTCheck 
 			@custid		= @custid,
-			@username	= @username,
 			@PT			= @PT,	
 			@UpdatePresetPT = @UpdatePresetPT,	
 			@MsgType	= @MsgType OUTPUT,		

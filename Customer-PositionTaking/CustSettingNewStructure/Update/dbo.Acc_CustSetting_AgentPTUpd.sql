@@ -204,7 +204,6 @@ BEGIN
 	
 	EXEC Acc_CustSetting_AgentPTCheck
 		@custid		= @custid,
-		@username	= @username,
 		@srecommend = @srecommend,
 		@mrecommend = @mrecommend,
 		

@@ -377,7 +377,7 @@ BEGIN
 --******************************************VALIDATE PT VALUES*************************************** 		
 	EXEC [dbo].Acc_CustSetting_MemberPTCheck 
 				@CustID = @CustID
-				, @_RoleID		= 3
+				, @RoleID		= 3
 				, @AgentID		= @_AgentID
 				, @MasterID		= @_MasterID
 				, @SuperID		= @_SuperID
@@ -389,7 +389,18 @@ BEGIN
 
 	IF @ErrCode <> 0
 		RETURN		
-	
+
+	--Update values
+	UPDATE cs
+	SET AutoMasterPT =  b.AutoMasterPT,   
+		IsAutoMasterPT = b.IsAutoMasterPT,
+		MasterPT = b.MasterPT ,  
+		SuperPT = b.SuperPT  
+	FROM @NewPT cs 
+		INNER JOIN @tblPT b ON cs.SportType = b.SportType
+								AND cs.BetType = b.BetType
+								AND cs.IsLive = b.IsLive  
+									
 --******************************************ADJUST PT SETTINGS*************************************** 	
 	DECLARE @m3 SMALLMONEY,@us3 SMALLMONEY, @s4 SMALLMONEY
 	DECLARE @n2 SMALLMONEY, @l2 SMALLMONEY

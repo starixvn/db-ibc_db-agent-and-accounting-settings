@@ -209,7 +209,6 @@ BEGIN
 	
 	EXEC Acc_CustSetting_MasterPTCheck
 		@custid		= @custid,	
-		@username	= @username,
 		@srecommend = @srecommend,
 		
 		@PT			= @PT,
