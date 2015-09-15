@@ -27,6 +27,9 @@ BEGIN
 	
 	 --Check Param
     DECLARE @ErrType XML, @ErrCodeGroup INT
+	CREATE TABLE #MasterTbl (CustID INT, UserName NVARCHAR(50))
+	CREATE TABLE #AgentTbl 	(CustID INT, UserName NVARCHAR(50))
+	DECLARE @SuperID INT
 						
 	DECLARE @tblPT TABLE (
 				SportType	SMALLINT,
@@ -64,6 +67,14 @@ BEGIN
 	FROM dbo.f_DCS_PT_XMLParse(@PT)	
 	-- end read xml				
 	
+	SELECT @SuperID = @custid
+
+	INSERT INTO #MasterTbl(CustID, UserName)
+	SELECT CustID, username FROM CustInfo WITH (NOLOCK) WHERE srecommend = @SuperID AND roleid = 3	
+
+	INSERT INTO #AgentTbl(CustID, UserName)
+	SELECT CustID, username FROM CustInfo WITH (NOLOCK) WHERE srecommend = @SuperID AND roleid = 2 AND Enabled = 1
+
 	SELECT @ErrCode = MAX (CASE	WHEN s.SuperPT < 0 OR s.SuperPT > ps.MaxPT OR s.MasterPT < 0 OR s.MasterPT > ps.MaxPT OR s.AgentPT < 0 OR s.AgentPT > ps.MaxPT
 									OR s.SuperMinPT < 0 OR s.SuperPT < s.MasterPT OR s.MasterPT < s.AgentPT THEN 200 
 								WHEN s.SuperPT < s.SuperMinPT THEN 199 --check n4<=s4								
@@ -131,10 +142,9 @@ BEGIN
 											((m.IsAutoSuperPT=1) AND (m.AutoSuperPT>s.SuperPT)) THEN 198 --check s3+m3<=s4 if i3 = 0, m3<=s4 and u3<=s4 if i3=1
 									WHEN m.MasterPT > s.MasterPT THEN 197 --Check m3<=m4
 									ELSE 0 END)
-		FROM dbo.custinfo c WITH(NOLOCK)
-			INNER JOIN dbo.CustPTSetting3rd_Agent m WITH (NOLOCK) ON c.custid = m.custid
-			INNER JOIN @tblPT s ON c.srecommend = @custid AND m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
-		WHERE c.srecommend = @custid AND c.roleid = 3
+		FROM #MasterTbl c 
+			INNER JOIN dbo.CustPTSetting3rd_Agent m WITH (NOLOCK) ON m.CustID = c.CustID
+			INNER JOIN @tblPT s ON m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
 
 		IF @ErrCode = 198
 		BEGIN
@@ -148,17 +158,13 @@ BEGIN
 				FROM
 				(
 					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-					FROM 
-						CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
-						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
-													AND cs.bettype = b.BetType 
-													AND cs.isLive = b.IsLive
-						INNER JOIN custinfo as c WITH (NOLOCK) ON c.custid = cs.custid					
-					WHERE c.srecommend = @custid AND c.roleid = 3 AND (
-											((cs.IsAutoSuperPT=0) AND (cs.SuperPT+cs.MasterPT>b.SuperPT)) OR 
-											((cs.IsAutoSuperPT=1) AND (cs.MasterPT>b.SuperPT)) OR 
-											((cs.IsAutoSuperPT=1) AND (cs.AutoSuperPT>b.SuperPT)) 
-										)
+					FROM #MasterTbl c 
+						INNER JOIN CustPTSetting3rd_Agent AS cs WITH (NOLOCK) ON cs.CustID = c.CustID
+						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype AND cs.bettype = b.BetType AND cs.isLive = b.IsLive
+					WHERE (cs.IsAutoSuperPT=0 AND cs.SuperPT+cs.MasterPT>b.SuperPT)
+						OR (cs.IsAutoSuperPT=1 AND cs.MasterPT>b.SuperPT) 
+						OR (cs.IsAutoSuperPT=1 AND cs.AutoSuperPT>b.SuperPT)
+										
 				) b
 				WHERE b.rn <= 10
 				FOR XML RAW('Row'), TYPE
@@ -182,14 +188,10 @@ BEGIN
 				FROM
 				(
 					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-					FROM 
-						CustPTSetting3rd_Agent AS cs WITH (NOLOCK) 
-						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype 
-													AND cs.bettype = b.bettype 
-													AND cs.IsLive = b.IsLive
-						INNER JOIN custinfo AS c WITH (NOLOCK) ON c.custid = cs.custid					
-					WHERE c.srecommend = @custid AND c.roleid = 3 
-						AND cs.MasterPT > b.MasterPT
+					FROM #MasterTbl c 
+						INNER JOIN CustPTSetting3rd_Agent AS cs WITH (NOLOCK) ON cs.CustID = c.CustID
+						INNER JOIN @tblPT AS b ON cs.sporttype=b.sporttype AND cs.bettype = b.BetType AND cs.isLive = b.IsLive					
+					WHERE cs.MasterPT > b.MasterPT
 				)b	
 				WHERE b.rn<= 10
 				FOR XML RAW('Row'), TYPE
@@ -214,15 +216,12 @@ BEGIN
 			FROM
 			( 
 					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
-					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK) 
-					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
+					FROM #AgentTbl c
+						INNER JOIN CustPTSetting3rd_Agent cs WITH(NOLOCK) ON c.CustID = cs.CustID
+						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
 											AND cs.bettype = b.bettype 
 											AND cs.IsLive = b.IsLive
-					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid				
-					WHERE c.srecommend = @custid
-					AND c.roleid     = 2
-					AND c.Enabled    = 1
-					AND cs.AgentPT > b.AgentPT
+					WHERE cs.AgentPT > b.AgentPT 
 			)b
 			WHERE b.rn<=10
 			FOR XML RAW('Row'), TYPE
@@ -235,27 +234,28 @@ BEGIN
 						, @ErrCode = 196
 						, @MsgType = 1				
 			RETURN			
-		END
+		END		
 
 		SELECT @ErrCode = MAX (CASE	WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
 										OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 195 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
 									WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 193 --Check m1+a1<=m4
 									WHEN cs.AgentPT > s.AgentPT THEN 191 --Check a1<=a4
 									ELSE 0 END)
-		FROM dbo.custinfo c WITH(NOLOCK)
-			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.custid
-			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
-		WHERE c.srecommend = @custid AND c.roleid = 1 and c.enabled = 1
+		FROM #AgentTbl a
+			INNER JOIN CustInfo c WITH (NOLOCK) ON c.recommend = a.CustID
+			INNER JOIN dbo.CustPTSetting3rd_Member cs WITH(NOLOCK) ON cs.custid = c.custid
+			INNER  JOIN @tblPT s ON cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		WHERE c.Enabled = 1 and c.roleid = 1 AND c.srecommend = @SuperID
 
 		SELECT @ErrCodeGroup = MAX(CASE WHEN 1*cs.SuperPT+cs.MasterPT+cs.AgentPT>s.SuperPT 
 											OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > s.SuperPT)  THEN 194 --check s1+m1+a1 <= s4, check u1<=s4 if i1=1
 										WHEN cs.MasterPT + cs.AgentPT > s.MasterPT THEN 192 --Check m1+a1<=m4
 										WHEN cs.AgentPT > s.AgentPT THEN 190 --Check a1<=a4
 										ELSE 0 END)
-		FROM dbo.custinfo c WITH(NOLOCK)
+		FROM #AgentTbl c
 			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
-			INNER JOIN @tblPT s ON c.srecommend = @custid AND cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
-		WHERE c.srecommend = @custid AND c.roleid = 2 and c.enabled = 1
+			INNER JOIN @tblPT s ON cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
+		
 
 		SELECT @ErrCode = CASE WHEN @ErrCode < @ErrCodeGroup THEN @ErrCodeGroup ELSE @ErrCode END -- get max ErrCode to return first error
 
@@ -271,17 +271,13 @@ BEGIN
 				(
 					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
 					FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
-						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-												AND cs.bettype = b.bettype 
-												AND cs.IsLive = b.IsLive
+						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive
 						INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
-					WHERE c.srecommend = @custid
+					WHERE c.custid IN (SELECT custid FROM CustInfo WITH (NOLOCK) WHERE recommend IN (SELECT CustID FROM #AgentTbl))
 						AND c.roleid     = 1
 						AND c.Enabled    = 1
 						AND (1*cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT--convert datatype to ignore sql exception
-							OR (cs.IsAutoSuperPT = 1
-								AND cs.AutoSuperPT > b.SuperPT
-							   )  
+							OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > b.SuperPT)  
 						   )
 				)b 
 				WHERE b.rn<= 10
@@ -306,18 +302,11 @@ BEGIN
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
-				FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
-					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-											AND cs.bettype = b.bettype 
-											AND cs.IsLive = b.IsLive	
-					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.AgentID															
-				WHERE c.srecommend = @custid
-					AND c.roleid     = 2
-					AND c.Enabled    = 1
-					AND (1*cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT
-						OR (cs.IsAutoSuperPT = 1
-							AND cs.AutoSuperPT > b.SuperPT
-						   )  
+				FROM #AgentTbl c
+					INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.CustID = cs.AgentID
+					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive	
+				WHERE (1*cs.SuperPT+cs.MasterPT+cs.AgentPT>b.SuperPT
+						OR (cs.IsAutoSuperPT = 1 AND cs.AutoSuperPT > b.SuperPT)  
 					   )
 			)b
 			WHERE b.rn<= 10
@@ -333,7 +322,7 @@ BEGIN
 						INNER JOIN CustSettingMode3rd cm WITH(NOLOCK) ON c.custid = cm.custid
 						INNER JOIN @tmpPTGroup b ON c.recommend = b.custid
 					WHERE roleid = 1
-						AND c.Enabled    = 1
+						AND c.Enabled = 1
 						AND IsGrouped = 1
 				)b
 				WHERE b.rn<= 10
@@ -359,11 +348,9 @@ BEGIN
 				(
 					SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn
 					FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
-						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-												AND cs.bettype = b.bettype 
-												AND cs.IsLive = b.IsLive
+						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive
 						INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
-					WHERE c.srecommend = @custid
+					WHERE c.custid IN (SELECT custid FROM CustInfo WITH (NOLOCK) WHERE recommend IN (SELECT CustID FROM #AgentTbl))
 						   AND c.roleid     = 1
 						   AND c.Enabled    = 1
 						   AND cs.MasterPT + cs.AgentPT > b.MasterPT
@@ -389,15 +376,10 @@ BEGIN
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn						
-				FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
-					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype 
-											AND cs.bettype = b.bettype 
-											AND cs.IsLive = b.IsLive
-					INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.AgentID				
-				WHERE c.srecommend = @custid
-					   AND c.roleid     = 2
-					   AND c.Enabled    = 1
-					   AND cs.MasterPT + cs.AgentPT > b.MasterPT
+				FROM #AgentTbl c
+					INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.CustID = cs.AgentID
+					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive				
+				WHERE cs.MasterPT + cs.AgentPT > b.MasterPT
 			)b
 			WHERE b.rn <= 10
 		
@@ -440,11 +422,9 @@ BEGIN
 				( 
 					 SELECT b.SportType, b.BetType, b.islive, username, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn				 
 					 FROM CustPTSetting3rd_Member cs WITH(NOLOCK) 
-						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
-												AND cs.bettype = b.bettype
-												AND cs.IsLive = b.IsLive
+						INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive
 						INNER JOIN custinfo c WITH(NOLOCK) ON c.custid = cs.custid					
-					 WHERE c.srecommend = @custid
+					WHERE c.custid IN (SELECT custid FROM CustInfo WITH (NOLOCK) WHERE recommend IN (SELECT CustID FROM #AgentTbl))
 					   AND c.roleid     = 1
 					   AND c.Enabled    = 1
 					   AND cs.AgentPT > b.AgentPT
@@ -472,15 +452,10 @@ BEGIN
 			FROM
 			(
 				SELECT b.SportType, b.BetType, b.islive, custid, ROW_NUMBER() OVER(ORDER BY b.SportType, b.BetType, b.IsLive) rn									
-				FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK) 
-					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype
-											AND cs.bettype = b.bettype
-											AND cs.IsLive = b.IsLive
-					INNER JOIN custinfo c WITH(NOLOCK) ON cs.AgentID = c.custid
-				 WHERE c.srecommend = @custid
-				   AND c.roleid     = 2
-				   AND c.Enabled    = 1
-				   AND cs.AgentPT > b.AgentPT
+				FROM #AgentTbl c
+					INNER JOIN CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.CustID = cs.AgentID
+					INNER JOIN @tblPT b ON cs.sporttype = b.sporttype AND cs.bettype = b.bettype AND cs.IsLive = b.IsLive	
+				 WHERE cs.AgentPT > b.AgentPT
 			)b 
 			WHERE b.rn<=10
 		

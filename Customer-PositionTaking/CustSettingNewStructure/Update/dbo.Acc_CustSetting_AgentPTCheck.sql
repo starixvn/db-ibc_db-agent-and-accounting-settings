@@ -1,15 +1,15 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentPTCheck]
-	@custid		INT,
-	@srecommend INT,
-	@mrecommend INT,
+	@custid			INT,
+	@srecommend		INT,
+	@mrecommend		INT,
 	
-	@PT			VARCHAR(MAX)='',
-	@UpdateMinPT INT = 0,
+	@PT				VARCHAR(MAX)='',
+	@UpdateMinPT	INT = 0,
 	@UpdatePresetPT INT = 0,
 		
-	@ErrCode	INT = 0 OUTPUT,
-	@MsgType	INT = 0 OUTPUT,
-	@ErrMsg		VARCHAR(4000)='' OUTPUT
+	@ErrCode		INT = 0 OUTPUT,
+	@MsgType		INT = 0 OUTPUT,
+	@ErrMsg			VARCHAR(4000)='' OUTPUT
 AS
 	/*
 		Created: Johnson
@@ -25,6 +25,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
+	DECLARE @SuperID INT, @MasterID INT, @AgentID INT 
 	DECLARE @tblPT TABLE (
 				SportType		SMALLINT,
 				BetType			SMALLINT,
@@ -38,6 +39,8 @@ BEGIN
 				)	
 	
 	DECLARE @ErrType XML
+	
+	SELECT @SuperID = @srecommend, @MasterID = @mrecommend, @AgentID = @custid
 						
 	-- For read xml	
 	INSERT INTO @tblPT(
@@ -63,7 +66,7 @@ BEGIN
 		acs.MaxPT
 	FROM dbo.f_DCS_PT_XMLParse(@PT) b
 		INNER JOIN CustPTSetting3rd_Agent AS acs WITH (NOLOCK) ON acs.sporttype = b.sporttype AND acs.bettype = b.bettype AND acs.isLive = b.IsLive					
-	WHERE acs.custid = @custid
+	WHERE acs.custid = @AgentID
 	
 	-- end read xml	
 	
@@ -116,7 +119,7 @@ BEGIN
 	FROM dbo.CustPTSetting3rd_Agent m WITH(NOLOCK) 
 		INNER JOIN dbo.CustPTSetting3rd_Agent s ON m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
 		INNER JOIN @tblPT a ON s.sporttype = a.sporttype AND s.bettype = a.bettype AND s.IsLive = a.IsLive
-	WHERE m.custid = @mrecommend AND s.custid = @srecommend
+	WHERE m.custid = @MasterID AND s.custid = @SuperID
 	    	    
     --Update Min PT        
 	IF @UpdateMinPT = 1        
@@ -129,13 +132,11 @@ BEGIN
 			SELECT @ErrType = 
 			(
 				SELECT b.SportType, b.BetType,b.IsLive 
-				FROM         
-				  customer AS c WITH (NOLOCK)         
-				  INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON c.custid = mcs.custid        
+				FROM CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) 
 				  INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
 											AND mcs.bettype = b.bettype        
 											AND mcs.isLive = b.isLive			  
-				WHERE c.custid = @mrecommend
+				WHERE mcs.custid = @MasterID
 					AND mcs.MaxPT < b.AgentMinPT
 				FOR XML RAW('Row'), TYPE
 			)    		
@@ -186,7 +187,7 @@ BEGIN
 					INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
 											AND mcs.bettype = b.bettype        
 											AND mcs.isLive = b.isLive			
-				WHERE mcs.custid = @mrecommend
+				WHERE mcs.custid = @MasterID
 					AND b.IsAutoMasterPT = 0
 					AND b.MasterPT > mcs.MasterPT
 				FOR XML RAW('Row'), TYPE
@@ -214,7 +215,7 @@ BEGIN
 					INNER JOIN @tblPT b ON mcs.sporttype=b.sporttype 
 											AND mcs.bettype = b.bettype        
 											AND mcs.isLive = b.isLive       			
-				WHERE mcs.custid = @mrecommend 
+				WHERE mcs.custid = @MasterID 
 					AND (         
 							(b.IsAutoMasterPT=0
 							AND (b.MasterPT + b.AgentPT > mcs.MaxPT OR b.MasterPT + b.AgentPT  < mcs.MinPT)
@@ -247,7 +248,7 @@ BEGIN
 					INNER JOIN @tblPT b ON cs.sporttype=b.sporttype 
 											AND cs.bettype = b.bettype        
 											AND cs.isLive = b.isLive			
-				WHERE cs.custid = @custid 
+				WHERE cs.custid = @AgentID 
 					AND (b.AgentPT > cs.MaxPT OR b.AgentPT < cs.MinPT)
 				FOR XML RAW('Row'), TYPE        
 			)
@@ -288,16 +289,12 @@ BEGIN
 										END
 								)        
 							END as MaxPT						
-				FROM custinfo AS c WITH (NOLOCK)          
-					INNER JOIN CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) ON mcs.custid = c.custid
+				FROM CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) 
 					INNER JOIN @tblPT AS b ON mcs.sporttype=b.sporttype 
 												AND mcs.bettype = b.bettype        
 												AND mcs.isLive = b.IsLive 	
-					INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.custid = @srecommend 
-																				AND scs.sporttype=b.sporttype 
-																				AND scs.bettype = b.bettype        
-																				AND scs.isLive = b.IsLive        			
-				WHERE c.custid = @mrecommend 
+					INNER JOIN CustPTSetting3rd_Agent AS scs WITH (NOLOCK) ON scs.sporttype=b.sporttype AND scs.bettype = b.bettype AND scs.isLive = b.IsLive        			
+				WHERE mcs.custid = @MasterID AND scs.custid = @SuperID 
 					AND (         
 							(b.IsAutoMasterPT=0
 							AND (b.AgentPT > CASE WHEN scs.AgentPT<= CASE WHEN mcs.MasterPT < scs.MasterPT 
@@ -346,11 +343,11 @@ BEGIN
 								ELSE scs.MasterPT 
 						END as MaxPT						
 				FROM @tblPT b
-					INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend 
+					INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @SuperID 
 																			AND scs.sporttype=b.sporttype 
 																			AND scs.bettype = b.bettype        
 																			AND scs.isLive = b.IsLive
-					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
+					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @MasterID 
 																			AND mcs.sporttype=b.sporttype 
 																			AND mcs.bettype = b.bettype        
 																			AND mcs.isLive = b.IsLive															        			
@@ -381,11 +378,11 @@ BEGIN
 						ELSE CASE WHEN mcs.MaxPT < scs.MasterPT THEN mcs.MaxPT ELSE scs.MasterPT END
 					END as MaxPT		        
 			FROM @tblPT b
-				INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend 
+				INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @SuperID 
 																		AND scs.sporttype=b.sporttype 
 																		AND scs.bettype = b.bettype        
 																		AND scs.isLive = b.IsLive
-				INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
+				INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @MasterID 
 																		AND mcs.sporttype=b.sporttype 
 																		AND mcs.bettype = b.bettype        
 																		AND mcs.isLive = b.IsLive															        			
@@ -416,14 +413,14 @@ BEGIN
 								THEN mcs.MinPT - scs.AgentPT 
 							ELSE 0 END as MinPT
 				FROM CustPTSetting3rd_Agent mcs WITH (NOLOCK)         
-					INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK) ON scs.custid=@srecommend 
+					INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK) ON scs.custid=@SuperID 
 																			AND mcs.sporttype=scs.sporttype 
 																			AND mcs.bettype=scs.bettype        
 																			AND mcs.isLive = scs.isLive
 					INNER JOIN @tblPT b ON b.sporttype = mcs.sporttype 
 											AND b.bettype = mcs.bettype        
 											AND b.IsLive = mcs.isLive			
-				WHERE mcs.custid = @mrecommend 
+				WHERE mcs.custid = @MasterID 
 					AND b.IsAutoMasterPT = 1         
 					AND b.AutoMasterPT < (CASE WHEN mcs.MinPT > scs.AgentPT
 												THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
@@ -450,11 +447,11 @@ BEGIN
 							ELSE CASE WHEN mcs.MaxPT < scs.MasterPT THEN mcs.MaxPT ELSE scs.MasterPT END
 						END as MaxPT				        
 				FROM @tblPT b
-					INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @srecommend 
+					INNER JOIN CustPTSetting3rd_Agent scs WITH(NOLOCK) ON scs.custid = @SuperID 
 																			AND scs.sporttype=b.sporttype 
 																			AND scs.bettype = b.bettype        
 																			AND scs.isLive = b.IsLive
-					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @mrecommend 
+					INNER JOIN CustPTSetting3rd_Agent mcs WITH(NOLOCK) ON mcs.custid = @MasterID 
 																			AND mcs.sporttype=b.sporttype 
 																			AND mcs.bettype = b.bettype        
 																			AND mcs.isLive = b.IsLive		
@@ -484,14 +481,14 @@ BEGIN
 						CASE WHEN mcs.MinPT - scs.AgentPT > 0 
 							THEN mcs.MinPT - scs.AgentPT ELSE 0 END as MinPT
 				FROM CustPTSetting3rd_Agent mcs WITH (NOLOCK)         
-					INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK) ON scs.custid=@srecommend 
+					INNER JOIN CustPTSetting3rd_Agent scs WITH (NOLOCK) ON scs.custid=@SuperID 
 																			AND mcs.sporttype=scs.sporttype 
 																			AND mcs.bettype=scs.bettype        
 																			AND mcs.isLive = scs.isLive
 					INNER JOIN @tblPT b ON b.sporttype = mcs.sporttype 
 											AND b.bettype = mcs.bettype        
 											AND b.IsLive = mcs.isLive				
-				WHERE mcs.custid = @mrecommend 
+				WHERE mcs.custid = @MasterID 
 					AND b.IsAutoMasterPT = 0         
 					AND b.MasterPT < (CASE WHEN mcs.MinPT > scs.AgentPT
 												THEN mcs.MinPT - scs.AgentPT ELSE 0 END)        
