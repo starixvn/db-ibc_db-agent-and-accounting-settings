@@ -2686,5 +2686,5 @@ DECLARE @currency INT
 END
 
 GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
+ 
