@@ -40,7 +40,11 @@ BEGIN
 		,mobilephone AS Mobilephone
 		,fax AS Fax
 		,currency AS Currency
-		,ISNULL([site],(SELECT TOP 1 b.site FROM Customer b WITH (NOLOCK) WHERE b.custid=a.recommend)) AS SiteName
+		,CASE WHEN a.roleid=1
+		THEN (SELECT TOP 1 b.site FROM Customer b WITH (NOLOCK) WHERE b.custid=a.recommend)
+		ELSE
+		a.site
+		END AS SiteName
 	FROM dbo.Customer a WITH (NOLOCK) 
 	WHERE CustID = @CustID
 

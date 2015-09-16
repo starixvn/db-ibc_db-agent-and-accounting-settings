@@ -6,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 /****** Object:  Stored Procedure dbo.Acc_AGC_UpdSuperSetting    Script Date: 8/28/2014 3:01:31 PM ******/
-ALTER PROCEDURE	[dbo].[Acc_AGC_UpdSuperSetting]
+CREATE PROCEDURE	[dbo].[Acc_AGC_UpdSuperSetting]
 	@CustID				INT,
 	@CheckedGroup		VARCHAR(500),
 	@DefaultGroup		VARCHAR(20),
@@ -15,7 +15,10 @@ ALTER PROCEDURE	[dbo].[Acc_AGC_UpdSuperSetting]
 	@IP					VARCHAR(40),
 	@Langkey			VARCHAR(10)		= 'en-US',
 	@ErrCode			INT				= 0		OUTPUT,
-	@ErrMsg				VARCHAR(8000)	= ''	OUTPUT
+	@ErrMsg				VARCHAR(8000)	= ''	OUTPUT,
+	@SportType			INT,
+	--AGCasino
+	@v250_1801PT		SMALLMONEY
 AS
 /*
 	Created: 20140813@Victor
@@ -23,6 +26,7 @@ AS
 	DB: DBTXN/CustDB
 	Original:
 	Revisions:
+	- 20150916@Winnie: Add AGCasino
 	Param's Explanation:
 */
 BEGIN
@@ -92,6 +96,17 @@ BEGIN
 		END
 		DROP TABLE #CustList
 	END
+
+	EXEC Acc_Dep_CustomerUpdSetting_xtest
+	@CustID				=@CustID,
+	@SportType			=@SportType,
+	--AGCasino
+	@v250_1801PT		=@v250_1801PT,	
+	@UserID				=@UserID,
+	@IP					=@IP,
+	@Langkey			=@Langkey,
+	@ErrCode			=@ErrCode,
+	@ErrMsg				=@ErrMsg	
 
 	-- Write log
 	SET @endRun = GETDATE()
