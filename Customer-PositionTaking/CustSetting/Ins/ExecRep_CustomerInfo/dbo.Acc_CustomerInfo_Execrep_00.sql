@@ -810,6 +810,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 				+ Separate custDB to new server DBCUST: 
 				+ Improve medthod check table existing in subscribers	
 			- 20150715@Viet: remove P2P tables from replication check	
+			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]		
 			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 			  
 			  	
@@ -867,7 +868,7 @@ DECLARE @currency INT
 	IF @roleid = 4
 	BEGIN					
 		INSERT INTO [dbo].[custsetting]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [alivepositiontaking], [mlivepositiontaking], [slivepositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [groupa], [groupb], [groupc], [groupd], [groupe], [groupf], [Minbet], [Maxbet], autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking ,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
-		SELECT @custid, 1, 1, @apositiontaking_1, @mpositiontaking_1, @spositiontaking_1, @alivepositiontaking_1, @mlivepositiontaking_1, @slivepositiontaking_1, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
+				SELECT @custid, 1, 1, @apositiontaking_1, @mpositiontaking_1, @spositiontaking_1, @alivepositiontaking_1, @mlivepositiontaking_1, @slivepositiontaking_1, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 3, 1, @apositiontaking_3, @mpositiontaking_3, @spositiontaking_3, @alivepositiontaking_3, @mlivepositiontaking_3, @slivepositiontaking_3, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 7, 1, @apositiontaking_7, @mpositiontaking_7, @spositiontaking_7, @alivepositiontaking_7, @mlivepositiontaking_7, @slivepositiontaking_7, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 8, 1, @apositiontaking_8, @mpositiontaking_8, @spositiontaking_8, @alivepositiontaking_8, @mlivepositiontaking_8, @slivepositiontaking_8, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1147,7 +1148,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END           
-				
+		
 		--Insert live casino, Keno, GoldDeluxe setting
 		INSERT INTO CustSettingGame([CustID]
 				   ,[Bettype]
@@ -1192,8 +1193,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END     
-		
-		
+
 		INSERT INTO [CustOverrideGame]
 				   ([CustID]
 				   ,[Bettype]
@@ -1261,7 +1261,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END
-		
+
 		--end keno
 	END--end roleid = 4
 	ELSE IF @roleid = 3
@@ -2666,9 +2666,9 @@ DECLARE @currency INT
           , MaxPerGameType
           , IsDisabled
         )		
-		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 WHERE @StakeLevelID_1701 IS NOT NULL
+		SELECT 1701, @custid, ISNULL(@StakeLevelID_1701,''), 0, 0, 0, 0
 		UNION ALL 
-		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 WHERE @StakeLevelID_1702 IS NOT NULL 
+		SELECT 1702, @custid, ISNULL(@StakeLevelID_1702,''), 0, 0, 0, 0
 		
 		IF @@error <> 0
 		BEGIN
@@ -2734,7 +2734,7 @@ DECLARE @currency INT
 		INTO #CustCommRate_temp
 		FROM AgentCommRate ac WITH (ROWLOCK)
 			JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
-		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend)
+		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 204 
 		
 		INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
 		SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],0
@@ -2773,4 +2773,4 @@ END
 
 GO 
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
-GO 
+ 
