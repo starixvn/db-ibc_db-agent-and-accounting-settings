@@ -1,4 +1,3 @@
-
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdDisableColossusBet]  
 (
 	@custid  INT,  
