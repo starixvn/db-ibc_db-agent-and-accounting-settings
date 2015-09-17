@@ -764,10 +764,6 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	
 	@UplineSyncLiveCasino BIT = 0,
 	
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-	@MemberPT_XML VARCHAR(MAX) = NULL,
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
-	
 	@ErrCode INT = 0 OUTPUT
 	
  AS
@@ -811,10 +807,11 @@ SET NOCOUNT ON
 				'CustBetSetting3rd_Agent',
 				'CustBetSetting3rd_Member',
 				'CustDiscount3rd_Agent',
-				'CustDiscount3rd_Member')
+				'CustDiscount3rd_Member',
+				'CustProductStatus')
 			AND xtype = 'U'
 			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
-	if @IsExistTables <> 8  RETURN
+	if @IsExistTables <> 9  RETURN
 	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	
 	IF @roleid = 4
