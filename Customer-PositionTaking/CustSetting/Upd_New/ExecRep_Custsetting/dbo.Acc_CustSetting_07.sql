@@ -26,7 +26,8 @@ AS
             - 20140818@Logan:   Exclude disabled members while updating Super, Master Setting [Redmine: #19631]
 		  - 20150610@Daniel: 
 		   + Improve medthod check table existing in subscribers	
-		   + Separate custDB to new server DBCUST                  
+		   + Separate custDB to new server DBCUST
+		  - 20150917@Johnson: check constraint n4 when update s4 [Redmine:#43808]                  
             
 
         Parameter's Explanation:
@@ -72,6 +73,21 @@ BEGIN
            AND c.Enabled = 1
            AND (cs.isautopositiontaking = 1
                 OR mcs.isautopositiontaking = 1)
+		
+		  --check super min
+            --s1=max(n4-m1-a1,s1)
+            UPDATE cs
+               SET spositiontaking = sco.minpositiontaking - cs.mpositiontaking - cs.apositiontaking
+            FROM CustSetting cs WITH(ROWLOCK, UPDLOCK)
+				INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid
+												   AND mb.srecommend = @srecommend
+												   AND mb.roleid = 1
+												   AND mb.Enabled = 1
+				INNER JOIN CustOverride sco WITH(NOLOCK) ON sco.custid = @srecommend
+														   AND sco.sporttype = cs.sporttype
+														   AND sco.bettype = cs.bettype
+			WHERE cs.apositiontaking + cs.mpositiontaking + cs.spositiontaking < sco.minpositiontaking
+			                
 
 
         UPDATE cs WITH(ROWLOCK, UPDLOCK)
@@ -102,6 +118,20 @@ BEGIN
            AND (cs.isautolivepositiontaking = 1
                 OR mcs.isautolivepositiontaking = 1
                )
+		
+		UPDATE cs
+           SET slivepositiontaking = sco.minlivepositiontaking - cs.mlivepositiontaking - cs.alivepositiontaking
+        FROM CustSetting cs WITH(ROWLOCK, UPDLOCK)
+			INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid
+											   AND mb.srecommend = @srecommend
+											   AND mb.roleid = 1
+											   AND mb.Enabled = 1
+			INNER JOIN CustOverride sco WITH(NOLOCK) ON sco.custid = @srecommend
+													   AND sco.sporttype = cs.sporttype
+													   AND sco.bettype = cs.bettype
+		WHERE cs.alivepositiontaking + cs.mlivepositiontaking + cs.slivepositiontaking < sco.minlivepositiontaking
+			                
+              
     END
     ELSE IF @roleid = 3
     BEGIN
