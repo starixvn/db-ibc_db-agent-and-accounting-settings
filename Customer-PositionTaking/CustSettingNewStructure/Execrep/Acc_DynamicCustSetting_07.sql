@@ -85,7 +85,9 @@ BEGIN
 						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
 						ELSE @s1
 					END	
-			
+			-- rule #2: s1 = max(n4-m1-a1,s1) --check super min
+			,@s1 = CASE WHEN @a1+@m1+@s1 < s.n4 THEN s.n4-@m1-@a1 ELSE @s1 END
+
 			--PT values must be in [0,100]
 			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
 			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
@@ -118,6 +120,9 @@ BEGIN
 						THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
 						ELSE @s1
 					END	
+			-- rule #2: s1 = max(n4-m1-a1,s1) --check super min
+			,@s1 = CASE WHEN @a1+@m1+@s1 < s.n4 THEN s.n4-@m1-@a1 ELSE @s1 END
+
 			--PT values must be in [0,100]
 			,@s1 = CASE WHEN @s1 < 0 THEN 0 ELSE @s1 END
 			,@s1 = CASE WHEN @s1 > 100 THEN 100 ELSE @s1 END
