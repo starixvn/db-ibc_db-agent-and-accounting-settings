@@ -1538,18 +1538,16 @@ BEGIN
 				 FROM dbo.CustCommRate cs WITH(UPDLOCK, ROWLOCK)
 					JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
 					
+					
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 3
-								 WHERE ci.srecommend = @CustId AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.mrecommend
 								) AS MasterComm
 								
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 2
-								 WHERE ci.srecommend = @CustId	AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
-								) AS AgentComm						
-					
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.recommend
+								) AS AgentComm		
 				 WHERE ci.srecommend = @custid
 					   AND ci.roleid = 1
 					   AND ci.Enabled = 1
@@ -1591,15 +1589,13 @@ BEGIN
 					
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 4
-								 WHERE ci.mrecommend = @CustId AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.srecommend
 								) AS SuperComm
 								
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 2
-								 WHERE ci.mrecommend = @CustId	AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
-								) AS AgentComm						
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.recommend
+								) AS AgentComm		
 					
 				 WHERE ci.mrecommend = @custid
 					   AND ci.roleid = 1
@@ -1628,17 +1624,16 @@ BEGIN
 						discount =  @Discount
 				 FROM dbo.CustCommRate cs WITH(UPDLOCK, ROWLOCK)
 					JOIN dbo.CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
+					
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 4
-								 WHERE ci.mrecommend = @CustId AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.srecommend
 								) AS SuperComm
 								
 					CROSS APPLY (SELECT ac.CommRate
 								 FROM AgentCommRate AC WITH (NOLOCK)
-									JOIN CustInfo ci WITH (NOLOCK) ON cs.custid = ci.custid  AND ci.roleid = 3
-								 WHERE ci.mrecommend = @CustId	AND CS.SportType = AC.SportType AND CS.BetType = AC.SportType
-								) AS MasterComm						
+								 WHERE CS.SportType = AC.SportType AND CS.BetType = AC.Bettype and ac.CustId = ci.mrecommend
+								) AS MasterComm					
 					
 				 WHERE ci.recommend = @custid
 					   AND ci.roleid = 1
