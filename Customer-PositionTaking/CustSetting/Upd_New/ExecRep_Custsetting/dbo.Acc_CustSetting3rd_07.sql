@@ -176,12 +176,12 @@ BEGIN
             --s1=max(n4-m1-a1,s1)
             UPDATE cs
                SET spositiontaking = sco.minpositiontaking - cs.mpositiontaking - cs.apositiontaking
-            FROM CustSetting3rd cs WITH(ROWLOCK, UPDLOCK)
+            FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
 				INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid
 												   AND mb.srecommend = @srecommend
 												   AND mb.roleid = 1
 												   AND mb.Enabled = 1
-				INNER JOIN CustOverride3rd sco WITH(NOLOCK) ON sco.custid = @srecommend
+				INNER JOIN CustOverrideGame sco WITH(NOLOCK) ON sco.custid = @srecommend
 														   AND sco.sporttype = cs.sporttype
 														   AND sco.bettype = cs.bettype
 			WHERE cs.sporttype=162 
@@ -244,12 +244,12 @@ BEGIN
             --s1=max(n4-m1-a1,s1)
             UPDATE cs
                SET spositiontaking = sco.minpositiontaking - cs.mpositiontaking - cs.apositiontaking
-            FROM CustSetting3rd cs WITH(ROWLOCK, UPDLOCK)
+            FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
 				INNER JOIN custinfo mb WITH(NOLOCK) ON cs.custid = mb.custid
 												   AND mb.srecommend = @srecommend
 												   AND mb.roleid = 1
 												   AND mb.Enabled = 1
-				INNER JOIN CustOverride3rd sco WITH(NOLOCK) ON sco.custid = @srecommend
+				INNER JOIN CustOverrideGame sco WITH(NOLOCK) ON sco.custid = @srecommend
 														   AND sco.sporttype = cs.sporttype
 														   AND sco.bettype = cs.bettype
 			WHERE  cs.sporttype = @sporttype 
