@@ -21,7 +21,7 @@ BEGIN
 	SELECT * INTO #SportBettypeFilter
 	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL)
 	
-	SELECT DISTINCT pdt.SettingType, pdt.SettingLevel , pdt.SettingTemplate, pdt.DisplayOrder
+	SELECT DISTINCT pdt.SettingType, pdt.SettingLevel, pdt.DisplayOrder
 	FROM dbo.ProductSettingDetail pdt WITH(NOLOCK)
 	INNER JOIN #SportBettypeFilter ft 
 				ON pdt.SportType = ft.sporttype
