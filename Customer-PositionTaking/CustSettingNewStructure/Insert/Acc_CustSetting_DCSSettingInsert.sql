@@ -12,7 +12,6 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DCSSettingInsert]
 	, @RoleID			TINYINT
 	, @ProductID		TINYINT = NULL
 	, @ErrCode			INT				= 0		OUTPUT
-	, @ErrMsg			NVARCHAR(4000)	= ''	OUTPUT
 AS
 /*
 	Created: 20150916@Dominic
@@ -25,15 +24,7 @@ AS
 
 	*/
 BEGIN
-	SELECT @ErrCode = 0, @ErrMsg = '' 		
-	
-	--Get line Infor	
-	SELECT @SuperID = srecommend,
-			@MasterID = mrecommend, 
-			@AgentID = recommend,
-			@RoleID = RoleID
-	FROM dbo.CustInfo WITH(NOLOCK)
-	WHERE CustID = @CustID	
+	SELECT @ErrCode = 0
 	
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
 	SELECT * INTO #SportBettypeFilter1
@@ -152,7 +143,8 @@ BEGIN
 			DECLARE @s_new SMALLMONEY, @m_new SMALLMONEY, @a_new SMALLMONEY
 		
 			DECLARE @MemberPTTbl TABLE (
-				[SportType]		SMALLINT
+					CustID		INT
+				, [SportType]	SMALLINT
 				, [BetType]		SMALLINT
 				, [Islive]		BIT	
 				, [SuperPT]		TINYINT	
@@ -213,17 +205,17 @@ BEGIN
 				,@l2 = acs.MaxPT
 				,@im2 = acs.IsAutoMasterPT
 				,@um2 = acs.AutoMasterPT
-				,@i1 = cs.IsAutoSuperPT
-				,@u1 = cs.AutoSuperPT
-				,@im1 = cs.IsAutoMasterPT
-				,@um1 = cs.AutoMasterPT
+				,@i1 = cs.IsAutoSPT
+				,@u1 = cs.AutoSPT
+				,@im1 = cs.IsAutoMPT
+				,@um1 = cs.AutoMPT
 				
 				-- rule #1: s1 = min(s1,s4-m3) if i=0
-				,@s1 = CASE WHEN @i1 = 0 AND m.i3 = 0 AND s.s4-m.m3 < @s1 THEN s.s4-m.m3 ELSE @s1 END
+				,@s1 = CASE WHEN @i1 = 0 AND m.IsAutoSuperPT = 0 AND s.SuperPT-m.MasterPT < @s1 THEN s.SuperPT-m.MasterPT ELSE @s1 END
 
 				-- rule #2: a1 = max(a1,n2); m1 = (a1<n2) ? m3-n2 : m1 --agent min
 				,@a_new = CASE WHEN @a1 < @n2 THEN @n2 ELSE @a1 END
-				,@m_new = CASE WHEN @a1 < @n2 AND @m1+@n2 > m.m3 THEN m.m3-@n2 ELSE @m1 END
+				,@m_new = CASE WHEN @a1 < @n2 AND @m1+@n2 > m.MasterPT THEN m.MasterPT-@n2 ELSE @m1 END
 				,@a1 = @a_new
 				,@m1 = @m_new								
 
@@ -234,12 +226,12 @@ BEGIN
 				,@temp1 = CASE WHEN @im1 = 1 THEN @um1 ELSE @um2 END			
 				,@m1 = CASE 
 							WHEN @im2 = 1 OR @im1 = 1 
-							THEN CASE WHEN m.m3-@a1 > @temp1 THEN @temp1 ELSE m.m3-@a1 END 
+							THEN CASE WHEN m.MasterPT-@a1 > @temp1 THEN @temp1 ELSE m.MasterPT-@a1 END 
 							ELSE @m1 
 						END		
 
 				-- rule #5: m1 = max(m1,n3-a1) -- master min   
-				,@m1 = CASE WHEN @m1 < m.n3-@a1 THEN m.n3-@a1 ELSE @m1 END
+				,@m1 = CASE WHEN @m1 < m.MinPT-@a1 THEN m.MinPT-@a1 ELSE @m1 END
 				         
 				-- rule #6: check master max 
 				/*	@x1 = min(m3,l3) -- mpt max
@@ -248,12 +240,12 @@ BEGIN
 					@x3 = (a1+@x2 > @x1) ? @x1-@x2 : a1
 					a1 = (a1+m1>l1) ? max(@x3, n2) : a1
 				*/ 
-				,@temp1 = CASE WHEN m.m3 > m.l3 THEN m.l3 ELSE m.m3 END
+				,@temp1 = CASE WHEN m.MasterPT > m.MaxPT THEN m.MaxPT ELSE m.MasterPT END
 				,@temp2 = CASE WHEN @temp1-@a1 < 0 THEN 0 ELSE @temp1-@a1 END
-				,@m_new = CASE WHEN @a1+@m1 > m.l3 THEN @temp2 ELSE @m1 END
+				,@m_new = CASE WHEN @a1+@m1 > m.MaxPT THEN @temp2 ELSE @m1 END
 				,@temp3 = CASE WHEN @a1+@temp2 > @temp1 THEN @temp1-@temp2 ELSE @a1 END
 				,@a_new = CASE 
-							WHEN @a1+@m1 > m.l3 
+							WHEN @a1+@m1 > m.MaxPT 
 							THEN CASE WHEN @temp3 < @n2 THEN @n2 ELSE @temp3 END
 							ELSE @a1 
 						END	
@@ -265,15 +257,15 @@ BEGIN
 					@x1 = (i1=1) ? u1 : u3
 					s1 = (s4-m1-a1 > @x1) ? @x1 : s4-m1-a1 
 				*/
-				,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.u3 END			
+				,@temp1 = CASE WHEN @i1 = 1 THEN @u1 ELSE m.AutoSuperPT END			
 				,@s1 = CASE 
-							WHEN @i1 = 1 OR m.i3 = 1 
-							THEN CASE WHEN s.s4-@m1-@a1 > @temp1 THEN @temp1 ELSE s.s4-@m1-@a1 END
+							WHEN @i1 = 1 OR m.IsAutoSuperPT = 1 
+							THEN CASE WHEN s.SuperPT-@m1-@a1 > @temp1 THEN @temp1 ELSE s.SuperPT-@m1-@a1 END
 							ELSE @s1
 						END		
 
 				-- rule #8: s1 = max(n4-m1-a1,s1) --super min
-				,@s1 = CASE WHEN @a1+@m1+@s1 < s.n4 THEN s.n4-@m1-@a1 ELSE @s1 END	
+				,@s1 = CASE WHEN @a1+@m1+@s1 < s.MinPT THEN s.MinPT-@m1-@a1 ELSE @s1 END	
 
 				-- rule #9: UPDATE s1,m1,a1 in case s1+m1+a1>s4
 				/* -- explanation
@@ -289,17 +281,17 @@ BEGIN
 					@x3 =  (@x3 < n2) ? n2 : @x3
 					a1 = (s1+a1+m1 > s4) ? @x3 : a1				
 				*/             
-				,@temp1 = CASE WHEN s.s4-@m1-@a1 < 0 THEN 0 ELSE s.s4-@m1-@a1 END
-				,@s_new = CASE WHEN @s1+@a1+@m1 > s.s4 THEN @temp1 ELSE @s1 END
-				,@temp1 = CASE WHEN @temp1+@m1+@a1 > s.s4 THEN s.s4-@temp1 ELSE @m1+@a1 END
-				,@temp2 = CASE WHEN m.m3 > m.l3 THEN m.l3 ELSE m.m3 END
+				,@temp1 = CASE WHEN s.SuperPT-@m1-@a1 < 0 THEN 0 ELSE s.SuperPT-@m1-@a1 END
+				,@s_new = CASE WHEN @s1+@a1+@m1 > s.SuperPT THEN @temp1 ELSE @s1 END
+				,@temp1 = CASE WHEN @temp1+@m1+@a1 > s.SuperPT THEN s.SuperPT-@temp1 ELSE @m1+@a1 END
+				,@temp2 = CASE WHEN m.MasterPT > m.MaxPT THEN m.MaxPT ELSE m.MasterPT END
 				,@temp2 = CASE WHEN @temp1 > @temp2 THEN @temp2 ELSE @temp1 END
-				,@temp2 = CASE WHEN @temp2 < m.n3 THEN m.n3 ELSE @temp2 END
+				,@temp2 = CASE WHEN @temp2 < m.MinPT THEN m.MinPT ELSE @temp2 END
 				,@temp3 = CASE WHEN @temp2-@a1 < 0 THEN 0 ELSE @temp2-@a1 END
-				,@m_new = CASE WHEN @s1+@a1+@m1 > s.s4 THEN @temp3 ELSE @m1 END
+				,@m_new = CASE WHEN @s1+@a1+@m1 > s.SuperPT THEN @temp3 ELSE @m1 END
 				,@temp3 = CASE WHEN @a1+@temp3 > @temp2 THEN @temp2-@temp3 ELSE @a1 END
 				,@temp3 = CASE WHEN @temp3 < @n2 THEN @n2 ELSE @temp3 END
-				,@a_new = CASE WHEN @s1+@a1+@m1 > s.s4 THEN @temp3 ELSE @a1 END
+				,@a_new = CASE WHEN @s1+@a1+@m1 > s.SuperPT THEN @temp3 ELSE @a1 END
 				,@s1 = @s_new
 				,@m1 = @m_new
 				,@a1 = @a_new
