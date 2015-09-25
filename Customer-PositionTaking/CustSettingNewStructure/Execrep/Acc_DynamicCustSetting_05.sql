@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting_05]
+ALTER PROCEDURE [dbo].[Acc_DynamicCustSetting_05]
     @SuperID			INT	= 0,
     @MasterID			INT = 0,
     @AgentID			INT = 0,
@@ -81,9 +81,9 @@ BEGIN
 					UNIQUE CLUSTERED (SportType, BetType, IsLive) 
 				)
 				
-	DECLARE @_S1 TINYINT, @_S1_auto TINYINT, @_S1_notauto TINYINT,
-			@_M1 TINYINT, @_M1_auto TINYINT, @_M1_notauto TINYINT,
-			@_A1 TINYINT
+	DECLARE @_S1 SMALLMONEY, @_S1_auto SMALLMONEY, @_S1_notauto SMALLMONEY,
+			@_M1 SMALLMONEY, @_M1_auto SMALLMONEY, @_M1_notauto SMALLMONEY,
+			@_A1 SMALLMONEY, @_IS1	BIT
 --******************************************VARIABLE INITITATES****************************************************** 
 	--Get SMA Info
 	SELECT @_SuperID = @SuperID, @_MasterID = @MasterID, @_AgentID = @AgentID , @_RoleID = @RoleID
@@ -155,13 +155,14 @@ BEGIN
 			@_S1 = cs.SuperPT,
 			@_M1 = cs.MasterPT,
 			@_A1 = cs.AgentPT,
+			@_IS1 = cs.IsAutoSuperPT,
 			
 			--Calculate SuperAuto PT : min(s4-m1-a1,us3)
 			@_S1_auto = CASE WHEN S4 - @_M1 - @_A1 > US3 THEN US3 ELSE S4 - @_M1 - @_A1 END,
 			--Calculate Non Auto PT: min(s3,newspt)
 			@_S1_notauto = CASE WHEN S3 > UpdAllMems_Value THEN UpdAllMems_Value ELSE S3 END,
-			--if is3>0 s1 = @_S1_auto
-			@_S1 = CASE WHEN IsAuto_New = 1 THEN @_S1_auto ELSE @_S1 END,
+			--if is3>0 and is1=0 s1 = @_S1_auto
+			@_S1 = CASE WHEN IsAuto_New = 1 AND @_IS1 = 0 THEN @_S1_auto ELSE @_S1 END,
 			--if is3 is updated from 1 to 0 AND updateallmember=1  then s1 = @_S1_notauto
 			@_S1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 
@@ -199,13 +200,14 @@ BEGIN
 			@_S1 = cs.SuperPT,
 			@_M1 = cs.MasterPT,
 			@_A1 = cs.AgentPT,
+			@_IS1 = cs.IsAutoSuperPT,
 			
 			--Calculate SuperAuto PT : min(s4-m1-a1,us3)
 			@_S1_auto = CASE WHEN S4 - @_M1 - @_A1 > US3 THEN US3 ELSE S4 - @_M1 - @_A1 END,
 			--Calculate Non Auto PT: min(s3,newspt)
 			@_S1_notauto = CASE WHEN S3 > UpdAllMems_Value THEN UpdAllMems_Value ELSE S3 END,
-			--if is3>0 s1 = @_S1_auto
-			@_S1 = CASE WHEN IsAuto_New = 1 THEN @_S1_auto ELSE @_S1 END,
+			--if is3>0 and is1=0 s1 = @_S1_auto
+			@_S1 = CASE WHEN IsAuto_New = 1 AND @_IS1 = 0 THEN @_S1_auto ELSE @_S1 END,
 			--if is3 is updated from 1 to 0 AND updateallmember=1  then s1 = @_S1_notauto
 			@_S1 = CASE WHEN IsAuto_Old = 1 
 								AND IsAuto_New = 0 

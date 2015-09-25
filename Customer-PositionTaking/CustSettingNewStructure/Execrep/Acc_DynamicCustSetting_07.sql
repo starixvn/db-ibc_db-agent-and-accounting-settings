@@ -231,6 +231,8 @@ BEGIN
 			,@im1 = cs.IsAutoMasterPT
 			,@im2 = acs.IsAutoMasterPT
 			,@n2 = acs.MinPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
 			-- rule #1: m1 = min(m3-a1,u2) if master auto -- Recalculate AUTO MPT 
 			,@temp1 = CASE WHEN @im1 = 1 THEN @um1 ELSE @um2 END
 			,@m1 = CASE 
@@ -334,6 +336,8 @@ BEGIN
 			,@im1 = cs.IsAutoMasterPT
 			,@im2 = acs.IsAutoMasterPT
 			,@n2 = acs.MinPT
+			,@i1 = cs.IsAutoSuperPT
+			,@u1 = cs.AutoSuperPT
 			-- rule #1: m1 = min(m3-a1,u2) if master auto -- Recalculate AUTO MPT 
 			,@temp1 = CASE WHEN @im1 = 1 THEN @um1 ELSE @um2 END
 			,@m1 = CASE 
