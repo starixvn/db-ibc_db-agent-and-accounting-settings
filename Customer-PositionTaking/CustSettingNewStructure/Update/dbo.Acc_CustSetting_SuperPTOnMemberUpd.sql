@@ -409,7 +409,7 @@ BEGIN
 			,@i1 = cs.IsAutoSuperPT
 			,@u1 = cs.AutoSuperPT
 			,@im1 = cs.IsAutoMasterPT
-			,@um1 = cs.IsAutoMasterPT
+			,@um1 = cs.AutoMasterPT
 			,@n2 = acs.N2
 			--Adjust PT : s1= s1+m1+ a1> s4?s4-m1-a1:s1
 			,@s1 = CASE WHEN @s1 > S4 - @m1 - @a1 THEN S4 - @m1 - @a1 ELSE @s1 END

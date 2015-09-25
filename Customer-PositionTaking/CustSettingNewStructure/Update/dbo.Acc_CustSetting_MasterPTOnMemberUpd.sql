@@ -416,7 +416,7 @@ BEGIN
 			,@i1 = cs.IsAutoSuperPT
 			,@u1 = cs.AutoSuperPT
 			,@im1 = cs.IsAutoMasterPT
-			,@um1 = cs.IsAutoMasterPT
+			,@um1 = cs.AutoMasterPT
 			,@um2 = acs.UM2
 			,@im2 = acs.IM2
 			,@n2 = acs.N2

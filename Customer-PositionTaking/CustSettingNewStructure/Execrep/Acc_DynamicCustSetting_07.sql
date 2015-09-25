@@ -226,7 +226,7 @@ BEGIN
 		SET	@a1 = cs.AgentPT
 			,@m1 = cs.MasterPT
 			,@s1 = cs.SuperPT
-			,@um1 = cs.IsAutoMasterPT
+			,@um1 = cs.AutoMasterPT
 			,@um2 = acs.AutoMasterPT
 			,@im1 = cs.IsAutoMasterPT
 			,@im2 = acs.IsAutoMasterPT
@@ -329,7 +329,7 @@ BEGIN
 		SET	@a1 = cs.AgentPT
 			,@m1 = cs.MasterPT
 			,@s1 = cs.SuperPT
-			,@um1 = cs.IsAutoMasterPT
+			,@um1 = cs.AutoMasterPT
 			,@um2 = acs.AutoMasterPT
 			,@im1 = cs.IsAutoMasterPT
 			,@im2 = acs.IsAutoMasterPT
