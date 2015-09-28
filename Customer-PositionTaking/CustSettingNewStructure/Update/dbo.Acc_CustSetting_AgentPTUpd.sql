@@ -254,13 +254,16 @@ BEGIN
 	IF @UpdatePresetPT = 1
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting_05
-            @MasterID = @mrecommend
+			@SuperID = @Srecommend
+            ,@MasterID = @mrecommend
 			,@AgentID = @custid
 			,@RoleID = 2
             ,@AutoPT = @AutoPT
             
        EXEC dbo.Acc_DynamicCustSetting_07 
-			@SuperID = @custid
+			@SuperID = @Srecommend
+            ,@MasterID = @mrecommend
+			,@AgentID = @custid
 			,@RoleID = 2
 			,@SportBettypeXML = @PT
 	END	
