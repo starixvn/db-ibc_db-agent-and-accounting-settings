@@ -36,6 +36,25 @@ BEGIN
 			
 	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
 	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
+	WHERE	name IN (
+				'CustPTSetting3rd_Agent',
+				'CustPTSetting3rd_Member',
+				'CustPTGroupSetting3rd_Member',
+				'CustSettingMode3rd',
+				'CustBetSetting3rd_Agent',
+				'CustBetSetting3rd_Member',
+				'CustDiscount3rd_Agent',
+				'CustDiscount3rd_Member',
+				'CustProductStatus')
+			AND xtype = 'U'
+			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
+	if @IsExistTables <> 9  RETURN
+	
+	DECLARE @DCSErrCode INT = 0
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
+	
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -329,4 +348,27 @@ BEGIN
 					
 		RETURN
 	END	
+	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	EXEC dbo.Acc_CustSetting_DCSSettingCopyInsert
+			@CustID				= @CustID
+			, @ExistingCustid	= @ExistingCustid
+			, @ErrCode			= @DCSErrCode OUTPUT
+			
+	IF @DCSErrCode <> 0 
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 911
+		
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 END

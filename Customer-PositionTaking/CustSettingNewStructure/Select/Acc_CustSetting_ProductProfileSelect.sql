@@ -6,7 +6,7 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
 	@ProductID	TINYINT,
-	@SiteID		TINYINT  
+	@SystemID	TINYINT  
 AS  
 /*  
  Created: 20150702@Dominic  
@@ -22,10 +22,10 @@ BEGIN
 	SELECT * INTO #SportBettypeFilter
 	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL)
 	
-	SELECT ProductID,SettingType,SiteID,DisplayMode
+	SELECT ProductID,SettingType,SystemID,DisplayMode
 	INTO #ProductSettingSiteDisplay
-	FROM DBPRO.bodb02.dbo.ProductSettingSiteDisplay WITH(NOLOCK)
-	WHERE ProductID = @ProductID AND SiteID = @SiteID
+	FROM dbo.ProductSettingSystemDisplay WITH(NOLOCK)
+	WHERE ProductID = @ProductID AND SystemID = @SystemID
 	
 	SELECT DISTINCT pdt.SettingType, pdt.SettingLevel, pdt.DisplayOrder
 			--1 - Update
