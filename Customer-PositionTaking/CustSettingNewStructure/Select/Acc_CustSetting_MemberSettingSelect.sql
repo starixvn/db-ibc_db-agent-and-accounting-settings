@@ -189,7 +189,30 @@ BEGIN
 				AND pdt.BetType = dc.bettype  
 				AND dc.custid = @CustID  
 		END
-
+		--Product Status  
+		ELSE IF @SettingType = 4
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType  
+				, ISNULL(stt.IsDisabled, 0) IsDisabled  
+				, ISNULL(stt.IsHidden, 0) IsHidden  
+				, ISNULL(stt.IsSync, 0) IsSync  
+				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+			INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
+				ON Agentstt.SportType = pdt.SportType  
+				AND Agentstt.BetType = pdt.BetType  
+				AND Agentstt.CustID = @AgentID  
+		END
 	END  
 	ELSE IF @RoleID = 3  
 	BEGIN  
@@ -261,6 +284,30 @@ BEGIN
 			AND pdt.BetType = dc.bettype  
 			AND dc.custid = @CustID  
 		END
+		--Product Status  
+		ELSE IF @SettingType = 4
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType  
+				, ISNULL(stt.IsDisabled, 0) IsDisabled  
+				, ISNULL(stt.IsHidden, 0) IsHidden  
+				, ISNULL(stt.IsSync, 0) IsSync  
+				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+			INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
+				ON Agentstt.SportType = pdt.SportType  
+				AND Agentstt.BetType = pdt.BetType  
+				AND Agentstt.CustID = @AgentID  
+		END
 	END  
 	ELSE IF @RoleID = 2  
 	BEGIN  
@@ -272,7 +319,26 @@ BEGIN
 				, mb.BetType  
 				, mb.IsLive  
 				, mb.A1  
-				, agentpt.AgentPT AS A2  
+				--, agentpt.AgentPT AS A2
+				, CASE 
+					WHEN (
+							agentpt.IsAutoMasterPT = 1
+							OR mb.IM1 = 1
+							)
+						THEN agentpt.AgentPT
+					ELSE CASE 
+							WHEN NOT (
+									mb.IS1 = 0
+									AND masterpt.IsAutoSuperPT = 0
+									)
+								THEN masterpt.MasterPT - mb.M1
+							ELSE CASE 
+									WHEN masterpt.MasterPT - mb.M1 <= superpt.SuperPT - mb.S1 - mb.M1
+										THEN masterpt.MasterPT - mb.M1
+									ELSE superpt.SuperPT - mb.S1 - mb.M1
+									END
+							END
+					END AS A2
 				, agentpt.MinPT AS N2  
 				, agentpt.IsAutoMasterPT AS IM2
 			FROM @MemberPT mb  
@@ -280,7 +346,17 @@ BEGIN
 				ON mb.SportType = agentpt.sporttype  
 				AND mb.BetType = agentpt.bettype  
 				AND mb.IsLive = agentpt.islive  
-				AND agentpt.custid = @AgentID  
+				AND agentpt.custid = @AgentID
+			INNER JOIN dbo.CustPTSetting3rd_Agent masterpt WITH (NOLOCK)  
+				ON mb.SportType = masterpt.sporttype  
+				AND mb.BetType = masterpt.bettype  
+				AND mb.IsLive = masterpt.islive  
+				AND masterpt.custid = @MasterID
+			INNER JOIN dbo.CustPTSetting3rd_Agent superpt WITH (NOLOCK)  
+				ON mb.SportType = superpt.sporttype  
+				AND mb.BetType = superpt.bettype  
+				AND mb.IsLive = superpt.islive  
+				AND superpt.custid = @SuperID  
 		END
 		--Bet Limit Setting  
 		ELSE IF @SettingType = 2
