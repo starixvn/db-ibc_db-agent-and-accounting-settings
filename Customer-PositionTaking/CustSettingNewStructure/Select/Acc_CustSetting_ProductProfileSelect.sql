@@ -6,7 +6,7 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
 	@ProductID	TINYINT,
-	@SystemID	TINYINT  
+	@SystemID	TINYINT  = 0 
 AS  
 /*  
  Created: 20150702@Dominic  

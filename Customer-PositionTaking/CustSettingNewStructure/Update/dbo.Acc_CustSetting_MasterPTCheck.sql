@@ -27,7 +27,7 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON
-	
+	SELECT @ErrCode = 0, @ErrMsg = '', @MsgType = 0
 	DECLARE @SuperID INT, @MasterID INT
 	CREATE TABLE #AgentTbl 	(CustID INT, UserName NVARCHAR(50))
 	DECLARE @tmpPTGroup TABLE(sporttype INT
@@ -485,4 +485,5 @@ BEGIN
 			RETURN     
 		END	
 	END
+	SELECT @ErrCode = 0
 END 
