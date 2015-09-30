@@ -487,4 +487,6 @@ BEGIN
 			END
 		END
 	END	
+	
+	SELECT @ErrCode = 0
 END	 

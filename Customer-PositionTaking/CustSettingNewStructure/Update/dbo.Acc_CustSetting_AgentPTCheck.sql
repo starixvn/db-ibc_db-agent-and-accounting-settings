@@ -203,13 +203,14 @@ BEGIN
 		END
 		ELSE IF @ErrCode = 196
 		BEGIN
-			--check n3<=m2+a2<=l3 if im2 = 0,         
-			--a2<=l3 and um2+a2>=n3 if im2 = 1        
+			--check n3<=m2+a2<=MIN(l3,M3) if im2 = 0,         
+			--a2<=MIN(l3,M3) and um2+a2>=n3 if im2 = 1        
 			SELECT @ErrType = ''        
 		
 			SELECT @ErrType =
 			(
-				SELECT b.SportType, b.BetType, b.IsLive, mcs.MinPT, mcs.MaxPT					
+				SELECT b.SportType, b.BetType, b.IsLive, mcs.MinPT
+							, CASE WHEN mcs.MaxPT	> mcs.MasterPT THEN mcs.MasterPT ELSE  mcs.MaxPT END	MaxPT			
 				FROM 
 					CustPTSetting3rd_Agent AS mcs WITH (NOLOCK) 
 					INNER JOIN @tblPT b ON mcs.sporttype=b.sporttype 
@@ -218,11 +219,11 @@ BEGIN
 				WHERE mcs.custid = @MasterID 
 					AND (         
 							(b.IsAutoMasterPT=0
-							AND (b.MasterPT + b.AgentPT > mcs.MaxPT OR b.MasterPT + b.AgentPT  < mcs.MinPT)
+							AND (b.MasterPT + b.AgentPT > CASE WHEN mcs.MaxPT	> mcs.MasterPT THEN mcs.MasterPT ELSE  mcs.MaxPT END OR b.MasterPT + b.AgentPT  < mcs.MinPT)
 							)
 							OR         
 							(b.IsAutoMasterPT>0 
-							AND (b.AgentPT > mcs.MaxPT OR b.AgentPT + b.AutoMasterPT < mcs.MinPT)
+							AND (b.AgentPT > CASE WHEN mcs.MaxPT	> mcs.MasterPT THEN mcs.MasterPT ELSE  mcs.MaxPT END OR b.AgentPT + b.AutoMasterPT < mcs.MinPT)
 							)        
 						)  
 				FOR XML RAW('Row'), TYPE
@@ -504,4 +505,5 @@ BEGIN
 			END  
 		END
 	 END-- end check      
+	 SELECT @ErrCode = 0
 END
