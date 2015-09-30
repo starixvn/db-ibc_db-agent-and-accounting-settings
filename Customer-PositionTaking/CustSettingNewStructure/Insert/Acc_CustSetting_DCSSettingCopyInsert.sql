@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[Acc_CustSetting_DCSSettingCopyInsert] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_DCSSettingCopyInsert] 
 	@CustID				INT		= 0
 	, @ExistingCustID	INT		= 0
 	, @ErrCode			INT		= 0		OUTPUT
@@ -130,12 +130,17 @@ BEGIN
 				   ,[IsHidden]
 				   ,[IsDisabled])
 		SELECT		@CustID
-				   ,[SportType]
-				   ,[BetType]
-				   ,[IsSync]
-				   ,[IsHidden]
-				   ,[IsDisabled]
-		FROM [dbo].[CustProductStatus] WITH(NOLOCK)
+				   ,cs.[SportType]
+				   ,cs.[BetType]
+				   ,dt.[IsSync]
+				   ,cs.[IsHidden]
+				   ,cs.[IsDisabled]
+		FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
+		INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 4
 		WHERE CustID = @ExistingCustID
 	END TRY
 	BEGIN CATCH

@@ -725,13 +725,18 @@ BEGIN
 			   ,[IsHidden]
 			   ,[IsDisabled])
 			SELECT @CustID
-			  ,[SportType]
-			  ,[BetType]
-			  ,[IsSync]
-			  ,[IsHidden]
-			  ,[IsDisabled]
-			FROM [dbo].[CustProductStatus] WITH (NOLOCK)
-			WHERE CustID = @SuperID
+			  ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 4
+			WHERE cs.CustID = @SuperID
 		END
 		ELSE IF @RoleID = 2
 		BEGIN
@@ -747,13 +752,18 @@ BEGIN
 			   ,[IsHidden]
 			   ,[IsDisabled])
 			SELECT @CustID
-			  ,[SportType]
-			  ,[BetType]
-			  ,[IsSync]
-			  ,[IsHidden]
-			  ,[IsDisabled]
-			FROM [dbo].[CustProductStatus] WITH (NOLOCK)
-			WHERE CustID = @MasterID
+			 ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 4
+			WHERE cs.CustID = @MasterID
 		END
 		ELSE
 		BEGIN
@@ -769,13 +779,18 @@ BEGIN
 			   ,[IsHidden]
 			   ,[IsDisabled])
 			SELECT @CustID
-			  ,[SportType]
-			  ,[BetType]
-			  ,[IsSync]
-			  ,[IsHidden]
-			  ,[IsDisabled]
-			FROM [dbo].[CustProductStatus] WITH (NOLOCK)
-			WHERE CustID = @AgentID
+			   ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 4
+			WHERE cs.CustID = @AgentID
 		END
 	END TRY
 	BEGIN CATCH
