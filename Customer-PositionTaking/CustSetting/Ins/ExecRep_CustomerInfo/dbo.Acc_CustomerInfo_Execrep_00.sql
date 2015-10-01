@@ -778,6 +778,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@adiscountHRFixedOdds decimal(9,8) = 0,
 	@sdiscountHRFixedOdds decimal(9,8) = 0,
 	
+	-- Myanma Odds
+	@discountMyanmarOdds DECIMAL(9,8) = 0,
+	@IsMyanmarOdds BIT = 0,
+	
 	@UplineSyncLiveCasino BIT = 0,
 	
 	@ErrCode INT = 0 OUTPUT
@@ -810,8 +814,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 				+ Separate custDB to new server DBCUST: 
 				+ Improve medthod check table existing in subscribers	
 			- 20150715@Viet: remove P2P tables from replication check	
+			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]
 			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
-			  
+			- 20150904@Helen: commission setting for MO [Redmine #41470]
+						  
 			  	
 		Parameter's Explanation:
 		
@@ -867,7 +873,7 @@ DECLARE @currency INT
 	IF @roleid = 4
 	BEGIN					
 		INSERT INTO [dbo].[custsetting]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [alivepositiontaking], [mlivepositiontaking], [slivepositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [groupa], [groupb], [groupc], [groupd], [groupe], [groupf], [Minbet], [Maxbet], autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking ,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
-		SELECT @custid, 1, 1, @apositiontaking_1, @mpositiontaking_1, @spositiontaking_1, @alivepositiontaking_1, @mlivepositiontaking_1, @slivepositiontaking_1, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
+				SELECT @custid, 1, 1, @apositiontaking_1, @mpositiontaking_1, @spositiontaking_1, @alivepositiontaking_1, @mlivepositiontaking_1, @slivepositiontaking_1, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 3, 1, @apositiontaking_3, @mpositiontaking_3, @spositiontaking_3, @alivepositiontaking_3, @mlivepositiontaking_3, @slivepositiontaking_3, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 7, 1, @apositiontaking_7, @mpositiontaking_7, @spositiontaking_7, @alivepositiontaking_7, @mlivepositiontaking_7, @slivepositiontaking_7, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 8, 1, @apositiontaking_8, @mpositiontaking_8, @spositiontaking_8, @alivepositiontaking_8, @mlivepositiontaking_8, @slivepositiontaking_8, 0, 0, 0, 0, @groupa, @groupb, @groupc, @groupd, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1147,7 +1153,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END           
-				
+		
 		--Insert live casino, Keno, GoldDeluxe setting
 		INSERT INTO CustSettingGame([CustID]
 				   ,[Bettype]
@@ -1192,8 +1198,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END     
-		
-		
+
 		INSERT INTO [CustOverrideGame]
 				   ([CustID]
 				   ,[Bettype]
@@ -1261,7 +1266,7 @@ DECLARE @currency INT
 			
 			RETURN
 		END
-		
+
 		--end keno
 	END--end roleid = 4
 	ELSE IF @roleid = 3
@@ -2666,9 +2671,9 @@ DECLARE @currency INT
           , MaxPerGameType
           , IsDisabled
         )		
-		SELECT 1701, @custid, @StakeLevelID_1701, 0, 0, 0, 0 WHERE @StakeLevelID_1701 IS NOT NULL
+		SELECT 1701, @custid, ISNULL(@StakeLevelID_1701,''), 0, 0, 0, 0
 		UNION ALL 
-		SELECT 1702, @custid, @StakeLevelID_1702, 0, 0, 0, 0 WHERE @StakeLevelID_1702 IS NOT NULL 
+		SELECT 1702, @custid, ISNULL(@StakeLevelID_1702,''), 0, 0, 0, 0
 		
 		IF @@error <> 0
 		BEGIN
@@ -2688,8 +2693,10 @@ DECLARE @currency INT
 		--End Gold Deluxe
 	END
 	
-	-- For colossus Bet
+	-- For colossus Bet and Myanma Odds
 	DECLARE @DirectParentAgent INT 
+	select @roleid as roleid
+	
 	IF @roleid IN (2,3,4)
 	BEGIN
 		
@@ -2697,7 +2704,7 @@ DECLARE @currency INT
 			SET @DirectParentAgent = @mrecommend 
 		IF @roleid = 3 
 			SET @DirectParentAgent = @srecommend 
-	
+		-- For Colossus Bet
 		IF @roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 204)
 		BEGIN
 			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
@@ -2725,16 +2732,41 @@ DECLARE @currency INT
 			
 			RETURN
 		END
+		-- For Myanma Odds
+		IF (@IsMyanmarOdds = 1 AND (@roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 1 AND Bettype = 301)))
+		BEGIN
+			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+			SELECT @custid,1,301,@discountMyanmarOdds
+		END	
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			
+			RETURN
+		END
 	
 	END
 	IF @roleid = 1
 	BEGIN
-		
+		-- For Colossus Bet
 		SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
 		INTO #CustCommRate_temp
 		FROM AgentCommRate ac WITH (ROWLOCK)
 			JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
-		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend)
+		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 204 
 		
 		INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
 		SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],0
@@ -2760,11 +2792,51 @@ DECLARE @currency INT
 			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
 			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
-			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
-			DELETE CustCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+			DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
 			
 			RETURN
 		END
+		IF (@IsMyanmarOdds = 1)
+		BEGIN
+		
+			SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
+			INTO #CustCommRate_MOtemp
+			FROM AgentCommRate ac WITH (ROWLOCK)
+				JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
+			WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 1 AND ac.Bettype = 301
+			
+			INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
+			SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],@discountMyanmarOdds
+			FROM #CustCommRate_MOtemp
+			PIVOT(
+				SUM(CommRate)
+				FOR roleID IN ([2],[3],[4])
+			) AS T
+			
+				
+			IF @@ERROR <> 0
+			BEGIN
+				--Error Occurs
+				SELECT @ErrCode=116
+				
+				-- ROLLBACK MANUALLY
+				DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+				DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				
+				RETURN
+		END
+		END
+		
 	
 	END
 	
@@ -2773,4 +2845,4 @@ END
 
 GO 
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
-GO 
+ 

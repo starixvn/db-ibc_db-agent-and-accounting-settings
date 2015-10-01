@@ -1,6 +1,3 @@
-use custdb
-go
-
 ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
 	@Custid INT OUTPUT
 	,@UserName VARCHAR(30)
@@ -38,8 +35,11 @@ AS
 	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
 	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
 	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
-	- 20150714@Patrick: Add max win limit for Gold deluxe                              
+	- 20150714@Patrick: Add max win limit for Gold deluxe    
+	- 20150821@Elodie: Set HideGoldDeluxe = 1 for 789y site    
+	- 20150909@Elodie: Remove copying Virtual Rate setting from function Search and Copy [Redmine:#42976]                
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+	- 20150904@Helen: commission setting for MO [Redmine #41470]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -55,7 +55,7 @@ BEGIN
 		,@endRun DATETIME
 		,@duration INT
 		,@srecommend INT
-				
+	
 	IF EXISTS (SELECT 1 FROM dbo.customer WITH(NOLOCK) WHERE username=@username OR username2=@username
 			UNION ALL
 				SELECT 1 FROM dbo.custsub WITH(NOLOCK) WHERE username= @username
@@ -77,6 +77,23 @@ BEGIN
 	FROM dbo.CustInfo WITH(NOLOCK) 
 	WHERE custid = @ExistingCustid
 	
+	-- For Myanmar Odds
+	DECLARE @IsMyanmarOdds_destination BIT = 0
+	DECLARE @IsMyanmarOdds_source BIT = 0
+	
+	IF @Site = '766666' 
+		SET @IsMyanmarOdds_source = 1
+	
+	SET @IsMyanmarOdds_destination = dbo.fn_IsMyanmarOdds (@ExistingCustid)
+		
+	IF @IsMyanmarOdds_destination <> @IsMyanmarOdds_source
+	BEGIN
+		SELECT @ErrMsg = 'Cannot copy super ' + @existingUsername + ' since amongs the new and old sites, one has % Odds.',@ErrCode = 200								
+		RETURN		
+
+	END	
+		
+		
 	IF @roleid <> 4
 	BEGIN		
 		 SELECT @ErrMsg = CASE @Language 
@@ -303,7 +320,7 @@ BEGIN
 				,@Credit AS Credit
 				,closed
 				,MatchLimit
-				,VirtualMultiplier
+				,0 AS VirtualMultiplier
 				,maxpermatch
 				,maxpermatch2
 				,maxpermatch3
@@ -360,8 +377,8 @@ BEGIN
 				,maxpermatch154
 				,HideKeno
 				,DisableEsports
-				,HideGoldDeluxe
-				,DisableGoldDeluxe
+				,CASE WHEN @Site = '789y' THEN 1 ELSE HideGoldDeluxe END AS HideGoldDeluxe
+				,CASE WHEN @Site = '789y' THEN 1 ELSE DisableGoldDeluxe END AS DisableGoldDeluxe
 				,HideColossusBet
 				,DisableColossusBet
 				,DisableSuperLive
@@ -425,10 +442,7 @@ BEGIN
 
     DECLARE @isForcedChangeSecurityCode BIT = 0
 
-	SELECT @isForcedChangeSecurityCode = CASE
-                                           WHEN @Site LIKE '789y%' THEN 0
-                                           ELSE 1
-                                         END
+	SELECT @isForcedChangeSecurityCode = CASE WHEN @Site LIKE '789y%' THEN 0 ELSE 1 END
 
 	BEGIN TRY
 		INSERT INTO dbo.CustLoginInfo
@@ -471,14 +485,54 @@ BEGIN
            ,[sporttype]
            ,[bettype]
            ,[isLive]
-           ,[virtualMultiplier])
-		SELECT @custid
-           ,[sporttype]
-           ,[bettype]
-           ,[isLive]
-           ,[virtualMultiplier]
-        FROM [dbo].[CustVirtualRate] WITH(NOLOCK)
-        WHERE custid = @ExistingCustid           
+           ,[virtualMultiplier])		
+		SELECT @custid,
+			t.sporttype,
+			t.bettype,
+			b.isLive,
+			1 as virtualMutiplier
+		FROM (
+			SELECT 1 as sporttype, 1 as bettype
+			UNION 
+			SELECT 1 as sporttype, 2 as bettype
+			UNION 
+			SELECT 1 as sporttype, 3 as bettype
+			UNION 
+			SELECT 1 as sporttype, 7 as bettype
+			UNION 
+			SELECT 1 as sporttype, 8 as bettype
+			UNION 
+			SELECT 1 as sporttype, 12 as bettype
+			UNION 		
+			SELECT 99 as sporttype, 1 as bettype
+			UNION 
+			SELECT 99 as sporttype, 2 as bettype
+			UNION 
+			SELECT 99 as sporttype, 3 as bettype
+			UNION 
+			SELECT 99 as sporttype, 7 as bettype
+			UNION 
+			SELECT 99 as sporttype, 8 as bettype
+			UNION 
+			SELECT 99 as sporttype, 12 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 20 as bettype 
+			UNION
+			SELECT 99 as sporttype, 21 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 154 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1301 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1311 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1324 as bettype 		 
+			) t
+			CROSS APPLY (
+			SELECT 0 as isLive
+			UNION 
+			SELECT 1 as isLive
+			)b        
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrMsg = CASE @Language 
@@ -506,7 +560,79 @@ BEGIN
 		RETURN	
 	END CATCH
 	
+	-- For colossus Bet 
+	BEGIN TRY	
+		INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+		SELECT @custid,204,Bettype,CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid AND Sporttype = 204 
+		
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID   
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE custId = @CustID  
+							
+		RETURN	
+		
+	END CATCH	
 	
+	-- For Myanmar Odds
+	IF (@IsMyanmarOdds_destination = 1)
+	BEGIN TRY 
+		INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+		SELECT @custid,1,301,CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid AND Sporttype = 1 AND Bettype = 301 
+		
+	END TRY	
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID   
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE custId = @CustID  
+							
+		RETURN	
+		
+	END CATCH	
+		
 	SET @endRun=GETDATE()
 	SET @duration=datediff(millisecond,@startRun,@endRun)
 	
