@@ -15,7 +15,7 @@ AS
 		DB: DBTXN/CustDB
 		
 		Revisions:
-		
+			- 20151001@Johnson: check limit downlines before updating 
 		Parameter's Explanation:
 			* @StakeLevel = <ROOT>
 								<Row ID="1701" Stake="1,2,3,4"/>
@@ -83,6 +83,20 @@ BEGIN
 		@Custid = @custid,		
 		@roleid = @roleid OUTPUT
 		if (@roleid = 0) return
+
+	   ---- Checking total downlines before UPDATEs 
+    EXEC Acc_CustomerSelCheckAllowedDownlines    
+		@custid		= @custid,
+        @roleid		= @roleid,
+        @isExecRep	= 1,
+        @isUpdatePT = 1,
+        @Sporttype	= 1,
+        @Language	= 'E',
+        @ErrMsg		= @ErrMsg	OUTPUT,
+        @ErrCode	= @ErrCode	OUTPUT
+        
+    IF @ErrCode <> 0 
+        RETURN 		
 		
 	DECLARE @tmpStake TABLE(GameTypeID INT, StakeLevelList VARCHAR(500), isValidated BIT DEFAULT(0))
 	

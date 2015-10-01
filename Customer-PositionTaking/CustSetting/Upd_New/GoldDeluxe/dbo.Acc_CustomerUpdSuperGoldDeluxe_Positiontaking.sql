@@ -66,18 +66,18 @@ BEGIN
     --end
 
     ---- Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
-		@custid		= @custid,
-        @roleid		= 4,
-        @isExecRep	= 1,
-        @isUpdatePT = 1,
-        @Sporttype	= 1,
-        @Language	= 'E',
-        @ErrMsg		= @ErrMsg	OUTPUT,
-        @ErrCode	= @ErrCode	OUTPUT
-        
-    IF @ErrCode <> 0 
-        RETURN 
+	 EXEC Acc_CustomerSelCheckAllowedDownlines    
+			@custid		= @custid,
+			@roleid		= 4,
+			@isExecRep	= 1,
+			@isUpdatePT = 1,
+			@Sporttype	= 1,
+			@Language	= 'E',
+			@ErrMsg		= @ErrMsg	OUTPUT,
+			@ErrCode	= @ErrCode	OUTPUT
+	        
+	IF @ErrCode <> 0 
+		RETURN  
 
     DECLARE @db_v255spositiontaking_1701 SMALLMONEY
 

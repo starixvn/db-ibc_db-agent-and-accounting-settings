@@ -54,7 +54,7 @@ BEGIN
 			,@ErrMsg = ''
 
     ---- Checking total downlines before UPDATEs 
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+    EXEC Acc_CustomerSelCheckAllowedDownlines    
 		@custid		= @custid,
         @roleid		= 3,
         @isExecRep	= 1,
