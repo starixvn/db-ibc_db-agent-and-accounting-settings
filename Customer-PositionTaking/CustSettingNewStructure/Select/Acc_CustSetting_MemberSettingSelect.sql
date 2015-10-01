@@ -320,25 +320,47 @@ BEGIN
 				, mb.IsLive  
 				, mb.A1  
 				--, agentpt.AgentPT AS A2
-				, CASE 
-					WHEN (
-							agentpt.IsAutoMasterPT = 1
-							OR mb.IM1 = 1
-							)
+				, CASE WHEN agentpt.AgentPT < CASE 
+								WHEN (
+										agentpt.IsAutoMasterPT = 1
+										OR mb.IM1 = 1
+										)
+									THEN agentpt.AgentPT
+								ELSE CASE 
+										WHEN NOT (
+												mb.IS1 = 0
+												AND masterpt.IsAutoSuperPT = 0
+												)
+											THEN masterpt.MasterPT - mb.M1
+										ELSE CASE 
+												WHEN masterpt.MasterPT - mb.M1 <= superpt.SuperPT - mb.S1 - mb.M1
+													THEN masterpt.MasterPT - mb.M1
+												ELSE superpt.SuperPT - mb.S1 - mb.M1
+												END
+										END
+								END
 						THEN agentpt.AgentPT
-					ELSE CASE 
-							WHEN NOT (
-									mb.IS1 = 0
-									AND masterpt.IsAutoSuperPT = 0
-									)
-								THEN masterpt.MasterPT - mb.M1
-							ELSE CASE 
-									WHEN masterpt.MasterPT - mb.M1 <= superpt.SuperPT - mb.S1 - mb.M1
-										THEN masterpt.MasterPT - mb.M1
-									ELSE superpt.SuperPT - mb.S1 - mb.M1
-									END
-							END
-					END AS A2
+						ELSE
+							CASE 
+								WHEN (
+										agentpt.IsAutoMasterPT = 1
+										OR mb.IM1 = 1
+										)
+									THEN agentpt.AgentPT
+								ELSE CASE 
+										WHEN NOT (
+												mb.IS1 = 0
+												AND masterpt.IsAutoSuperPT = 0
+												)
+											THEN masterpt.MasterPT - mb.M1
+										ELSE CASE 
+												WHEN masterpt.MasterPT - mb.M1 <= superpt.SuperPT - mb.S1 - mb.M1
+													THEN masterpt.MasterPT - mb.M1
+												ELSE superpt.SuperPT - mb.S1 - mb.M1
+												END
+										END
+								END
+						END AS A2	
 				, agentpt.MinPT AS N2  
 				, agentpt.IsAutoMasterPT AS IM2
 			FROM @MemberPT mb  
