@@ -10,6 +10,7 @@
 	@TotalPages int=0 OUTPUT,
 	@TotalItems int=0 OUTPUT
 AS
+BEGIN
 /*
 	Task : Select Direct Master Agent list
 	DB: DBCUST/CustDB
@@ -38,6 +39,8 @@ AS
 		- 20150422@Elodie: Add Gold Deluxe product [Redmine:#11658]
 		- 20150601@Elodie: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB, Use temp table for GameType table)
 		- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+		- 20150904@Helen: commission setting for MO [Redmine #41470]
+		
 
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -47,135 +50,144 @@ AS
 		0-9: '[0-9]%'	
 */
 
-SET NOCOUNT ON
+	SET NOCOUNT ON
 
------ Elodie @ 01 JUN 2015 -------------------
-DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+	----- Elodie @ 01 JUN 2015 -------------------
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
 
-BEGIN TRY		
-	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
-	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
-END TRY
-BEGIN CATCH		
-	INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
-	SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
-END CATCH
------ /Elodie @ 01 JUN 2015 -------------------
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
+	----- /Elodie @ 01 JUN 2015 -------------------
+		 
+	DECLARE @RowCount int, @RowStart int, @RowEnd int 
+	SELECT @PageIndex = @PageIndex - 1, @RowStart = @PageSize * @PageIndex + 1, @RowEnd = @RowStart + @PageSize - 1 
+	IF @TotalPages = 0
+	BEGIN
+		SELECT @TotalItems = count(t.custid),@TotalPages=@TotalItems/@PageSize + case when @TotalItems%@PageSize > 0 then 1 else 0 end  
+		From(
+				select m.custid
+					FROM 
+					customer AS m with (NOLOCK)
+					INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
+					INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid
+				WHERE m.SRecommend < 100 and m.roleid=3
+					and m.currency = case when @Currency is null then m.currency else @Currency end
+					and ci.closed = case when @closed is null then ci.closed else @closed end
+					AND cm.isinternal = case when @IsInternal is null then cm.isinternal else @IsInternal end
+					and m.username like @Keyword and m.username like @FirstChar
+					and ci.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
+					and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
+			) t
+	END
+	Select * From 
+	(
+		SELECT 		
+			ci.enabled, 
+			ci.closed, 
+			ci.roleid,
+			ci.reject as suspended,
+			m.username, 
+			m.custid,
+			m.srecommend,
+			m.ugroup, 
+			m.firstname, 
+			m.lastname, 
+			m.username2,
+			m.phone,
+			m.mobilephone,
+			ci.matchlimit,
+			ci.virtualmultiplier-1 as VirtualMultiplier,
+			m.iplogin as lastloginip,
+			u.synccasino as SyncCasinoUpline,
+			u.doublecommlosing as DoubleCommLosingUpline,
+			max(cs.groupa) as groupa, 
+			max(cs.groupb) as groupb, 
+			max(cs.groupc) as groupc, 
+			max(cs.groupd) as groupd, 
+			max(case when cs.bettype = 4 and cs.sporttype=1 then cs.adiscount else 0 end) as discountcs,
+			max(case when cs.bettype = 5 and cs.sporttype=1 then cs.adiscount else 0 end) as discount1x2,
+			max(case when cs3.bettype = 81 and cs3.sporttype = 161 then cs3.adiscount else 0 end) as discountnumber,
+			max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.adiscount else 0 end) as discountHRFixedOdds,
+			m.currency as exchangeid,
+			m.currency,
+			cm.isinternal,
+			ci.synccasino,
+			ci.DoubleCommLosing,
 
-DECLARE @RowCount int, @RowStart int, @RowEnd int 
-SELECT @PageIndex = @PageIndex - 1, @RowStart = @PageSize * @PageIndex + 1, @RowEnd = @RowStart + @PageSize - 1 
-IF @TotalPages = 0
-BEGIN
-	SELECT @TotalItems = count(t.custid),@TotalPages=@TotalItems/@PageSize + case when @TotalItems%@PageSize > 0 then 1 else 0 end  
-	From(
-			select m.custid
-				FROM 
-				customer AS m with (NOLOCK)
-				INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-				INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid
-			WHERE m.SRecommend < 100 and m.roleid=3
-				and m.currency = case when @Currency is null then m.currency else @Currency end
-				and ci.closed = case when @closed is null then ci.closed else @closed end
-				AND cm.isinternal = case when @IsInternal is null then cm.isinternal else @IsInternal end
-				and m.username like @Keyword and m.username like @FirstChar
-				and ci.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
-				and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
-		) t
+			ci.HideKeno,
+			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
+
+			ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
+			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
+			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
+			ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
+			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
+			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
+			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
+		FROM 
+			customer AS m with (NOLOCK)
+			INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
+			LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
+			LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
+			LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
+			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)						
+			INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
+			INNER JOIN CustSuper csuper WITH (NOLOCK) ON csuper.custid = ci.srecommend
+			INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
+			LEFT JOIN AgentCommRate ac WITH (NOLOCK) ON ac.CustId = ci.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
+		WHERE m.SRecommend < 100 and m.roleid=3
+			and m.currency = case when @Currency is null then m.currency else @Currency end
+			and ci.closed = case when @closed is null then ci.closed else @closed end
+			and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
+			AND cm.isinternal = case when @IsInternal is null then cm.isinternal else @IsInternal end
+			and m.username like @Keyword and m.username like @FirstChar		
+			and ci.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
+		group by
+			ci.enabled, 
+			ci.closed,
+			ci.roleid, 
+			ci.reject,
+			ci.matchlimit,
+			ci.virtualmultiplier,
+			m.username, 
+			m.custid, 
+			m.ugroup, 
+			m.firstname, 
+			m.lastname, 
+			m.username2,
+			m.roleid,
+			m.phone,
+			m.mobilephone,
+			m.iplogin,
+			m.srecommend,
+			m.currency,
+			cm.isinternal,
+			u.synccasino,
+			u.DoubleCommLosing,
+			ci.synccasino,
+			ci.DoubleCommLosing,
+			ci.HideKeno,
+			ci.HideGoldDeluxe,
+			ci.DisableGoldDeluxe,
+			ci.HideColossusBet,
+			ci.DisableColossusBet,
+			AC.CommRate,
+			ac.CustId
+			
+	) a
+	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 END
-Select * From 
-(
-	SELECT 		
-		ci.enabled, 
-		ci.closed, 
-		ci.roleid,
-		ci.reject as suspended,
-		m.username, 
-		m.custid,
-		m.srecommend,
-		m.ugroup, 
-		m.firstname, 
-		m.lastname, 
-		m.username2,
-		m.phone,
-		m.mobilephone,
-		ci.matchlimit,
-		ci.virtualmultiplier-1 as VirtualMultiplier,
-		m.iplogin as lastloginip,
-		u.synccasino as SyncCasinoUpline,
-		u.doublecommlosing as DoubleCommLosingUpline,
-		max(cs.groupa) as groupa, 
-		max(cs.groupb) as groupb, 
-		max(cs.groupc) as groupc, 
-		max(cs.groupd) as groupd, 
-		max(case when cs.bettype = 4 and cs.sporttype=1 then cs.adiscount else 0 end) as discountcs,
-		max(case when cs.bettype = 5 and cs.sporttype=1 then cs.adiscount else 0 end) as discount1x2,
-		max(case when cs3.bettype = 81 and cs3.sporttype = 161 then cs3.adiscount else 0 end) as discountnumber,
-		max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.adiscount else 0 end) as discountHRFixedOdds,
-		m.currency as exchangeid,
-		m.currency,
-		cm.isinternal,
-		ci.synccasino,
-		ci.DoubleCommLosing,
-
-		ci.HideKeno,
-		min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
-
-		ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
-		ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
-		ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
-		ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
-		ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
-	FROM 
-		customer AS m with (NOLOCK)
-		INNER JOIN custinfo as ci with (NOLOCK) on m.custid = ci.custid
-		LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
-		LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
-		LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-		LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)						
-		INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
-		INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
-	WHERE m.SRecommend < 100 and m.roleid=3
-		and m.currency = case when @Currency is null then m.currency else @Currency end
-		and ci.closed = case when @closed is null then ci.closed else @closed end
-		and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
-		AND cm.isinternal = case when @IsInternal is null then cm.isinternal else @IsInternal end
-		and m.username like @Keyword and m.username like @FirstChar		
-		and ci.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
-	group by
-		ci.enabled, 
-		ci.closed,
-		ci.roleid, 
-		ci.reject,
-		ci.matchlimit,
-		ci.virtualmultiplier,
-		m.username, 
-		m.custid, 
-		m.ugroup, 
-		m.firstname, 
-		m.lastname, 
-		m.username2,
-		m.roleid,
-		m.phone,
-		m.mobilephone,
-		m.iplogin,
-		m.srecommend,
-		m.currency,
-		cm.isinternal,
-		u.synccasino,
-		u.DoubleCommLosing,
-		ci.synccasino,
-		ci.DoubleCommLosing,
-		ci.HideKeno,
-		ci.HideGoldDeluxe,
-		ci.DisableGoldDeluxe,
-		ci.HideColossusBet,
-		ci.DisableColossusBet
-) a
-WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbAdminNet] AS [dbo]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelMAgByCom] TO [bodbExtAccNet] AS [dbo]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelMAgByCom] TO [vnteam] AS [dbo]
+
+

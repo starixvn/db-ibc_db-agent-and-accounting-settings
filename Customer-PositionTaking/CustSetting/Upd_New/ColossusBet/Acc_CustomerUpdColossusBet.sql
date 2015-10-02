@@ -55,7 +55,7 @@ BEGIN
 		@Custid   = @custid,  
 		@roleid   = @roleid OUTPUT  
 
-	IF (@roleid = 0 OR @roleid = 1)   
+	IF (@roleid = 0)   
 		RETURN  
 	
 	--Check disable user  
