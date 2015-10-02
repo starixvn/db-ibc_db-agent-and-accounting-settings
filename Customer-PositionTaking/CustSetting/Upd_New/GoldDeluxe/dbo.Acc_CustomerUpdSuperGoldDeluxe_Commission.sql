@@ -70,7 +70,7 @@ BEGIN
 	--end
 
 	--Check Allowed downlines    
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+	EXEC Acc_CustomerSelCheckAllowedDownlines    
 		@custid		= @custid,
 		@roleid		= 4,-- @roleid,
 		@isExecRep	= 1,
