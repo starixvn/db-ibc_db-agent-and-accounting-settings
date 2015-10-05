@@ -195,8 +195,8 @@ BEGIN
 			SELECT stt.SportType  
 				, stt.BetType  
 				, ISNULL(stt.IsDisabled, 0) IsDisabled  
-				, ISNULL(stt.IsHidden, 0) IsHidden  
-				, ISNULL(stt.IsSync, 0) IsSync  
+				--, ISNULL(stt.IsHidden, 0) IsHidden  
+				--, ISNULL(stt.IsSync, 0) IsSync  
 				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
 			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
 			INNER JOIN #SportBettypeFilter ft 
@@ -208,10 +208,48 @@ BEGIN
 				ON stt.SportType = pdt.SportType  
 				AND stt.BetType = pdt.BetType  
 				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
 			INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
 				ON Agentstt.SportType = pdt.SportType  
 				AND Agentstt.BetType = pdt.BetType  
 				AND Agentstt.CustID = @AgentID  
+				AND Agentstt.SettingType = pdt.SettingType
+		END
+		--Hidden Status  
+		ELSE IF @SettingType = 5
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsHidden, 0) IsHidden
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
+		END
+		-- Sync Status
+		ELSE IF @SettingType = 6
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsSync, 0) IsSync
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID
+				AND stt.SettingType = pdt.SettingType
 		END
 	END  
 	ELSE IF @RoleID = 3  
@@ -290,8 +328,8 @@ BEGIN
 			SELECT stt.SportType  
 				, stt.BetType  
 				, ISNULL(stt.IsDisabled, 0) IsDisabled  
-				, ISNULL(stt.IsHidden, 0) IsHidden  
-				, ISNULL(stt.IsSync, 0) IsSync  
+				--, ISNULL(stt.IsHidden, 0) IsHidden  
+				--, ISNULL(stt.IsSync, 0) IsSync  
 				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
 			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
 			INNER JOIN #SportBettypeFilter ft 
@@ -303,10 +341,46 @@ BEGIN
 				ON stt.SportType = pdt.SportType  
 				AND stt.BetType = pdt.BetType  
 				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
 			INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
 				ON Agentstt.SportType = pdt.SportType  
 				AND Agentstt.BetType = pdt.BetType  
 				AND Agentstt.CustID = @AgentID  
+				AND Agentstt.SettingType = pdt.SettingType
+		END
+		ELSE IF @SettingType = 5 --Hidden Status
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsHidden, 0) IsHidden   
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
+		END
+		ELSE IF @SettingType = 6 --Sync Status
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsSync, 0) IsSync   
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
 		END
 	END  
 	ELSE IF @RoleID = 2  
@@ -479,8 +553,8 @@ BEGIN
 			SELECT stt.SportType  
 				, stt.BetType  
 				, ISNULL(stt.IsDisabled, 0) IsDisabled  
-				, ISNULL(stt.IsHidden, 0) IsHidden  
-				, ISNULL(stt.IsSync, 0) IsSync  
+				--, ISNULL(stt.IsHidden, 0) IsHidden  
+				--, ISNULL(stt.IsSync, 0) IsSync  
 				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
 			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
 			INNER JOIN #SportBettypeFilter ft 
@@ -492,10 +566,48 @@ BEGIN
 				ON stt.SportType = pdt.SportType  
 				AND stt.BetType = pdt.BetType  
 				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
 			INNER JOIN dbo.CustProductStatus Agentstt WITH (NOLOCK)  
 				ON Agentstt.SportType = pdt.SportType  
 				AND Agentstt.BetType = pdt.BetType  
 				AND Agentstt.CustID = @AgentID  
+				AND Agentstt.SettingType = pdt.SettingType
+		END
+		ELSE IF @SettingType = 5 --Hidden Status
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsHidden, 0) IsHidden   
+				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
+		END
+		ELSE IF @SettingType = 6 --Sync Status
+		BEGIN
+			SELECT stt.SportType  
+				, stt.BetType   
+				, ISNULL(stt.IsSync, 0) IsSync   
+				, ISNULL(Agentstt.IsDisabled, 0) AS IsDisabledUpline  
+			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK) 
+			INNER JOIN #SportBettypeFilter ft 
+				ON pdt.SportType = ft.sporttype
+					AND pdt.BetType = ft.bettype
+					AND pdt.IsLive = ft.islive
+					AND pdt.SettingType = ft.SettingType 
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)  
+				ON stt.SportType = pdt.SportType  
+				AND stt.BetType = pdt.BetType  
+				AND stt.CustID = @CustID  
+				AND stt.SettingType = pdt.SettingType
 		END
 	END  
 	

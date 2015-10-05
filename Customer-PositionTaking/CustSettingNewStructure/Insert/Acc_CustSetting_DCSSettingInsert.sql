@@ -693,17 +693,17 @@ BEGIN
 				--Enable/Disable: default status setting
 				
 				INSERT INTO [dbo].[CustProductStatus]
-				   ([CustID]
+				   ([CustID], SettingType
 				   ,[SportType]
 				   ,[BetType]
 				   ,[IsSync]
 				   ,[IsHidden]
 				   ,[IsDisabled])
-				SELECT @CustID
+				SELECT @CustID, 4
 					,dt.[SportType]
 					,dt.[BetType]
-					,[IsSync]
-					,[IsHidden]
+					,NULL --[IsSync]
+					,NULL --[IsHidden]
 					,[IsDisabled]
 				FROM dbo.ProductSettingDetail dt WITH (NOLOCK)
 				INNER JOIN #SportBettypeFilter4 ft 
@@ -718,17 +718,17 @@ BEGIN
 			--Enable/Disable: upline status
 			
 			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
+			   ([CustID], SettingType
 			   ,[SportType]
 			   ,[BetType]
 			   ,[IsSync]
 			   ,[IsHidden]
 			   ,[IsDisabled])
-			SELECT @CustID
+			SELECT @CustID, 4
 			  ,cs.[SportType]
 			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
+			  ,NULL --dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
 			  ,cs.[IsDisabled]
 			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
 			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
@@ -745,17 +745,17 @@ BEGIN
 			--Enable/Disable: upline status
 			
 			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
+			   ([CustID],SettingType
 			   ,[SportType]
 			   ,[BetType]
 			   ,[IsSync]
 			   ,[IsHidden]
 			   ,[IsDisabled])
-			SELECT @CustID
+			SELECT @CustID, 4
 			 ,cs.[SportType]
 			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
+			  ,NULL --dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
 			  ,cs.[IsDisabled]
 			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
 			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
@@ -772,17 +772,17 @@ BEGIN
 			--Enable/Disable: upline status
 			
 			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
+			   ([CustID],SettingType
 			   ,[SportType]
 			   ,[BetType]
 			   ,[IsSync]
 			   ,[IsHidden]
 			   ,[IsDisabled])
-			SELECT @CustID
+			SELECT @CustID,4
 			   ,cs.[SportType]
 			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
+			  ,NULL --dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
 			  ,cs.[IsDisabled]
 			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
 			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
@@ -812,7 +812,284 @@ BEGIN
 		
 		RETURN
 	END CATCH
-
+	/********************************************* Hidden Status: SettingType = 5 ************************************/
+	--Get sporttype/Bettype for this setting type
+	SELECT * INTO #SportBettypeFilter5
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,5)
+	
+	
+	BEGIN TRY
+		IF @RoleID = 4
+		BEGIN
+			IF EXISTS(
+				SELECT TOP 1 1
+				FROM #SportBettypeFilter5
+			)
+			BEGIN
+				--Get from default status values
+				--Sync: default status setting
+				--Hide: default status setting
+				--Enable/Disable: default status setting
+				
+				INSERT INTO [dbo].[CustProductStatus]
+				   ([CustID], SettingType
+				   ,[SportType]
+				   ,[BetType]
+				   ,[IsSync]
+				   ,[IsHidden]
+				   ,[IsDisabled])
+				SELECT @CustID, 5
+					,dt.[SportType]
+					,dt.[BetType]
+					,NULL --[IsSync]
+					,[IsHidden]
+					,NULL --[IsDisabled]
+				FROM dbo.ProductSettingDetail dt WITH (NOLOCK)
+				INNER JOIN #SportBettypeFilter5 ft 
+					ON dt.[SportType] = ft.[SportType]
+						AND dt.[BetType] = ft.[BetType]
+			END
+		END
+		ELSE IF @RoleID = 3
+		BEGIN
+			--Get from Super
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID], SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID, 5
+			  ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,NULL --dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 5
+			WHERE cs.CustID = @SuperID
+		END
+		ELSE IF @RoleID = 2
+		BEGIN
+			--Get from Master
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID],SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID, 5
+			 ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,NULL --dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 5
+			WHERE cs.CustID = @MasterID
+		END
+		ELSE
+		BEGIN
+			--Get from Agent
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID],SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID,5
+			   ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,NULL --dt.[IsSync]
+			  ,cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 5
+			WHERE cs.CustID = @AgentID
+		END
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrCode = 5
+		IF @RoleID = 1
+		BEGIN
+			DELETE FROM CustPTSetting3rd_Member WHERE CustID = @CustID
+			DELETE FROM CustSettingMode3rd WHERE CustID = @CustID			
+			DELETE FROM CustBetSetting3rd_Member WHERE CustID = @CustID		
+			DELETE FROM CustDiscount3rd_Member WHERE CustID = @CustID
+		END
+		ELSE --SMA
+		BEGIN
+			DELETE FROM CustPTSetting3rd_Agent WHERE CustID = @CustID		
+			DELETE FROM CustBetSetting3rd_Agent WHERE CustID = @CustID	
+			DELETE FROM CustDiscount3rd_Agent WHERE CustID = @CustID
+		END
+		DELETE FROM CustProductStatus WHERE CustID = @CustID
+		
+		RETURN
+	END CATCH
+	/********************************************* Sync Status: SettingType = 6 ************************************/
+	--Get sporttype/Bettype for this setting type
+	SELECT * INTO #SportBettypeFilter6
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,6)
+	
+	
+	BEGIN TRY
+		IF @RoleID = 4
+		BEGIN
+			IF EXISTS(
+				SELECT TOP 1 1
+				FROM #SportBettypeFilter6
+			)
+			BEGIN
+				--Get from default status values
+				--Sync: default status setting
+				--Hide: default status setting
+				--Enable/Disable: default status setting
+				
+				INSERT INTO [dbo].[CustProductStatus]
+				   ([CustID], SettingType
+				   ,[SportType]
+				   ,[BetType]
+				   ,[IsSync]
+				   ,[IsHidden]
+				   ,[IsDisabled])
+				SELECT @CustID, 6
+					,dt.[SportType]
+					,dt.[BetType]
+					,[IsSync]
+					,NULL --[IsHidden]
+					,NULL --[IsDisabled]
+				FROM dbo.ProductSettingDetail dt WITH (NOLOCK)
+				INNER JOIN #SportBettypeFilter6 ft 
+					ON dt.[SportType] = ft.[SportType]
+						AND dt.[BetType] = ft.[BetType]
+			END
+		END
+		ELSE IF @RoleID = 3
+		BEGIN
+			--Get from Super
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID], SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID, 6
+			  ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 6
+			WHERE cs.CustID = @SuperID
+		END
+		ELSE IF @RoleID = 2
+		BEGIN
+			--Get from Master
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID],SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID, 6
+			 ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 6
+			WHERE cs.CustID = @MasterID
+		END
+		ELSE
+		BEGIN
+			--Get from Agent
+			--Sync: upline status
+			--Enable/Disable: upline status
+			
+			INSERT INTO [dbo].[CustProductStatus]
+			   ([CustID],SettingType
+			   ,[SportType]
+			   ,[BetType]
+			   ,[IsSync]
+			   ,[IsHidden]
+			   ,[IsDisabled])
+			SELECT @CustID,6
+			   ,cs.[SportType]
+			  ,cs.[BetType]
+			  ,dt.[IsSync]
+			  ,NULL --cs.[IsHidden]
+			  ,NULL --cs.[IsDisabled]
+			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
+			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
+				ON dt.[SportType] = cs.[SportType]
+						AND dt.[BetType] = cs.[BetType]
+						AND dt.[IsLive] = 0
+						AND dt.[SettingType] = 6
+			WHERE cs.CustID = @AgentID
+		END
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrCode = 6
+		IF @RoleID = 1
+		BEGIN
+			DELETE FROM CustPTSetting3rd_Member WHERE CustID = @CustID
+			DELETE FROM CustSettingMode3rd WHERE CustID = @CustID			
+			DELETE FROM CustBetSetting3rd_Member WHERE CustID = @CustID		
+			DELETE FROM CustDiscount3rd_Member WHERE CustID = @CustID
+		END
+		ELSE --SMA
+		BEGIN
+			DELETE FROM CustPTSetting3rd_Agent WHERE CustID = @CustID		
+			DELETE FROM CustBetSetting3rd_Agent WHERE CustID = @CustID	
+			DELETE FROM CustDiscount3rd_Agent WHERE CustID = @CustID
+		END
+		DELETE FROM CustProductStatus WHERE CustID = @CustID
+		
+		RETURN
+	END CATCH
 END
 
 GO
