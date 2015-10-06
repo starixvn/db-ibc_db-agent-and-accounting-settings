@@ -102,9 +102,12 @@ BEGIN
   
 END
 go
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet] TO [bodbAdminNet] -- accouting
 GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet]TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet]TO [bodbDownlineNet] -- alpha
 GO 
-GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet] TO [bodbExtAccNet] -- External
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditAgentColossusBet] TO bodbDownlineNetView
+
 GO 

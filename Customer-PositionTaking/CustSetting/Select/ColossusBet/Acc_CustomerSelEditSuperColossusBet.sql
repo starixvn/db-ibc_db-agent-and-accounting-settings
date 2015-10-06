@@ -80,3 +80,4 @@ GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO [bodbDownlineNet
 GO 
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO [bodbExtAccNet]
 GO 
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelEditSuperColossusBet] TO bodbDownlineNetView
