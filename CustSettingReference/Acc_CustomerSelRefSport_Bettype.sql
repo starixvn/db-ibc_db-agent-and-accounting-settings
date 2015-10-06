@@ -69,6 +69,9 @@ BEGIN
 				
 	END
 	
+	IF @RoleID = 0
+		SET @IsMyanmarOdds = 1
+		
 	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
 	FROM	dbo.Sport_Bettype_Reference WITH (NOLOCK)
 	WHERE	Sporttype NOT IN (
