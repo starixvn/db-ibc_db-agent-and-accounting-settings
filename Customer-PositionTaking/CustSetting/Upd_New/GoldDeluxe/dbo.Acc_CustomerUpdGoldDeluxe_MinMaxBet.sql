@@ -15,6 +15,7 @@ AS
 		DB: DBTXN/CustDB
 		
 		Revisions:
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID, call bettype by link server)
 			- 20151001@Johnson: check limit downlines before updating 
 		Parameter's Explanation:
 			* @StakeLevel = <ROOT>
@@ -78,12 +79,11 @@ BEGIN
 		RETURN
 	
 	-- ***Check Downline Belonging***		
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelonging 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,		
 		@roleid = @roleid OUTPUT
 		if (@roleid = 0) return
-
 	   ---- Checking total downlines before UPDATEs 
     EXEC Acc_CustomerSelCheckAllowedDownlines    
 		@custid		= @custid,
@@ -96,7 +96,7 @@ BEGIN
         @ErrCode	= @ErrCode	OUTPUT
         
     IF @ErrCode <> 0 
-        RETURN 		
+        RETURN 
 		
 	DECLARE @tmpStake TABLE(GameTypeID INT, StakeLevelList VARCHAR(500), isValidated BIT DEFAULT(0))
 	
@@ -128,59 +128,71 @@ BEGIN
 	WHERE custid = @custid
 	
 	--validate stake level
-	WHILE (1=1)
+	IF @roleid < 4
 	BEGIN
-		SELECT TOP (1) @GameTypeID = GameTypeID,
-				@StakeLevelList = StakeLevelList 
-		FROM @tmpStake
-		WHERE isValidated = 0
+		WHILE (1=1)
+		BEGIN
+			SELECT TOP (1) @GameTypeID = GameTypeID,
+					@StakeLevelList = StakeLevelList 
+			FROM @tmpStake
+			WHERE isValidated = 0
 		
-		IF @@ROWCOUNT = 0 BREAK;
+			IF @@ROWCOUNT = 0 BREAK;
 		
-		IF @RoleID = 3
-		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock) 
-			WHERE	CustID = @srecommend
-					AND GameTypeID = @GameTypeID	
-		END									
-		ELSE IF @RoleID = 2
-		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock)
-			WHERE	CustID = @Mrecommend
-					AND GameTypeID = @GameTypeID
-		END									
-		ELSE IF @RoleID = 1
-		BEGIN
-			SELECT	@UplineStakeLevelList = StakeLevelList
-			FROM	CustGameType with(nolock) 
-			WHERE	CustID = @recommend
-					AND GameTypeID = @GameTypeID
+			IF @RoleID = 3
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock) 
+				WHERE	CustID = @srecommend
+						AND GameTypeID = @GameTypeID	
+			END									
+			ELSE IF @RoleID = 2
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock)
+				WHERE	CustID = @Mrecommend
+						AND GameTypeID = @GameTypeID
+			END									
+			ELSE IF @RoleID = 1
+			BEGIN
+				SELECT	@UplineStakeLevelList = StakeLevelList
+				FROM	CustGameType with(nolock) 
+				WHERE	CustID = @recommend
+						AND GameTypeID = @GameTypeID
+			END
+		
+			SELECT	TOP 1 @invalidStakeLevelID = ISNULL(Val,0) 	
+			FROM	dbo.strSplit(@StakeLevelList,',')
+			WHERE	Val not in (SELECT Val FROM dbo.strSplit(@UplineStakeLevelList,','))
+		
+			IF @invalidStakeLevelID > 0
+			BEGIN
+				--Return Data
+				SELECT @ErrCode = 1000
+				BEGIN TRY
+					SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
+							END + typenamee 
+					FROM DBAGE.bodb02.dbo.bettype WITH(NOLOCK)
+					WHERE TypeID = @GameTypeID
+				END TRY
+				BEGIN CATCH
+					SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
+							END + typenamee 
+					FROM DBTXN.bodb02.dbo.bettype WITH(NOLOCK)
+					WHERE TypeID = @GameTypeID
+				END CATCH	
+				RETURN	
+			END	
+		
+			UPDATE @tmpStake
+			SET isValidated = 1
+			WHERE GameTypeID = @GameTypeID
+		
 		END
-		
-		SELECT	TOP 1 @invalidStakeLevelID = ISNULL(Val,0) 	
-		FROM	dbo.strSplit(@StakeLevelList,',')
-		WHERE	Val not in (SELECT Val FROM dbo.strSplit(@UplineStakeLevelList,','))
-		
-		IF @invalidStakeLevelID > 0
-		BEGIN
-			--Return Data
-			SELECT @ErrCode = 1000
-			SELECT @ErrMsg = CASE @Language 
-						WHEN 'E' THEN 'This user''s upline does not have Stake Level for ' 
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10031,@Language)
-					END + typenamee 
-			FROM bodb02.dbo.bettype WITH(NOLOCK)
-			WHERE TypeID = @GameTypeID
-						
-			RETURN	
-		END	
-		
-		UPDATE @tmpStake
-		SET isValidated = 1
-		WHERE GameTypeID = @GameTypeID
-		
 	END
 	--end validate
 	
@@ -277,7 +289,7 @@ BEGIN
 						SET @BetSettings = @BetSettings + '</ROOT>'
 										
 						--call execrep to correct downlines by batch customers
-						EXEC Acc_Custsetting3rd_10 
+												EXEC Acc_Custsetting3rd_10 
 							@Action = 'GoldDeluxe'
 							,@GameTypeID = @GameTypeID
 							,@BetSettings = @BetSettings
@@ -430,11 +442,9 @@ BEGIN
 
 
 END
-
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbAdminNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbDownlineNet] 
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbDownlineNet] AS [dbo]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbExtAccNet]
-GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerUpdGoldDeluxe_MinMaxBet] TO [bodbExtAccNet] AS [dbo]
