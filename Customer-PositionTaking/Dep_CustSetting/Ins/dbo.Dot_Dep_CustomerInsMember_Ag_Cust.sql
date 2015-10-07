@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust_xpre]     
+ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
 	@FirstName nvarchar(50),    
 	@LastName nvarchar(50),    
 	@Email nvarchar(50),    
