@@ -160,7 +160,7 @@ BEGIN
 	INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
 		ON tmp.SportType	= stt.SportType
 			AND tmp.BetType = stt.BetType
-	WHERE stt.CustID = @CustID AND stt.SettingType = 4
+	WHERE stt.CustID = @CustID
 
 	--If status did not be changed than return
 	IF NOT EXISTS (
@@ -182,35 +182,16 @@ BEGIN
 			AND tmp.BetType = stt.BetType
 	WHERE stt.CustID		= @CustID
 		AND tmp.IsDisabled <> stt.IsDisabled
-		AND stt.SettingType = 4
 
-	DECLARE @ProductID INT
-	SELECT TOP 1 @ProductID = pdt.ProductID
-	FROM dbo.ProductSettingDetail pdt WITH(NOLOCK)
-		INNER JOIN @NewDisableStatTbl tmp
-			ON tmp.SportType	= pdt.SportType
-				AND tmp.BetType = pdt.BetType
-	WHERE pdt.SettingType = 4
-	
-	IF EXISTS(SELECT TOP 1 1
-	FROM dbo.CustProductStatus stt WITH(NOLOCK)
+	UPDATE stt
+	SET stt.IsHidden = 0
+	FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
+	INNER JOIN @NewDisableStatTbl tmp
+		ON tmp.SportType	= stt.SportType
+			AND tmp.BetType = stt.BetType
 	WHERE stt.CustID		= @CustID
-		AND stt.SettingType = 4
-		AND stt.IsDisabled = 0)
-	BEGIN
-		UPDATE stt
-		SET stt.IsHidden = 0
-		FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
-			INNER JOIN dbo.ProductSettingDetail pdt WITH(NOLOCK)
-				ON pdt.SportType	= stt.SportType
-					AND pdt.BetType = stt.BetType
-					AND pdt.ProductID = @ProductID
-					AND pdt.SettingType = stt.SettingType
-		WHERE stt.CustID		= @CustID
-			AND stt.IsHidden	= 1
-			AND stt.SettingType = 5
-			
-	END
+		AND stt.IsHidden	= 1
+		AND tmp.IsDisabled	= 0
 
 
 	--call execrept to update downline

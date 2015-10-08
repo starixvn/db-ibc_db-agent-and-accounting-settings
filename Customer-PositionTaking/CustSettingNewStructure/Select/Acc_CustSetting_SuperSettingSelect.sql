@@ -113,8 +113,8 @@ BEGIN
 		SELECT stt.SportType
 			, stt.BetType
 			, ISNULL(stt.IsDisabled, 0) IsDisabled
-			--, ISNULL(stt.IsHidden, 0) IsHidden
-			--, ISNULL(stt.IsSync, 0) IsSync
+			, ISNULL(stt.IsHidden, 0) IsHidden
+			, ISNULL(stt.IsSync, 0) IsSync
 			, CASE 
 				WHEN @downlines = 0
 					THEN ISNULL(stt.IsDisabled, 0)
@@ -140,42 +140,8 @@ BEGIN
 			ON stt.SportType = pdt.SportType
 				AND stt.BetType = pdt.BetType
 				AND stt.CustID = @CustID
-				AND stt.SettingType = pdt.SettingType
 	END	
-	ELSE IF @SettingType = 5 --HiddenStatus
-	BEGIN
-		SELECT stt.SportType
-			, stt.BetType
-			, ISNULL(stt.IsHidden, 0) IsHidden
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON stt.SportType = pdt.SportType
-				AND stt.BetType = pdt.BetType
-				AND stt.CustID = @CustID
-				AND stt.SettingType = pdt.SettingType
-	END
-	ELSE IF @SettingType = 6 --SyncStatus
-	BEGIN
-		SELECT stt.SportType
-			, stt.BetType
-			, ISNULL(stt.IsSync, 0) IsSync
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON stt.SportType = pdt.SportType
-				AND stt.BetType = pdt.BetType
-				AND stt.CustID = @CustID
-				AND stt.SettingType = pdt.SettingType
-	END
+	
 	DROP TABLE #SportBettypeFilter
 END
 

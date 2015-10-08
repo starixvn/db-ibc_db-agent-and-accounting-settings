@@ -126,7 +126,6 @@ BEGIN
 			ON main.SportType = stt.SportType
 				AND main.BetType = stt.BetType
 				AND stt.CustID = @custid
-				AND stt.SettingType = 6
 
 	--Get upline CustID
 	SELECT @UplineCustID = CASE 
@@ -150,7 +149,6 @@ BEGIN
 				ON main.SportType = stt.SportType
 					AND main.BetType = stt.BetType
 					AND stt.CustID = @UplineCustID
-					AND stt.SettingType = 6
 
 		--Update Allow2Update
 		UPDATE @SyncStatusTbl
@@ -195,7 +193,6 @@ BEGIN
 		ON main.SportType = tmp.SportType
 			AND main.BetType = tmp.BetType
 	WHERE main.CustID = @CustID
-		AND main.SettingType = 6
 
 	IF (@@ERROR <> 0)
 	BEGIN

@@ -121,29 +121,27 @@ BEGIN
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	--Get sporttype/Bettype for this setting type
 	BEGIN TRY
-		IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) 
-				WHERE CustID = @ExistingCustID AND SettingType = 4)
+		IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 		INSERT INTO [dbo].[CustProductStatus]
 				   ([CustID]
-				   ,SettingType
 				   ,[SportType]
 				   ,[BetType]
 				   ,[IsSync]
 				   ,[IsHidden]
 				   ,[IsDisabled])
-		SELECT		@CustID, 4
+		SELECT		@CustID
 				   ,cs.[SportType]
 				   ,cs.[BetType]
-				   ,NULL --dt.[IsSync]
-				   ,NULL --cs.[IsHidden]
+				   ,dt.[IsSync]
+				   ,cs.[IsHidden]
 				   ,cs.[IsDisabled]
 		FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
 		INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
 				ON dt.[SportType] = cs.[SportType]
 						AND dt.[BetType] = cs.[BetType]
 						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = cs.SettingType
-		WHERE CustID = @ExistingCustID AND cs.SettingType = 4
+						AND dt.[SettingType] = 4
+		WHERE CustID = @ExistingCustID
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrCode = 4
@@ -155,80 +153,7 @@ BEGIN
 		
 		RETURN
 	END CATCH
-	/********************************************* Hidden Status: SettingType = 5 ************************************/
-	--Get sporttype/Bettype for this setting type
-	BEGIN TRY
-		IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) 
-						WHERE CustID = @ExistingCustID AND SettingType = 5)
-		INSERT INTO [dbo].[CustProductStatus]
-				   ([CustID]
-				   ,SettingType
-				   ,[SportType]
-				   ,[BetType]
-				   ,[IsSync]
-				   ,[IsHidden]
-				   ,[IsDisabled])
-		SELECT		@CustID, 5
-				   ,cs.[SportType]
-				   ,cs.[BetType]
-				   ,NULL --dt.[IsSync]
-				   ,cs.[IsHidden]
-				   ,NULL --cs.[IsDisabled]
-		FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
-		INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = cs.SettingType
-		WHERE CustID = @ExistingCustID AND cs.SettingType = 5
-	END TRY
-	BEGIN CATCH
-		SELECT @ErrCode = 5
-		
-		DELETE FROM CustPTSetting3rd_Agent WHERE CustID = @CustID		
-		DELETE FROM CustBetSetting3rd_Agent WHERE CustID = @CustID	
-		DELETE FROM CustDiscount3rd_Agent WHERE CustID = @CustID
-		DELETE FROM CustProductStatus WHERE CustID = @CustID
-		
-		RETURN
-	END CATCH
-	/********************************************* Sync Status: SettingType = 6 ************************************/
-	--Get sporttype/Bettype for this setting type
-	BEGIN TRY
-		IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) 
-						WHERE CustID = @ExistingCustID AND SettingType = 6)
-		INSERT INTO [dbo].[CustProductStatus]
-				   ([CustID]
-				   ,SettingType
-				   ,[SportType]
-				   ,[BetType]
-				   ,[IsSync]
-				   ,[IsHidden]
-				   ,[IsDisabled])
-		SELECT		@CustID, 6
-				   ,cs.[SportType]
-				   ,cs.[BetType]
-				   ,dt.[IsSync]
-				   ,NULL --cs.[IsHidden]
-				   ,NULL --cs.[IsDisabled]
-		FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
-		INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = cs.SettingType
-		WHERE CustID = @ExistingCustID AND cs.SettingType = 6
-	END TRY
-	BEGIN CATCH
-		SELECT @ErrCode = 6
-		
-		DELETE FROM CustPTSetting3rd_Agent WHERE CustID = @CustID		
-		DELETE FROM CustBetSetting3rd_Agent WHERE CustID = @CustID	
-		DELETE FROM CustDiscount3rd_Agent WHERE CustID = @CustID
-		DELETE FROM CustProductStatus WHERE CustID = @CustID
-		
-		RETURN
-	END CATCH
+
 END
 
 GO

@@ -77,7 +77,6 @@ BEGIN
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @SuperID
-				AND stt.SettingType = 4
 		WHERE stt.IsDisabled	= 1
 			AND tmp.IsDisabled	= 0
 	END
@@ -91,7 +90,6 @@ BEGIN
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @MasterID
-				AND stt.SettingType = 4
 		WHERE stt.IsDisabled	= 1
 			AND tmp.IsDisabled	= 0
 	END
@@ -105,7 +103,6 @@ BEGIN
 			ON tmp.SportType	= stt.SportType
 				AND tmp.BetType = stt.BetType
 				AND stt.CustID	= @SuperID
-				AND stt.SettingType = 4
 		WHERE stt.IsDisabled	= 1
 			AND tmp.IsDisabled	= 0
 	END
