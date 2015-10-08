@@ -4,7 +4,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect] 
+--exec Acc_CustSetting_SuperSettingSelect_Testing @CustID = 1, @ProductID = 247, @settingType = 4
+--exec Acc_CustSetting_SuperSettingSelect @CustID = 1, @ProductID = 247, @settingType = 4
+
+alter PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT
 	, @SettingType	SMALLINT
@@ -20,8 +23,11 @@ AS
 	
 	*/
 BEGIN
-	SELECT * INTO #SportBettypeFilter
-	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)	
+	
+	SELECT SportType,Bettype,IsLive, SettingType 
+	INTO #SportBettypeFilter
+	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
+	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
 	
 	--PT Setting
 	IF @SettingType = 1
@@ -97,49 +103,40 @@ BEGIN
 	--Product Status
 	ELSE IF @SettingType = 4
 	BEGIN
-		DECLARE @downlines BIT
+		DECLARE @IsDisabledDownline BIT, @downlines BIT  = 0 
 
-		SELECT @downlines = CASE 
-				WHEN EXISTS (
-						SELECT TOP 1 1
-						FROM custinfo WITH (NOLOCK)
-						WHERE srecommend = @CustID
-							AND roleid = 3
-						)
-					THEN 1
-				ELSE 0
-				END
+		IF EXISTS (SELECT 1
+					FROM custinfo WITH (NOLOCK)
+					WHERE srecommend = @CustID	AND roleid = 3
+					)
+		SET @downlines = 1			
 			
-		SELECT stt.SportType
-			, stt.BetType
-			, ISNULL(stt.IsDisabled, 0) IsDisabled
-			, ISNULL(stt.IsHidden, 0) IsHidden
-			, ISNULL(stt.IsSync, 0) IsSync
-			, CASE 
-				WHEN @downlines = 0
-					THEN ISNULL(stt.IsDisabled, 0)
-				ELSE ISNULL((
-							SELECT TOP 1 ISNULL(sstt.IsDisabled, 0)
+		SELECT pdt.SportType
+			, pdt.BetType
+			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as hasSynced
+			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
+			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
+			
+			, CASE 	
+					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
+					ELSE ISNULL((
+							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
-							INNER JOIN dbo.CustProductStatus sstt
-								ON sstt.CustID = ci.custid
-									AND sstt.SportType = stt.SportType
-									AND sstt.BetType = stt.BetType
-									AND ISNULL(sstt.IsDisabled, 0) = 1
-							WHERE srecommend = @CustID
-								AND roleid = 3
+								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
+							WHERE srecommend = @CustID	AND roleid = 3
+								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
-				END AS IsDisabledDownline
+							
+			 END AS IsDisabledDownline
+			
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON stt.SportType = pdt.SportType
-				AND stt.BetType = pdt.BetType
-				AND stt.CustID = @CustID
+			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
+												AND pdt.BetType = ft.bettype
+												AND pdt.IsLive = ft.islive
+												AND pdt.SettingType = ft.SettingType
+			INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = pdt.BetType AND PSP.Sporttype = PDT.SportType															
+			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+		WHERE pdt.SettingType = @SettingType
 	END	
 	
 	DROP TABLE #SportBettypeFilter
@@ -151,3 +148,4 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperSettingSelect] TO [bodbDownlineNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SuperSettingSelect] TO [bodbExtAccNet]
+
