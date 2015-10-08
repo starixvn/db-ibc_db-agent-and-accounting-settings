@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting_Cust_04]
+﻿CREATE PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
 	@custid int,
 	@roleid tinyint,
 	@action varchar(30) = '',
@@ -112,6 +112,6 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_DynamicCustSetting_Cust_04] TO [bodbAdminNet] AS [dbo]
+GRANT EXECUTE ON [dbo].[Acc_DynamicCustomerInfo_04] TO [bodbAdminNet] AS [dbo]
 GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_DynamicCustSetting_Cust_04] TO [vnteam] AS [dbo]
+GRANT VIEW DEFINITION ON [dbo].[Acc_DynamicCustomerInfo_04] TO [vnteam] AS [dbo]
