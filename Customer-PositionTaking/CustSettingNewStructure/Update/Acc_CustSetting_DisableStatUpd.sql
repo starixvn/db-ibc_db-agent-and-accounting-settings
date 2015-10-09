@@ -48,13 +48,13 @@ BEGIN
 		, @SuperID		INT
 		, @RoleID		INT
 		
-	DECLARE @NewDisableStatTbl TABLE (
+	CREATE TABLE #NewDisableStatTbl (
 		SportType				SMALLINT
 		, BetType				SMALLINT
 		, IsDisabled			BIT
 		, IsDisabledDownline	BIT
 		)
-	DECLARE @OldDisableStatTbl TABLE (
+	CREATE TABLE #OldDisableStatTbl  (
 		SportType		SMALLINT
 		, BetType		SMALLINT
 		, IsDisabled	BIT
@@ -127,7 +127,7 @@ BEGIN
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
 		, @IsDisabled
 
-	INSERT @NewDisableStatTbl
+	INSERT INTO #NewDisableStatTbl
 	SELECT *
 	FROM OPENXML(@iDoc, '/ROOT/ProductStatus', 1) WITH (
 			SportType				SMALLINT
@@ -152,64 +152,82 @@ BEGIN
 		RETURN
 
 	--Get old disabled status
-	INSERT INTO @OldDisableStatTbl
-	SELECT stt.SportType
-		, stt.BetType
-		, stt.IsDisabled
-	FROM @NewDisableStatTbl tmp
-	INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-		ON tmp.SportType	= stt.SportType
-			AND tmp.BetType = stt.BetType
-	WHERE stt.CustID = @CustID
+	INSERT INTO #OldDisableStatTbl
+	SELECT psp.SportType
+		, psp.BetType
+		, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
+	FROM #NewDisableStatTbl tmp
+		INNER JOIN ProductStatusProfile PSP WITH (NOLOCK) ON tmp.SportType = psp.Sporttype AND tmp.BetType = psp.Bettype
+		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON stt.CustID = @CustID
 
 	--If status did not be changed than return
 	IF NOT EXISTS (
 			SELECT TOP 1 1
-			FROM @NewDisableStatTbl tmp
-			INNER JOIN @OldDisableStatTbl stt
-				ON tmp.SportType	= stt.SportType
-					AND tmp.BetType = stt.BetType
+			FROM #NewDisableStatTbl tmp
+				INNER JOIN #OldDisableStatTbl stt ON tmp.SportType	= stt.SportType	AND tmp.BetType = stt.BetType
 			WHERE tmp.IsDisabled <> stt.IsDisabled
 			)
 		RETURN
 
 	--Update main table
-	UPDATE stt
-	SET stt.IsDisabled = tmp.IsDisabled
-	FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
-	INNER JOIN @NewDisableStatTbl tmp
-		ON tmp.SportType	= stt.SportType
-			AND tmp.BetType = stt.BetType
-	WHERE stt.CustID		= @CustID
-		AND tmp.IsDisabled <> stt.IsDisabled
 
-	UPDATE stt
-	SET stt.IsHidden = 0
-	FROM dbo.CustProductStatus stt WITH(ROWLOCK,UPDLOCK)
-	INNER JOIN @NewDisableStatTbl tmp
-		ON tmp.SportType	= stt.SportType
-			AND tmp.BetType = stt.BetType
-	WHERE stt.CustID		= @CustID
-		AND stt.IsHidden	= 1
-		AND tmp.IsDisabled	= 0
+	DECLARE @xmlStrDisabled VARCHAR(MAX)
+	DECLARE @xmlStrHidden VARCHAR(MAX)
+	
+	SET @xmlStrDisabled = (
+			SELECT (
+					SELECT psp.bitmapOrder	AS '@b'
+						, tmp.IsDisabled	AS '@s'
+					FROM ProductStatusProfile psp WITH (NOLOCK)
+						JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
+	
+					FOR XML PATH('r')
+						, TYPE
+					)
+			FOR XML PATH('root')
+				, TYPE
+			)
+	UPDATE CustProductStatus
+		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, @xmlStrDisabled)	
+	WHERE CustID = @CustID
 
-
+	DECLARE @bitmapOrderHidden INT
+	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
+	BEGIN
+		SET @xmlStrHidden = (
+			SELECT (
+					SELECT psp.bitmapOrder	AS '@b'
+						, 0	AS '@s'
+					FROM ProductStatusProfile psp (NOLOCK)
+						JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
+					WHERE TMP.IsDisabled = 0
+					FOR XML PATH('r')
+						, TYPE
+					)
+			FOR XML PATH('root')
+				, TYPE
+			)
+		UPDATE CustProductStatus WITH (ROWLOCK,UPDLOCK)
+		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, @xmlStrHidden)	
+		WHERE CustID = @CustID
+		
+	END
 	--call execrept to update downline
 	IF @RoleID <> 1 AND EXISTS (
 			SELECT TOP 1 1
-			FROM @NewDisableStatTbl
+			FROM #NewDisableStatTbl
 			WHERE IsDisabled = 1
 				OR (
 						IsDisabled				= 0
 						AND IsDisabledDownline	= 0
 					)
 			)
-	EXEC dbo.[Acc_ExecRep_Cust_04] @CustID = @CustID
+	BEGIN			
+		EXEC dbo.[Acc_DynamicCustomerInfo_04] @CustID = @CustID
 						, @RoleID			= @RoleID
-						, @Action			= 'Others'
 						, @IsDisabled_XML	= @IsDisabled
 	
-
+	END
 	--START LOGGING		
 	SET @xml = (
 			SELECT @CustID	AS '@CustID'
@@ -221,7 +239,7 @@ BEGIN
 						, BetType		AS '@BetType'
 						, IsDisabled	AS '@IsDisabled'
 						, NULL			AS '@IsDisabledDownline'
-					FROM @OldDisableStatTbl
+					FROM #OldDisableStatTbl
 					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
@@ -239,7 +257,7 @@ BEGIN
 						, BetType		AS '@BetType'
 						, IsDisabled	AS '@IsDisabled'
 						, IsDisabledDownline			AS '@IsDisabledDownline'
-					FROM @NewDisableStatTbl
+					FROM #NewDisableStatTbl
 					FOR XML PATH('ProductStatus')
 						, TYPE
 					)

@@ -35,16 +35,17 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @NewDisableStatTbl TABLE (
+	CREATE TABLE #NewDisableStatTbl 
+	(
 			SportType				SMALLINT
 			, BetType				SMALLINT
 			, IsDisabled			BIT
-			, IsDisabledDownline	BIT
 		)
-	DECLARE @ErrorSportTypeTbl TABLE (
+	CREATE TABLE #ErrorSportTypeTbl
+	(
 			SportType SMALLINT
 			, BetType SMALLINT
-		)
+	)
 	DECLARE @xml		XML
 
 	SELECT @ErrCode = 0
@@ -55,7 +56,7 @@ BEGIN
 	EXEC sp_xml_preparedocument @iDoc OUTPUT
 		, @IsDisabled
 
-	INSERT @NewDisableStatTbl
+	INSERT INTO #NewDisableStatTbl
 	SELECT *
 	FROM OPENXML(@iDoc, '/ROOT/ProductStatus', 1) WITH (
 			SportType				SMALLINT
@@ -65,56 +66,51 @@ BEGIN
 			)
 
 	EXEC sp_xml_removedocument @iDoc
-
 	--Get error data
-	IF @RoleID = 3
+	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 	BEGIN
-		INSERT INTO @ErrorSportTypeTbl
-		SELECT stt.SportType
-			, stt.BetType
-		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON tmp.SportType	= stt.SportType
-				AND tmp.BetType = stt.BetType
-				AND stt.CustID	= @SuperID
-		WHERE stt.IsDisabled	= 1
-			AND tmp.IsDisabled	= 0
+	
+		IF @RoleID = 3
+		BEGIN
+			INSERT INTO #ErrorSportTypeTbl
+			SELECT PSP.SportType
+				, psp.BetType
+			FROM #NewDisableStatTbl tmp
+				INNER JOIN dbo.ProductStatusProfile PSP WITH (NOLOCK) ON PSP.Sporttype = TMP.SportType AND PSP.Bettype = TMP.BetType
+				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON  stt.CustID	= @SuperID
+			WHERE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) = 1
+				AND tmp.IsDisabled	= 0
+		END
+		ELSE IF @RoleID = 2
+		BEGIN
+			SELECT PSP.SportType
+				, psp.BetType
+			FROM #NewDisableStatTbl tmp
+				INNER JOIN dbo.ProductStatusProfile PSP WITH (NOLOCK) ON PSP.Sporttype = TMP.SportType AND PSP.Bettype = TMP.BetType
+				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON  stt.CustID	= @MasterID
+			WHERE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) = 1
+				AND tmp.IsDisabled	= 0
+				
+		END
+		ELSE IF @RoleID = 1
+		BEGIN
+			SELECT psp.SportType
+				, psp.BetType
+			FROM #NewDisableStatTbl tmp
+				INNER JOIN dbo.ProductStatusProfile PSP WITH (NOLOCK) ON PSP.Sporttype = TMP.SportType AND PSP.Bettype = TMP.BetType
+				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON  stt.CustID	= @AgentID
+			WHERE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) = 1
+				AND tmp.IsDisabled	= 0
+		END
 	END
-	ELSE IF @RoleID = 2
-	BEGIN
-		INSERT INTO @ErrorSportTypeTbl
-		SELECT stt.SportType
-			, stt.BetType
-		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON tmp.SportType	= stt.SportType
-				AND tmp.BetType = stt.BetType
-				AND stt.CustID	= @MasterID
-		WHERE stt.IsDisabled	= 1
-			AND tmp.IsDisabled	= 0
-	END
-	ELSE IF @RoleID = 1
-	BEGIN
-		INSERT INTO @ErrorSportTypeTbl
-		SELECT stt.SportType
-			, stt.BetType
-		FROM @NewDisableStatTbl tmp
-		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)
-			ON tmp.SportType	= stt.SportType
-				AND tmp.BetType = stt.BetType
-				AND stt.CustID	= @SuperID
-		WHERE stt.IsDisabled	= 1
-			AND tmp.IsDisabled	= 0
-	END
-
 	--IF there's no error data then return
 	IF NOT EXISTS (
 			SELECT TOP 1 1
-			FROM @ErrorSportTypeTbl
+			FROM #ErrorSportTypeTbl
 			)
 		RETURN
 
-	IF EXISTS(SELECT TOP 1 1 FROM @ErrorSportTypeTbl)
+	IF EXISTS(SELECT TOP 1 1 FROM #ErrorSportTypeTbl)
 	BEGIN
 		SET @xml = (
 				SELECT 60031 AS '@MsgID'
@@ -122,7 +118,7 @@ BEGIN
 					, (
 						SELECT SportType AS '@SportType'
 							, BetType AS '@BetType'
-						FROM @ErrorSportTypeTbl
+						FROM #ErrorSportTypeTbl
 						FOR XML PATH('Row')
 							, TYPE
 						)
