@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
+﻿alter PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
 	@custid int,
 	@roleid tinyint,
 	@IsDisabled_XML VARCHAR(MAX) = NULL
