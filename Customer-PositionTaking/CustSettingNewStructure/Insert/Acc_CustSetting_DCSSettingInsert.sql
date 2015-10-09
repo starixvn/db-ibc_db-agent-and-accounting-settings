@@ -675,122 +675,88 @@ BEGIN
 	END CATCH
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	--Get sporttype/Bettype for this setting type
-	SELECT * INTO #SportBettypeFilter4
-	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4)
-	
-	
+	SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
+	INTO #SportBettypeFilter4
+	FROM dbo.ProductSettingDetail psd WITH(NOLOCK)  
+		INNER JOIN ProductStatusProfile pbs WITH (NOLOCK) ON pbs.[SportType] = psd.[SportType]	AND pbs.[BetType] = psd.[BetType]
+	WHERE psd.ProductID = @ProductID AND PSD.SettingType = 4
 	BEGIN TRY
 		IF @RoleID = 4
 		BEGIN
-			IF EXISTS(
-				SELECT TOP 1 1
-				FROM #SportBettypeFilter4
-			)
+			IF EXISTS(SELECT TOP 1 1 FROM #SportBettypeFilter4)
 			BEGIN
 				--Get from default status values
 				--Sync: default status setting
 				--Hide: default status setting
 				--Enable/Disable: default status setting
+									
+				DECLARE @xmlStrDisabled XML
+				DECLARE @xmlStrHidden XML
+				DECLARE @xmlStrSync XML
 				
-				INSERT INTO [dbo].[CustProductStatus]
-				   ([CustID]
-				   ,[SportType]
-				   ,[BetType]
-				   ,[IsSync]
-				   ,[IsHidden]
-				   ,[IsDisabled])
-				SELECT @CustID
-					,dt.[SportType]
-					,dt.[BetType]
-					,[IsSync]
-					,[IsHidden]
-					,[IsDisabled]
-				FROM dbo.ProductSettingDetail dt WITH (NOLOCK)
-				INNER JOIN #SportBettypeFilter4 ft 
-					ON dt.[SportType] = ft.[SportType]
-						AND dt.[BetType] = ft.[BetType]
+				SET @xmlStrDisabled = (
+						SELECT (
+								SELECT ft.bitmapOrder	AS '@b'
+									, ft.IsDisabled	AS '@s'
+								FROM #SportBettypeFilter4 ft 	
+								FOR XML PATH('r')
+									, TYPE
+								)
+						FOR XML PATH('root')
+							, TYPE
+						)
+						
+				SET @xmlStrHidden = (
+						SELECT (
+								SELECT ft.bitmapOrder	AS '@b'
+									, ft.IsHidden	AS '@s'
+								FROM #SportBettypeFilter4 ft 	
+								FOR XML PATH('r')
+									, TYPE
+								)
+						FOR XML PATH('root')
+							, TYPE
+						)
+						
+				SET @xmlStrDisabled = (
+					SELECT (
+							SELECT ft.bitmapOrder	AS '@b'
+								, ft.IsSync	AS '@s'
+							FROM #SportBettypeFilter4 ft 	
+							FOR XML PATH('r')
+								, TYPE
+							)
+					FOR XML PATH('root')
+						, TYPE
+					)
+							
+				INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced)
+				SELECT	@CustID
+						, dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
+						, dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrHidden))
+						, dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrSync))
+					
 			END
 		END
-		ELSE IF @RoleID = 3
+		ELSE IF @RoleID IN (3,2,1)
 		BEGIN
 			--Get from Super
 			--Sync: upline status
 			--Enable/Disable: upline status
+			DECLARE @UplineID INT
 			
-			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
-			   ,[SportType]
-			   ,[BetType]
-			   ,[IsSync]
-			   ,[IsHidden]
-			   ,[IsDisabled])
-			SELECT @CustID
-			  ,cs.[SportType]
-			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
-			  ,cs.[IsDisabled]
-			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
-			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = 4
-			WHERE cs.CustID = @SuperID
-		END
-		ELSE IF @RoleID = 2
-		BEGIN
-			--Get from Master
-			--Sync: upline status
-			--Enable/Disable: upline status
+			IF @RoleID = 3
+				SET @UplineID = @SuperID
+			ELSE IF @RoleID = 2
+				SET @UplineID = @MasterID
+			ELSE IF @RoleID = 1
+				SET @UplineID = @AgentID		
 			
-			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
-			   ,[SportType]
-			   ,[BetType]
-			   ,[IsSync]
-			   ,[IsHidden]
-			   ,[IsDisabled])
-			SELECT @CustID
-			 ,cs.[SportType]
-			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
-			  ,cs.[IsDisabled]
+			INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced)
+			SELECT @CustID, cs.bitmapIsDisabled,cs.bitmapIsHidden,cs.bitmapHasSynced
 			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
-			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = 4
-			WHERE cs.CustID = @MasterID
-		END
-		ELSE
-		BEGIN
-			--Get from Agent
-			--Sync: upline status
-			--Enable/Disable: upline status
+			WHERE cs.CustID = @UplineID
 			
-			INSERT INTO [dbo].[CustProductStatus]
-			   ([CustID]
-			   ,[SportType]
-			   ,[BetType]
-			   ,[IsSync]
-			   ,[IsHidden]
-			   ,[IsDisabled])
-			SELECT @CustID
-			   ,cs.[SportType]
-			  ,cs.[BetType]
-			  ,dt.[IsSync]
-			  ,cs.[IsHidden]
-			  ,cs.[IsDisabled]
-			FROM [dbo].[CustProductStatus] cs WITH (NOLOCK)
-			INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = 4
-			WHERE cs.CustID = @AgentID
 		END
 	END TRY
 	BEGIN CATCH
@@ -812,6 +778,10 @@ BEGIN
 		
 		RETURN
 	END CATCH
+	DROP TABLE #SportBettypeFilter1
+	DROP TABLE #SportBettypeFilter2
+	DROP TABLE #SportBettypeFilter3
+	DROP TABLE #SportBettypeFilter4
 
 END
 

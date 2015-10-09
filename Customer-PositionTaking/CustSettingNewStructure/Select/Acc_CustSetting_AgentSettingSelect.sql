@@ -6,8 +6,8 @@ GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]   
 	@CustID			INT  
-	, @ProductID	TINYINT  
-	, @SettingType	SMALLINT
+	, @ProductID	TINYINT = NULL 
+	, @SettingType	SMALLINT = NULL
 	, @DisableAutoMPT BIT = 0 OUTPUT
 AS  
 /*  
@@ -27,8 +27,7 @@ BEGIN
 	INTO #SportBettypeFilter
 	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
 	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
-	
-	
+		
 	SELECT @SuperID=ci.srecommend, @MasterID=ci.mrecommend  
 	FROM dbo.custInfo ci WITH(NOLOCK)  
 	WHERE ci.custid=@CustID    

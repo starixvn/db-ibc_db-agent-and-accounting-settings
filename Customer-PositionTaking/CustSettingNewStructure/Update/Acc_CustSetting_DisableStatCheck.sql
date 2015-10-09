@@ -131,6 +131,9 @@ BEGIN
 		
 		RETURN
 	END
+	DROP TABLE #ErrorSportTypeTbl
+	DROP TABLE #NewDisableStatTbl
+	
 END
 
 GO

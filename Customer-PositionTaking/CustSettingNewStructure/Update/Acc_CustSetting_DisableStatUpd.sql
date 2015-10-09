@@ -171,10 +171,10 @@ BEGIN
 
 	--Update main table
 
-	DECLARE @xmlStrDisabled VARCHAR(MAX)
-	DECLARE @xmlStrHidden VARCHAR(MAX)
+	DECLARE @xmlStrDisabled XML
+	DECLARE @xmlStrHidden XML
 	
-	SET @xmlStrDisabled = (
+	SET @xmlStrDisabled =(
 			SELECT (
 					SELECT psp.bitmapOrder	AS '@b'
 						, tmp.IsDisabled	AS '@s'
@@ -188,7 +188,7 @@ BEGIN
 				, TYPE
 			)
 	UPDATE CustProductStatus
-		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, @xmlStrDisabled)	
+		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
 	WHERE CustID = @CustID
 
 	DECLARE @bitmapOrderHidden INT
@@ -208,7 +208,7 @@ BEGIN
 				, TYPE
 			)
 		UPDATE CustProductStatus WITH (ROWLOCK,UPDLOCK)
-		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, @xmlStrHidden)	
+		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))	
 		WHERE CustID = @CustID
 		
 	END
@@ -286,6 +286,8 @@ BEGIN
 			, @TrackingValue2	= @logSpData_Old
 			, @duration			= @duration
 	END CATCH
+	DROP TABLE #NewDisableStatTbl
+	DROP TABLE #OldDisableStatTbl
 END
 
 GO

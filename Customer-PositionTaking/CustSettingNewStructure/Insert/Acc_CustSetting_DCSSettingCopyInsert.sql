@@ -121,27 +121,13 @@ BEGIN
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	--Get sporttype/Bettype for this setting type
 	BEGIN TRY
-		IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
-		INSERT INTO [dbo].[CustProductStatus]
-				   ([CustID]
-				   ,[SportType]
-				   ,[BetType]
-				   ,[IsSync]
-				   ,[IsHidden]
-				   ,[IsDisabled])
-		SELECT		@CustID
-				   ,cs.[SportType]
-				   ,cs.[BetType]
-				   ,dt.[IsSync]
-				   ,cs.[IsHidden]
-				   ,cs.[IsDisabled]
-		FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
-		INNER JOIN dbo.ProductSettingDetail dt WITH (NOLOCK)
-				ON dt.[SportType] = cs.[SportType]
-						AND dt.[BetType] = cs.[BetType]
-						AND dt.[IsLive] = 0
-						AND dt.[SettingType] = 4
-		WHERE CustID = @ExistingCustID
+		IF EXISTS(SELECT 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
+		BEGIN
+			INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced )
+			SELECT @CustID,cs.bitmapIsDisabled,cs.bitmapIsHidden,cs.bitmapHasSynced
+			FROM [dbo].[CustProductStatus] cs WITH(NOLOCK)
+			WHERE CustID = @ExistingCustID
+		END
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrCode = 4
