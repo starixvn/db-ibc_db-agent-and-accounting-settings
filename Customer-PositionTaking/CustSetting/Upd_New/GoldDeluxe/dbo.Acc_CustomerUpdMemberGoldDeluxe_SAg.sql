@@ -22,7 +22,8 @@ AS
 	DB: DBTXN/CustDB
 		
 	Revisions:
-
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID)
+		- 20151007@Elodie: Remove code to check old and new value
 	Parameters Explanation:
 */
 BEGIN
@@ -108,7 +109,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC Age_CustomerSelCheckBelongingByCustID
 	    @SessionCustID = @Userid, 
 	    @Custid = @custid,
 	    @roleid = @roleid OUTPUT
@@ -120,7 +121,7 @@ BEGIN
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable
+    EXEC Acc_CustomerSelCheckEnable
         @custid = @custid
       , @ErrCode = @ErrCode_Cur output
       , @ErrMsg = @ErrMsg_Cur output
@@ -175,15 +176,15 @@ BEGIN
      WHERE sporttype = 255
        AND bettype = 1701
 
-    --if not change any setting then not update
-    IF @v255spositiontaking_1701 = @db_v255spositiontaking_1701
-	    AND @isauto_v255spositiontaking_1701 = @db_isauto_v255spositiontaking_1701
-	    AND @auto_v255spositiontaking_1701 = @db_auto_v255spositiontaking_1701
-    BEGIN
-        SELECT @ErrCode = @ErrCode + '-103' + CHAR(7)
-             , @ErrMsg = @ErrMsg + CHAR(7)
-	    RETURN
-    END
+    ----if not change any setting then not update
+    --IF @v255spositiontaking_1701 = @db_v255spositiontaking_1701
+	   -- AND @isauto_v255spositiontaking_1701 = @db_isauto_v255spositiontaking_1701
+	   -- AND @auto_v255spositiontaking_1701 = @db_auto_v255spositiontaking_1701
+    --BEGIN
+    --    SELECT @ErrCode = @ErrCode + '-103' + CHAR(7)
+    --         , @ErrMsg = @ErrMsg + CHAR(7)
+	   -- RETURN
+    --END
 
     INSERT INTO @tmp_sag
     (

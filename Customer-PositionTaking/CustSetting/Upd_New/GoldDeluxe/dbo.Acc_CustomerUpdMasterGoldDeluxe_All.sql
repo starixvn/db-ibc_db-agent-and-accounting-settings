@@ -1,11 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMasterGoldDeluxe_All]    Script Date: 04/24/2015 14:14:53 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterGoldDeluxe_All]
     @custid								INT,
     @srecommend							INT,
@@ -41,7 +33,8 @@ AS
         Task: Super edits live casino settings on master
         
         Revisions:
-           
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID]           
+			- 20151008@Elodie: Hot fix n2 is updated although a2 is not updated [Redmine:#45208]
         Parameters Explanation:
     */
 BEGIN
@@ -60,7 +53,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelongingByCustID 
 		@SessionCustID	= @Userid, 
 		@Custid			= @custid,
 		@roleid			= @roleid OUTPUT
@@ -69,7 +62,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+	EXEC Acc_CustomerSelCheckEnable 
 		@custid		= @custid
 		,@ErrCode	= @ErrCode_Cur	OUTPUT
 		,@ErrMsg	= @ErrMsg_Cur	OUTPUT
@@ -84,7 +77,7 @@ BEGIN
 
 	IF @v255UpdateCommission_1701 = 1
 	BEGIN
-		EXEC Acc_CustomerUpdMasterGoldDeluxe_Commission
+								EXEC Acc_CustomerUpdMasterGoldDeluxe_Commission
 			@custid				= @custid, 
 			@v255discount_1701	= @v255discount_1701, 
 			@SubAccID           = @SubAccID, 
@@ -118,32 +111,7 @@ BEGIN
 				,@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 	            
 		RETURN    
-	END
-
-	IF @v255UpdateMinPositiontaking_1701 = 1
-	BEGIN
-		EXEC Acc_CustOverrideUpdGoldDeluxe
-			@custid							= @custid
-			,@UplineID						= @srecommend 
-			,@min_v255positiontaking_1701	= @v255mpositiontaking_1701_min
-			,@SubAccID						= @SubAccID
-			,@IP							= @IP
-			,@UserID						= @UserID 
-			,@Language						= @Language
-			,@ErrCode						= @ErrCode_Cur OUTPUT
-			,@ErrMsg						= @ErrMsg_Cur OUTPUT
-	    
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT	@ErrCode	= @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7)
-					,@ErrMsg	= @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			
-			RETURN    
-		END
-		ELSE
-			SELECT	@ErrCode = @ErrCode + '-102' + CHAR(7)
-					,@ErrMsg = @ErrMsg + CHAR(7)        
-	END
+	END	
 
 	IF @v255UpdatePositiontaking_1701 = 1 OR @v255UpdateAutoPositiontaking_1701 = 1
 	BEGIN
@@ -177,11 +145,30 @@ BEGIN
 
 	END
 
+	IF @v255UpdateMinPositiontaking_1701 = 1
+	BEGIN
+		EXEC Acc_CustOverrideUpdGoldDeluxe
+			@custid							= @custid
+			,@UplineID						= @srecommend 
+			,@min_v255positiontaking_1701	= @v255mpositiontaking_1701_min
+			,@SubAccID						= @SubAccID
+			,@IP							= @IP
+			,@UserID						= @UserID 
+			,@Language						= @Language
+			,@ErrCode						= @ErrCode_Cur OUTPUT
+			,@ErrMsg						= @ErrMsg_Cur OUTPUT
+	    
+		IF @ErrCode_Cur > 0
+		BEGIN
+			SELECT	@ErrCode	= @ErrCode + CAST(@ErrCode_Cur AS VARCHAR(10)) + CHAR(7)
+					,@ErrMsg	= @ErrMsg + @ErrMsg_Cur + CHAR(7)				    
+		END
+		ELSE
+			SELECT	@ErrCode = @ErrCode + '-102' + CHAR(7)
+					,@ErrMsg = @ErrMsg + CHAR(7)        
+	END
+
 END
-
-
-
-
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterGoldDeluxe_All] TO [bodbAdminNet] AS [dbo]

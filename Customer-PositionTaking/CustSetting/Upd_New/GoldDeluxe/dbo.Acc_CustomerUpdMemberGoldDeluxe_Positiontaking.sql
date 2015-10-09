@@ -16,7 +16,7 @@ AS
 		DB: DBTXN/CustDB
 		
 		Revisions:
-			
+			- 20151007@Elodie: Remove code to check old and new value
 		Parameters Explanation:
 	*/
 BEGIN
@@ -74,9 +74,9 @@ BEGIN
 	FROM CustSettingGame WITH(NOLOCK)
 	WHERE custid = @custid AND sporttype = 255 AND bettype = 1701
 
-	--check if not change value
-	IF @db_v255apositiontaking_1701 = @v255apositiontaking_1701
-		RETURN
+	----check if not change value
+	--IF @db_v255apositiontaking_1701 = @v255apositiontaking_1701
+	--	RETURN
 
 	IF @v255apositiontaking_1701 < 0 OR @v255apositiontaking_1701 > 1
 	BEGIN
@@ -218,7 +218,7 @@ BEGIN
 		RETURN	
 	END	
 
-	EXEC dbo.Acc_CustSetting3rd_00_xtest
+				EXEC dbo.Acc_CustSetting3rd_00
 		@custid = @custid, 
 		@recommend = @recommend, 
 		@mrecommend = @mrecommend, 

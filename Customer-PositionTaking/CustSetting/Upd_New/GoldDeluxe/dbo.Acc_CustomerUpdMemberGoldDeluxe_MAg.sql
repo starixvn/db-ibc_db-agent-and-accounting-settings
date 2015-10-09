@@ -24,7 +24,8 @@ AS
 	DB: DBTXN/CustDB
 	
 	Revisions:
-		
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID)
+		- 20151007@Elodie: Remove code to check old and new value
 	Parameters Explanation:
 */
 BEGIN
@@ -54,7 +55,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelongingByCustID
 		@SessionCustID = @mrecommend, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -62,7 +63,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT	@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7), 
@@ -138,17 +139,17 @@ BEGIN
 		WHERE bettype=1701 AND sporttype=255
 	END
 
-	--Check if old_PT = new_PT return
-	IF @v255mpositiontaking_1701 = @old_v255mpositiontaking_1701 AND
-		--um1
-		@auto_v255mpositiontaking_mem_1701 = @old_auto_v255mpositiontaking_mem_1701 AND
-		--im1
-		@isauto_v255mpositiontaking_mem_1701 = @old_isauto_v255mpositiontaking_mem_1701
+	----Check if old_PT = new_PT return
+	--IF @v255mpositiontaking_1701 = @old_v255mpositiontaking_1701 AND
+	--	--um1
+	--	@auto_v255mpositiontaking_mem_1701 = @old_auto_v255mpositiontaking_mem_1701 AND
+	--	--im1
+	--	@isauto_v255mpositiontaking_mem_1701 = @old_isauto_v255mpositiontaking_mem_1701
 		
-	BEGIN	
-		Select @ErrCode = @ErrCode + '-103'+char(7), @ErrMsg = @ErrMsg + char(7)
-		RETURN 
-	END	
+	--BEGIN	
+	--	Select @ErrCode = @ErrCode + '-103'+char(7), @ErrMsg = @ErrMsg + char(7)
+	--	RETURN 
+	--END	
 		
 	INSERT INTO @tmp_sag(custid, sporttype, bettype, spositiontaking, minpositiontaking)
 	SELECT scs.custid, scs.sporttype, scs.bettype, scs.spositiontaking, sco.minpositiontaking

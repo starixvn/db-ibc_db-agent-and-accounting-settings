@@ -27,7 +27,8 @@ AS
         DB: DBTXN/custdb
         
         Revisions:
-                              
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST)
+			- 20151007@Elodie: Remove code to check old and new value
         Parameters Explanation:
     */
 BEGIN
@@ -42,6 +43,7 @@ BEGIN
     DECLARE @roleid				TINYINT, 
             @UserName			VARCHAR(30), 
             @srecommend			INT, 
+			@recommend			INT, 
             @ErrType			VARCHAR(4000),
             @ErrCode_Cur		INT, 
             @ErrMsg_Cur			NVARCHAR(4000), 
@@ -83,15 +85,16 @@ BEGIN
 
     SELECT	@username			= username 
 			,@srecommend		= srecommend
+			,@recommend			= recommend
     FROM	dbo.CustInfo WITH(NOLOCK)
     WHERE	custid = @custid
 
-    --check if not change value
-    IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
-        AND @db_v255mpositiontaking_1701 = @v255mpositiontaking_1701
-        AND @db_isauto_v255spositiontaking_1701 = @isauto_v255spositiontaking_1701
-        AND @db_auto_v255spositiontaking_1701 = @auto_v255spositiontaking_1701
-    RETURN
+    ----check if not change value
+    --IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
+    --    AND @db_v255mpositiontaking_1701 = @v255mpositiontaking_1701
+    --    AND @db_isauto_v255spositiontaking_1701 = @isauto_v255spositiontaking_1701
+    --    AND @db_auto_v255spositiontaking_1701 = @auto_v255spositiontaking_1701
+    --RETURN
 
     IF (@v255spositiontaking_1701 < 0 OR @v255mpositiontaking_1701 < 0
         OR @v255spositiontaking_1701 + @v255mpositiontaking_1701 > 1
@@ -314,8 +317,7 @@ BEGIN
 					,@ErrCode = 107             
             
             RETURN
-        END
-
+        END		
     END
 
     DECLARE @LogSPData VARCHAR(MAX),
@@ -396,6 +398,7 @@ BEGIN
             @duration = @duration
     END CATCH
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMasterGoldDeluxe_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO

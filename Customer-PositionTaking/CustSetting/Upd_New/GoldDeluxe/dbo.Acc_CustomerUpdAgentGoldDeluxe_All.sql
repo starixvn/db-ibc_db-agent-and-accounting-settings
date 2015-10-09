@@ -30,7 +30,8 @@ AS
 	DB: DBTXN/CustDB
 	
 	Revisions:
-		
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID)
+		- 20151008@Elodie: Hot fix n2 is updated although a2 is not updated [Redmine:#45208]
 	Parameters Explanation:
 */
 BEGIN
@@ -46,7 +47,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelonging 
 		@SessionCustID = @mrecommend, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -54,7 +55,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		SELECT	@ErrCode = @ErrCode + CONVERT(VARCHAR(300),@ErrCode_cur) + CHAR(7), 
@@ -65,7 +66,7 @@ BEGIN
 	--update commission
 	IF @v255UpdateCommission_1701 = 1
 	BEGIN
-		EXEC dbo.Acc_CustomerUpdAgentGoldDeluxe_Commission
+								EXEC dbo.Acc_CustomerUpdAgentGoldDeluxe_Commission
 					@custid				= @custid,
 					@v255discount_1701	= @v255discount_1701,
 					@UserID				= @UserID, 
@@ -88,40 +89,14 @@ BEGIN
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
 
 		END
-	END			
-			
-	IF @v255UpdateMinPositiontaking_1701 = 1 
-	BEGIN
-		EXEC Acc_CustOverrideUpdGoldDeluxe 
-				@custid						= @custid, 
-				@UplineID					= @mrecommend,
-				@min_v255positiontaking_1701= @min_v255apositiontaking_1701, 
-				@IP							= @IP, 
-				@UserID						= @UserID, 
-				@SubAccID					= @SubAccID,
-				@Language					= @Language, 
-				@ErrCode					= @ErrCode, 
-				@ErrMsg						= @ErrMsg
-
-		IF @ErrCode_Cur > 0
-		BEGIN
-			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
-					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
-			
-			RETURN
-		END
-		ELSE
-		BEGIN
-			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
-		END
-	END
+	END						
 
 	-- update positiontaking
 	IF @v255UpdatePositiontaking_1701 = 1 OR @v255UpdateAutoPositiontaking_1701 = 1
 	BEGIN
 		SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 
-		EXEC dbo.Acc_CustomerUpdAgentGoldDeluxe_PositionTaking 
+								EXEC dbo.Acc_CustomerUpdAgentGoldDeluxe_PositionTaking 
 					@custid								= @custid,					
 					@v255mpositiontaking_1701			= @v255mpositiontaking_1701,
 					@auto_v255mpositiontaking_1701		= @auto_v255mpositiontaking_1701,
@@ -144,10 +119,35 @@ BEGIN
 		BEGIN
 			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
 					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)
+			RETURN
 		END
 		ELSE
 		BEGIN
 			SELECT @ErrCode = @ErrCode + '-103'+ CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
+		END
+	END
+
+	IF @v255UpdateMinPositiontaking_1701 = 1 
+	BEGIN
+								EXEC Acc_CustOverrideUpdGoldDeluxe 
+				@custid						= @custid, 
+				@UplineID					= @mrecommend,
+				@min_v255positiontaking_1701= @min_v255apositiontaking_1701, 
+				@IP							= @IP, 
+				@UserID						= @UserID, 
+				@SubAccID					= @SubAccID,
+				@Language					= @Language, 
+				@ErrCode					= @ErrCode, 
+				@ErrMsg						= @ErrMsg
+
+		IF @ErrCode_Cur > 0
+		BEGIN
+			SELECT  @ErrCode = @ErrCode + CAST(@ErrCode_cur AS VARCHAR(300)) + CHAR(7), 
+					@ErrMsg = @ErrMsg + @ErrMsg_Cur + CHAR(7)						
+		END
+		ELSE
+		BEGIN
+			SELECT @ErrCode = @ErrCode + '-102' + CHAR(7), @ErrMsg = @ErrMsg + CHAR(7)
 		END
 	END
 

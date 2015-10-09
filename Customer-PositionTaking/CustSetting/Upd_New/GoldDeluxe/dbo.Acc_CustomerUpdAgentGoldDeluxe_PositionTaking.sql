@@ -27,7 +27,8 @@ AS
 	DB: DBTXN/CustDB
 	
 	Revisions:
-		
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+		- 20151007@Elodie: Remove code to check old and new value
 	Parameters Explanation:
 */
 BEGIN
@@ -76,11 +77,11 @@ BEGIN
 	
 	
 	--check if not change setting
-	IF @old_v255mpositiontaking_1701 = @v255mpositiontaking_1701
-		AND @old_v255apositiontaking_1701 = @v255apositiontaking_1701
-		AND @old_auto_v255mpositiontaking_1701 = @auto_v255mpositiontaking_1701
-		AND @old_isauto_v255mpositiontaking_1701 = @isauto_v255mpositiontaking_1701
-			RETURN
+	--IF @old_v255mpositiontaking_1701 = @v255mpositiontaking_1701
+	--	AND @old_v255apositiontaking_1701 = @v255apositiontaking_1701
+	--	AND @old_auto_v255mpositiontaking_1701 = @auto_v255mpositiontaking_1701
+	--	AND @old_isauto_v255mpositiontaking_1701 = @isauto_v255mpositiontaking_1701
+	--		RETURN
 				
 	IF	@v255apositiontaking_1701 < 0	
 		OR @v255mpositiontaking_1701 < 0

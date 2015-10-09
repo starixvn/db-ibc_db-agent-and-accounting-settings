@@ -16,7 +16,8 @@ AS
         DB: DBTXN/custDB
         
         Revisions:
-           
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID]           
+			- 20151007@Elodie: Remove code to check old and new value
         Parameters Explanation:
         
         Note:
@@ -43,7 +44,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC Age_CustomerSelCheckBelongingByCustID 
         @SessionCustID	= @Userid, 
         @Custid			= @custid,
         @roleid			= @roleid	OUTPUT
@@ -52,7 +53,7 @@ BEGIN
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+    EXEC Acc_CustomerSelCheckEnable 
 		@custid		= @custid
 		,@ErrCode	= @ErrCode_Cur	OUTPUT
 		,@ErrMsg	= @ErrMsg_Cur	OUTPUT
@@ -66,18 +67,18 @@ BEGIN
     --end
 
     ---- Checking total downlines before UPDATEs 
-	 EXEC Acc_CustomerSelCheckAllowedDownlines    
-			@custid		= @custid,
-			@roleid		= 4,
-			@isExecRep	= 1,
-			@isUpdatePT = 1,
-			@Sporttype	= 1,
-			@Language	= 'E',
-			@ErrMsg		= @ErrMsg	OUTPUT,
-			@ErrCode	= @ErrCode	OUTPUT
-	        
-	IF @ErrCode <> 0 
-		RETURN  
+    EXEC Acc_CustomerSelCheckAllowedDownlines    
+		@custid		= @custid,
+        @roleid		= 4,
+        @isExecRep	= 1,
+        @isUpdatePT = 1,
+        @Sporttype	= 1,
+        @Language	= 'E',
+        @ErrMsg		= @ErrMsg	OUTPUT,
+        @ErrCode	= @ErrCode	OUTPUT
+        
+    IF @ErrCode <> 0 
+        RETURN 
 
     DECLARE @db_v255spositiontaking_1701 SMALLMONEY
 
@@ -87,9 +88,9 @@ BEGIN
 			AND sporttype = 255 
 			AND bettype = 1701
 
-    --check if not change value
-    IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
-        RETURN
+    ----check if not change value
+    --IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
+    --    RETURN
 
     --check all s3+m3<=s4 if i3 = 0,
     --m3<=s4 and u3<=s4 if i3=1
@@ -168,7 +169,7 @@ BEGIN
 
     --u = (i3 or i1)?(u3 or u1)
     --s1 = min(s4-m1-a1, u)
-    EXEC dbo.Acc_CustSetting3rd_07
+    EXEC dbo.Acc_CustSetting3rd_07 
 		@srecommend = @custid 
 		,@roleid = 4
 		,@mode = 'GoldDeluxe'
@@ -253,6 +254,7 @@ BEGIN
             @duration		= @duration
     END CATCH
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdSuperGoldDeluxe_Positiontaking] TO [bodbAdminNet] AS [dbo]
 GO
