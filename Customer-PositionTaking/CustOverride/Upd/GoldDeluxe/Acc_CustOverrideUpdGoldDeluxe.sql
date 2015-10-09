@@ -18,7 +18,8 @@ AS
     DB: DBTXN/CustDB
         
     Revisions:
-
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID)
+		- 20151007@Elodie: Remove code to check old and new value
     Parameters Explanation:
 */
 BEGIN
@@ -36,7 +37,7 @@ BEGIN
 
     ---------------------------
     -- ***Check Downline Belonging***
-    EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+    EXEC Age_CustomerSelCheckBelongingByCustID 
         @SessionCustID = @Userid, 
         @Custid = @custid,
         @roleid = @roleid OUTPUT
@@ -44,7 +45,7 @@ BEGIN
     ---------------------------
 
     --Check disable user
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+    EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0
     BEGIN
         select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -54,7 +55,7 @@ BEGIN
     --end
     
     --Check Allowed downlines    
-    EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckAllowedDownlines    
+    EXEC Acc_CustomerSelCheckAllowedDownlines    
 				@custid=@custid,
                 @roleid=@roleid,
                 @isExecRep=1,
@@ -70,8 +71,8 @@ BEGIN
     FROM CustOverrideGame WITH(NOLOCK)
     WHERE custid = @custid AND sporttype = 255 AND bettype = 1701
     
-    IF @old_min_v255positiontaking_1701 = @min_v255positiontaking_1701
-        RETURN     
+    --IF @old_min_v255positiontaking_1701 = @min_v255positiontaking_1701
+    --    RETURN     
     
     UPDATE CustOverrideGame WITH(UPDLOCK, ROWLOCK)
     SET minpositiontaking = @min_v255positiontaking_1701
@@ -79,17 +80,17 @@ BEGIN
 
     IF @roleid = 4
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
+                EXEC [Acc_CustSetting3rd_04] @srecommend = @custid, @roleid = 4, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     IF @roleid = 3
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
+                EXEC [Acc_CustSetting3rd_04] @custid = @custid, @srecommend = @UplineID, @roleid = 3, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     IF @roleid = 2
     BEGIN
-        EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
+                EXEC [Acc_CustSetting3rd_04] @custid = @custid, @mrecommend = @UplineID, @roleid = 2, @mode = 'GoldDeluxe', @sporttype = 255, @bettype = 1701
     END
 
     DECLARE @LogSPData VARCHAR(MAX),

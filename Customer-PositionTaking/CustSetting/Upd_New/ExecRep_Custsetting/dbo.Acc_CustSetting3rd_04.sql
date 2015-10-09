@@ -29,7 +29,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting3rd_04]
 			- 20150610@Daniel: 
 			  + Improve medthod check table existing in subscribers	
 			  + Separate custDB to new server DBCUST   
-			- 20151009@Elodie: Hot fix
+			- 20151009@Elodie: Hot fix a1 is not updated to n2 when super edit master min pt [Redmine:#45332]  
         Parameter's Explanation:        
     */ 
 BEGIN
@@ -3049,7 +3049,7 @@ BEGIN
                      END
               FROM CustSettingGame cs
         INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid 
-        INNER JOIN CustOverride aco WITH(NOLOCK) ON aco.custid = ci.recommend
+        INNER JOIN CustOverrideGame aco WITH(NOLOCK) ON aco.custid = ci.recommend
                                                 AND cs.sporttype = aco.sporttype
                                                 AND cs.bettype = aco.bettype
         INNER JOIN CustSettingGame mcs WITH(NOLOCK) ON mcs.custid = @custid
