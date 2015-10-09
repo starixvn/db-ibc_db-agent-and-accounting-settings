@@ -15,7 +15,7 @@ BEGIN
 	
 	IF dbo.f_CheckRepTable('custinfo') = 0 RETURN
 	IF dbo.f_CheckRepTable('CustProductStatus') = 0 RETURN
-	IF dbo.f_CheckRepTable('ProductStatusProfile') = 0 RETURN
+	
 			
 	--Check if XML is null or empty
 	IF @IsDisabled_XML IS NULL OR @IsDisabled_XML='' RETURN
