@@ -5,7 +5,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
-	@ProductID	TINYINT,
+	@ProductID	TINYINT = NULL,
+	@SettingType SMALLINT = NULL,
 	@SystemID	TINYINT  = 0 
 AS  
 /*  
@@ -20,7 +21,7 @@ AS
  */  
 BEGIN   
 	SELECT * INTO #SportBettypeFilter
-	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL)
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
 	
 	SELECT ProductID,SettingType,SystemID,DisplayMode
 	INTO #ProductSettingSiteDisplay
