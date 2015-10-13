@@ -23,8 +23,8 @@ BEGIN
 	CREATE TABLE #NewDisableStatTbl(
 				SportType SMALLINT,
 				BetType SMALLINT,
-				IsDisabled BIT
-	--			IsDisabledDownline BIT
+				IsDisabled BIT,
+				IsDisabledDownline BIT
 			)
 	--Parse XML		
 	DECLARE @iDoc INT
