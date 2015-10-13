@@ -137,7 +137,7 @@ BEGIN
    
 		SELECT 	pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as hasSynced
+			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
 			

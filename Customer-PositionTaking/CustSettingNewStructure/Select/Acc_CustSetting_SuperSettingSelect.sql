@@ -113,7 +113,7 @@ BEGIN
 			
 		SELECT pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as hasSynced
+			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
 			
@@ -128,7 +128,7 @@ BEGIN
 							), 0)
 							
 			 END AS IsDisabledDownline
-			
+			, 0 AS isDisabledUpline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype

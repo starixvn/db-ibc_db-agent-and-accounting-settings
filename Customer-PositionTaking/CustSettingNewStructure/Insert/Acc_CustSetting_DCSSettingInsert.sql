@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_DCSSettingInsert] 
+CREATE PROCEDURE [dbo].[Acc_CustSetting_DCSSettingInsert] 
 	@CustID				INT
 	, @SuperID			INT
 	, @MasterID			INT
@@ -744,7 +744,6 @@ BEGIN
 			--Sync: upline status
 			--Enable/Disable: upline status
 			DECLARE @UplineID INT
-			
 			IF @RoleID = 3
 				SET @UplineID = @SuperID
 			ELSE IF @RoleID = 2
