@@ -477,7 +477,7 @@ BEGIN
 				, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 				, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 				, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
-				, 0 AS IsDisabledDownline
+				, CAST(0 AS BIT) AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 				 
 			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)

@@ -141,7 +141,7 @@ BEGIN
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
 			
-			, CASE 	
+			, CAST(CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
 					ELSE ISNULL((
 							SELECT TOP 1 1
@@ -151,7 +151,7 @@ BEGIN
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							
-			 END AS IsDisabledDownline
+			 END AS BIT) AS IsDisabledDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 		
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
