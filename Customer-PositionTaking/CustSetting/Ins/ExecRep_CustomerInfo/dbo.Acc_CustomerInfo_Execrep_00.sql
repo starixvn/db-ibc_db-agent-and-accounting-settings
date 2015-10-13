@@ -778,6 +778,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@adiscountHRFixedOdds decimal(9,8) = 0,
 	@sdiscountHRFixedOdds decimal(9,8) = 0,
 	
+	-- Myanma Odds
+	@discountMyanmarOdds DECIMAL(9,8) = 0,
+	@IsMyanmarOdds BIT = 0,
+	
 	@UplineSyncLiveCasino BIT = 0,
 	
 	@ErrCode INT = 0 OUTPUT
@@ -810,7 +814,10 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 				+ Separate custDB to new server DBCUST: 
 				+ Improve medthod check table existing in subscribers	
 			- 20150715@Viet: remove P2P tables from replication check	
-			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]		
+			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]
+			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+			- 20150904@Helen: commission setting for MO [Redmine #41470]
+						  
 			  	
 		Parameter's Explanation:
 		
@@ -827,12 +834,14 @@ BEGIN
 		  AND dbo.f_CheckRepTable('CustGameType') = 1
 		  AND dbo.f_CheckRepTable('ProductGlobalSetting') = 1 
 		  AND dbo.f_CheckRepTable('ProductBetSetting') = 1 
+		  AND dbo.f_CheckRepTable('AgentCommRate') = 1
+		 AND dbo.f_CheckRepTable('CustCommRate') = 1
 		  --AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
 		  --AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
 	   )
 	   RETURN
 
-
+	
     DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
     DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
     DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
@@ -2683,6 +2692,155 @@ DECLARE @currency INT
 		END
 		--End Gold Deluxe
 	END
+	
+	-- For colossus Bet and Myanma Odds
+	DECLARE @DirectParentAgent INT 
+	select @roleid as roleid
+	
+	IF @roleid IN (2,3,4)
+	BEGIN
+		
+		IF @roleid = 2 
+			SET @DirectParentAgent = @mrecommend 
+		IF @roleid = 3 
+			SET @DirectParentAgent = @srecommend 
+		-- For Colossus Bet
+		IF @roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 204)
+		BEGIN
+			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+			SELECT @custid,204,18001,0
+			UNION ALL 
+			SELECT @custid,204,18002,0
+		END	
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			
+			RETURN
+		END
+		-- For Myanma Odds
+		IF (@IsMyanmarOdds = 1 AND (@roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 1 AND Bettype = 301)))
+		BEGIN
+			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+			SELECT @custid,1,301,@discountMyanmarOdds
+		END	
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			
+			RETURN
+		END
+	
+	END
+	IF @roleid = 1
+	BEGIN
+		-- For Colossus Bet
+		SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
+		INTO #CustCommRate_temp
+		FROM AgentCommRate ac WITH (ROWLOCK)
+			JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
+		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 204 
+		
+		INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
+		SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],0
+		FROM #CustCommRate_temp
+		PIVOT(
+			SUM(CommRate)
+			FOR roleID IN ([2],[3],[4])
+		) AS T
+		
+			
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+			DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+			
+			RETURN
+		END
+		IF (@IsMyanmarOdds = 1)
+		BEGIN
+		
+			SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
+			INTO #CustCommRate_MOtemp
+			FROM AgentCommRate ac WITH (ROWLOCK)
+				JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
+			WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 1 AND ac.Bettype = 301
+			
+			INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
+			SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],@discountMyanmarOdds
+			FROM #CustCommRate_MOtemp
+			PIVOT(
+				SUM(CommRate)
+				FOR roleID IN ([2],[3],[4])
+			) AS T
+			
+				
+			IF @@ERROR <> 0
+			BEGIN
+				--Error Occurs
+				SELECT @ErrCode=116
+				
+				-- ROLLBACK MANUALLY
+				DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+				DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				
+				RETURN
+		END
+		END
+		
+	
+	END
+	
+	
 END
 
 GO 

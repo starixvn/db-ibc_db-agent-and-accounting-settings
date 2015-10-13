@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
+﻿alter PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
 	@custid INT,--memberid  
 
 	@firstname NVARCHAR(50),  
@@ -15,6 +15,8 @@
 	@playerdiscount1x2 DECIMAL(9,8)=0,  
 	@playerdiscountnumber DECIMAL(9,8)=0,  
 	@playerdiscountHRFixedOdds decimal(9,8)=0,
+	@playerdiscountMyanmarOdds DECIMAL(9,8)=0, -- MyanmarOdds
+	
 	@UpdateCommission BIT = 1,  
 
 	@MinBet MONEY,  
@@ -210,6 +212,7 @@ Revisions:
  - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
  - 20140627@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
  - 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
+ - 20150904@Helen: commission setting for MO [Redmine #41470]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -366,6 +369,7 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
    @playerdiscount1x2_old DECIMAL(9,8),  
    @playerdiscountHRFixedOdds_old decimal(9,8),
    @playerdiscountnumber_old DECIMAL(9,8),  
+   @discountMyanmarOdds_old DECIMAL(9,8)=0,
    @updatecomm_old bit  
   
 	select @playerdiscount_old = playerdiscount  
@@ -383,22 +387,44 @@ Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
 	select @playerdiscountnumber_old = playerdiscount  
 	from custsetting3rd (nolock) where custid = @custid and sporttype = 161 and bettype = 81  
 
+	
+	-- For Myanmar Odds
+	DECLARE @IsMyanmarOdds BIT = 0
+	DECLARE @recommend INT = NULL
+	
+	SELECT @recommend = recommend
+	FROM custInfo WITH (NOLOCK)
+	WHERE custid = @custid
+
+	SET @IsMyanmarOdds = dbo.fn_IsMyanmarOdds (@recommend)
+		
+	IF @IsMyanmarOdds = 1
+	BEGIN
+		-- Get old value
+		SET @discountMyanmarOdds_old = (SELECT playerdiscount FROM CustCommRate WITH (NOLOCK) WHERE CustId = @custid AND Sporttype = 1 AND Bettype = 301)
+	END
+		
 	if @playerdiscount_old <> @playerdiscount or @playerdiscountcs_old <> @playerdiscountcs   
 		or @playerdiscount1x2_old <> @playerdiscount1x2 or @playerdiscountnumber_old <> @playerdiscountnumber or @playerdiscountHRFixedOdds_old <> @playerdiscountHRFixedOdds
+		OR (@IsMyanmarOdds = 1 AND @playerdiscountMyanmarOdds <> @discountMyanmarOdds_old)
 		set @updatecomm_old = 1  
 	else   
-		set @updatecomm_old = 0  
-		
+		set @updatecomm_old = 0 
+ 
  if @updatecomm_old <> 0  
  begin  
-    
-        EXEC dbo.Acc_CustomerUpdMember_Commission   
+   EXEC dbo.Acc_CustomerUpdMember_Commission
    @custid = @custid,  
    @playerdiscount = @playerdiscount,  
    @playerdiscountcs = @playerdiscountcs,  
    @playerdiscount1x2 = @playerdiscount1x2,  
    @playerdiscountHRFixedOdds = @playerdiscountHRFixedOdds,
    @playerdiscountnumber = @playerdiscountnumber,  
+   -- For Myanmar Odds
+   @IsMyanmarOdds = @IsMyanmarOdds,
+   @discountMyanmarOdds = @playerdiscountMyanmarOdds,
+   @discountMyanmarOdds_old = @discountMyanmarOdds_old,
+   
    @updatecomm_old = @updatecomm_old,  
    @SubAccID = @SubAccID,  
    @UserID = @UserID,  

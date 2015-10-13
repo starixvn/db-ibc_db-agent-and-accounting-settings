@@ -12,16 +12,21 @@ AS
 	History:   
 		- 20131018@Kathy: Add HR Fixed Odds (154) [Redmine:#6505]
 		- 20150610@Kos: Separate CustDB to DBCUST server (Move SP to DBCUST.CustDB)
+		- 20150904@Helen: commission setting for MO [Redmine #41470]
 	Explanation's Param:
-*/
-
-/*
-EXEC dbo.Acc_CustomerSelSBCloneSetting_MAg @CustID=4317260
 */
 
 BEGIN
 	SET NOCOUNT ON
+
+	DECLARE @discountMyanmarOdds DECIMAL(9,8)=0
+	DECLARE @IsMyanmarOdds BIT = 0, @srecommend INT = 0
 	
+	SET @IsMyanmarOdds = dbo.fn_IsMyanmarOdds (@custid)
+	
+	IF @IsMyanmarOdds = 1
+		SET @discountMyanmarOdds = (SELECT CommRate FROM AgentCommRate WITH (NOLOCK) WHERE CustId = @Custid AND Sporttype = 1 AND Bettype = 301)
+
 	SELECT 
 		ci.closed
 		,ci.reject AS suspended
@@ -102,7 +107,7 @@ BEGIN
 		
 		--min live PT of number game (on behalf of bettype=85)
 		,v161MinLivePT_85 = MAX(CASE WHEN csOv3rd.bettype=85 AND csOv3rd.sporttype=161 THEN csOv3rd.minlivepositiontaking END)
-
+		, ISNULL(@discountMyanmarOdds,0) AS discountMyanmarOdds
 	FROM dbo.CustInfo AS ci WITH(NOLOCK)
 		INNER JOIN dbo.CustSetting AS cs WITH(NOLOCK) ON cs.CustID=ci.CustID
 			AND ci.custid=@CustID
