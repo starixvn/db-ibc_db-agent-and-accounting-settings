@@ -5,6 +5,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 /*
 --exec [Acc_CustSetting_SettingSelect_All_testing] @CustID = 1, @ProductID = 16, @settingType = 4, @roleid=1
+select * from custinfo where username ='master1'
 */
 alter PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
@@ -38,7 +39,6 @@ BEGIN
 	
 	IF @RoleID = 4
 	BEGIN
-		
 
 		IF EXISTS (SELECT 1
 					FROM custinfo WITH (NOLOCK)
@@ -123,7 +123,6 @@ BEGIN
 					)
 			SET @downlines = 1	
    
-
 		SELECT 	pdt.SportType
 			, pdt.BetType
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
