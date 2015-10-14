@@ -133,6 +133,7 @@ BEGIN
 	
 	EXEC sp_xml_removedocument @iDoc
 
+	
 	--Validate new disabled status
 	EXEC [dbo].[Acc_CustSetting_DisableStatCheck] @IsDisabled = @IsDisabled
 		, @RoleID	= @RoleID
@@ -185,17 +186,17 @@ BEGIN
 				, TYPE
 			)
 	
-	
 			
 	UPDATE CustProductStatus
-		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
+		SET bitmapIsDisabled = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
 	WHERE CustID = @CustID
 	
 	
-	
 	DECLARE @bitmapOrderHidden INT
+	
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 	BEGIN
+		
 		SET @xmlStrHidden = (
 			SELECT (
 					SELECT psp.bitmapOrder	AS '@b'
@@ -210,12 +211,13 @@ BEGIN
 				, TYPE
 			)
 		UPDATE CustProductStatus WITH (ROWLOCK,UPDLOCK)
-		SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))	
+		SET bitmapIsDisabled =(SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
 		WHERE CustID = @CustID
 		
 	END
 	
 	--call execrept to update downline
+	
 	IF @RoleID <> 1 AND EXISTS (
 			SELECT TOP 1 1
 			FROM #NewDisableStatTbl
@@ -226,7 +228,6 @@ BEGIN
 					)
 			)
 	BEGIN			
-		
 		EXEC dbo.[Acc_DynamicCustomerInfo_04] @CustID = @CustID
 						, @RoleID			= @RoleID
 						, @IsDisabled_XML	= @IsDisabled
@@ -243,7 +244,7 @@ BEGIN
 					SELECT SportType	AS '@SportType'
 						, BetType		AS '@BetType'
 						, IsDisabled	AS '@IsDisabled'
-						, NULL			AS '@IsDisabledDownline'
+						, IsDisabledDownline AS '@IsDisabledDownline'
 					FROM #OldDisableStatTbl
 					FOR XML PATH('ProductStatus')
 						, TYPE
@@ -252,6 +253,7 @@ BEGIN
 				, TYPE
 			)
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
 	SET @xml = (
 			SELECT @CustID	AS '@CustID'
 				, @UserID	AS '@UserID'

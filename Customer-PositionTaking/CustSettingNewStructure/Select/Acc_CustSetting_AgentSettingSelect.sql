@@ -161,11 +161,11 @@ BEGIN
 	--Product Status  
 	ELSE IF @SettingType = 4
 	BEGIN  
-		DECLARE @downlines  BIT 
+		DECLARE @downlines  BIT = 0
 		
 		IF EXISTS ( SELECT 1
 					FROM custinfo WITH (NOLOCK)
-					WHERE srecommend = @CustID	AND roleid = 1
+					WHERE recommend = @CustID	AND roleid = 1
 					)
 			SET @downlines = 1	
    
@@ -182,7 +182,7 @@ BEGIN
 							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE srecommend = @CustID	AND roleid = 1
+							WHERE recommend = @CustID	AND roleid = 1
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							

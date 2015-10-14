@@ -6,7 +6,7 @@ GO
 /*
 --exec [Acc_CustSetting_SettingSelect_All_testing] @CustID = 1, @ProductID = 16, @settingType = 4, @roleid=1
 */
-ALTER PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
+alter PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT
 	, @SettingType	SMALLINT = 4
@@ -64,6 +64,7 @@ BEGIN
 							
 			 END AS IsDisabledDownline
 			, 0 AS isDisabledUpline
+			, ISNULL(@downlines,0) As HasDownline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
@@ -74,13 +75,12 @@ BEGIN
 		WHERE pdt.SettingType = @SettingType
 		
 	END
-	--	EXEC Acc_CustSetting_SuperSettingSelect @CustID=@CustID,@ProductID=@ProductID,@SettingType=@SettingType
 	ELSE IF @RoleID = 3
 	BEGIN
 	
 		IF EXISTS (SELECT 1
 						FROM custinfo WITH (NOLOCK)
-						WHERE srecommend = @CustID	AND roleid = 2
+						WHERE mrecommend = @CustID	AND roleid = 2
 						)
 		SET @downlines = 1	
    
@@ -96,13 +96,13 @@ BEGIN
 							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE srecommend = @CustID	AND roleid = 2
+							WHERE mrecommend = @CustID	AND roleid = 2
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							
 			 END AS IsDisabledDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
-		
+			 , ISNULL(@downlines,0) As HasDownline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
@@ -114,13 +114,12 @@ BEGIN
 			
 		WHERE pdt.SettingType = @SettingType
 	
-	--		EXEC Acc_CustSetting_MasterSettingSelect @CustID=@CustID,@ProductID=@ProductID,@SettingType=@SettingType
 	END 		
 	ELSE IF @RoleID = 2
 	BEGIN
 		IF EXISTS ( SELECT 1
 					FROM custinfo WITH (NOLOCK)
-					WHERE srecommend = @CustID	AND roleid = 1
+					WHERE recommend = @CustID	AND roleid = 1
 					)
 			SET @downlines = 1	
    
@@ -137,14 +136,14 @@ BEGIN
 							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE srecommend = @CustID	AND roleid = 1
+							WHERE recommend = @CustID	AND roleid = 1
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							
 			 END AS IsDisabledDownline
 			 
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
-		
+			, ISNULL(@downlines,0) As HasDownline
 		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
@@ -155,7 +154,7 @@ BEGIN
 			INNER JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @MasterID
 			
 		WHERE pdt.SettingType = @SettingType
-		--EXEC Acc_CustSetting_AgentSettingSelect @CustID=@CustID,@ProductID=@ProductID,@SettingType=@SettingType
+		
 	END	
 	ELSE IF @RoleID = 1
 	BEGIN
@@ -166,7 +165,7 @@ BEGIN
 				, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
 				, 0 AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
-				 
+				, 0 As HasDownline
 			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
 				INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 													AND pdt.BetType = ft.bettype
@@ -178,7 +177,7 @@ BEGIN
 				
 			WHERE pdt.SettingType = @SettingType
 						
-		--EXEC Acc_CustSetting_MemberSettingSelect @CustID=@CustID,@ProductID=@ProductID,@SettingType=@SettingType,@RoleID = @RoleID --,@DisableAutoMPT = @DisableAutoMPT
+		
 	END	
 END
 
@@ -188,4 +187,3 @@ GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_StatusSettingSelect] TO [bodbDownlineNet]
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_StatusSettingSelect] TO [bodbExtAccNet]
-
