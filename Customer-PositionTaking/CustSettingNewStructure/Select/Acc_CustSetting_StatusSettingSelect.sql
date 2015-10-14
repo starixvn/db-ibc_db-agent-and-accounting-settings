@@ -1,13 +1,4 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-/*
---exec [Acc_CustSetting_SettingSelect_All_testing] @CustID = 1, @ProductID = 16, @settingType = 4, @roleid=1
-select * from custinfo where username ='master1'
-*/
-alter PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT
 	, @SettingType	SMALLINT = 4
