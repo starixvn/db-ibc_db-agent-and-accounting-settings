@@ -149,10 +149,11 @@ BEGIN
 
 	
 	--Get old disabled status
-	INSERT INTO #OldDisableStatTbl (SportType,BetType,IsDisabled)
+	INSERT INTO #OldDisableStatTbl (SportType,BetType,IsDisabled,IsDisabledDownline)
 	SELECT psp.SportType
 		, psp.BetType
 		, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
+		, 0 AS IsDisabledDownline
 	FROM #NewDisableStatTbl tmp
 		INNER JOIN ProductStatusProfile PSP WITH (NOLOCK) ON tmp.SportType = psp.Sporttype AND tmp.BetType = psp.Bettype
 		INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON stt.CustID = @CustID
@@ -217,7 +218,6 @@ BEGIN
 	END
 	
 	--call execrept to update downline
-	
 	IF @RoleID <> 1 AND EXISTS (
 			SELECT TOP 1 1
 			FROM #NewDisableStatTbl
@@ -227,7 +227,8 @@ BEGIN
 						AND IsDisabledDownline	= 0
 					)
 			)
-	BEGIN			
+	BEGIN		
+		
 		EXEC dbo.[Acc_DynamicCustomerInfo_04] @CustID = @CustID
 						, @RoleID			= @RoleID
 						, @IsDisabled_XML	= @IsDisabled
@@ -252,6 +253,7 @@ BEGIN
 			FOR XML PATH('Acc_CustSetting_DisableStatUpd')
 				, TYPE
 			)
+	
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
 	SET @xml = (
