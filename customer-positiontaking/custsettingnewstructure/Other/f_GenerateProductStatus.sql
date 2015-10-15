@@ -6,7 +6,7 @@ ALTER FUNCTION [dbo].[f_GenerateProductStatus] (@bitmap binary(32), @bitmapOrder
   Created: Viet @ 7.OCT.2015  
   DB: DBCust.custDB  
   
-  Revision:      
+  Revision:        
   Param's Explanation:    
  */  
 BEGIN  
