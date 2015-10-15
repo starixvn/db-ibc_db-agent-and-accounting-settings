@@ -7,6 +7,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet_Commission]
     @ActionID INT = NULL,  
     @IP     VARCHAR(50)  = '',      
     @UserID    INT    = 0,  
+    @SubAccID INT = 0,
     @Language   VARCHAR(20)  = 'E',          
     @ErrCode   INT    = 0   OUTPUT,  
     @ErrMsg    NVARCHAR(4000) = ''  OUTPUT  
@@ -102,6 +103,7 @@ BEGIN
 		 SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
 			  @DiscountValueText + '="' + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -110,6 +112,7 @@ BEGIN
 		 SELECT @TrackingValueDB = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
 			  @DiscountValueText + '="' + COALESCE(CAST(@db_v204discountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
+			  'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 			  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 			  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
 			  'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +  
@@ -133,6 +136,7 @@ BEGIN
 			  SELECT @LogSPData = '<Acc_CustomerUpdColossusBet_Commission Custid ="' + COALESCE(CAST(@custid AS VARCHAR(50)),SPACE(1)) + '" ' +   
 				  @DiscountValueText + '="' + + COALESCE(CAST(@DiscountValue AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)),SPACE(1)) + '" ' +  
+				  'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 				  'Language="'+ COALESCE(CAST(@Language AS VARCHAR(2)),SPACE(1)) + '" ' +  
 				  'IP="'+ COALESCE(CAST(@IP AS VARCHAR(50)),SPACE(1)) + '" ' +  
 				  'ErrCode="'+ COALESCE(CAST(@ErrCode AS VARCHAR(50)),SPACE(1)) + '" ' +  

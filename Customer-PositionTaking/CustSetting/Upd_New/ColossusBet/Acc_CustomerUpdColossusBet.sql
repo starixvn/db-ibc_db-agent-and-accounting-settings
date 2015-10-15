@@ -13,7 +13,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdColossusBet]
     @v204CashInShare_18002 DECIMAL(9,8)= NULL,  
     @EnableDownlines BIT = 0,
 	@Disable BIT = NULL,
-	  
+	@SubAccID	INT = 0, 
     @IP         VARCHAR(50)  = '',      
     @UserID        INT    = 0,  
     @Language       VARCHAR(20)  = 'E',          
@@ -129,7 +129,8 @@ BEGIN
 			,@DiscountType =  18001
 			,@ActionID = @ActionID_Commission
 			,@IP    = @IP 
-			,@UserID   = @userid  
+			,@UserID   = @userid 
+			,@SubAccID = @SubAccID 
 			,@Language   = @Language  
 			,@ErrCode   = @ErrCode_Cur OUTPUT  
 			,@ErrMsg   = @ErrMsg_Cur OUTPUT  
@@ -160,7 +161,9 @@ BEGIN
 			,@DiscountType =  18002
 			,@roleid = @roleid
 			,@ActionID = @ActionID_CashInShare
+			,@IP    = @IP 
 			,@UserID   = @userid  
+			,@SubAccID =  @SubAccID 
 			,@Language   = @Language  
 			,@ErrCode   = @ErrCode_Cur OUTPUT  
 			,@ErrMsg   = @ErrMsg_Cur OUTPUT  
@@ -179,7 +182,7 @@ BEGIN
 	IF @IsUpdateDisable = 1
 	BEGIN
 		
-		EXEC Acc_CustomerUpdDisableColossusBet @custid=@custid,@Disable=@Disable,@EnableDownlines=@EnableDownlines,@UserID=@UserID,@SubAccID=default,@IP=@IP,@Language='E',@ErrCode=@ErrCode_Cur OUTPUT,@ErrMsg=@ErrMsg_Cur OUTPUT  
+		EXEC Acc_CustomerUpdDisableColossusBet @custid=@custid,@Disable=@Disable,@EnableDownlines=@EnableDownlines,@UserID=@UserID,@SubAccID=@SubAccID,@IP=@IP,@Language='E',@ErrCode=@ErrCode_Cur OUTPUT,@ErrMsg=@ErrMsg_Cur OUTPUT  
 		
 		IF @ErrCode_Cur <> 0  
 		BEGIN  
