@@ -7,7 +7,7 @@ ALTER FUNCTION [dbo].[f_GenerateProductStatus] (@bitmap binary(32), @bitmapOrder
   DB: DBCust.custDB  
   
   Revision:      
-  Param's Explanation:   
+  Param's Explanation:    
  */  
 BEGIN  
  DECLARE @byte_pos tinyint = 1+((@bitmapOrder-1)/8)  

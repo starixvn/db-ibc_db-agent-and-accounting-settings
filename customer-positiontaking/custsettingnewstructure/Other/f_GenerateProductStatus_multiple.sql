@@ -9,7 +9,7 @@ AS
   Created: Viet @ 7.OCT.2015  
   DB: DBCust.custDB  
   
-  Revision:      
+  Revision:       
   Param's Explanation:   
    @xmlStr:   
     + FORMAT: <root><r b="" s="" /></root>  
