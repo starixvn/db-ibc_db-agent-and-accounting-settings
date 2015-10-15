@@ -86,7 +86,7 @@ BEGIN
 		WHERE pt.custid = @custid
 			AND pt.BetType = @bettype
 			AND pt.SportType = @Sporttype
-			AND pt.IsLive = @liveindicator	
+			--AND pt.IsLive = @liveindicator	
 		
 		--Commission
 		SELECT @PlayerComm = ISNULL(PlayerDiscount, 0)
@@ -200,11 +200,9 @@ BEGIN
 		WHERE custid = @custid
 		
 		--Bet Limit
-		SELECT  @MaxperMatch = ISNULL(MaxPerMatch, 0)
-		FROM dbo.CustBetSetting3rd_Member bs WITH (NOLOCK)
-		WHERE bs.custid = @custid
-			AND bs.BetType = @bettype
-			AND bs.SportType = @Sporttype
+		--Will remove hard codes when [maxpermatch44] is added in dbo.cutinfo
+		SELECT  @MaxperMatch = 1000000
+		
 			
 		SELECT  
 			@apos = IsNull (apositiontaking,0),   
@@ -222,7 +220,7 @@ BEGIN
 		AND bettype=@bettype  
 		--AND sporttype=@CustSettingSporttype  
 		AND sporttype=@sporttype   
-		AND islive = @liveindicator
+		--AND islive = @liveindicator
 		
 		IF (
 				@@rowcount = 0
