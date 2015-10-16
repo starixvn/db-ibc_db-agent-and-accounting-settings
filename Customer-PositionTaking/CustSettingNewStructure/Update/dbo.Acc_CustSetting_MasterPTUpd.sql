@@ -16,6 +16,7 @@ AS
 		DB: DBCUST/CustDB
 		
 		Revisions:
+            - 20151015@Billy: Fix log xml structure and naming
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
@@ -31,7 +32,7 @@ BEGIN
 			,@endRun		DATETIME
 			,@duration		INT			
 			,@logSPData		VARCHAR(5000)
-			,@logSPDataOld	VARCHAR(5000)
+			,@logSPData_Old	VARCHAR(5000)
 			,@AutoPT		VARCHAR(MAX)		
 			,@xml			XML
 	  SET @startRun = GETDATE()
@@ -123,35 +124,38 @@ BEGIN
 	
 	-- end read xml	
    
-   --log old data
-	SET @xml =(
-		SELECT @custid AS '@custid'
-				,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				,@userid AS '@userid'				
-				,@IP AS '@Ip'				
-				,(
-					SELECT cs.SportType
-						,cs.BetType
-						,cs.IsLive
-						,cs.SuperPT
-						,cs.IsAutoSuperPT 
-						,cs.AutoSuperPT 
-						,cs.MasterPT 						
-						,cs.MinPT
-						,t.UpdAllMems
-						,t.NewSuperPT
-					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
-						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
-												AND cs.bettype = t.BetType 
-												AND cs.isLive = t.IsLive
-					WHERE custid = @custid
-					FOR XML PATH('pt'), TYPE
+    -- Log old data
+	SET @xml = (
+		SELECT  @custid                         AS '@CustID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@userid                         AS '@UserID',			
+				@IP                             AS '@IP',		
+				(
+					SELECT  cs.SportType        AS '@SportType',
+						    cs.BetType          AS '@BetType',
+						    cs.IsLive           AS '@IsLive',
+						    cs.SuperPT          AS '@SuperPT',
+						    cs.IsAutoSuperPT    AS '@IsAutoSuperPT',
+						    cs.AutoSuperPT      AS '@AutoSuperPT',
+						    cs.MasterPT         AS '@MasterPT',
+						    cs.MinPT            AS '@MasterMinPT',
+						    t.UpdAllMems        AS '@UpdAllMems',
+						    t.NewSuperPT        AS '@NewSuperPT'
+					FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
+					INNER JOIN  @tblPT t 
+                            ON  cs.sporttype = t.SportType 
+							AND cs.bettype = t.BetType 
+							AND cs.isLive = t.IsLive
+					WHERE       custid = @custid
+					FOR XML PATH('PT'), 
+                    TYPE
 				)
-		FOR XML PATH('r'), TYPE
+		FOR XML PATH('Acc_CustSetting_MasterPTUpd'), 
+        TYPE
 	)
 	
-	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @xml)    
-    
+	SET @logSPData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	
     SET @AutoPT =(
 		SELECT cs.sporttype AS '@SportType'
 			,cs.bettype AS '@BetType'
@@ -266,31 +270,32 @@ BEGIN
             ,@SportBettypeXML = @PT
 	END
 	
-	 -- Write log after update
+    -- Log new updated data
 	SET @xml = (
-			SELECT @custid AS '@custid'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-					,@userid AS '@userid'					
-					,@IP AS '@Ip'					
-					,(
-						SELECT cs.sporttype
-							,cs.bettype 
-							,cs.isLive 
-							,cs.SuperPT 
-							,cs.isAutoSuperPT 
-							,cs.AutoSuperPT
-							,cs.MasterPT				
-							,cs.MasterMinPT	
-							,cs.UpdAllMems
-							,cs.NewSuperPT				
-						FROM @tblPT	cs							
-						FOR XML PATH('pt'), Type
-					)
-			FOR XML PATH('r'),TYPE				
+        SELECT  @custid                         AS '@CustID',
+                dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+                @userid                         AS '@UserID',
+				@IP                             AS '@IP',
+				(
+					SELECT  cs.sporttype        AS '@SportType',
+                            cs.bettype          AS '@BetType',
+						    cs.isLive           AS '@IsLive',
+						    cs.SuperPT          AS '@SuperPT',
+						    cs.isAutoSuperPT    AS '@IsAutoSuperPT',
+						    cs.AutoSuperPT      AS '@AutoSuperPT',
+						    cs.MasterPT         AS '@MasterPT',
+						    cs.MasterMinPT      AS '@MasterMinPT',
+						    cs.UpdAllMems       AS '@UpdAllMems',
+						    cs.NewSuperPT       AS '@NewSuperPT'
+					FROM    @tblPT cs							
+					FOR XML PATH('PT'), 
+                    TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_MasterPTUpd'),
+        TYPE				
 	)
     
-    
-	SET @logSPData = CONVERT(VARCHAR(MAX), @xml)	
+	SET @logSPData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
 	-- end write log
 	SET @endRun		= GETDATE()  
@@ -302,7 +307,7 @@ BEGIN
 			@CustID = @CustID,
 			@ActionID = 449,
 			@TrackingValue = @LogSPData,
-			@TrackingValue2 = @logSPDataOld,
+			@TrackingValue2 = @logSPData_Old,
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
@@ -311,7 +316,7 @@ BEGIN
 			@CustID = @CustID,
 			@ActionID = 449,
 			@TrackingValue = @LogSPData,
-			@TrackingValue2 = @logSPDataOld,
+			@TrackingValue2 = @logSPData_Old,
 			@duration = @duration
 	END CATCH 
 		
