@@ -1,4 +1,12 @@
-CREATE PROCEDURE [dbo].[Dot_Member_CheckCustSetting_DCS] @CustID INT
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Dot_Member_CheckCustSetting_DCS    Script Date: 10/16/2015 3:40:46 PM ******/
+
+/****** Object:  Stored Procedure dbo.Dot_Member_CheckCustSetting_DCS    Script Date: 10/15/2015 6:09:40 PM ******/
+ALTER PROCEDURE [dbo].[Dot_Member_CheckCustSetting_DCS] @CustID INT
 	, @Sporttype INT
 	, @Bettype INT
 	, @liveindicator BIT = 0
@@ -60,6 +68,7 @@ BEGIN
 		, @Result VARCHAR(50)
 		, @Danger BIT
 		, @DoubleCommLosing BIT
+		, @IsGrouped BIT
 
 	IF @isLicensee = 0
 	BEGIN
@@ -74,33 +83,76 @@ BEGIN
 		FROM custinfo WITH (NOLOCK)
 		WHERE custid = @custid
 
+		--Get PT Mode
+		SELECT @IsGrouped = ISNULL(IsGrouped,0)
+		FROM dbo.CustSettingMode3rd WITH(NOLOCK)
+		WHERE CustID = @CustID
+		
 		--PT
-		SELECT @apos = pt.AgentPT / 100.0
-			, @mpos = pt.MasterPT / 100.0
-			, @spos = CASE 
-				WHEN @SuperID <= 100
-					THEN 0
-				ELSE pt.SuperPT / 100.0
-				END
-		FROM dbo.CustPTSetting3rd_Member pt WITH (NOLOCK)	
-		WHERE pt.custid = @custid
-			AND pt.BetType = @bettype
-			AND pt.SportType = @Sporttype
-			--AND pt.IsLive = @liveindicator	
+		IF @IsGrouped = 0
+		BEGIN		
+			SELECT @apos = ISNULL(pt.AgentPT,0) / 100.0
+				, @mpos = ISNULL(pt.MasterPT,0) / 100.0
+				, @spos = CASE 
+					WHEN @SuperID <= 100
+						THEN 0
+					ELSE ISNULL(pt.SuperPT,0) / 100.0
+					END
+			FROM dbo.CustPTSetting3rd_Member pt WITH (NOLOCK)	
+			WHERE pt.custid = @custid
+				AND pt.BetType = @bettype
+				AND pt.SportType = @Sporttype
+				AND pt.IsLive = CASE WHEN @Sporttype IN (44) THEN pt.IsLive ELSE @liveindicator END
+		END	
+		ELSE
+		BEGIN		
+			SELECT @apos = ISNULL(pt.AgentPT,0) / 100.0
+				, @mpos = ISNULL(pt.MasterPT,0) / 100.0
+				, @spos = CASE 
+					WHEN @SuperID <= 100
+						THEN 0
+					ELSE ISNULL(pt.SuperPT,0) / 100.0
+					END
+			FROM dbo.CustPTGroupSetting3rd_Member pt WITH (NOLOCK)	
+			WHERE pt.AgentID = @AgentID
+				AND pt.BetType = @bettype
+				AND pt.SportType = @Sporttype
+				AND pt.IsLive = CASE WHEN @Sporttype IN (44) THEN pt.IsLive ELSE @liveindicator END
+		END
 		
 		--Commission
-		SELECT @PlayerComm = ISNULL(PlayerDiscount, 0)
-			, @AgentComm = ISNULL(discount, 0)
-			, @MasterComm = ISNULL(adiscount, 0)
-			, @SuperCommm = ISNULL(CASE 
-					WHEN @SuperID <= 100
-						THEN adiscount
-					ELSE sdiscount
-					END, 0)
-		FROM dbo.custsetting com WITH(NOLOCK)
-		WHERE com.custid = @custid
-			AND com.BetType = @bettype
-			AND com.SportType = @Sporttype
+		IF @Sporttype = 44
+		BEGIN
+			--Group A,B,C,D
+			SELECT @PlayerComm = ISNULL(PlayerDiscount, 0)
+				, @AgentComm = ISNULL(discount, 0)
+				, @MasterComm = ISNULL(adiscount, 0)
+				, @SuperCommm = ISNULL(CASE 
+						WHEN @SuperID <= 100
+							THEN adiscount
+						ELSE sdiscount
+						END, 0)
+			FROM dbo.custsetting com WITH(NOLOCK)
+			WHERE com.custid = @custid
+				AND com.BetType = 1
+				AND com.SportType = 1
+		END
+		ELSE
+		BEGIN
+			SELECT @PlayerComm = ISNULL(PlayerDiscount, 0)
+				, @AgentComm = ISNULL(AgentDiscount, 0)
+				, @MasterComm = ISNULL(MasterDiscount, 0)
+				, @SuperCommm = ISNULL(CASE 
+						WHEN @SuperID <= 100
+							THEN MasterDiscount
+						ELSE SuperDiscount
+						END, 0)
+			FROM dbo.CustDiscount3rd_Member com WITH(NOLOCK)
+			WHERE com.custid = @custid
+				AND com.BetType = @bettype
+				AND com.SportType = @Sporttype
+		END
+		
 		
 		--Bet Limit
 		SELECT  @MinBet = ISNULL(minbet, 0)
@@ -130,8 +182,8 @@ BEGIN
 				ELSE IF @bettype NOT IN (1, 3, 7, 8)
 					SET @MinBet = @MinBet / 3
 
-				IF @stake > @Maxbet
-					OR @stake < @MinBet
+				IF (@stake > @Maxbet
+					OR @stake < @MinBet) AND @stake >= 0
 				BEGIN
 					SET @result = 'stakeproblem'
 				END
@@ -203,7 +255,10 @@ BEGIN
 		--Will remove hard codes when [maxpermatch44] is added in dbo.cutinfo
 		SELECT  @MaxperMatch = 1000000
 		
-			
+		
+		IF @sporttype = 44
+			SELECT @bettype = 3
+				
 		SELECT  
 			@apos = IsNull (apositiontaking,0),   
 			@mpos = IsNull (mpositiontaking,0),  
@@ -215,12 +270,9 @@ BEGIN
 			@MasterComm = IsNull(adiscount,0),  
 			@SuperCommm = IsNull(sdiscount,0)  
 	   FROM dbo.Dep_CustSetting (nolock)  
-	   WHERE custid =@custid   
-		--AND bettype=@CustSettingBettype  
-		AND bettype=@bettype  
-		--AND sporttype=@CustSettingSporttype  
+	   WHERE custid =@custid    
+		AND bettype=@bettype   
 		AND sporttype=@sporttype   
-		--AND islive = @liveindicator
 		
 		IF (
 				@@rowcount = 0
@@ -241,8 +293,8 @@ BEGIN
 				ELSE IF @bettype NOT IN (1, 3, 7, 8)
 					SET @MinBet = @MinBet / 3
 
-				IF @stake > @Maxbet
-					OR @stake < @MinBet
+				IF (@stake > @Maxbet
+					OR @stake < @MinBet) AND @stake >= 0
 				BEGIN
 					SET @result = 'stakeproblem'
 				END
@@ -277,3 +329,18 @@ BEGIN
 			, @DoubleCommLosing AS DoubleCommLosing
 	END
 END
+
+
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [Dot_Member]
+GO 
