@@ -6,7 +6,7 @@
 	@IP			VARCHAR(50)='',	
 	@UserID		INT = 0,
 	@Language	VARCHAR(20) = 'E',		
-	@ErrCode	VARCHAR(300) = '' OUTPUT,
+	@ErrCode	INT = 0 OUTPUT,
 	@ErrMsg		NVARCHAR(4000) = '' OUTPUT	
 AS
 	/*
@@ -21,6 +21,7 @@ AS
 			- 20130301@Johnson: write log on DBTXN if DBLOG failure
 			- 20130516@Lukas: allow PT = 100%
 			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
+			- 20151016@Helen: Data Type Error - [Redmine - 45677] 
 		Parameters Explanation:
 	*/
 SET NOCOUNT ON 

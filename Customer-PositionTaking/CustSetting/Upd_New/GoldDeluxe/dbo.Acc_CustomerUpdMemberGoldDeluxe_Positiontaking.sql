@@ -6,7 +6,7 @@
 	@IP			VARCHAR(50)='',	
 	@UserID		INT = 0,
 	@Language	VARCHAR(20) = 'E',		
-	@ErrCode	VARCHAR(300) = '' OUTPUT,
+	@ErrCode	INT = 0 OUTPUT,
 	@ErrMsg		NVARCHAR(4000) = '' OUTPUT	
 AS
 	/*
@@ -17,6 +17,7 @@ AS
 		
 		Revisions:
 			- 20151007@Elodie: Remove code to check old and new value
+			- 20151016@Helen: Data Type Error - [Redmine - 45677] 
 		Parameters Explanation:
 	*/
 BEGIN
