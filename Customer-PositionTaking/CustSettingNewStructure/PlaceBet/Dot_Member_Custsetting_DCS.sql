@@ -102,7 +102,8 @@ BEGIN
 
  END  
  
-	SELECT @apositiontaking,@mpositiontaking,@spositiontaking,@minbet,@maxbet
+	SELECT @apositiontaking apositiontaking,@mpositiontaking mpositiontaking
+			,@spositiontaking spositiontaking,@minbet minbet,@maxbet maxbet
 END  
 
 GO 
