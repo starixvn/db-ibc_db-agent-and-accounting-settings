@@ -53,6 +53,8 @@ Revisions:
 	- 20150709@DAniel: Enhance code get custsetting data
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
+	- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
+	
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -150,10 +152,12 @@ B: 'B%'
 			(
 				select
 					custid, 
-					max(cs.groupa) as groupa, 
-					max(cs.groupb) as groupb, 
-					max(cs.groupc) as groupc, 
-					max(cs.groupd) as groupd,
+					
+					MAX(case when cs.bettype = 1 and cs.sporttype=1 then cs.groupa else 0 end) as groupa,
+					MAX(case when cs.bettype = 1 and cs.sporttype=1 then cs.groupb else 0 end) as groupb,
+					MAX(case when cs.bettype = 1 and cs.sporttype=1 then cs.groupc else 0 end) as groupc,
+					MAX(case when cs.bettype = 1 and cs.sporttype=1 then cs.groupd else 0 end) as groupd,
+				
 					max(case when cs.bettype = 4 and cs.sporttype=1 then cs.sdiscount else 0 end) as discountcs,
 					max(case when cs.bettype = 5 and cs.sporttype=1 then cs.sdiscount else 0 end) as discount1x2,
 					max(case when cs.bettype = 20 and cs.sporttype = 154 then cs.sdiscount else 0 end) as discountHRFixedOdds			
