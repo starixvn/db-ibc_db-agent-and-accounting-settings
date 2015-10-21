@@ -1,6 +1,6 @@
 USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_AGC_SelSuperSetting]    Script Date: 09/16/2015 04:44:57 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_AGC_SelSuperSetting_xtest]    Script Date: 10/21/2015 9:17:27 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -21,15 +21,24 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @CheckedGroup	VARCHAR(500)	= ''
-			,@DefaultGroup	VARCHAR(20)		= ''
-			,@IsEnabled		BIT				= 0
+	DECLARE @CheckedGroup			VARCHAR(500)	= ''
+			,@DefaultGroup			VARCHAR(20)		= ''
+			,@IsEnabled				BIT				= 0
+			,@Upline				INT
+			,@UplineCheckedGroup	VARCHAR(500)	= ''
 	
 	SELECT @CheckedGroup	=	ISNULL(CheckedGroup, '')
 		,@DefaultGroup		=	ISNULL(DefaultGroup, '')
 		,@IsEnabled			=	ISNULL(IsEnabled, 0)
 	FROM dbo.Dep_SuperSetting_AGCasino WITH (NOLOCK) 
 	WHERE CustID = @CustID
+
+	SELECT TOP 1 @Upline=a.recommend FROM dbo.Customer a WITH (NOLOCK) 
+	WHERE CustID = @CustID
+
+	SELECT @UplineCheckedGroup	=	ISNULL(CheckedGroup, '')	
+	FROM dbo.Dep_SuperSetting_AGCasino WITH (NOLOCK) 
+	WHERE CustID = @Upline
 
 	SELECT 
 		Username AS Username
@@ -41,7 +50,7 @@ BEGIN
 		,fax AS Fax
 		,currency AS Currency
 		,CASE WHEN a.roleid=1
-		THEN (SELECT TOP 1 b.site FROM Customer b WITH (NOLOCK) WHERE b.custid=a.recommend)
+		THEN (SELECT TOP 1 b.site FROM Customer b WITH (NOLOCK) WHERE b.custid=@Upline)
 		ELSE
 		a.site
 		END AS SiteName
@@ -51,7 +60,7 @@ BEGIN
 	SELECT @CheckedGroup AS CheckedGroup
 		,@DefaultGroup AS DefaultGroup
 		,@IsEnabled AS IsEnabled
-
+		,@UplineCheckedGroup AS UplineCheckedGroup
 	EXEC Acc_Dep_CustomerSelSetting
 	 @custid	=@custid,
 	 @SportType =250
