@@ -1,4 +1,4 @@
-﻿ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
 	@custid INT =0,
 	@ExistingCustid INT = 0,
 	@Language VARCHAR(3) = 'E',
@@ -9,52 +9,35 @@ AS
 	Created: Johnson
 	Date: 20131106
 	Task: Apply execrep when insert into custsetting/custsetting3rd
-	DB: DBTXN/CustDB
+	DB: DBCUST/custDB
 	
 	Revisions:
-	
+		- 20140303@Patrick	: Add more sport: 202 for Keno
+		- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486] 
+	     
+	    - 20150610@Daniel: 
+		  + Separate custDB to new server DBCUST: 
+		  + Improve medthod check table existing in subscribers			
+		- 20141217@Dominic: Add logic for new customer setting structure - Redmine Feature #26274			  
+		- 20151016@Elodie: Add new product Colossus Bet and Myanmar Odds [Redmine: #41264, 41470]
 	Parameter's Explanation:
 */ 
 BEGIN
 	SET NOCOUNT ON
-	
-	--DECLARE @IsExistTables tinyint
-	--SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	--WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-	--		AND xtype = 'U'
 
-	--if @IsExistTables <> 6 RETURN
-	
-	DECLARE @IsExistTables tinyint, @IsExistViews tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-			AND xtype = 'U'
-	
-	SELECT @IsExistViews = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame')
-			AND xtype = 'V'
-			
-	if @IsExistTables <> 6 AND @IsExistViews <> 6 RETURN
-	
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN (
-				'CustPTSetting3rd_Agent',
-				'CustPTSetting3rd_Member',
-				'CustPTGroupSetting3rd_Member',
-				'CustSettingMode3rd',
-				'CustBetSetting3rd_Agent',
-				'CustBetSetting3rd_Member',
-				'CustDiscount3rd_Agent',
-				'CustDiscount3rd_Member',
-				'CustProductStatus')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
-	if @IsExistTables <> 9  RETURN
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1
+		  AND dbo.f_CheckRepTable('CustGameType') = 1		 
+		  AND dbo.f_CheckRepTable('AgentCommRate') = 1	
+	   )
+	   RETURN	
 	
 	DECLARE @DCSErrCode INT = 0
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
-	
+		
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -92,11 +75,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 107
+		SELECT @ErrCode = 107
 		RETURN				
 	END
 	
@@ -131,11 +110,7 @@ BEGIN
 	
 	IF @@error <> 0
 	BEGIN 	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end
-				,@ErrCode = 108
+		SELECT @ErrCode = 108
 					
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -164,11 +139,7 @@ BEGIN
 	if @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 109
+		SELECT @ErrCode = 109
 			
 		-- ROLLBACK MANUALLY	
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -199,11 +170,7 @@ BEGIN
 	IF @@error <> 0
 	BEGIN
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 110
+		SELECT @ErrCode = 110
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -214,21 +181,18 @@ BEGIN
 	END
 	
 	--Insert Into P2P Setting
-	INSERT INTO  dbo.P2PGameSetting WITH(ROWLOCK)
-		(custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5)
-	SELECT @custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5	
-	FROM dbo.P2PGameSetting WITH(NOLOCK)
-	WHERE custid=@ExistingCustid	
+	IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1)
+	    INSERT INTO  dbo.P2PGameSetting WITH(ROWLOCK)
+		    (custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5)
+	    SELECT @custId,bettype,StakeLevel1,StakeLevel2,StakeLevel3,StakeLevel4,StakeLevel5	
+	    FROM dbo.P2PGameSetting WITH(NOLOCK)
+	    WHERE custid=@ExistingCustid	
 
 	if @@error <> 0
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 111
+		SELECT @ErrCode = 111
 			
 		-- ROLLBACK MANUALLY
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
@@ -240,28 +204,25 @@ BEGIN
 	END
 
 	--insert P2PGroupComm
-	INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
-           (custId,groupID,sdiscount,adiscount,discount,playerdiscount)
-	SELECT @custid,groupID,sdiscount,adiscount,discount,playerdiscount
-	FROM dbo.P2PGroupComm
-	WHERE custid  = @ExistingCustid  
+	IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) 
+	    INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
+		(custId,groupID,sdiscount,adiscount,discount,playerdiscount)
+	    SELECT @custid,groupID,sdiscount,adiscount,discount,playerdiscount
+	    FROM dbo.P2PGroupComm
+	    WHERE custid  = @ExistingCustid  
 
 	if @@error <> 0
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 112
+		SELECT @ErrCode = 112
 			
 		-- ROLLBACK MANUALLY			
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID
 		
 		RETURN
 	END
@@ -304,19 +265,15 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 113
+		SELECT @ErrCode = 113
 			
 		-- ROLLBACK MANUALLY				
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 
 		RETURN
 	END
@@ -331,26 +288,81 @@ BEGIN
 	BEGIN
 
 		--Error occur
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
-								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
-							end,
-			@ErrCode = 114
+		SELECT @ErrCode = 114
 			
 		-- ROLLBACK MANUALLY		
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
 					
 		RETURN
 	END	
-	
+
+	--Keno, Gold Deluxe
+	INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
+	SELECT	GameTypeID, @CustID, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList
+	FROM	dbo.CustGameType WITH(NOLOCK)
+	WHERE	Custid = @ExistingCustid
+
+	IF @@ERROR <> 0
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 156
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			
+		RETURN
+	END
+	--End Keno
+
+	--Colossus Bet, Myanmar Odds
+	DECLARE @IsMyanmarOdds BIT = 0
+	SET @IsMyanmarOdds = dbo.fn_IsMyanmarOdds (@ExistingCustid)
+
+	IF @IsMyanmarOdds = 1
+		INSERT INTO dbo.AgentCommRate (CustID,SportType,BetType,CommRate) 
+		SELECT @custid, SportType, Bettype, CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid
+	ELSE
+		INSERT INTO dbo.AgentCommRate (CustID,SportType,BetType,CommRate) 
+		SELECT @custid, SportType, Bettype, CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid AND Sporttype <> 1 AND Bettype <> 301 
+
+	IF @@ERROR <> 0
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 157
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE dbo.AgentCommRate WITH(ROWLOCK) WHERE custid = @CustID 
+
+		RETURN
+	END
+
 	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-	EXEC dbo.Acc_CustSetting_DCSSettingCopyInsert
+	EXEC dbo.Acc_DynamicCustomerInfo_02
 			@CustID				= @CustID
 			, @ExistingCustid	= @ExistingCustid
 			, @ErrCode			= @DCSErrCode OUTPUT
@@ -365,10 +377,11 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
-		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
-		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
-
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE dbo.AgentCommRate WITH(ROWLOCK) WHERE custid = @CustID 
 	END
 	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 END

@@ -1,11 +1,4 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_MAg    Script Date: 8/19/2014 12:42:20 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_MAg]
+ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_MAg]
 	@Custid int output
 	,@UserName varchar(30)
 	,@Userpwd varchar(40)
@@ -32,7 +25,7 @@ AS
  Task: Add new agent from existing agents 
 	(#436.2 IRP - AgeSite - Search&Copy feature to feature to facilitate downline creation) 
  
- DB: DBTXN/CustDB
+ DB: DBCUST/CustDB
   
  History:  
 	- 20120323 @Dan: check roleid and the master of existing agent before copying 
@@ -57,6 +50,16 @@ AS
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
 	- 20140619@Johnson: check IP valid to create downlines [RedmineID: #17746]
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
+	- 20140822@Logan:   Add status for E-SPorts [Redmine: #20531]
+	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
+	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486] 
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
+	- 20150714@Patrick: Add max win limit for Gold deluxe
+	- 20150909@Elodie: Remove copying Virtual Rate setting from function Search and Copy [Redmine:#42976]                
+	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+	- 20150904@Helen: commission setting for MO [Redmine #41470]
+	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
+	
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -309,13 +312,14 @@ BEGIN
 		RETURN  
 	END  
 
-	DECLARE @enableUpline bit, @doubleCommLosingUpline bit
+	DECLARE @enableUpline bit, @doubleCommLosingUpline bit, @virtualmultiplier SMALLMONEY
 	Declare @autosuspend BIT,
 			@autosuspend2 BIT
 
 	select @enableUpline = isnull(enabled,0), @doubleCommLosingUpline = DoubleCommLosing,
 		@autosuspend = ISNULL(autosuspend, 0),
-		@autosuspend2 = ISNULL(autosuspend2, 0)
+		@autosuspend2 = ISNULL(autosuspend2, 0),
+		@virtualmultiplier = ISNULL(virtualmultiplier,1)
 	from custinfo with (nolock)
 	where custid = @mrecommend
 	
@@ -392,6 +396,12 @@ BEGIN
 			, DisableHRFixedOdds
 			,maxpermatch154
 			,HideKeno
+			,DisableEsports
+			,HideGoldDeluxe
+			,DisableGoldDeluxe
+			,HideColossusBet
+			,DisableColossusBet
+			,DisableSuperLive
 			)
      SELECT
 			@custid
@@ -408,7 +418,7 @@ BEGIN
 			,@Credit AS Credit
 			,closed
 			,MatchLimit
-			,VirtualMultiplier
+			,@virtualmultiplier
 			,maxpermatch
 			,maxpermatch2
 			,maxpermatch3
@@ -464,6 +474,12 @@ BEGIN
 			,DisableHRFixedOdds
 			,maxpermatch154
 			,HideKeno
+			,DisableEsports
+			,HideGoldDeluxe
+			,DisableGoldDeluxe
+			,HideColossusBet
+			,DisableColossusBet
+			,DisableSuperLive
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         
@@ -479,6 +495,21 @@ BEGIN
 		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID  	    
 		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID  
 
+		RETURN
+	END
+
+	--insert default value from upline
+	INSERT INTO dbo.CustWinLimit(CustId, SportType, BetType, MaxWinLimit, IsAutoReset)
+	SELECT @custid, SportType, BetType, MaxWinLimit, IsAutoReset
+	FROM dbo.CustWinLimit WITH(NOLOCK)
+	WHERE CustId = @ExistingCustid AND SportType = 255 AND BetType = 1701
+	
+	IF @ErrCode <> 0
+	BEGIN
+		SELECT @ErrMsg = CASE @Language WHEN 'E' THEN 'Create customer failed. Please try again.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+						END
+			EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
 		RETURN
 	END
 	
@@ -555,11 +586,55 @@ BEGIN
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID				
 		DELETE FROM custAgent WITH(ROWLOCK) WHERE custId = @CustID  	    
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
-		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
-		
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID		
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE CustID = @CustID
+
 		RETURN	
 	END 
-
+	
+	BEGIN TRY
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMultiplier])
+		SELECT @custid,
+			sporttype,
+			bettype,
+			isLive,
+			virtualMultiplier
+		FROM CustVirtualRate WITH(NOLOCK)
+		WHERE custid = @mrecommend            
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE CustID = @CustID
+							
+		RETURN	
+	END CATCH	
+	
 	SET @endRun=GETDATE()
 	SET @duration=datediff(millisecond,@startRun,@endRun)
 	
@@ -627,15 +702,6 @@ BEGIN
 			
 	SET NOCOUNT OFF
 END
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_MAg] TO [vnteam]

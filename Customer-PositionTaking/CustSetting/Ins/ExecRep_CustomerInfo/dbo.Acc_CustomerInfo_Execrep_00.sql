@@ -1,7 +1,7 @@
 ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@custid INT =0,
 	@srecommend INT = 0,
-	@mrecommend INT = 0,
+	@mrecommend INT = 0,	
 	@recommend INT = 0,
 	@roleid INT,
  
@@ -98,6 +98,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161slivepositiontaking_90 SMALLMONEY = 0,
 	
 	@v162spositiontaking_1101 SMALLMONEY =0,
+	@v255spositiontaking_1701 SMALLMONEY =0,
 
 	@v180spositiontaking_1201 smallmoney = 0,
 	@v181spositiontaking_1231 smallmoney = 0,
@@ -120,6 +121,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202spositiontaking_1507 smallmoney = 0,
 	@v202spositiontaking_1508 smallmoney = 0,
 	@v202spositiontaking_1509 smallmoney = 0,
+	@v202spositiontaking_1514 smallmoney = 0,
 	---
 	---create new master
 	@auto_spositiontaking_1 smallmoney = 0,
@@ -354,6 +356,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161mlivepositiontaking_90 SMALLMONEY =0,
 	
 	@v162mpositiontaking_1101 SMALLMONEY =0,
+	@v255mpositiontaking_1701 SMALLMONEY =0,
 
 	@v180mpositiontaking_1201 smallmoney = 0,
 	@v181mpositiontaking_1231 smallmoney = 0,
@@ -376,6 +379,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202mpositiontaking_1507 smallmoney = 0,
 	@v202mpositiontaking_1508 smallmoney = 0,
 	@v202mpositiontaking_1509 smallmoney = 0,
+	@v202mpositiontaking_1514 smallmoney = 0,
 	---
 	---create agent
 	--Auto Master PT
@@ -599,24 +603,26 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v161alivepositiontaking_90 SMALLMONEY = 0,
 	
 	@v162apositiontaking_1101 SMALLMONEY = 0,
+	@v255apositiontaking_1701 SMALLMONEY = 0,
 
-	@v180apositiontaking_1201 smallmoney = 0,
-	@v181apositiontaking_1231 smallmoney = 0,
-	@v182apositiontaking_1231 smallmoney = 0,
-	@v183apositiontaking_1231 smallmoney = 0,
-	@v184apositiontaking_1231 smallmoney = 0,
-	@v185apositiontaking_1231 smallmoney = 0,
-	@v186apositiontaking_1220 smallmoney = 0,
-	
-	@v202apositiontaking_1501 smallmoney = 0,
-	@v202apositiontaking_1511 smallmoney = 0,
-	@v202apositiontaking_1503 smallmoney = 0,
-	@v202apositiontaking_1504 smallmoney = 0,
-	@v202apositiontaking_1505 smallmoney = 0,
-	@v202apositiontaking_1513 smallmoney = 0,
-	@v202apositiontaking_1507 smallmoney = 0,
-	@v202apositiontaking_1508 smallmoney = 0,
-	@v202apositiontaking_1509 smallmoney = 0,
+	@v180apositiontaking_1201 SMALLMONEY = 0,
+	@v181apositiontaking_1231 SMALLMONEY = 0,
+	@v182apositiontaking_1231 SMALLMONEY = 0,
+	@v183apositiontaking_1231 SMALLMONEY = 0,
+	@v184apositiontaking_1231 SMALLMONEY = 0,
+	@v185apositiontaking_1231 SMALLMONEY = 0,
+	@v186apositiontaking_1220 SMALLMONEY = 0,
+							  
+	@v202apositiontaking_1501 SMALLMONEY = 0,
+	@v202apositiontaking_1511 SMALLMONEY = 0,
+	@v202apositiontaking_1503 SMALLMONEY = 0,
+	@v202apositiontaking_1504 SMALLMONEY = 0,
+	@v202apositiontaking_1505 SMALLMONEY = 0,
+	@v202apositiontaking_1513 SMALLMONEY = 0,
+	@v202apositiontaking_1507 SMALLMONEY = 0,
+	@v202apositiontaking_1508 SMALLMONEY = 0,
+	@v202apositiontaking_1509 SMALLMONEY = 0,
+	@v202apositiontaking_1514 SMALLMONEY = 0,
 	
 	@MinBet MONEY = 0,
 	@MaxBet MONEY = 0,	
@@ -733,6 +739,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202discount_1507 decimal(9,8) = 0,
 	@v202discount_1508 decimal(9,8) = 0,
 	@v202discount_1509 decimal(9,8) = 0,
+	@v202discount_1514 decimal(9,8) = 0,
+	
 	@v202adiscount_1501 decimal(9,8) = 0,
 	@v202adiscount_1511 decimal(9,8) = 0,
 	@v202adiscount_1503 decimal(9,8) = 0,
@@ -742,6 +750,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202adiscount_1507 decimal(9,8) = 0,
 	@v202adiscount_1508 decimal(9,8) = 0,
 	@v202adiscount_1509 decimal(9,8) = 0,
+	@v202adiscount_1514 decimal(9,8) = 0,
+	
 	@v202sdiscount_1501 decimal(9,8) = 0,
 	@v202sdiscount_1511 decimal(9,8) = 0,
 	@v202sdiscount_1503 decimal(9,8) = 0,
@@ -751,16 +761,26 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	@v202sdiscount_1507 decimal(9,8) = 0,
 	@v202sdiscount_1508 decimal(9,8) = 0,
 	@v202sdiscount_1509 decimal(9,8) = 0,
+	@v202sdiscount_1514 decimal(9,8) = 0,
 
 	--v162
 	@v162discount_1101 decimal(9,8) = 0,
 	@v162adiscount_1101 decimal(9,8) = 0,
 	@v162sdiscount_1101 decimal(9,8) = 0,
 	
+	--v255
+	@v255discount_1701 decimal(9,8) = 0,
+	@v255adiscount_1701 decimal(9,8) = 0,
+	@v255sdiscount_1701 decimal(9,8) = 0,
+
 	--v154
 	@discountHRFixedOdds decimal(9,8) = 0,
 	@adiscountHRFixedOdds decimal(9,8) = 0,
 	@sdiscountHRFixedOdds decimal(9,8) = 0,
+	
+	-- Myanma Odds
+	@discountMyanmarOdds DECIMAL(9,8) = 0,
+	@IsMyanmarOdds BIT = 0,
 	
 	@UplineSyncLiveCasino BIT = 0,
 	
@@ -771,51 +791,85 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 		Created: Johnson
 		Date: 20131106
 		Task: Apply execrep when insert into custsetting/custsetting3rd
-		DB: DBTXN/CustDB
+		DB: DBCUST/CustDB
 		
 		Revisions:
 			- 20131120@Kathy: Add Virtual Greyhounds, Virtual Motor Racing (182, 184) [Redmine:#7234]. Refer to Sps:
 				+ Acc_CustomerInsMemb
-				+ Acc_CustomerInsMember_SAg
-				+ Acc_CustomerInsMember_MAg
+				+ Acc_CustomerInsMember_SAg_xtest
+				+ Acc_CustomerInsMember_MAg_xtest
 				+ Acc_CustomerInsMember_Ag
 			- 20140303@Patrick	: Add more sport:202 for Keno
 			- 20140331@Sophia: remove Fi sporttype = 201
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]
 			- 20140318@Elodie: Add CustSettingGame for Keno [Redmine:#13156]
 			- 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
-			- 20141217@Dominic: Add logic for new customer setting structure - Redmine Feature #26274
+            - 20141029@Logan:   Check constraint for customer Keno bet setting:  [Redmine: #25165]
+                                + MinBet = MAX(AllUpline.MinBet, Global.MinBet)
+                                + MaxBet & MaxPerMatch = MIN(AllUpline)
+                                + MinBet = MaxBet = MaxPerMatch = 0 (unlimit) if Direct Upline is also unlimit
+			- 20141204@Johnson: Add country Korea[bettype = 1514] for Keno [Redmine: #26647]                                
+			- 20150422@Elodie: Add Gold Deluxe product [Redmine:#34486]			
+			- 20150603@Daniel: 
+				+ Separate custDB to new server DBCUST: 
+				+ Improve medthod check table existing in subscribers	
+			- 20150715@Viet: remove P2P tables from replication check	
+			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]
+			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+			- 20150904@Helen: commission setting for MO [Redmine #41470]
+			- 20151015@Dominic: Add logic for new customer setting structure [Redmine #26274]
+			  	
 		Parameter's Explanation:
+		
 	*/
 BEGIN
-SET NOCOUNT ON
-	DECLARE @IsExistTables tinyint
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN ('CustSetting', 'CustOverride','CustSetting3rd', 'CustOverride3rd', 'CustSettingGame','CustOverrideGame','CustGameType')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
+    SET NOCOUNT ON
+			
+     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride') = 1 
+		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
+		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
+		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1 
+		  AND dbo.f_CheckRepTable('CustGameType') = 1
+		  AND dbo.f_CheckRepTable('ProductGlobalSetting') = 1 
+		  AND dbo.f_CheckRepTable('ProductBetSetting') = 1 
+		  AND dbo.f_CheckRepTable('AgentCommRate') = 1
+		 AND dbo.f_CheckRepTable('CustCommRate') = 1
+		  --AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
+		  --AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
+	   )
+	   RETURN
 
-	if @IsExistTables <> 7 RETURN
-	
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-	SELECT @IsExistTables = COUNT(*) FROM dbo.sysobjects
-	WHERE	name IN (
-				'CustPTSetting3rd_Agent',
-				'CustPTSetting3rd_Member',
-				'CustPTGroupSetting3rd_Member',
-				'CustSettingMode3rd',
-				'CustBetSetting3rd_Agent',
-				'CustBetSetting3rd_Member',
-				'CustDiscount3rd_Agent',
-				'CustDiscount3rd_Member',
-				'CustProductStatus')
-			AND xtype = 'U'
-			AND @@SERVERNAME not in ('DBBingoAdmin','DBLVCasino','DBBingo01','DBCasinoAdmin','DBCasinoQA1','DBCasinoQA2','LiveCasinoAdminDB')
-	if @IsExistTables <> 9  RETURN
-	
 	DECLARE @DCSErrCode INT = 0
-	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
-	
+    DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
+    DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
+    DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
+    
+    IF(dbo.f_CheckRepTable('GameType') = 1)
+	   INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+	   SELECT GameTypeID, IBCBettypeID FROM GameType WITH (NOLOCK)
+    ELSE
+	   BEGIN TRY		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	   END TRY
+	   BEGIN CATCH		
+		  INSERT INTO @tmp_GameType (GameTypeID, IBCBettypeID)
+		  SELECT GameTypeID, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	   END CATCH
+   
+	   
+DECLARE @currency INT
+          , @super    INT
+          , @master   INT
+
+    SELECT @currency = currency
+         , @super = srecommend
+         , @master = mrecommend
+      FROM dbo.custInfo WITH(NOLOCK)
+    WHERE custid = @custid		
+
 	IF @roleid = 4
 	BEGIN					
 		INSERT INTO [dbo].[custsetting]([custId], [bettype], [sporttype], [apositiontaking], [mpositiontaking], [spositiontaking], [alivepositiontaking], [mlivepositiontaking], [slivepositiontaking], [playerdiscount], [discount], [adiscount], [sdiscount], [groupa], [groupb], [groupc], [groupd], [groupe], [groupf], [Minbet], [Maxbet], autopositiontaking, autolivepositiontaking, isautopositiontaking, isautolivepositiontaking ,[autompositiontaking],[autolivempositiontaking],[isautompositiontaking],[isautolivempositiontaking])
@@ -1100,7 +1154,7 @@ SET NOCOUNT ON
 			RETURN
 		END           
 		
-		--Insert live casino, Keno setting
+		--Insert live casino, Keno, GoldDeluxe setting
 		INSERT INTO CustSettingGame([CustID]
 				   ,[Bettype]
 				   ,[Sporttype]
@@ -1125,6 +1179,8 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid , 1507, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1507
 		UNION ALL SELECT @custid , 1508, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1508
 		UNION ALL SELECT @custid , 1509, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1509
+		UNION ALL SELECT @custid , 1514, 202, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 202 and Bettype = 1514
+		UNION ALL SELECT @custid , 1701, 255, MaxPositiontaking, MaxPositiontaking, MaxPositiontaking, 0, 0, 0, 0, 0, 0 ,0 ,0 FROM ProductGlobalSetting WITH (NOLOCK) WHERE Sporttype = 255 and Bettype = 1701 AND IsDep = 0
 		
 		IF @@ERROR <> 0
 		BEGIN
@@ -1158,6 +1214,8 @@ SET NOCOUNT ON
 		UNION ALL SELECT @custid, 1507, 202, 0
 		UNION ALL SELECT @custid, 1508, 202, 0
 		UNION ALL SELECT @custid, 1509, 202, 0
+		UNION ALL SELECT @custid, 1514, 202, 0
+		UNION ALL SELECT @custid, 1701, 255, 0
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -1175,13 +1233,20 @@ SET NOCOUNT ON
 			DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 			
 			RETURN
-		END
+		END		
+
+		DECLARE @StakeLevelList_1701 VARCHAR(50), @StakeLevelList_1702 VARCHAR(50)
+		SELECT @StakeLevelList_1701 = '', @StakeLevelList_1702 = ''
+		SELECT @StakeLevelList_1701 = @StakeLevelList_1701 + CASE WHEN @StakeLevelList_1701 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1701 AND ExchangeId = @currency
+		SELECT @StakeLevelList_1702 = @StakeLevelList_1702 + CASE WHEN @StakeLevelList_1702 = '' THEN '' ELSE ',' END + CAST(StakeLevelID AS VARCHAR(5)) FROM StakeLevel WHERE GameTypeID = 1702 AND ExchangeId = @currency
 
 		--Keno
-		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT	GameTypeID, @Custid, 0, 0, 0, 1
-		FROM	bodb02.dbo.GameType WITH(NOLOCK)
+		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled, StakeLevelList)
+		SELECT	GameTypeID, @Custid, 0, 0, 0, 1, CAST(0 AS VARCHAR(100))
+		FROM	@tmp_GameType
 		WHERE	IBCBetTypeID BETWEEN 1501 AND 1599
+		UNION ALL SELECT 1701, @custid, 0, 0, 0, 0, @StakeLevelList_1701
+		UNION ALL SELECT 1702, @custid, 0, 0, 0, 0, @StakeLevelList_1702
 
 		IF @@ERROR <> 0
 		BEGIN
@@ -1203,35 +1268,6 @@ SET NOCOUNT ON
 		END
 
 		--end keno
-		
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-		EXEC dbo.Acc_CustSetting_DCSSettingInsert
-				@CustID				= @CustID
-				, @SuperID			= @srecommend
-				, @MasterID			= @mrecommend
-				, @AgentID			= @recommend
-				, @RoleID			= @roleid
-				, @ProductID		= NULL
-				, @ErrCode			= @DCSErrCode OUTPUT
-				
-		IF @DCSErrCode <> 0 
-		BEGIN
-			--Error Occurs
-			SELECT @ErrCode = 911
-			
-			-- ROLLBACK MANUALLY
-			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
-			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
-
-		END
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	END--end roleid = 4
 	ELSE IF @roleid = 3
 	BEGIN			
@@ -1330,7 +1366,6 @@ SET NOCOUNT ON
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 20, 154, ISNULL(@v154spositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@auto_v154spositiontaking_20,0), ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, ISNULL(@minbetv154,0), ISNULL(@maxbetv154,0), 0, 0, ISNULL(@isauto_v154spositiontaking_20,0), 0, 0, 0, 0, 0
-
 
 		if @@Error <> 0
 		BEGIN
@@ -1620,6 +1655,11 @@ SET NOCOUNT ON
 			SELECT @custid , bettype, 202, 0, 0, spositiontaking, 0, 0, 0,  0, 0, 0 ,0 ,0       
 			FROM CustSettingGame cs WITH(NOLOCK)
 			WHERE cs.custid = @srecommend and cs.sporttype = 202 AND cs.bettype BETWEEN 1501 AND 1599
+			UNION ALL 
+			SELECT @custid , bettype, sporttype, 0, 0, spositiontaking, 0, 0, 0,  0, 0, 0 ,0 ,0       
+			FROM CustSettingGame cs WITH(NOLOCK)
+			WHERE cs.custid = @srecommend and cs.sporttype = 255 AND cs.bettype = 1701
+
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
@@ -1647,6 +1687,10 @@ SET NOCOUNT ON
 		SELECT @custid, bettype, 202, 0 
 		FROM CustOverrideGame co WITH(NOLOCK)
 		WHERE co.custid = @srecommend and co.sporttype = 202 AND co.bettype BETWEEN 1501 AND 1599	
+		UNION ALL 
+		SELECT @custid, bettype, sporttype, 0 
+		FROM CustOverrideGame co WITH(NOLOCK)
+		WHERE co.custid = @srecommend and co.sporttype = 255 AND co.bettype = 1701
 	
 
 		IF @@ERROR <> 0
@@ -1667,12 +1711,41 @@ SET NOCOUNT ON
 			RETURN
 		END
 		
-		--Keno: copy all bet setting from super to master
-		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-		WHERE custid = @srecommend
-		
+		--Keno: Master.MinBet = MAX(Super.MinBet, Global.MinBet)
+        --      Other values will be copy from super
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT cg.GameTypeID
+             , @CustID
+             , cg.StakeLevelList
+             , CASE
+                 WHEN cg.MinBet = 0 AND cg.MaxBet = 0 AND cg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (cg.MinBet)
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
+             , cg.MaxBet
+             , cg.MaxPerGameType
+             , cg.IsDisabled
+		FROM dbo.CustGameType cg WITH(NOLOCK)
+			INNER JOIN @tmp_GameType gt ON cg.GameTypeID = gt.GameTypeID
+			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+		WHERE cg.CustID = @srecommend
+           AND pbs.Currency = @currency
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
+		UNION ALL 
+		SELECT GameTypeID, @custid, StakeLevelList, 0, 0, 0, 0 FROM CustGameType WITH (NOLOCK) WHERE CustID = @srecommend AND GameTypeID IN (1701,1702)
+
 		IF @@ERROR <> 0
 		BEGIN
 			--Error Occurs
@@ -1692,34 +1765,7 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-		EXEC dbo.Acc_CustSetting_DCSSettingInsert
-				@CustID				= @CustID
-				, @SuperID			= @srecommend
-				, @MasterID			= @mrecommend
-				, @AgentID			= @recommend
-				, @RoleID			= @roleid
-				, @ProductID		= NULL
-				, @ErrCode			= @DCSErrCode OUTPUT
-				
-		IF @DCSErrCode <> 0 
-		BEGIN
-			--Error Occurs
-			SET @ErrCode = 911
-			
-			-- ROLLBACK MANUALLY
-			DELETE dbo.CustSetting with (ROWLOCK) where custid = @custid
-			DELETE dbo.CustSetting3rd with (ROWLOCK) where custid = @custid
-			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
-			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
-			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid
-
-		END
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/      
+		     
 	END--end roleid =3
 	ELSE IF @roleid = 2
 	BEGIN				
@@ -1897,9 +1943,7 @@ SET NOCOUNT ON
 		UNION ALL -- v185 Virtual Cycling
 		select @custid, 1231, 185, 0, ISNULL(@min_v185mpositiontaking_1231,0), 0, 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL -- v186 virtual tennis
-		select @custid, 1220, 186, 0, ISNULL(@min_v186mpositiontaking_1220,0), 0, 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		
-		
+		select @custid, 1220, 186, 0, ISNULL(@min_v186mpositiontaking_1220,0), 0, 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0		
 
 		if @@error <> 0
 		BEGIN
@@ -2047,7 +2091,6 @@ SET NOCOUNT ON
 		UNION ALL 
 		SELECT @custid  , 1002 , stakeLevel1 , 0 , 0 , 0 , 0 FROM dbo.P2PGAMESETTING WITH(ROWLOCK) WHERE custid = @mrecommend AND bettype = 1002
 
-
 		if @@error <> 0
 		BEGIN
 
@@ -2099,6 +2142,10 @@ SET NOCOUNT ON
 		SELECT @custid , bettype, 202, 0, mpositiontaking, 0, 0, 0, 0,  0, 0, 0 ,0 ,0       
 		FROM CustSettingGame cs WITH(NOLOCK)
 		WHERE cs.custid = @mrecommend and cs.sporttype = 202 AND cs.bettype BETWEEN 1501 AND 1599
+		UNION ALL 
+		SELECT @custid , bettype, sporttype, 0, mpositiontaking, 0, 0, 0, 0,  0, 0, 0 ,0 ,0       
+		FROM CustSettingGame cs WITH(NOLOCK)
+		WHERE cs.custid = @mrecommend and cs.sporttype = 255 AND cs.bettype = 1701
 
 		if @@error <> 0
 		BEGIN
@@ -2125,6 +2172,10 @@ SET NOCOUNT ON
 		SELECT @custid, bettype, 202, 0
 		FROM Custoverridegame WITH (NOLOCK) 
 		WHERE custid = @mrecommend AND Sporttype = 202 AND Bettype BETWEEN 1501 and 1599
+		UNION ALL 
+		SELECT @custid, bettype, Sporttype, 0
+		FROM Custoverridegame WITH (NOLOCK) 
+		WHERE custid = @mrecommend AND Sporttype = 255 AND Bettype =1701
 		
 		if @@error <> 0
 		BEGIN
@@ -2145,11 +2196,62 @@ SET NOCOUNT ON
 			RETURN
 		END
 
-		--Keno: copy gametype from master to agent
-		INSERT INTO dbo.CustGameType (GameTypeID, CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @CustID, StakeLevelList, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 			
-		WHERE custid = @mrecommend
+		--Keno: Agent.MinBet = MAX(Master.MinBet, Super.MinBet, Global.MinBet)
+        --      Agent.MaxBet = MIN(Master.MaxBet, Super.MaxBet)
+        --      Member.MaxPerMatch = MIN(Master.MaxPerMatch, Super.MaxPerMatch)
+        --      Upline with unlimit value(MinBet = MaxBet = MaxPerMatch = 0) will be ignore when comparing
+        --      Other values will be copy from master
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT mcg.GameTypeID
+             , @CustID
+             , mcg.StakeLevelList
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (mcg.MinBet)
+                                    , (ISNULL(scg.MinBet, 0))
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxBet)
+                         FROM (VALUES (mcg.MaxBet)
+                                    , (ISNULL(scg.MaxBet, mcg.MaxBet))
+                              ) AS UplineMaxBet(MaxBet)
+                      )
+               END
+             , CASE
+                 WHEN mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxPerMatch)
+                         FROM (VALUES (mcg.MaxPerGameType)
+                                    , (ISNULL(scg.MaxPerGameType, mcg.MaxPerGameType))
+                              ) AS UplineMaxPerMatch(MaxPerMatch)
+                      )
+               END
+             , mcg.IsDisabled
+		  FROM dbo.CustGameType mcg WITH(NOLOCK)
+    INNER JOIN @tmp_GameType gt ON mcg.GameTypeID = gt.GameTypeID
+    INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+     LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON scg.GameTypeID = mcg.GameTypeID
+                                                AND scg.CustID = @super
+                                                AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
+		 WHERE mcg.CustID = @mrecommend
+           AND pbs.Currency = @currency
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599
+		
+		UNION ALL 
+		SELECT GameTypeID, @custid, StakeLevelList, 0, 0, 0, 0 FROM CustGameType WITH (NOLOCK) WHERE CustID = @mrecommend AND GameTypeID IN (1701,1702)
 
 		IF @@error <> 0
 		BEGIN
@@ -2170,34 +2272,7 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-		EXEC dbo.Acc_CustSetting_DCSSettingInsert
-				@CustID				= @CustID
-				, @SuperID			= @srecommend
-				, @MasterID			= @mrecommend
-				, @AgentID			= @recommend
-				, @RoleID			= @roleid
-				, @ProductID		= NULL
-				, @ErrCode			= @DCSErrCode OUTPUT
-				
-		IF @DCSErrCode <> 0 
-		BEGIN
-			--Error occur
-			SET @ErrCode = 911
-				
-			-- ROLLBACK MANUALLY
-			DELETE dbo.custsetting with (ROWLOCK) where custid = @custid
-			DELETE dbo.custsetting3rd with (ROWLOCK) where custid = @custid
-			DELETE dbo.custoverride with (ROWLOCK) where custid = @custid
-			DELETE dbo.CustOverride3rd with (ROWLOCK) where custid = @custid
-			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid	
-			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.Custoverridegame WITH (ROWLOCK) WHERE custId = @custid
-			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid
 
-		END
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/ 
 	END--end roleid =2
 	ELSE IF @roleid = 1
 	BEGIN			
@@ -2375,8 +2450,6 @@ SET NOCOUNT ON
 		select @custid, 1231, 185, ISNULL(@v185apositiontaking_1231,0), ISNULL(@v185mpositiontaking_1231,0), ISNULL(@v185spositiontaking_1231,0), 0, 0, 0, 0, ISNULL(@minbetv185,0), ISNULL(@maxbetv185,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 1220, 186, ISNULL(@v186apositiontaking_1220,0), ISNULL(@v186mpositiontaking_1220,0), ISNULL(@v186spositiontaking_1220,0), 0, 0, 0, 0, ISNULL(@minbetv186,0), ISNULL(@maxbetv186,0), 0, 0,0,0,0,0,0, 0, 0, 0, 0
-
-
 		
 		if @@Error <> 0
 		BEGIN
@@ -2413,6 +2486,7 @@ SET NOCOUNT ON
 
 
 		INSERT INTO dbo.P2PGroupComm WITH(ROWLOCK)
+
 				   (custId,groupID,sdiscount,adiscount,discount,playerdiscount)
 		SELECT @custid custId
 			,P2PGroupComm.groupID
@@ -2474,8 +2548,13 @@ SET NOCOUNT ON
 		SELECT @custid, 1508, 202, ISNULL(@v202apositiontaking_1508,0), ISNULL(@v202mpositiontaking_1508,0), ISNULL(@v202spositiontaking_1508,0), 0, ISNULL(@v202discount_1508,0), ISNULL(@v202adiscount_1508,0), ISNULL(@v202sdiscount_1508,0), 0, 0, 0, 0
 		UNION ALL
 		SELECT @custid, 1509, 202, ISNULL(@v202apositiontaking_1509,0), ISNULL(@v202mpositiontaking_1509,0), ISNULL(@v202spositiontaking_1509,0), 0, ISNULL(@v202discount_1509,0), ISNULL(@v202adiscount_1509,0), ISNULL(@v202sdiscount_1509,0), 0, 0, 0, 0
-				
-				
+		UNION ALL
+		SELECT @custid, 1514, 202, ISNULL(@v202apositiontaking_1514,0), ISNULL(@v202mpositiontaking_1514,0), ISNULL(@v202spositiontaking_1514,0), 0, ISNULL(@v202discount_1514,0), ISNULL(@v202adiscount_1514,0), ISNULL(@v202sdiscount_1514,0), 0, 0, 0, 0
+		UNION ALL
+		SELECT @custid, 1701, 255, ISNULL(@v255apositiontaking_1701,0), ISNULL(@v255mpositiontaking_1701,0), ISNULL(@v255spositiontaking_1701,0), 0, ISNULL(@v255discount_1701,0), ISNULL(@v255adiscount_1701,0), ISNULL(@v255sdiscount_1701,0), 0, 0, 0, 0
+		FROM CustSettingGame 
+		WHERE custid = @recommend AND sporttype = 255 AND bettype = 1701
+								
 		if @@error <> 0
 		BEGIN
 
@@ -2490,15 +2569,70 @@ SET NOCOUNT ON
 			DELETE custsettingGame WITH (ROWLOCK) WHERE custId  =@custid
 				
 			RETURN
-		END
+		END	
 
-		--Keno: copy CustGameType from Agent to Member
-		INSERT INTO dbo.CustGameType(GameTypeID, Custid, MinBet, MaxBet, MaxPerGameType, IsDisabled)
-		SELECT cg.GameTypeID, @Custid, MinBet, MaxBet, MaxPerGameType, cg.IsDisabled
-		FROM dbo.CustGameType cg WITH(NOLOCK) 
-			INNER JOIN bodb02.dbo.GameType gt WITH (NOLOCK) ON cg.GameTypeID = gt.GameTypeID
-		WHERE custid = @recommend and gt.IBCBetTypeID BETWEEN 1501 AND 1599
-
+		--Keno: Member.MinBet = MAX(Agent.MinBet, Master.MinBet, Super.MinBet, Global.MinBet)
+        --      Member.MaxBet = MIN(Agent.MaxBet, Master.MaxBet, Super.MaxBet)
+        --      Member.MaxPerMatch = MIN(Agent.MaxPerMatch, Master.MaxPerMatch, Super.MaxPerMatch)
+        --      Upline with unlimit value(MinBet = MaxBet = MaxPerMatch = 0) will be ignore when comparing
+        --      Other values will be copied from Agent
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )
+		SELECT acg.GameTypeID
+             , @CustID
+             , acg.StakeLevelList
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MAX(MinBet)
+                         FROM (VALUES (acg.MinBet)
+                                    , (ISNULL(mcg.MinBet, 0))
+                                    , (ISNULL(scg.MinBet, 0))
+                                    , (pbs.MinBet)
+                              ) AS UplineMinBet(MinBet)
+                      )
+               END
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxBet)
+                         FROM (VALUES (acg.MaxBet)
+                                    , (ISNULL(mcg.MaxBet, 0))
+                                    , (ISNULL(scg.MaxBet, 0))
+                              ) AS UplineMaxBet(MaxBet)
+                        WHERE MaxBet <> 0
+                      )
+               END
+             , CASE
+                 WHEN acg.MinBet = 0 AND acg.MaxBet = 0 AND acg.MaxPerGameType = 0 THEN 0
+                 ELSE (SELECT MIN(MaxPerMatch)
+                         FROM (VALUES (acg.MaxPerGameType)
+                                    , (ISNULL(mcg.MaxPerGameType, 0))
+                                    , (ISNULL(scg.MaxPerGameType, 0))
+                              ) AS UplineMaxPerMatch(MaxPerMatch)
+                        WHERE MaxPerMatch <> 0
+                      )
+               END
+             , acg.IsDisabled
+		  FROM dbo.CustGameType acg WITH(NOLOCK)
+			INNER JOIN @tmp_GameType gt ON acg.GameTypeID = gt.GameTypeID
+			INNER JOIN dbo.ProductBetSetting pbs WITH(NOLOCK) ON gt.IBCBetTypeID = pbs.Bettype
+			LEFT JOIN dbo.CustGameType scg WITH(NOLOCK) ON acg.GameTypeID = scg.GameTypeID
+														AND scg.CustID = @super
+														AND NOT (scg.MinBet = 0 AND scg.MaxBet = 0 AND scg.MaxPerGameType = 0)
+			LEFT JOIN dbo.CustGameType mcg WITH(NOLOCK) ON acg.GameTypeID = mcg.GameTypeID
+														AND mcg.CustID = @master
+														AND NOT (mcg.MinBet = 0 AND mcg.MaxBet = 0 AND mcg.MaxPerGameType = 0)
+		 WHERE pbs.Currency = @currency
+           AND acg.CustID = @recommend
+           AND gt.IBCBetTypeID BETWEEN 1501 AND 1599		
+		
 		IF @@error <> 0
 		BEGIN
 			--Error occur
@@ -2515,20 +2649,36 @@ SET NOCOUNT ON
 			RETURN
 		END
 		--End Keno
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-		EXEC dbo.Acc_CustSetting_DCSSettingInsert
-				@CustID				= @CustID
-				, @SuperID			= @srecommend
-				, @MasterID			= @mrecommend
-				, @AgentID			= @recommend
-				, @RoleID			= @roleid
-				, @ProductID		= NULL
-				, @ErrCode			= @DCSErrCode OUTPUT
-				
-		IF @DCSErrCode <> 0 
+
+		--Gold Deluxe
+		DECLARE @StakeLevelListAg_1701 VARCHAR(50), @StakeLevelListAg_1702 VARCHAR(50), @StakeLevelID_1701 VARCHAR(50),  @StakeLevelID_1702 VARCHAR(50)
+		SELECT @StakeLevelListAg_1701 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1701
+		SELECT @StakeLevelListAg_1702 = StakeLevelList FROM CustGameType WITH (NOLOCK) WHERE custid = @recommend AND GameTypeID = 1702
+
+		IF @StakeLevelListAg_1701 IS NOT NULL AND @StakeLevelListAg_1702 IS NOT NULL
+		BEGIN
+			SELECT TOP 1 @StakeLevelID_1701 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1701,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+			SELECT TOP 1 @StakeLevelID_1702 = StakeLevelID FROM dbo.strSplit(@StakeLevelListAg_1702,',') a INNER JOIN StakeLevel s WITH (NOLOCK) ON s.StakeLevelID = a.val ORDER BY MinStake, MaxStake ASC
+		END
+
+		INSERT INTO dbo.CustGameType
+        (
+            GameTypeID
+          , CustID
+          , StakeLevelList
+          , MinBet
+          , MaxBet
+          , MaxPerGameType
+          , IsDisabled
+        )		
+		SELECT 1701, @custid, ISNULL(@StakeLevelID_1701,''), 0, 0, 0, 0
+		UNION ALL 
+		SELECT 1702, @custid, ISNULL(@StakeLevelID_1702,''), 0, 0, 0, 0
+		
+		IF @@error <> 0
 		BEGIN
 			--Error occur
-			SET @ErrCode = 911
+			SET @ErrCode = 156
 				
 			-- ROLLBACK MANUALLY
 			Delete dbo.custsetting with (ROWLOCK) where custid = @custid
@@ -2537,7 +2687,186 @@ SET NOCOUNT ON
 			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
 			DELETE dbo.custsettingGame WITH (ROWLOCK) WHERE custId = @custid
 			DELETE dbo.CustGameType WITH (ROWLOCK) WHERE custId = @custid			
+				
+			RETURN
 		END
-		/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
+		--End Gold Deluxe
 	END
+	
+	-- For colossus Bet and Myanma Odds
+	DECLARE @DirectParentAgent INT 
+	select @roleid as roleid
+	
+	IF @roleid IN (2,3,4)
+	BEGIN
+		
+		IF @roleid = 2 
+			SET @DirectParentAgent = @mrecommend 
+		IF @roleid = 3 
+			SET @DirectParentAgent = @srecommend 
+		-- For Colossus Bet
+		IF @roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 204)
+		BEGIN
+			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+			SELECT @custid,204,18001,0
+			UNION ALL 
+			SELECT @custid,204,18002,0
+		END	
+		
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			
+			RETURN
+		END
+		-- For Myanma Odds
+		IF (@IsMyanmarOdds = 1 AND (@roleid = 4 OR EXISTS (SELECT 1 FROM AgentCommRate WITH (NOLOCK) WHERE CustID = @DirectParentAgent AND SportType = 1 AND Bettype = 301)))
+		BEGIN
+			INSERT INTO dbo.AgentCommRate WITH (ROWLOCK) (CustID,SportType,BetType,CommRate) 
+			SELECT @custid,1,301,@discountMyanmarOdds
+		END	
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid
+			
+			RETURN
+		END
+	
+	END
+	IF @roleid = 1
+	BEGIN
+		-- For Colossus Bet
+		SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
+		INTO #CustCommRate_temp
+		FROM AgentCommRate ac WITH (ROWLOCK)
+			JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
+		WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 204 
+		
+		INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
+		SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],0
+		FROM #CustCommRate_temp
+		PIVOT(
+			SUM(CommRate)
+			FOR roleID IN ([2],[3],[4])
+		) AS T
+		
+			
+		IF @@ERROR <> 0
+		BEGIN
+			--Error Occurs
+			SELECT @ErrCode=116
+			
+			-- ROLLBACK MANUALLY
+			DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+			DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+			DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+			DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+			DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+			
+			RETURN
+		END
+		IF (@IsMyanmarOdds = 1)
+		BEGIN
+		
+			SELECT @CustID AS CustID,AC.SportType,AC.BetType,AC.CommRate,CI.roleid 
+			INTO #CustCommRate_MOtemp
+			FROM AgentCommRate ac WITH (ROWLOCK)
+				JOIN custInfo ci WITH (ROWLOCK) ON ac.CustID = ci.custid
+			WHERE ac.CustID IN (@srecommend,@mrecommend,@recommend) AND ac.Sporttype = 1 AND ac.Bettype = 301
+			
+			INSERT INTO CustCommRate (CustID,SportType,BetType,sdiscount,adiscount,discount,playerdiscount)
+			SELECT CustID,SportType,BetType,T.[4],T.[3],T.[2],@discountMyanmarOdds
+			FROM #CustCommRate_MOtemp
+			PIVOT(
+				SUM(CommRate)
+				FOR roleID IN ([2],[3],[4])
+			) AS T
+			
+				
+			IF @@ERROR <> 0
+			BEGIN
+				--Error Occurs
+				SELECT @ErrCode=116
+				
+				-- ROLLBACK MANUALLY
+				DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+				DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+				DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+				DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+				
+				RETURN
+			END
+		END			
+	END
+	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	EXEC dbo.Acc_DynamicCustomerInfo_00
+			@CustID				= @CustID
+			, @SuperID			= @srecommend
+			, @MasterID			= @mrecommend
+			, @AgentID			= @recommend
+			, @RoleID			= @roleid
+			, @ProductID		= NULL
+			, @ErrCode			= @DCSErrCode OUTPUT
+				
+	IF @DCSErrCode <> 0 
+	BEGIN
+		--Error occur
+		SET @ErrCode = 911
+				
+		-- ROLLBACK MANUALLY
+		DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+		DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid		
+		DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
+	
 END
+

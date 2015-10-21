@@ -1,43 +1,46 @@
-
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerInsMember_CloneSetting_Com    Script Date: 8/19/2014 12:42:20 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
-	@Custid int output
-	,@UserName varchar(30)
-	,@Userpwd varchar(40)
-	,@FirstName nvarchar(50)
-	,@LastName nvarchar(50)
-	,@Phone nvarchar(50)
-	,@MobilePhone nvarchar(50)
-	,@Site nvarchar(50)
-	,@Fax nvarchar(50)
-	,@Credit money	
+ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_CloneSetting_Com]
+	@Custid INT OUTPUT
+	,@UserName VARCHAR(30)
+	,@Userpwd VARCHAR(40)
+	,@FirstName NVARCHAR(50)
+	,@LastName NVARCHAR(50)
+	,@Phone NVARCHAR(50)
+	,@MobilePhone NVARCHAR(50)
+	,@Site NVARCHAR(50)
+	,@Fax NVARCHAR(50)
+	,@Credit MONEY	
 	,@IsInternal BIT
-	,@ExistingCustid int
-	,@Creator int	
-	,@Language varchar(2)= 'E'
-	,@IP varchar(15)=''		
-	,@ErrCode int = 0 output
-	,@ErrMsg nvarchar(4000) = '' output
+	,@ExistingCustid INT
+	,@Creator INT	
+	,@Language VARCHAR(2)= 'E'
+	,@IP VARCHAR(15)=''		
+	,@ErrCode INT = 0 OUTPUT
+	,@ErrMsg NVARCHAR(4000) = '' OUTPUT
 AS
 /*  
  Created by: Elodie  
  Date:20131025
  Original: 
  Task: Add new super from existing super [Redmine:#5456]
- DB: DBTXN/CustDB  
+ DB: DBCUST/CustDB  
   
  History:  
-	- 20131113@Johnson: Apply execrep when insert setting into CustSetting/CustSetting3rd/...
+	- 20131113@Johnson: Apply execrep WHEN insert setting INTo CustSetting/CustSetting3rd/...
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184) [Redmine:#7234]
 	- 20140304@Patrick	: Add more sport: 202 for Keno
 	- 20140402@Dom	: Add more sport: 183,185 for Virtual sport
 	- 20140609@Elodie: Not allow create a new customer by using search & copy function from a existed account which is disabled [Redmine:#17366]
 	- 20140711@Logan: Force using Security Code for SMA from all sites (except 789y) [Redmine:#18121]
+	- 20140822@Logan:   Add E-Sports status [Redmine: #20531]
+	- 20150107@Johnson: separate virtual rate settings by sporttype, bettype [Redmine: #25840]
+	- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486]
+	- 20150707@Elodie: Add Super Live product [Redmine: #35776]
+	- 20150714@Patrick: Add max win limit for Gold deluxe    
+	- 20150821@Elodie: Set HideGoldDeluxe = 1 for 789y site    
+	- 20150909@Elodie: Remove copying Virtual Rate setting from function Search and Copy [Redmine:#42976]                
+	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
+	- 20150904@Helen: commission setting for MO [Redmine #41470]
+	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -48,18 +51,18 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @startRun datetime
-		,@endRun datetime
-		,@duration int
-		,@srecommend int
-				
+	DECLARE @startRun DATETIME
+		,@endRun DATETIME
+		,@duration INT
+		,@srecommend INT
+	
 	IF EXISTS (SELECT 1 FROM dbo.customer WITH(NOLOCK) WHERE username=@username OR username2=@username
 			UNION ALL
 				SELECT 1 FROM dbo.custsub WITH(NOLOCK) WHERE username= @username
 		)
 	BEGIN		
-		Select @ErrMsg = case @Language 
-								when 'E' then 'This username is not available.'								
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'This username is not available.'								
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40001,@Language)
 							end		
 				,@ErrCode = 201
@@ -68,12 +71,28 @@ BEGIN
 	END	
 
 	-- Check role of existing super
-	DECLARE @existingUsername varchar(30),@roleid tinyint, @Enabled BIT
+	DECLARE @existingUsername VARCHAR(30),@roleid tinyint, @Enabled BIT
 	
 	SELECT @existingUsername =  ISNULL(username,''), @roleid = ISNULL(roleid,0), @Enabled = ISNULL(Enabled, 0)
 	FROM dbo.CustInfo WITH(NOLOCK) 
 	WHERE custid = @ExistingCustid
 	
+	-- For Myanmar Odds
+	DECLARE @IsMyanmarOdds_destination BIT = 0
+	DECLARE @IsMyanmarOdds_source BIT = 0
+	
+	IF @Site = '766666' 
+		SET @IsMyanmarOdds_destination = 1
+	
+	SET @IsMyanmarOdds_source = dbo.fn_IsMyanmarOdds (@ExistingCustid)
+		
+	IF @IsMyanmarOdds_destination <> @IsMyanmarOdds_source
+	BEGIN
+		SELECT @ErrMsg = 'Cannot copy super ' + @existingUsername + ' since amongs the new and old sites, one has % Odds.',@ErrCode = 200								
+		RETURN		
+
+	END			
+		
 	IF @roleid <> 4
 	BEGIN		
 		 SELECT @ErrMsg = CASE @Language 
@@ -162,8 +181,8 @@ BEGIN
 		SET @Custid = SCOPE_IDENTITY()
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrMsg = case @Language 
-							when 'E' then 'Create customer failed. Please try again.'
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Create customer failed. Please try again.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language) 
 						end
 			,@ErrCode = 103			
@@ -177,8 +196,8 @@ BEGIN
 		WHERE custId = @CustID  
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrMsg = case @Language 
-							when 'E' then 'Create customer failed. Please try again.'
+		SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Create customer failed. Please try again.'
 							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
 						end
 			,@ErrCode = 104
@@ -190,8 +209,8 @@ BEGIN
 			
 	BEGIN TRY
 		-- insert CustSuper info
-		INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting)  
-		SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting
+		INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting,IsMyanmarOdds)  
+		SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting,IsMyanmarOdds
 		FROM CustSuper WITH(NOLOCK)
 		WHERE custid=@ExistingCustid		
 	END TRY
@@ -279,6 +298,12 @@ BEGIN
 				,DisableHRFixedOdds
 				,maxpermatch154
 				,HideKeno
+				,DisableEsports
+				,HideGoldDeluxe
+				,DisableGoldDeluxe
+				,HideColossusBet
+				,DisableColossusBet
+				,DisableSuperLive
 				)
 		 SELECT
 				@CustID
@@ -294,7 +319,7 @@ BEGIN
 				,@Credit AS Credit
 				,closed
 				,MatchLimit
-				,VirtualMultiplier
+				,0 AS VirtualMultiplier
 				,maxpermatch
 				,maxpermatch2
 				,maxpermatch3
@@ -350,12 +375,18 @@ BEGIN
 				,DisableHRFixedOdds
 				,maxpermatch154
 				,HideKeno
+				,DisableEsports
+				,CASE WHEN @Site = '789y' THEN 1 ELSE HideGoldDeluxe END AS HideGoldDeluxe
+				,CASE WHEN @Site = '789y' THEN 1 ELSE DisableGoldDeluxe END AS DisableGoldDeluxe
+				,HideColossusBet
+				,DisableColossusBet
+				,DisableSuperLive
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
 	END TRY	
 	BEGIN CATCH	
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
 							end
 				,@ErrCode = 106
@@ -366,18 +397,37 @@ BEGIN
 
 		RETURN
 	END CATCH
-	
+
 	BEGIN TRY
-	EXEC dbo.Acc_CustomerInfo_Execrep_02
-		@custid = @custid,
-		@ExistingCustid = @ExistingCustid,
-		@Language = @Language,
-		@ErrCode = @ErrCode output,
-		@ErrMsg = @ErrMsg output
+		--insert default value
+		INSERT INTO dbo.CustWinLimit(CustId, SportType, BetType, MaxWinLimit, IsAutoReset)
+		SELECT @custid, SportType, BetType, MaxWinLimit, IsAutoReset
+		FROM dbo.CustWinLimit WITH(NOLOCK) WHERE CustId = @ExistingCustid AND SportType = 255 AND BetType = 1701
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+					
+		-- ROLLBACK MANUALLY			
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	    
+		DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID 
+		DELETE FROM custInfo WITH(ROWLOCK) WHERE custId = @CustID  
+	END CATCH
+
+	BEGIN TRY
+		EXEC dbo.Acc_CustomerInfo_Execrep_02
+			@custid = @custid,
+			@ExistingCustid = @ExistingCustid,
+			@Language = @Language,
+			@ErrCode = @ErrCode OUTPUT,
+			@ErrMsg = @ErrMsg OUTPUT
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
 							end
 				,@ErrCode = 106
@@ -385,16 +435,14 @@ BEGIN
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID  
 		
 		RETURN
 	END CATCH
 
     DECLARE @isForcedChangeSecurityCode BIT = 0
 
-	SELECT @isForcedChangeSecurityCode = CASE
-                                           WHEN @Site LIKE '789y%' THEN 0
-                                           ELSE 1
-                                         END
+	SELECT @isForcedChangeSecurityCode = CASE WHEN @Site LIKE '789y%' THEN 0 ELSE 1 END
 
 	BEGIN TRY
 		INSERT INTO dbo.CustLoginInfo
@@ -408,8 +456,8 @@ BEGIN
 		)
 	END TRY
 	BEGIN CATCH
-		SELECT @ErrMsg = case @Language 
-								when 'E' then 'Create customer failed. Please try again.'
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
 								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
 							end
 				,@ErrCode = 106
@@ -418,6 +466,7 @@ BEGIN
 		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID
 		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
 		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
 		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
@@ -425,33 +474,116 @@ BEGIN
 		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
 		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
 		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
-		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID					
-		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID					
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID									
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE custId = @CustID    
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+							
 		RETURN	
 	END CATCH
 	
+	BEGIN TRY
+		INSERT INTO [dbo].[CustVirtualRate]
+           ([custid]
+           ,[sporttype]
+           ,[bettype]
+           ,[isLive]
+           ,[virtualMultiplier])		
+		SELECT @custid,
+			t.sporttype,
+			t.bettype,
+			b.isLive,
+			1 as virtualMutiplier
+		FROM (
+			SELECT 1 as sporttype, 1 as bettype
+			UNION 
+			SELECT 1 as sporttype, 2 as bettype
+			UNION 
+			SELECT 1 as sporttype, 3 as bettype
+			UNION 
+			SELECT 1 as sporttype, 7 as bettype
+			UNION 
+			SELECT 1 as sporttype, 8 as bettype
+			UNION 
+			SELECT 1 as sporttype, 12 as bettype
+			UNION 		
+			SELECT 99 as sporttype, 1 as bettype
+			UNION 
+			SELECT 99 as sporttype, 2 as bettype
+			UNION 
+			SELECT 99 as sporttype, 3 as bettype
+			UNION 
+			SELECT 99 as sporttype, 7 as bettype
+			UNION 
+			SELECT 99 as sporttype, 8 as bettype
+			UNION 
+			SELECT 99 as sporttype, 12 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 20 as bettype 
+			UNION
+			SELECT 99 as sporttype, 21 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 154 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1301 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1311 as bettype 
+			UNION 
+			SELECT 99 as sporttype, 1324 as bettype 		 
+			) t
+			CROSS APPLY (
+			SELECT 0 as isLive
+			UNION 
+			SELECT 1 as isLive
+			)b        
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrMsg = CASE @Language 
+								WHEN 'E' THEN 'Create customer failed. Please try again.'
+								ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+							end
+				,@ErrCode = 106
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.Customer WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM dbo.CustInfo WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID  	
+		DELETE FROM dbo.CustWinlimit WITH(ROWLOCK) WHERE custId = @CustID
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE FROM Custoverridegame WITH (ROWLOCK) WHERE CustID = @CustID									
+		DELETE FROM dbo.AgentCommRate WITH(ROWLOCK) WHERE custId = @CustID    
+		DELETE FROM CustGameType WITH (ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM CustLoginInfo WITH(ROWLOCK) WHERE custid = @Custid
+		RETURN	
+	END CATCH		
+		
 	SET @endRun=GETDATE()
 	SET @duration=datediff(millisecond,@startRun,@endRun)
 	
-	Declare @LogSPData varchar(8000)
+	Declare @LogSPData VARCHAR(8000)
 	--Log customer general info
-	Select @LogSPData = '<Acc_CustomerInsMember_CloneSetting_Com custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
-	'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as varchar(100)),space(1))) + '" ' +
-	'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as varchar(100)),space(1))) + '" ' +
-	'creator="'+ coalesce(cast(@creator as varchar(50)),space(1)) + '" ' +
-	'username="'+ coalesce(cast(@username as varchar(30)),space(1)) + '" ' +
-	'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as varchar(100)),space(1))) + '" ' +
-	'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as varchar(100)),space(1))) + '" ' +
-	'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as varchar(100)),space(1))) + '" ' +
-	'site="'+ coalesce(cast(@site as varchar(50)),space(1)) + '" ' +	
-	'credit="'+ coalesce(cast(@Credit as varchar(50)),space(1)) + '" ' +	
+	SELECT @LogSPData = '<Acc_CustomerInsMember_CloneSetting_Com custid="'+ coalesce(cast(@custid as VARCHAR(50)),space(1)) + '" ' +
+	'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as VARCHAR(100)),space(1))) + '" ' +
+	'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as VARCHAR(100)),space(1))) + '" ' +
+	'creator="'+ coalesce(cast(@creator as VARCHAR(50)),space(1)) + '" ' +
+	'username="'+ coalesce(cast(@username as VARCHAR(30)),space(1)) + '" ' +
+	'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as VARCHAR(100)),space(1))) + '" ' +
+	'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as VARCHAR(100)),space(1))) + '" ' +
+	'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as VARCHAR(100)),space(1))) + '" ' +
+	'site="'+ coalesce(cast(@site as VARCHAR(50)),space(1)) + '" ' +	
+	'credit="'+ coalesce(cast(@Credit as VARCHAR(50)),space(1)) + '" ' +	
 	'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" ' +
-	'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +	
-	'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +	
-	'CopiedFrom="'+cast(@ExistingCustid as varchar(10))+'" '+
+	'IP="'+ coalesce(cast(@IP as VARCHAR(15)),space(1)) + '" ' +	
+	'Language="'+ coalesce(cast(@Language as VARCHAR(2)),space(1)) + '" ' +	
+	'CopiedFrom="'+cast(@ExistingCustid as VARCHAR(10))+'" '+
 	'CopiedFromUsername="'+c.username+'" '+
-	'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1)) + '" ' +
-	'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1)) + '" />'
+	'ErrCode="'+ coalesce(cast(@ErrCode as VARCHAR(50)),space(1)) + '" ' +
+	'ErrMsg="'+ coalesce(cast(@ErrMsg as VARCHAR(4000)),space(1)) + '" />'
 	FROM dbo.customer AS c WITH(NOLOCK) 
 	WHERE custid=@ExistingCustid
 	
@@ -465,23 +597,23 @@ BEGIN
 	END TRY
 	BEGIN CATCH	
 		--Log customer general info
-		Select @LogSPData = '<Acc_CustomerInsMember_CloneSetting_Com custid="'+ coalesce(cast(@custid as varchar(50)),space(1)) + '" ' +
-		'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as varchar(100)),space(1))) + '" ' +
-		'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as varchar(100)),space(1))) + '" ' +
-		'creator="'+ coalesce(cast(@creator as varchar(50)),space(1)) + '" ' +
-		'username="'+ coalesce(cast(@username as varchar(30)),space(1)) + '" ' +
-		'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as varchar(100)),space(1))) + '" ' +
-		'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as varchar(100)),space(1))) + '" ' +
-		'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as varchar(100)),space(1))) + '" ' +
-		'site="'+ coalesce(cast(@site as varchar(50)),space(1)) + '" ' +	
-		'credit="'+ coalesce(cast(@Credit as varchar(50)),space(1)) + '" ' +	
+		SELECT @LogSPData = '<Acc_CustomerInsMember_CloneSetting_Com custid="'+ coalesce(cast(@custid as VARCHAR(50)),space(1)) + '" ' +
+		'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as VARCHAR(100)),space(1))) + '" ' +
+		'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as VARCHAR(100)),space(1))) + '" ' +
+		'creator="'+ coalesce(cast(@creator as VARCHAR(50)),space(1)) + '" ' +
+		'username="'+ coalesce(cast(@username as VARCHAR(30)),space(1)) + '" ' +
+		'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as VARCHAR(100)),space(1))) + '" ' +
+		'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as VARCHAR(100)),space(1))) + '" ' +
+		'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as VARCHAR(100)),space(1))) + '" ' +
+		'site="'+ coalesce(cast(@site as VARCHAR(50)),space(1)) + '" ' +	
+		'credit="'+ coalesce(cast(@Credit as VARCHAR(50)),space(1)) + '" ' +	
 		'isinternal="'+ COALESCE(CAST(@isinternal AS VARCHAR(1)),SPACE(1)) + '" ' +
-		'IP="'+ coalesce(cast(@IP as varchar(15)),space(1)) + '" ' +	
-		'Language="'+ coalesce(cast(@Language as varchar(2)),space(1)) + '" ' +	
-		'CopiedFrom="'+cast(@ExistingCustid as varchar(10))+'" '+
+		'IP="'+ coalesce(cast(@IP as VARCHAR(15)),space(1)) + '" ' +	
+		'Language="'+ coalesce(cast(@Language as VARCHAR(2)),space(1)) + '" ' +	
+		'CopiedFrom="'+cast(@ExistingCustid as VARCHAR(10))+'" '+
 		'CopiedFromUsername="'+c.username+'" '+
-		'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1)) + '" ' +
-		'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1)) + '" />'
+		'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as VARCHAR(50)),space(1)) + '" ' +
+		'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as VARCHAR(4000)),space(1)) + '" />'
 		FROM dbo.customer AS c WITH(NOLOCK) 
 		WHERE custid=@ExistingCustid
 		
@@ -496,17 +628,8 @@ BEGIN
 	SET NOCOUNT OFF
 END
 
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
 GO 
- GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam]
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [vnteam]
 GO 
- GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustomerInsMember_CloneSetting_Com] TO [bodbAdminNet]
 GO 
