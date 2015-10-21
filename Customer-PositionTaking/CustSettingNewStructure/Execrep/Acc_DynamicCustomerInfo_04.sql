@@ -1,4 +1,5 @@
-﻿alter PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
+﻿			
+ALTER PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
 	@custid int,
 	@roleid tinyint,
 	@IsDisabled_XML VARCHAR(MAX) = NULL
@@ -13,8 +14,9 @@ BEGIN
 	
 	SET NOCOUNT ON 
 	
+	
 	IF dbo.f_CheckRepTable('custinfo') = 0 RETURN
-	IF dbo.f_CheckRepTable('CustProductStatus') = 0 RETURN
+	--IF dbo.f_CheckRepTable('CustProductStatus') = 0 RETURN
 	
 			
 	--Check if XML is null or empty
@@ -23,8 +25,8 @@ BEGIN
 	CREATE TABLE #NewDisableStatTbl(
 				SportType SMALLINT,
 				BetType SMALLINT,
-				IsDisabled BIT
-	--			IsDisabledDownline BIT
+				IsDisabled BIT,
+				IsDisabledDownline BIT
 			)
 	--Parse XML		
 	DECLARE @iDoc INT
@@ -33,7 +35,7 @@ BEGIN
 	INSERT INTO #NewDisableStatTbl
 	SELECT *
 	FROM OPENXML (@iDoc, '/ROOT/ProductStatus',1) 
-	WITH(SportType smallint, BetType smallint, IsDisabled BIT--,IsDisabledDownline BIT
+	WITH(SportType smallint, BetType smallint, IsDisabled BIT,IsDisabledDownline BIT
 		)	
 		
 	EXEC sp_xml_removedocument @iDoc
@@ -76,7 +78,7 @@ BEGIN
 	BEGIN
 		
 		UPDATE T 
-			SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
+			SET bitmapIsDisabled = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
 		FROM  CustProductStatus T
 			INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 		WHERE CI.srecommend = @custid AND CI.roleid IN (1,2,3)
@@ -85,7 +87,7 @@ BEGIN
 		BEGIN
 		
 			UPDATE T 
-				SET bitmapIsHidden = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))	
+				SET bitmapIsHidden = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
 			FROM CustProductStatus T 
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.srecommend = @custid AND CI.roleid IN (1,2,3)
@@ -97,7 +99,7 @@ BEGIN
 	ELSE IF @RoleID=3
 	BEGIN
 		UPDATE T 
-			SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
+			SET bitmapIsDisabled = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
 		FROM  CustProductStatus T
 			INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 		WHERE CI.mrecommend = @custid AND CI.roleid IN (1,2)
@@ -106,7 +108,7 @@ BEGIN
 		BEGIN
 		
 			UPDATE T WITH (UPDLOCK,ROWLOCK)
-				SET bitmapIsHidden = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))	
+				SET bitmapIsHidden = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
 			FROM CustProductStatus T 
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.mrecommend = @custid AND CI.roleid IN (1,2)
@@ -116,7 +118,7 @@ BEGIN
 	ELSE IF @RoleID=2
 	BEGIN
 		UPDATE T 
-			SET bitmapIsDisabled = dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))	
+			SET bitmapIsDisabled = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (T.bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
 		FROM  CustProductStatus T
 			INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 		WHERE CI.recommend = @custid AND CI.roleid = 1
@@ -124,7 +126,7 @@ BEGIN
 		IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 		BEGIN
 			UPDATE T 
-				SET bitmapIsHidden = dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))	
+				SET bitmapIsHidden = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
 			FROM CustProductStatus T 
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.recommend = @custid AND CI.roleid = 1

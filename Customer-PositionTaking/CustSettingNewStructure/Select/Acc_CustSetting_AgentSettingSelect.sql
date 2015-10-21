@@ -161,32 +161,32 @@ BEGIN
 	--Product Status  
 	ELSE IF @SettingType = 4
 	BEGIN  
-		DECLARE @downlines  BIT 
+		DECLARE @downlines  BIT = 0
 		
 		IF EXISTS ( SELECT 1
 					FROM custinfo WITH (NOLOCK)
-					WHERE srecommend = @CustID	AND roleid = 1
+					WHERE recommend = @CustID	AND roleid = 1
 					)
 			SET @downlines = 1	
    
 
 		SELECT 	pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as hasSynced
+			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
 			
-			, CASE 	
+			, CAST(CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
 					ELSE ISNULL((
 							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE srecommend = @CustID	AND roleid = 1
+							WHERE recommend = @CustID	AND roleid = 1
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							
-			 END AS IsDisabledDownline
+			 END AS BIT) AS IsDisabledDownline
 			 
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 		

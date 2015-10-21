@@ -17,6 +17,7 @@
 		DB: DBCUST/CustDB
 		
 		Revisions:
+            - 20151015@Billy: Fix log xml structure and naming
 		
 		Parameter's Explanation:
 			@PT =<ROOT>
@@ -32,7 +33,7 @@ BEGIN
 			, @Duration		INT  
 			,@_RoleID		INT
 			,@logSPData		VARCHAR(5000)
-			,@logSPDataOld	VARCHAR(5000)
+			,@logSPData_Old	VARCHAR(5000)
 			,@XML			XML
 			,@SettingMode	BIT = 0
 
@@ -252,27 +253,30 @@ BEGIN
 		WHERE cs.custid = @custid																	
 																	
 			
-		 --log old data
-		SET @XML =(
-			SELECT @custid AS '@custid'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-					,@userid AS '@userid'					
-					,@IP AS '@Ip'					
-					,(
-						SELECT cs.sporttype
-							,cs.bettype 
-							,cs.isLive 
-							,cs.MasterPT
-							,cs.isAutoMasterPT 
-							,cs.AutoMasterPT 							
-						FROM CustPTSetting3rd_Member cs WITH(NOLOCK)
-							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
-													AND cs.bettype = t.BetType 
-													AND cs.isLive = t.IsLive
+        -- Log old data
+		SET @XML = (
+			SELECT  @custid                         AS '@CustID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@subAccName',
+					@userid                         AS '@UserID',
+					@IP                             AS '@IP',
+					(
+						SELECT  cs.sporttype        AS '@SportType',
+							    cs.bettype          AS '@BetType',
+							    cs.isLive           AS '@IsLive',
+							    cs.MasterPT         AS '@MasterPT',
+							    cs.isAutoMasterPT   AS '@IsAutoMasterPT',
+							    cs.AutoMasterPT 	AS '@AutoMasterPT'
+						FROM        CustPTSetting3rd_Member cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t
+                                ON  cs.sporttype = t.SportType 
+							    AND cs.bettype = t.BetType 
+							    AND cs.isLive = t.IsLive
 						WHERE custid = @custid
-						FOR XML PATH('pt'), TYPE
+						FOR XML PATH('PT'), 
+                        TYPE
 					)
-			FOR XML PATH('r'), TYPE
+			FOR XML PATH('Acc_CustSetting_MasterPTOnMemberUpd'), 
+            TYPE
 		)
 	END
 	ELSE
@@ -317,51 +321,60 @@ BEGIN
 		WHERE cs.AgentID = @_AgentID
 																	
 			
-		 --log old data
-		SET @XML =(
-			SELECT @custid AS '@custid'
-					,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-					,@userid AS '@userid'					
-					,@IP AS '@Ip'					
-					,(
-						SELECT cs.sporttype 
-							,cs.bettype 
-							,cs.isLive 
-							,cs.MasterPT 
-							,cs.isAutoMasterPT
-							,cs.AutoMasterPT 							
-						FROM CustPTGroupSetting3rd_Member cs WITH(NOLOCK)
-							INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
-													AND cs.bettype = t.BetType 
-													AND cs.isLive = t.IsLive
+        -- Log old data
+		SET @XML = (
+			SELECT  @custid                         AS '@CustID',
+				    dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@userid                         AS '@UserID',
+					@IP                             AS '@IP',
+					(
+						SELECT  cs.sporttype        AS '@SportType',
+							    cs.bettype          AS '@BetType',
+							    cs.isLive           AS '@IsLive',
+							    cs.MasterPT         AS '@MasterPT',
+							    cs.isAutoMasterPT   AS '@IsAutoMasterPT',
+							    cs.AutoMasterPT 	AS '@AutoMasterPT'
+						FROM        CustPTGroupSetting3rd_Member cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t 
+                                ON  cs.sporttype = t.SportType 
+							    AND cs.bettype = t.BetType 
+							    AND cs.isLive = t.IsLive
 						WHERE cs.AgentID = @custid
-						FOR XML PATH('pt'), TYPE
+						FOR XML PATH('PT'), 
+                        TYPE
 					)
-			FOR XML PATH('r'), TYPE
+			FOR XML PATH('Acc_CustSetting_MasterPTOnMemberUpd'), 
+            TYPE
 		)
 	END
 	
-	SET @logSPDataOld = CONVERT(VARCHAR(MAX), @XML)  
+	SET @logSPData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
-	 --log old data
-	SET @XML =(
-		SELECT @custid AS '@custid'
-				,dbo.f_GetSubUsername(@SubAccID) AS '@subAccName'
-				,@userid AS '@userid'				
-				,@IP AS '@Ip'					
-				,(
-					SELECT cs.sporttype
-						,cs.bettype
-						,cs.isLive 
-						,cs.MasterPT
-						,cs.isAutoMasterPT
-						,cs.AutoMasterPT 						
-					FROM @tblPT cs 					
-					FOR XML PATH('pt'), TYPE
+
+	-- Log new updated data
+	SET @XML = (
+		SELECT  @custid                         AS '@CustID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@userid                         AS '@UserID',
+				@IP                             AS '@IP',
+				(
+					SELECT  cs.sporttype        AS '@SportType',
+						    cs.bettype          AS '@BetType',
+						    cs.isLive           AS '@IsLive',
+						    cs.MasterPT         AS '@MasterPT',
+						    cs.isAutoMasterPT   AS '@IsAutoMasterPT',
+						    cs.AutoMasterPT     AS '@AutoMasterPT'
+					FROM    @tblPT cs 					
+					FOR XML PATH('PT'), 
+                    TYPE
 				)
-		FOR XML PATH('r'), TYPE
+		FOR XML PATH('Acc_CustSetting_MasterPTOnMemberUpd'), 
+        TYPE
 	)
+
+	SET @logSPData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
+
 	--check any settings change
 	IF NOT EXISTS(SELECT TOP 1 1 
 				FROM @NewPT cs 
@@ -643,7 +656,7 @@ BEGIN
 			@CustID = @CustID,
 			@ActionID = 456,
 			@TrackingValue = @LogSPData,
-			@TrackingValue2 = @logSPDataOld,
+			@TrackingValue2 = @logSPData_Old,
 			@duration = @duration
 	END	TRY
 	BEGIN CATCH
@@ -652,7 +665,7 @@ BEGIN
 			@CustID = @CustID,
 			@ActionID = 456,
 			@TrackingValue = @LogSPData,
-			@TrackingValue2 = @logSPDataOld,
+			@TrackingValue2 = @logSPData_Old,
 			@duration = @duration
 	END CATCH 	
 	

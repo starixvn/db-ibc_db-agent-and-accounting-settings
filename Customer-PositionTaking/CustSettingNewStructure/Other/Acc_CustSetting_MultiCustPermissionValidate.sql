@@ -52,10 +52,14 @@ BEGIN
 	END  
 	
 	--Check if roleid of taget cusomer is not consistent
+	SELECT TOP 1 @RoleID = ISNULL(RoleID,0)
+	FROM @tblCust c
+		INNER JOIN dbo.custinfo ci WITH (NOLOCK) ON c.CustID = ci.CustID
+	
 	SELECT @FakeCustCnt = COUNT(1)
 	FROM @tblCust c
-	JOIN dbo.custinfo ci WITH (NOLOCK) ON c.CustID = ci.CustID
-	WHERE ci.roleID <> 1
+	INNER JOIN dbo.custinfo ci WITH (NOLOCK) ON c.CustID = ci.CustID
+	WHERE ci.roleID <> @RoleID
 	
 	IF @FakeCustCnt <> 0
 	BEGIN  

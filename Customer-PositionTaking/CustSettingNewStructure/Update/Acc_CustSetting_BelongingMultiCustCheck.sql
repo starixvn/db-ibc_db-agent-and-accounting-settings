@@ -16,6 +16,13 @@ Revisions:
 SET NOCOUNT ON
 DECLARE @tblCust TABLE (CustID INT )
 DECLARE @Cust_UP INT, @Cust_DO INT
+Declare @SessionRoleID TINYINT 
+
+select @SessionRoleID = roleid
+from custinfo with(nolock)  
+where custID = @SessionCustID  
+  
+IF ISNULL(@sessionRoleid ,0) = 0 RETURN 
 
 --Parse CustID List
 DECLARE @XML XML
@@ -33,6 +40,7 @@ INNER JOIN @tblCust tbl
 WHERE (c.srecommend = @SessionCustID
 		OR c.mrecommend = @SessionCustID
 		OR c.recommend = @SessionCustID 
+		OR @SessionRoleID >= 5
 		)
 GROUP BY c.roleid
 

@@ -26,6 +26,7 @@ BEGIN
 			, c.mobilephone AS MobilePhone
 			, c.email AS Email
 			, c.fax AS Fax
+			, c.currency AS Currency
 	FROM dbo.Customer c WITH (NOLOCK)
 	WHERE c.custID = @CustID	
 END

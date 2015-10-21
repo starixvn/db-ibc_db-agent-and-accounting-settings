@@ -40,6 +40,7 @@ BEGIN
 			SportType				SMALLINT
 			, BetType				SMALLINT
 			, IsDisabled			BIT
+			,IsDisabledDownline	BIT
 		)
 	CREATE TABLE #ErrorSportTypeTbl
 	(

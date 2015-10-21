@@ -20,6 +20,9 @@ AS
 		Date: 2014-12-09
 		Task: master multiple update grouped member's PT
 		DB: DBCUST/CustDB
+        
+        Revisions:
+            - 20151016@Billy: Fix log xml structure and naming
 
 		Parameter's Explanation:	
 		• @PT:
@@ -43,6 +46,7 @@ BEGIN
 		, @EndRun		DATETIME
 		, @Duration		INT
 	    , @Old_PT_XML	VARCHAR(MAX)
+        , @New_PT_XML   VARCHAR(MAX)
 		
 	--Temp variables for PT adjustment	
 	DECLARE @_AgentID		INT
@@ -499,7 +503,14 @@ BEGIN
 	FROM @OldPTTble
 	FOR XML RAW ('PT'))
 
-	SELECT @Old_PT_XML = '<ROOT>'+@Old_PT_XML+'</ROOT>'
+	SELECT @Old_PT_XML = '<Acc_CustSetting_MasterPTOnMemberMultiUpd>' + @Old_PT_XML + '</Acc_CustSetting_MasterPTOnMemberMultiUpd>'
+
+    SELECT @New_PT_XML = (  SELECT SportType, BetType, IsLive, MasterPT, IsAutoMasterPT, AutoMasterPT
+	                        FROM dbo.f_DCS_PT_XMLParse(@PT)
+	                        FOR XML RAW ('PT'))
+                            
+	SELECT @New_PT_XML = '<Acc_CustSetting_MasterPTOnMemberMultiUpd>' + @New_PT_XML + '</Acc_CustSetting_MasterPTOnMemberMultiUpd>'
+
 
 	SELECT @EndRun	= GETDATE()
 		, @Duration = DATEDIFF(MILLISECOND, @StartRun, @EndRun)
@@ -510,7 +521,7 @@ BEGIN
 			, @CustIDList		= @CustIDList
 			, @SubAccID			= @SubAccID
 			, @ActionID			= 451
-			, @NewPT_XML		= @PT
+			, @NewPT_XML		= @New_PT_XML
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END TRY
@@ -521,7 +532,7 @@ BEGIN
 			, @CustIDList		= @CustIDList
 			, @SubAccID			= @SubAccID
 			, @ActionID			= 451
-			, @NewPT_XML		= @PT
+			, @NewPT_XML		= @New_PT_XML
 			, @OldPT_XML		= @Old_PT_XML
 			, @duration			= @duration
 	END CATCH
