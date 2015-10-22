@@ -415,7 +415,7 @@ BEGIN
 								AND cs.IsLive = b.IsLive  
 									
 --******************************************ADJUST PT SETTINGS*************************************** 	
-	DECLARE @m3 SMALLMONEY,@us3 SMALLMONEY, @s4 SMALLMONEY
+	DECLARE @m3 SMALLMONEY,@us3 SMALLMONEY, @s4 SMALLMONEY, @is3 BIT
 	DECLARE @n2 SMALLMONEY, @l2 SMALLMONEY
 	DECLARE @im2 BIT, @um2 SMALLMONEY
 	DECLARE @a1 SMALLMONEY, @m1 SMALLMONEY, @s1 SMALLMONEY, @i1 BIT, @u1 SMALLMONEY, @im1 BIT, @um1 SMALLMONEY
@@ -443,6 +443,21 @@ BEGIN
 			,@m1 = CASE WHEN N3 - @a1 > @m1 THEN N3 - @a1 ELSE @m1 END
 			--Adjust : m1=m1>0?m1:0
 			,@m1 = CASE WHEN @m1 > 0 THEN @m1 ELSE 0 END
+			
+			--Adjust : m1=im1/im2=1 ? min(um1/um2,m3-a1):m1
+			,@um2 = CASE WHEN @im1>0 THEN @um1 ELSE @um2 END
+			,@im2 = CASE WHEN @im1>0 THEN @im1 ELSE @im2 END  
+			,@m1 = CASE WHEN ISNULL(@im2, 0)<=0 THEN @m1 ELSE CASE WHEN @um2 < @m3 - @a1 THEN @um2 ELSE @m3 - @a1 END END
+			 
+			--Adjust : s1=(is=0?s1:min(us,s4-m1-a1))
+			,@us3 = CASE WHEN @i1>0 THEN @u1 ELSE @us3 END
+			,@is3 = CASE WHEN @i1>0 THEN @i1 ELSE @is3 END 
+			,@s1 = CASE WHEN ISNULL(@is3, 0)<=0 THEN @s1 ELSE CASE WHEN @us3 < @s4 - @m1 - @a1 THEN @us3 ELSE @s4 - @m1 - @a1 END END  
+
+			--Adjust : s1=s1>(isauto?s4:s4-m3)?(isauto?s4:s4-m3):s1
+			,@s4 = CASE WHEN ISNULL(@is3, 0)>0 THEN @s4 ELSE @s4-@m3 END
+			,@s1 = CASE WHEN @s1 > @s4 THEN @s4 ELSE @s1 END  
+
 			-- rule #1: a1 = max(a1,n2); m1 = (a1<n2) ? m3-n2 : m1 -- agent min
 			,@a_new = CASE WHEN @a1 < @n2 THEN @n2 ELSE @a1 END
 			,@m_new = CASE WHEN @a1 < @n2 AND @m1 +@n2 > mcs.m3 THEN mcs.m3-@n2 ELSE @m1 END
