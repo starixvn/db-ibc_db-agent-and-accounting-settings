@@ -51,6 +51,8 @@ BEGIN
 		, @_SuperID			INT
 		, @RepresentCustID	INT
 		, @RoleID			INT
+		, @NoMember INT = 0
+		, @NoGroupedMember INT = 0
 	
 	--List of customers		
 	DECLARE @tblCust TABLE (CustID INT)
@@ -435,52 +437,81 @@ BEGIN
 	))
 		RETURN
 	
+	SELECT @NoMember = COUNT(1)
+	FROM @tblCust
 	
-	--Insert Individual Setting for affected custIDs
-	INSERT INTO dbo.CustPTSetting3rd_Member
-	SELECT
-			cust.CustID,
-			grpt.SportType,
-			grpt.BetType,
-			grpt.IsLive,
-			grpt.SuperPT,
-			grpt.MasterPT,
-			grpt.AgentPT,
-			grpt.IsAutoMasterPT,
-			grpt.AutoMasterPT,
-			grpt.IsAutoSuperPT,
-			grpt.AutoSuperPT
-	FROM @tblCust cust
-		CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-		LEFT JOIN dbo.CustPTSetting3rd_Member mempt
-			ON cust.CustID=mempt.CustID
-				AND grpt.SportType=mempt.SportType
-				AND grpt.BetType=mempt.BetType
-				AND grpt.IsLive=mempt.IsLive
-	WHERE grpt.AgentID=@_AgentID AND mempt.CustID IS NULL
+	SELECT @NoGroupedMember = COUNT(1)
+	FROM dbo.CustSettingMode3rd m WITH(NOLOCK)
+		INNER JOIN dbo.custinfo  ci WITH(NOLOCK)
+			ON ci.CustID = m.CustID AND ci.RoleID = 1
+	WHERE ci.recommend = @_AgentID AND m.Isgrouped = 1
 	
-	--Update Adjusted PT for indiviual setting
-	UPDATE main
-	SET main.SuperPT=npt.SuperPT,
-		main.MasterPT=npt.MasterPT,
-		main.AgentPT=npt.AgentPT
-	FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
-		INNER JOIN @tblCust cust ON main.CustID=cust.CustID
-		INNER JOIN @NewPTTble npt ON  npt.SportType=main.SportType
-			AND npt.BetType=main.BetType
-			AND npt.IsLive=main.IsLive
-	WHERE 
-		npt.SuperPT <> main.SuperPT
-		OR npt.MasterPT <> main.MasterPT
-		OR npt.AgentPT <> main.AgentPT
-	
-	
-	--Update setting mode for affected CustIDs
-	UPDATE main
-	SET main.IsGrouped=0
-	FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
-		INNER JOIN @tblCust cust
-			ON cust.CustID=main.CustID
+	IF 	@NoMember = @NoGroupedMember
+	BEGIN
+		UPDATE grpt
+		SET grpt.SuperPT=npt.SuperPT,
+			grpt.MasterPT=npt.MasterPT,
+			grpt.AgentPT=npt.AgentPT
+		FROM dbo.CustPTGroupSetting3rd_Member grpt WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @NewPTTble npt 
+				ON  npt.SportType=grpt.SportType
+				AND npt.BetType=grpt.BetType
+				AND npt.IsLive=grpt.IsLive
+		WHERE grpt.AgentID=@_AgentID 
+			AND (
+				npt.SuperPT <> grpt.SuperPT
+				OR npt.MasterPT <> grpt.MasterPT
+				OR npt.AgentPT <> grpt.AgentPT
+			)
+	END
+	ELSE
+	BEGIN
+		--Insert Individual Setting for affected custIDs
+		INSERT INTO dbo.CustPTSetting3rd_Member
+		SELECT
+				cust.CustID,
+				grpt.SportType,
+				grpt.BetType,
+				grpt.IsLive,
+				grpt.SuperPT,
+				grpt.MasterPT,
+				grpt.AgentPT,
+				grpt.IsAutoMasterPT,
+				grpt.AutoMasterPT,
+				grpt.IsAutoSuperPT,
+				grpt.AutoSuperPT
+		FROM @tblCust cust
+			CROSS JOIN dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+			LEFT JOIN dbo.CustPTSetting3rd_Member mempt
+				ON cust.CustID=mempt.CustID
+					AND grpt.SportType=mempt.SportType
+					AND grpt.BetType=mempt.BetType
+					AND grpt.IsLive=mempt.IsLive
+		WHERE grpt.AgentID=@_AgentID AND mempt.CustID IS NULL
+		
+		--Update Adjusted PT for indiviual setting
+		UPDATE main
+		SET main.SuperPT=npt.SuperPT,
+			main.MasterPT=npt.MasterPT,
+			main.AgentPT=npt.AgentPT
+		FROM dbo.CustPTSetting3rd_Member main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @tblCust cust ON main.CustID=cust.CustID
+			INNER JOIN @NewPTTble npt ON  npt.SportType=main.SportType
+				AND npt.BetType=main.BetType
+				AND npt.IsLive=main.IsLive
+		WHERE 
+			npt.SuperPT <> main.SuperPT
+			OR npt.MasterPT <> main.MasterPT
+			OR npt.AgentPT <> main.AgentPT
+		
+		
+		--Update setting mode for affected CustIDs
+		UPDATE main
+		SET main.IsGrouped=0
+		FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @tblCust cust
+				ON cust.CustID=main.CustID
+	END
 	
 --***************************************WRITE LOGS*******************************************			
 	--**START LOGGING**--
