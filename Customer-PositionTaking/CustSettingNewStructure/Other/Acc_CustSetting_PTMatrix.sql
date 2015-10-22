@@ -4,8 +4,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[Acc_CustSetting_PTMatrix]   
-   @ProductID TINYINT = NULL,
+ALTER PROCEDURE [dbo].[Acc_CustSetting_PTMatrix]
+   @SportType SMALLINT,
+   @BetType SMALLINT,
+   @isLive BIT,
    @UserName VARCHAR(30) = ''
 AS  
 /*  
@@ -13,6 +15,9 @@ AS
  Task : Get PT Matrix
  DB:  DBCUST/CustDB  
  Original:  
+
+ Revision:
+    - 20151021@Billy: Change parameter from (@ProductID, @UserName) to (@SportType, @BetType, @isLive, @UserName)
   
  Param's Explanation:  
  
@@ -25,9 +30,6 @@ BEGIN
 		, @SRecommend INT
 		, @MRecommend INT
 		, @Recommend INT
-	
-	SELECT * INTO #SportBettypeFilter
-	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1) -- comm
 	
 	SELECT @CustID = CustID
 		, @RoleID = RoleID
@@ -70,11 +72,10 @@ BEGIN
 	  ,spt.[MinPT]
 	  ,spt.[MaxPT]
 	FROM [dbo].[CustPTSetting3rd_Agent] spt WITH(NOLOCK)
-	INNER JOIN #SportBettypeFilter pdt 
-		ON pdt.SportType = spt.sporttype
-			AND pdt.BetType = spt.bettype
-			AND pdt.IsLive = spt.IsLive
 	WHERE CustID = @SRecommend
+      AND SportType = @SportType
+      AND BetType = @BetType
+      AND IsLive = @isLive
 	
 	IF @RoleID IN (3, 2, 1)
 	BEGIN
@@ -93,11 +94,10 @@ BEGIN
 		  ,mpt.[MinPT]
 		  ,mpt.[MaxPT]
 		FROM [dbo].[CustPTSetting3rd_Agent] mpt WITH(NOLOCK)
-		INNER JOIN #SportBettypeFilter pdt 
-			ON pdt.SportType = mpt.sporttype
-				AND pdt.BetType = mpt.bettype
-				AND pdt.IsLive = mpt.IsLive
 		WHERE CustID = @MRecommend
+          AND SportType = @SportType
+          AND BetType = @BetType
+          AND IsLive = @isLive
 		
 		IF @RoleID IN (2, 1)
 		BEGIN
@@ -116,11 +116,10 @@ BEGIN
 			  ,apt.[MinPT]
 			  ,apt.[MaxPT]
 			FROM [dbo].[CustPTSetting3rd_Agent] apt WITH(NOLOCK)
-				INNER JOIN #SportBettypeFilter pdt 
-					ON pdt.SportType = apt.sporttype
-						AND pdt.BetType = apt.bettype
-						AND pdt.IsLive = apt.IsLive
 			WHERE CustID = @Recommend
+              AND SportType = @SportType
+              AND BetType = @BetType
+              AND IsLive = @isLive
 			
 			IF @RoleID = 1
 			BEGIN
@@ -143,11 +142,10 @@ BEGIN
 						, NULL
 						, NULL
 					FROM [dbo].CustPTSetting3rd_Member mempt WITH (NOLOCK)
-					INNER JOIN #SportBettypeFilter pdt 
-					ON pdt.SportType = mempt.sporttype
-						AND pdt.BetType = mempt.bettype
-						AND pdt.IsLive = mempt.IsLive
 					WHERE CustID = @CustID
+                      AND SportType = @SportType
+                      AND BetType = @BetType
+                      AND IsLive = @isLive
 				END
 				ELSE
 				BEGIN
@@ -166,11 +164,10 @@ BEGIN
 						, NULL
 						, NULL
 					FROM [dbo].CustPTGroupSetting3rd_Member mempt WITH (NOLOCK)
-					INNER JOIN #SportBettypeFilter pdt 
-					ON pdt.SportType = mempt.sporttype
-						AND pdt.BetType = mempt.bettype
-						AND pdt.IsLive = mempt.IsLive
 					WHERE AgentID = @Recommend
+                      AND SportType = @SportType
+                      AND BetType = @BetType
+                      AND IsLive = @isLive
 				END
 			END
 		END
@@ -196,8 +193,6 @@ BEGIN
 		, [BetType]
 		, [IsLive]
 		, [RoleID] DESC
-		
-	DROP TABLE #SportBettypeFilter
 END  
   
 
