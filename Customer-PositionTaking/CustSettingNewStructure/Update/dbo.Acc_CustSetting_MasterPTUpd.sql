@@ -248,7 +248,7 @@ BEGIN
 	
 	IF @UpdateMinPT = 1
 	BEGIN
-		EXEC dbo.Acc_DynamicCustSetting_04 
+		EXEC dbo.Acc_DynamicCustSetting3rd_04 
 				@MasterID = @custid
 				,@SuperID = @srecommend
 				,@RoleID = 3
@@ -257,13 +257,13 @@ BEGIN
 	
 	IF @UpdatePresetPT = 1
 	BEGIN
-		 EXEC dbo.Acc_DynamicCustSetting_05
+		 EXEC dbo.Acc_DynamicCustSetting3rd_05
             @SuperID = @srecommend,
             @MasterID = @custid,
             @RoleID = 3,          
             @AutoPT = @AutoPT
            
-         EXEC dbo.Acc_DynamicCustSetting_07
+         EXEC dbo.Acc_DynamicCustSetting3rd_07
             @SuperID = @srecommend
             ,@MasterID = @custid
             ,@RoleID = 3

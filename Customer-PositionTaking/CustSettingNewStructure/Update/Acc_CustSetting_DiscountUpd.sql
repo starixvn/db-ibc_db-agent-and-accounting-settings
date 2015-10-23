@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd] 
 	  @CustID				INT
 	, @Discount			VARCHAR(MAX)
@@ -234,7 +228,7 @@ BEGIN
 	SELECT @CorrectedDiscount_XML = '<ROOT>' + @CorrectedDiscount_XML + '</ROOT>'
 
 	--execrept to update commission
-	EXEC dbo.Acc_DynamicCustSetting_06
+	EXEC dbo.Acc_DynamicCustSetting3rd_06
 			@CustId			= @custid
 			, @RoleId		= @RoleId
 			, @Discount_XML = @CorrectedDiscount_XML

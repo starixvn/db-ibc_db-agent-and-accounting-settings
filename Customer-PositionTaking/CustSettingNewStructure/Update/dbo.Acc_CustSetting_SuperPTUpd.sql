@@ -220,19 +220,19 @@ BEGIN
     
     IF @UpdatePresetPT = 1
     BEGIN
-		EXEC dbo.Acc_DynamicCustSetting_07 
+		EXEC dbo.Acc_DynamicCustSetting3rd_07 
 			@SuperID = @custid
 			,@RoleID = 4
 			,@SportBettypeXML = @PT  
 		
-		EXEC dbo.Acc_DynamicCustSetting_01 
+		EXEC dbo.Acc_DynamicCustSetting3rd_01 
 			@SuperID = @custid
 			,@SportBettypeXML = @PT 
     END
     
     IF @UpdateMinPT = 1
     BEGIN
-		EXEC dbo.Acc_DynamicCustSetting_04 
+		EXEC dbo.Acc_DynamicCustSetting3rd_04 
 			@SuperID = @custid
 			,@RoleID = 4
 			,@SportBettypeXML = @PT 
