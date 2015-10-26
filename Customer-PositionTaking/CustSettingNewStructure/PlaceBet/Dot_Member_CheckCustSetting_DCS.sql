@@ -12,11 +12,11 @@ ALTER PROCEDURE [dbo].[Dot_Member_CheckCustSetting_DCS] @CustID INT
 	, @liveindicator BIT = 0
 	, @isLicensee BIT = 0
 	, ----Identify deposit customer  
-	@ActualRate FLOAT
+	@ActualRate FLOAT = -1
 	, --Dot_Member_CustCreditInfo  
-	@VirtualRate FLOAT
+	@VirtualRate FLOAT = -1
 	, --Dot_Member_CustCreditInfo  
-	@Stake MONEY
+	@Stake MONEY = -1
 	, @IsPhoneBetting BIT = 0
 	, @IsThirdParty BIT = 0
 AS
@@ -30,7 +30,7 @@ AS
  Revision:  
                                    
  Parameter's Explanation:        
- Ex: EXEC Dot_Member_CheckCustSetting_DCS   
+ Ex:  EXEC Dot_Member_CheckCustSetting_DCS   
    @CustID = 14425599,   
    @Sporttype = 122,  
    @Bettype = 30002,    
@@ -73,7 +73,7 @@ BEGIN
 	IF @isLicensee = 0
 	BEGIN
 		SELECT @UserName = username
-			, @AutoSuspend = AutoSuspend2
+			, @AutoSuspend = ISNULL(AutoSuspend2, 0)
 			, @Currency = currency
 			, @SuperID = ISNULL(srecommend, 0)
 			, @MasterID = ISNULL(mrecommend, 0)
@@ -241,7 +241,7 @@ BEGIN
 	ELSE
 	BEGIN
 		SELECT @UserName = username
-			, @AutoSuspend = AutoSuspend2
+			, @AutoSuspend = ISNULL(AutoSuspend2, 0)
 			, @Currency = currency
 			, @SuperID = ISNULL(srecommend, 0)
 			, @MasterID = ISNULL(mrecommend, 0)
@@ -252,8 +252,9 @@ BEGIN
 		WHERE custid = @custid
 		
 		--Bet Limit
-		--Will remove hard codes when [maxpermatch44] is added in dbo.cutinfo
-		SELECT  @MaxperMatch = 1000000
+		SELECT  @MaxperMatch = MaxPerMatch44
+		FROM dbo.custInfo WITH(NOLOCK)
+		WHERE custid = @custid
 		
 		
 		IF @sporttype = 44
@@ -300,7 +301,22 @@ BEGIN
 				END
 			END
 		END
+
+		SELECT @VirtualRate = CASE 
+				WHEN @bettype NOT IN (1, 2, 3, 7, 8, 12)
+					THEN @ActualRate
+				ELSE @virtualrate * @ActualRate
+				END
+			, @tpos = @apos + @mpos + @spos
+
+		IF (@tpos > 95)
+		BEGIN
+			SET @result = 'positiontakingproblem'
+		END
 		
+		SET @Stake_To_Company_Autobookie = @Stake * (1 - @tpos) * @ActualRate
+		SET @Stake_To_Company = @Stake * (1 - @tpos) * @virtualrate
+
 		SELECT @username AS username
 			, @apos AS apos
 			, @mpos AS mpos
@@ -329,6 +345,7 @@ BEGIN
 			, @DoubleCommLosing AS DoubleCommLosing
 	END
 END
+
 
 
 GO
