@@ -1,8 +1,8 @@
 ALTER PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
-	, @ProductID	TINYINT
+	, @ProductID	TINYINT = NULL
 	, @SettingType	SMALLINT = 4
-	, @RoleID INT
+	, @RoleID INT = NULL
 AS
 /*
 	Created: 20151012@Helen
@@ -23,7 +23,7 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)  
 	WHERE ci.custid=@CustID 
 	
-	SELECT SportType,Bettype,IsLive, SettingType 
+	SELECT ProductID,SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
 	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
 	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
@@ -37,7 +37,7 @@ BEGIN
 					)
 		SET @downlines = 1			
 			
-		SELECT pdt.SportType
+		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
@@ -75,7 +75,7 @@ BEGIN
 						)
 		SET @downlines = 1	
    
-		SELECT 	pdt.SportType
+		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
@@ -114,7 +114,7 @@ BEGIN
 					)
 			SET @downlines = 1	
    
-		SELECT 	pdt.SportType
+		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
@@ -148,7 +148,7 @@ BEGIN
 	END	
 	ELSE IF @RoleID = 1
 	BEGIN
-		SELECT 	pdt.SportType
+		SELECT pdt.ProductID, pdt.SportType
 				, pdt.BetType
 				, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 				, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
