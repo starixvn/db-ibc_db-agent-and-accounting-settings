@@ -1,11 +1,3 @@
-SET QUOTED_IDENTIFIER ON 
-GO
-SET ANSI_NULLS ON 
-GO
-
-/****** Object:  Stored Procedure dbo.Dot_Member_CheckCustSetting_DCS    Script Date: 10/16/2015 3:40:46 PM ******/
-
-/****** Object:  Stored Procedure dbo.Dot_Member_CheckCustSetting_DCS    Script Date: 10/15/2015 6:09:40 PM ******/
 ALTER PROCEDURE [dbo].[Dot_Member_CheckCustSetting_DCS] @CustID INT
 	, @Sporttype INT
 	, @Bettype INT
@@ -30,7 +22,7 @@ AS
  Revision:  
                                    
  Parameter's Explanation:        
- Ex:  EXEC Dot_Member_CheckCustSetting_DCS   
+ Ex:    EXEC Dot_Member_CheckCustSetting_DCS   
    @CustID = 14425599,   
    @Sporttype = 122,  
    @Bettype = 30002,    
@@ -155,13 +147,16 @@ BEGIN
 		
 		
 		--Bet Limit
-		SELECT  @MinBet = ISNULL(minbet, 0)
-			, @Maxbet = ISNULL(maxbet, 0)
-			, @MaxperMatch = ISNULL(MaxPerMatch, 0)
-		FROM dbo.CustBetSetting3rd_Member bs WITH (NOLOCK)
-		WHERE bs.custid = @custid
-			AND bs.BetType = @bettype
-			AND bs.SportType = @Sporttype
+		IF @Sporttype = 44
+		BEGIN
+			SELECT  @MinBet = ISNULL(minbet, 0)
+				, @Maxbet = ISNULL(maxbet, 0)
+				, @MaxperMatch = ISNULL(MaxPerMatch, 0)
+			FROM dbo.CustBetSetting3rd_Member bs WITH (NOLOCK)
+			WHERE bs.custid = @custid
+				AND bs.BetType = 3
+				AND bs.SportType = @Sporttype
+		END
 			
 		IF (
 				@@rowcount = 0
@@ -345,19 +340,7 @@ BEGIN
 			, @DoubleCommLosing AS DoubleCommLosing
 	END
 END
-
-
-
 GO
-
-SET QUOTED_IDENTIFIER OFF 
+GRANT EXECUTE ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [Dot_Member] AS [dbo]
 GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [Dot_Member]
-GO 
+GRANT VIEW DEFINITION ON [dbo].[Dot_Member_CheckCustSetting_DCS] TO [vnteam] AS [dbo]
