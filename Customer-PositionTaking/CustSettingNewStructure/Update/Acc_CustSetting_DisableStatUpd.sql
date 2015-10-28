@@ -212,7 +212,7 @@ BEGIN
 				, TYPE
 			)
 		UPDATE CustProductStatus WITH (ROWLOCK,UPDLOCK)
-		SET bitmapIsDisabled =(SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
+		SET bitmapIsHidden =(SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden)))	
 		WHERE CustID = @CustID
 		
 	END

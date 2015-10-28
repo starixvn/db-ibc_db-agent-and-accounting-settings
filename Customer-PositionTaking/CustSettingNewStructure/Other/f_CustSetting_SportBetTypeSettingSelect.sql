@@ -3,7 +3,12 @@ RETURNS @SportBetTypeSetting TABLE (SportType SMALLINT, Bettype SMALLINT, IsLive
 BEGIN 
 	DECLARE @isTest BIT,@SQL NVARCHAR(100) = OBJECT_NAME(@@PROCID)
 
-	IF  (@SQL like '%_xtest%' OR  @SQL like '%_xpre%' )
+	IF  (@SQL like '%_xtest%' 
+			OR  @SQL like '%_xpre%' 
+			OR  @SQL like '%_uat1%'
+			OR  @SQL like '%_uat2%'
+			OR  @SQL like '%_uat3%'
+			OR  @SQL like '%_uat4%')
 	BEGIN
 		SELECT @isTest = 1
 	END

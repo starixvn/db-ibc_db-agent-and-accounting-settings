@@ -55,123 +55,239 @@ BEGIN
 		[MaxPT] [tinyint]
 	)	
 	
+	IF @BetType = 0                         -- Select all bettype
+    BEGIN
+    INSERT @PTMatrix
+	    SELECT
+		    spt.CustID
+	      ,spt.[SportType]
+	      ,spt.[BetType]
+	      ,spt.[IsLive]
+	      ,spt.[SuperPT]
+	      ,spt.[MasterPT]
+	      ,spt.[AgentPT]
+	      , NULL
+	      , NULL
+	      , NULL
+	      , NULL
+	      ,spt.[MinPT]
+	      ,spt.[MaxPT]
+	    FROM [dbo].[CustPTSetting3rd_Agent] spt WITH(NOLOCK)
+	    WHERE CustID = @SRecommend
+          AND SportType = @SportType
+          AND IsLive <= @isLive
 	
-	INSERT @PTMatrix
-	SELECT
-		spt.CustID
-	  ,spt.[SportType]
-	  ,spt.[BetType]
-	  ,spt.[IsLive]
-	  ,spt.[SuperPT]
-	  ,spt.[MasterPT]
-	  ,spt.[AgentPT]
-	  , NULL
-	  , NULL
-	  , NULL
-	  , NULL
-	  ,spt.[MinPT]
-	  ,spt.[MaxPT]
-	FROM [dbo].[CustPTSetting3rd_Agent] spt WITH(NOLOCK)
-	WHERE CustID = @SRecommend
-      AND SportType = @SportType
-      AND BetType = @BetType
-      AND IsLive = @isLive
-	
-	IF @RoleID IN (3, 2, 1)
-	BEGIN
-		INSERT @PTMatrix
-		SELECT mpt.CustID
-		  , mpt.[SportType]
-		  ,mpt.[BetType]
-		  ,mpt.[IsLive]
-		  ,mpt.[SuperPT]
-		  ,mpt.[MasterPT]
-		  ,NULL
-		  ,mpt.[AutoSuperPT]
-		  ,mpt.[IsAutoSuperPT]
-		  ,NULL
-		  ,NULL
-		  ,mpt.[MinPT]
-		  ,mpt.[MaxPT]
-		FROM [dbo].[CustPTSetting3rd_Agent] mpt WITH(NOLOCK)
-		WHERE CustID = @MRecommend
+	    IF @RoleID IN (3, 2, 1)
+	    BEGIN
+		    INSERT @PTMatrix
+		    SELECT mpt.CustID
+		      , mpt.[SportType]
+		      ,mpt.[BetType]
+		      ,mpt.[IsLive]
+		      ,mpt.[SuperPT]
+		      ,mpt.[MasterPT]
+		      ,NULL
+		      ,mpt.[AutoSuperPT]
+		      ,mpt.[IsAutoSuperPT]
+		      ,NULL
+		      ,NULL
+		      ,mpt.[MinPT]
+		      ,mpt.[MaxPT]
+		    FROM [dbo].[CustPTSetting3rd_Agent] mpt WITH(NOLOCK)
+		    WHERE CustID = @MRecommend
+              AND SportType = @SportType
+              AND IsLive <= @isLive
+		
+		    IF @RoleID IN (2, 1)
+		    BEGIN
+			    INSERT @PTMatrix
+			    SELECT apt.CustID
+			      , apt.[SportType]
+			      ,apt.[BetType]
+			      ,apt.[IsLive]
+			      ,NULL
+			      ,[MasterPT]
+			      ,[AgentPT]
+			      ,NULL
+			      ,NULL
+			      ,apt.[AutoMasterPT]
+			      ,apt.[IsAutoMasterPT]
+			      ,apt.[MinPT]
+			      ,apt.[MaxPT]
+			    FROM [dbo].[CustPTSetting3rd_Agent] apt WITH(NOLOCK)
+			    WHERE CustID = @Recommend
+                  AND SportType = @SportType
+                  AND IsLive <= @isLive
+			
+			    IF @RoleID = 1
+			    BEGIN
+				    IF EXISTS(SELECT TOP 1 1 
+							    FROM dbo.CustSettingMode3rd WITH(NOLOCK) 
+							    WHERE CustID = @CustID AND IsGrouped = 0)
+				    BEGIN
+					    INSERT @PTMatrix
+					    SELECT mempt.CustID
+						    , mempt.[SportType]
+						    , mempt.[BetType]
+						    , mempt.[IsLive]
+						    , mempt.[SuperPT]
+						    , mempt.[MasterPT]
+						    , mempt.[AgentPT]
+						    , mempt.[AutoSuperPT]
+						    , mempt.[IsAutoSuperPT]
+						    , mempt.[AutoMasterPT]
+						    , mempt.[IsAutoMasterPT]
+						    , NULL
+						    , NULL
+					    FROM [dbo].CustPTSetting3rd_Member mempt WITH (NOLOCK)
+					    WHERE CustID = @CustID
+                          AND SportType = @SportType
+                          AND IsLive <= @isLive
+				    END
+				    ELSE
+				    BEGIN
+					    INSERT @PTMatrix
+					    SELECT @CustID
+						    , mempt.[SportType]
+						    , mempt.[BetType]
+						    , mempt.[IsLive]
+						    , mempt.[SuperPT]
+						    , mempt.[MasterPT]
+						    , mempt.[AgentPT]
+						    , mempt.[AutoSuperPT]
+						    , mempt.[IsAutoSuperPT]
+						    , mempt.[AutoMasterPT]
+						    , mempt.[IsAutoMasterPT]
+						    , NULL
+						    , NULL
+					    FROM [dbo].CustPTGroupSetting3rd_Member mempt WITH (NOLOCK)
+					    WHERE AgentID = @Recommend
+                          AND SportType = @SportType
+                          AND IsLive <= @isLive
+				    END
+			    END
+		    END
+	    END
+    END
+    ELSE                                    -- Select specified bettype
+    BEGIN
+	    INSERT @PTMatrix
+	    SELECT
+		    spt.CustID
+	      ,spt.[SportType]
+	      ,spt.[BetType]
+	      ,spt.[IsLive]
+	      ,spt.[SuperPT]
+	      ,spt.[MasterPT]
+	      ,spt.[AgentPT]
+	      , NULL
+	      , NULL
+	      , NULL
+	      , NULL
+	      ,spt.[MinPT]
+	      ,spt.[MaxPT]
+	    FROM [dbo].[CustPTSetting3rd_Agent] spt WITH(NOLOCK)
+	    WHERE CustID = @SRecommend
           AND SportType = @SportType
           AND BetType = @BetType
-          AND IsLive = @isLive
-		
-		IF @RoleID IN (2, 1)
-		BEGIN
-			INSERT @PTMatrix
-			SELECT apt.CustID
-			  , apt.[SportType]
-			  ,apt.[BetType]
-			  ,apt.[IsLive]
-			  ,NULL
-			  ,[MasterPT]
-			  ,[AgentPT]
-			  ,NULL
-			  ,NULL
-			  ,apt.[AutoMasterPT]
-			  ,apt.[IsAutoMasterPT]
-			  ,apt.[MinPT]
-			  ,apt.[MaxPT]
-			FROM [dbo].[CustPTSetting3rd_Agent] apt WITH(NOLOCK)
-			WHERE CustID = @Recommend
+          AND IsLive <= @isLive
+	
+	    IF @RoleID IN (3, 2, 1)
+	    BEGIN
+		    INSERT @PTMatrix
+		    SELECT mpt.CustID
+		      , mpt.[SportType]
+		      ,mpt.[BetType]
+		      ,mpt.[IsLive]
+		      ,mpt.[SuperPT]
+		      ,mpt.[MasterPT]
+		      ,NULL
+		      ,mpt.[AutoSuperPT]
+		      ,mpt.[IsAutoSuperPT]
+		      ,NULL
+		      ,NULL
+		      ,mpt.[MinPT]
+		      ,mpt.[MaxPT]
+		    FROM [dbo].[CustPTSetting3rd_Agent] mpt WITH(NOLOCK)
+		    WHERE CustID = @MRecommend
               AND SportType = @SportType
               AND BetType = @BetType
-              AND IsLive = @isLive
+              AND IsLive <= @isLive
+		
+		    IF @RoleID IN (2, 1)
+		    BEGIN
+			    INSERT @PTMatrix
+			    SELECT apt.CustID
+			      , apt.[SportType]
+			      ,apt.[BetType]
+			      ,apt.[IsLive]
+			      ,NULL
+			      ,[MasterPT]
+			      ,[AgentPT]
+			      ,NULL
+			      ,NULL
+			      ,apt.[AutoMasterPT]
+			      ,apt.[IsAutoMasterPT]
+			      ,apt.[MinPT]
+			      ,apt.[MaxPT]
+			    FROM [dbo].[CustPTSetting3rd_Agent] apt WITH(NOLOCK)
+			    WHERE CustID = @Recommend
+                  AND SportType = @SportType
+                  AND BetType = @BetType
+                  AND IsLive <= @isLive
 			
-			IF @RoleID = 1
-			BEGIN
-				IF EXISTS(SELECT TOP 1 1 
-							FROM dbo.CustSettingMode3rd WITH(NOLOCK) 
-							WHERE CustID = @CustID AND IsGrouped = 0)
-				BEGIN
-					INSERT @PTMatrix
-					SELECT mempt.CustID
-						, mempt.[SportType]
-						, mempt.[BetType]
-						, mempt.[IsLive]
-						, mempt.[SuperPT]
-						, mempt.[MasterPT]
-						, mempt.[AgentPT]
-						, mempt.[AutoSuperPT]
-						, mempt.[IsAutoSuperPT]
-						, mempt.[AutoMasterPT]
-						, mempt.[IsAutoMasterPT]
-						, NULL
-						, NULL
-					FROM [dbo].CustPTSetting3rd_Member mempt WITH (NOLOCK)
-					WHERE CustID = @CustID
-                      AND SportType = @SportType
-                      AND BetType = @BetType
-                      AND IsLive = @isLive
-				END
-				ELSE
-				BEGIN
-					INSERT @PTMatrix
-					SELECT @CustID
-						, mempt.[SportType]
-						, mempt.[BetType]
-						, mempt.[IsLive]
-						, mempt.[SuperPT]
-						, mempt.[MasterPT]
-						, mempt.[AgentPT]
-						, mempt.[AutoSuperPT]
-						, mempt.[IsAutoSuperPT]
-						, mempt.[AutoMasterPT]
-						, mempt.[IsAutoMasterPT]
-						, NULL
-						, NULL
-					FROM [dbo].CustPTGroupSetting3rd_Member mempt WITH (NOLOCK)
-					WHERE AgentID = @Recommend
-                      AND SportType = @SportType
-                      AND BetType = @BetType
-                      AND IsLive = @isLive
-				END
-			END
-		END
-	END
+			    IF @RoleID = 1
+			    BEGIN
+				    IF EXISTS(SELECT TOP 1 1 
+							    FROM dbo.CustSettingMode3rd WITH(NOLOCK) 
+							    WHERE CustID = @CustID AND IsGrouped = 0)
+				    BEGIN
+					    INSERT @PTMatrix
+					    SELECT mempt.CustID
+						    , mempt.[SportType]
+						    , mempt.[BetType]
+						    , mempt.[IsLive]
+						    , mempt.[SuperPT]
+						    , mempt.[MasterPT]
+						    , mempt.[AgentPT]
+						    , mempt.[AutoSuperPT]
+						    , mempt.[IsAutoSuperPT]
+						    , mempt.[AutoMasterPT]
+						    , mempt.[IsAutoMasterPT]
+						    , NULL
+						    , NULL
+					    FROM [dbo].CustPTSetting3rd_Member mempt WITH (NOLOCK)
+					    WHERE CustID = @CustID
+                          AND SportType = @SportType
+                          AND BetType = @BetType
+                          AND IsLive <= @isLive
+				    END
+				    ELSE
+				    BEGIN
+					    INSERT @PTMatrix
+					    SELECT @CustID
+						    , mempt.[SportType]
+						    , mempt.[BetType]
+						    , mempt.[IsLive]
+						    , mempt.[SuperPT]
+						    , mempt.[MasterPT]
+						    , mempt.[AgentPT]
+						    , mempt.[AutoSuperPT]
+						    , mempt.[IsAutoSuperPT]
+						    , mempt.[AutoMasterPT]
+						    , mempt.[IsAutoMasterPT]
+						    , NULL
+						    , NULL
+					    FROM [dbo].CustPTGroupSetting3rd_Member mempt WITH (NOLOCK)
+					    WHERE AgentID = @Recommend
+                          AND SportType = @SportType
+                          AND BetType = @BetType
+                          AND IsLive <= @isLive
+				    END
+			    END
+		    END
+	    END
+    END
 	
 	--Return PT
 	SELECT [SportType]

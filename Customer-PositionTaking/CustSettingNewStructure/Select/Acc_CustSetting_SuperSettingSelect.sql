@@ -4,10 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
---exec Acc_CustSetting_SuperSettingSelect_Testing @CustID = 1, @ProductID = 247, @settingType = 4
---exec Acc_CustSetting_SuperSettingSelect @CustID = 1, @ProductID = 247, @settingType = 4
-
-alter PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_SuperSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT
 	, @SettingType	SMALLINT
@@ -26,8 +23,7 @@ BEGIN
 	
 	SELECT SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
-	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
-	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
 	
 	--PT Setting
 	IF @SettingType = 1
@@ -116,7 +112,7 @@ BEGIN
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
-			
+			, @downlines HasDownline
 			, CAST(CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
 					ELSE ISNULL((

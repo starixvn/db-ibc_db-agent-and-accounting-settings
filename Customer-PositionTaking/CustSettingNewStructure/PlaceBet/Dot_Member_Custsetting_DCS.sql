@@ -15,7 +15,7 @@ AS
  Revision:  
                                    
  Parameter's Explanation:        
- Ex: EXEC Dot_Member_Custsetting_DCS  
+ Ex:  EXEC Dot_Member_Custsetting_DCS  
    @CustID = 14425599,   
    @Sporttype = 122,  
    @Bettype = 30002,    
@@ -75,12 +75,15 @@ BEGIN
 		END
    
    --Bet Limit
-	SELECT  @MinBet = ISNULL(minbet, 0)
-		, @Maxbet = ISNULL(maxbet, 0)
-	FROM dbo.CustBetSetting3rd_Member bs WITH (NOLOCK)
-	WHERE bs.custid = @custid
-		AND bs.BetType = @bettype
-		AND bs.SportType = @Sporttype
+	IF @Sporttype = 44
+	BEGIN
+		SELECT  @MinBet = ISNULL(minbet, 0)
+			, @Maxbet = ISNULL(maxbet, 0)
+		FROM dbo.CustBetSetting3rd_Member bs WITH (NOLOCK)
+		WHERE bs.custid = @custid
+			AND bs.BetType = 3
+			AND bs.SportType = @Sporttype
+	END
    
    
  END  
@@ -104,10 +107,8 @@ BEGIN
  
 	SELECT @apositiontaking apositiontaking,@mpositiontaking mpositiontaking
 			,@spositiontaking spositiontaking,@minbet minbet,@maxbet maxbet
-END  
-
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Dot_Member_Custsetting_DCS] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Member_Custsetting_DCS] TO [Dot_Member]
-GO 
+END
+GO
+GRANT EXECUTE ON [dbo].[Dot_Member_Custsetting_DCS] TO [Dot_Member] AS [dbo]
+GO
+GRANT VIEW DEFINITION ON [dbo].[Dot_Member_Custsetting_DCS] TO [vnteam] AS [dbo]
