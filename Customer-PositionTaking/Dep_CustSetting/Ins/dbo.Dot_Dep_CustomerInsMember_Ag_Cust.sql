@@ -152,6 +152,7 @@ Revisions:
  - 20150721@Winnie: Change for support Bettrade
  - 20150722@Winnie: support Microgaming
  - 20150806@Patrick: Remove insert default balance value for Credit/Debit Game (merge code)
+ - 20151022@Winnie: Change for AG Casino Single wallet Feature #43672
 
 Param's Explanation:  
 • @CustID: return new 12bet Player Cust ID  
@@ -2680,9 +2681,9 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 --Set default bet setting of AG Casino  
 EXEC Lrf_AGC_Customer_SetDefaultSetting    
  @CustID = @CustID,  
- @SuperID = @srecommend,    
+ @SuperID = @recommend,
  @ErrCode = @ErrCode OUTPUT,    
- @ErrMsg = @ErrMsg OUTPUT  
+ @ErrMsg =  @ErrMsg OUTPUT  
   
 --Set default bet setting of 3rd Product  
 EXEC dbo.Lrf_3rdProductCustomerSetDefaultSetting    

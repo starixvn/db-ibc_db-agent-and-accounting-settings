@@ -21,22 +21,35 @@ AS
 BEGIN
 	SET NOCOUNT ON
 	
-	DECLARE @CheckedGroup			VARCHAR(500)	= ''
-			,@DefaultGroup			VARCHAR(20)		= ''
-			,@IsEnabled				BIT				= 0
+	DECLARE @CheckedGroup			VARCHAR(500)	
+			,@DefaultGroup			VARCHAR(20)		
+			,@IsEnabled				BIT				
 			,@Upline				INT
-			,@UplineCheckedGroup	VARCHAR(500)	= ''
+			,@UplineIsEnabled		BIT			
+			,@UplineCheckedGroup	VARCHAR(500)		
+			,@MemberCheckedGroup	VARCHAR(20)
+			,@UplineDefaultGroup		VARCHAR(20)		
+			,@RoleId				INT	
 	
-	SELECT @CheckedGroup	=	ISNULL(CheckedGroup, '')
-		,@DefaultGroup		=	ISNULL(DefaultGroup, '')
-		,@IsEnabled			=	ISNULL(IsEnabled, 0)
+	SELECT @CheckedGroup	=	CheckedGroup
+		,@DefaultGroup		=	DefaultGroup
+		,@IsEnabled			=	IsEnabled
 	FROM dbo.Dep_SuperSetting_AGCasino WITH (NOLOCK) 
 	WHERE CustID = @CustID
 
-	SELECT TOP 1 @Upline=a.recommend FROM dbo.Customer a WITH (NOLOCK) 
+	SELECT TOP 1 @RoleId=a.roleid FROM dbo.Customer a WITH (NOLOCK) 
+	WHERE CustID = @CustID
+	IF @RoleId=1	
+	SELECT TOP 1  @Upline=a.recommend FROM dbo.Customer a WITH (NOLOCK) 
+	WHERE CustID = @CustID
+	ELSE IF @RoleId=2
+	SELECT TOP 1  @Upline=a.mrecommend FROM dbo.Customer a WITH (NOLOCK) 
+	WHERE CustID = @CustID
+	ELSE IF @RoleId=3
+	SELECT TOP 1  @Upline=a.srecommend FROM dbo.Customer a WITH (NOLOCK) 
 	WHERE CustID = @CustID
 
-	SELECT @UplineCheckedGroup	=	ISNULL(CheckedGroup, '')	
+	SELECT @UplineCheckedGroup	=	CheckedGroup , @UplineDefaultGroup=	DefaultGroup,@UplineIsEnabled=IsEnabled
 	FROM dbo.Dep_SuperSetting_AGCasino WITH (NOLOCK) 
 	WHERE CustID = @Upline
 
@@ -57,13 +70,39 @@ BEGIN
 	FROM dbo.Customer a WITH (NOLOCK) 
 	WHERE CustID = @CustID
 
+	IF @RoleId<>1
+	BEGIN
 	SELECT @CheckedGroup AS CheckedGroup
 		,@DefaultGroup AS DefaultGroup
 		,@IsEnabled AS IsEnabled
 		,@UplineCheckedGroup AS UplineCheckedGroup
-	EXEC Acc_Dep_CustomerSelSetting
+	END
+	ELSE
+	BEGIN
+	--member
+	SELECT @IsEnabled = 0
+	SELECT	@MemberCheckedGroup = AGGroup, 
+			@IsEnabled = ISNULL(IsEnabled,0)
+	FROM dbo.Dep_CustSetting_AGCasino WITH (NOLOCK)
+	WHERE CustID = @CustId
+
+	SELECT @UplineIsEnabled = ISNULL(IsEnabled,0) FROM dbo.Dep_SuperSetting_AGCasino WITH (NOLOCK) WHERE CustID = @Upline
+
+	IF (@UplineIsEnabled = 0)
+		SELECT @IsEnabled = 0
+
+	IF @MemberCheckedGroup IS NULL
+	SELECT @MemberCheckedGroup=@UplineDefaultGroup
+	SELECT @MemberCheckedGroup AS CheckedGroup
+		  ,@UplineDefaultGroup AS DefaultGroup
+		  ,@IsEnabled AS IsEnabled
+		  ,@UplineCheckedGroup AS UplineCheckedGroup
+	END
+
+	EXEC Acc_Dep_CustomerSelSetting_xtest
 	 @custid	=@custid,
 	 @SportType =250
 END
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_AGC_SelSuperSetting] TO [bodbAdminNet] AS [dbo]
