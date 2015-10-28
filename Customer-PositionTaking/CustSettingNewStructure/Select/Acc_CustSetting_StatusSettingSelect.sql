@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
+alter PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT = NULL
 	, @SettingType	SMALLINT = 4
@@ -7,7 +7,7 @@ AS
 /*
 	Created: 20151012@Helen
 	Task : setting values of a product
-	DB: DBCUST/CustDB
+	DB: DBCUST/CustDB, DBAGE/bodb02, DBACC/bodb02
 	Original:
 
 	Param's Explanation:
