@@ -36,6 +36,7 @@ BEGIN
 			,@logSPData_Old	VARCHAR(5000)
 			,@XML			XML
 			,@SettingMode	BIT = 0
+			,@MemGroup		INT
 
 	DECLARE @tblPT TABLE (
 		SportType			SMALLINT
@@ -591,13 +592,91 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		IF NOT EXISTS(SELECT TOP 1 1
-					FROM CustPTGroupSetting3rd_Member cs WITH(UPDLOCK,ROWLOCK)
-						INNER JOIN @NewPT b ON cs.sporttype = b.SportType	
-												AND cs.bettype = b.BetType
-												AND cs.isLive = b.IsLive
-					WHERE cs.AgentID = @_AgentID
-						AND (
+		SELECT @MemGroup = count(1) 
+		FROM CustSettingMode3rd sm WITH (NOLOCK) 
+			INNER JOIN CustInfo ci WITH (NOLOCK) ON ci.custid = sm.CustID 
+		WHERE ci.recommend = @_AgentID AND sm.IsGrouped = 1
+		
+		IF @MemGroup = 1
+		BEGIN
+			UPDATE cs
+			SET cs.SuperPT=b.SuperPT,
+				cs.MasterPT=b.MasterPT,
+				cs.AgentPT=b.AgentPT,
+				cs.isAutoSuperPT = b.isAutoSuperPT,
+				cs.IsAutoMasterPT = b.IsAutoMasterPT,
+				cs.AutoSuperPT = b.AutoSuperPT,
+				cs.AutoMasterPT = b.AutoMasterPT
+			FROM dbo.CustPTGroupSetting3rd_Member cs WITH(ROWLOCK,UPDLOCK)
+				INNER JOIN @NewPT b ON  b.SportType=cs.SportType
+										AND b.BetType=cs.BetType
+										AND b.IsLive=cs.IsLive
+			WHERE cs.AgentID = @_AgentID AND
+					(
+							cs.SuperPT <> b.SuperPT
+						OR cs.MasterPT <> b.MasterPT
+						OR cs.AgentPT <> b.AgentPT
+						OR cs.isAutoSuperPT <> b.isAutoSuperPT
+						OR cs.IsAutoMasterPT <> b.IsAutoMasterPT
+						OR cs.AutoSuperPT <> b.AutoSuperPT
+						OR cs.AutoMasterPT <> b.AutoMasterPT
+					)
+		END
+		ELSE
+		BEGIN
+			IF EXISTS(SELECT TOP 1 1
+						FROM CustPTGroupSetting3rd_Member cs WITH(UPDLOCK,ROWLOCK)
+							INNER JOIN @NewPT b ON cs.sporttype = b.SportType	
+													AND cs.bettype = b.BetType
+													AND cs.isLive = b.IsLive
+						WHERE cs.AgentID = @_AgentID
+							AND (
+									cs.SuperPT <> b.SuperPT
+								OR cs.MasterPT <> b.MasterPT
+								OR cs.AgentPT <> b.AgentPT
+								OR cs.isAutoSuperPT <> b.isAutoSuperPT
+								OR cs.IsAutoMasterPT <> b.IsAutoMasterPT
+								OR cs.AutoSuperPT <> b.AutoSuperPT
+								OR cs.AutoMasterPT <> b.AutoMasterPT
+							)		
+					)			
+			BEGIN
+				--Move to Individual Setting
+				INSERT INTO dbo.CustPTSetting3rd_Member
+				SELECT
+						@CustID,
+						grpt.SportType,
+						grpt.BetType,
+						grpt.IsLive,
+						grpt.SuperPT,
+						grpt.MasterPT,
+						grpt.AgentPT,
+						grpt.IsAutoMasterPT,
+						grpt.AutoMasterPT,
+						grpt.IsAutoSuperPT,
+						grpt.AutoSuperPT
+				FROM dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
+					LEFT JOIN dbo.CustPTSetting3rd_Member mempt ON mempt.CustID = @CustID
+																	AND grpt.SportType=mempt.SportType
+																	AND grpt.BetType=mempt.BetType
+																	AND grpt.IsLive=mempt.IsLive
+				WHERE grpt.AgentID=@_AgentID AND mempt.CustID IS NULL
+		
+				--Update Adjusted PT for indiviual setting
+				UPDATE cs
+				SET cs.SuperPT=b.SuperPT,
+					cs.MasterPT=b.MasterPT,
+					cs.AgentPT=b.AgentPT,
+					cs.isAutoSuperPT = b.isAutoSuperPT,
+					cs.IsAutoMasterPT = b.IsAutoMasterPT,
+					cs.AutoSuperPT = b.AutoSuperPT,
+					cs.AutoMasterPT = b.AutoMasterPT
+				FROM dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK,UPDLOCK)
+					INNER JOIN @NewPT b ON  b.SportType=cs.SportType
+											AND b.BetType=cs.BetType
+											AND b.IsLive=cs.IsLive
+				WHERE cs.CustID = @CustID AND
+						(
 								cs.SuperPT <> b.SuperPT
 							OR cs.MasterPT <> b.MasterPT
 							OR cs.AgentPT <> b.AgentPT
@@ -605,60 +684,14 @@ BEGIN
 							OR cs.IsAutoMasterPT <> b.IsAutoMasterPT
 							OR cs.AutoSuperPT <> b.AutoSuperPT
 							OR cs.AutoMasterPT <> b.AutoMasterPT
-						)		
-				)
-		RETURN
+						)
 		
-		--Move to Individual Setting
-		INSERT INTO dbo.CustPTSetting3rd_Member
-		SELECT
-				@CustID,
-				grpt.SportType,
-				grpt.BetType,
-				grpt.IsLive,
-				grpt.SuperPT,
-				grpt.MasterPT,
-				grpt.AgentPT,
-				grpt.IsAutoMasterPT,
-				grpt.AutoMasterPT,
-				grpt.IsAutoSuperPT,
-				grpt.AutoSuperPT
-		FROM dbo.CustPTGroupSetting3rd_Member grpt WITH(NOLOCK)
-			LEFT JOIN dbo.CustPTSetting3rd_Member mempt ON mempt.CustID = @CustID
-															AND grpt.SportType=mempt.SportType
-															AND grpt.BetType=mempt.BetType
-															AND grpt.IsLive=mempt.IsLive
-		WHERE grpt.AgentID=@_AgentID AND mempt.CustID IS NULL
-		
-		--Update Adjusted PT for indiviual setting
-		UPDATE cs
-		SET cs.SuperPT=b.SuperPT,
-			cs.MasterPT=b.MasterPT,
-			cs.AgentPT=b.AgentPT,
-			cs.isAutoSuperPT = b.isAutoSuperPT,
-			cs.IsAutoMasterPT = b.IsAutoMasterPT,
-			cs.AutoSuperPT = b.AutoSuperPT,
-			cs.AutoMasterPT = b.AutoMasterPT
-		FROM dbo.CustPTSetting3rd_Member cs WITH(ROWLOCK,UPDLOCK)
-			INNER JOIN @NewPT b ON  b.SportType=cs.SportType
-									AND b.BetType=cs.BetType
-									AND b.IsLive=cs.IsLive
-		WHERE cs.CustID = @CustID AND
-				(
-						cs.SuperPT <> b.SuperPT
-					OR cs.MasterPT <> b.MasterPT
-					OR cs.AgentPT <> b.AgentPT
-					OR cs.isAutoSuperPT <> b.isAutoSuperPT
-					OR cs.IsAutoMasterPT <> b.IsAutoMasterPT
-					OR cs.AutoSuperPT <> b.AutoSuperPT
-					OR cs.AutoMasterPT <> b.AutoMasterPT
-				)
-		
-		---Update setting mode
-		UPDATE dbo.CustSettingMode3rd WITH(ROWLOCK,UPDLOCK)
-		SET IsGrouped = 0
-		WHERE CustID = @CustID
-		
+				---Update setting mode
+				UPDATE dbo.CustSettingMode3rd WITH(ROWLOCK,UPDLOCK)
+				SET IsGrouped = 0
+				WHERE CustID = @CustID
+			END
+		END
 	END			 
 	
 	-- end write log

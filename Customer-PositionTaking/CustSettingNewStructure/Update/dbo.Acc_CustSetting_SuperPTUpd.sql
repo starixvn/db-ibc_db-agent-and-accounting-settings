@@ -225,9 +225,9 @@ BEGIN
 			,@RoleID = 4
 			,@SportBettypeXML = @PT  
 		
-		EXEC dbo.Acc_DynamicCustSetting3rd_01 
-			@SuperID = @custid
-			,@SportBettypeXML = @PT 
+		--EXEC dbo.Acc_DynamicCustSetting3rd_01 
+		--	@SuperID = @custid
+		--	,@SportBettypeXML = @PT 
     END
     
     IF @UpdateMinPT = 1
