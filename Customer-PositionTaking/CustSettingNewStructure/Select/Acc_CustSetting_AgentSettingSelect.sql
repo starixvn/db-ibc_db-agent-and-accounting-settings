@@ -25,8 +25,7 @@ BEGIN
    
 	SELECT SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
-	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
-	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
 		
 	SELECT @SuperID=ci.srecommend, @MasterID=ci.mrecommend  
 	FROM dbo.custInfo ci WITH(NOLOCK)  
@@ -175,7 +174,7 @@ BEGIN
 			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
 			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
-			
+			, @downlines HasDownline
 			, CAST(CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
 					ELSE ISNULL((

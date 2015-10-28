@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
---Acc_CustSetting_ProductSelect_ALL @custid=1176070
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductStatusSelect]   
 	@CustID	INT = NULL, @IsMultiple INT = 0
 AS  
@@ -16,6 +10,8 @@ AS
  Param's Explanation:  
    
  */  
+ 
+ 
 BEGIN
 
 	IF @IsMultiple = 0
@@ -23,7 +19,7 @@ BEGIN
 		SELECT DISTINCT P.productID,P.ProductName,psd.SettingLevel,psd.SportType,psd.Bettype
 			, dbo.f_GetProductStatus(cps.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
 			, dbo.f_GetProductStatus(cps.bitmapIsHidden, PSP.bitmapOrder) AS IsHidden
-		FROM DBPRO.bodb02.dbo.Products P WITH (NOLOCK)
+		FROM DBAGE.bodb02.dbo.Products P WITH (NOLOCK)
 			INNER JOIN dbo.ProductSettingDetail psd WITH(NOLOCK)  ON P.productID = PSD.ProductID
 			INNER JOIN dbo.ProductStatusProfile psp WITH (NOLOCK) ON psp.Sporttype = psd.SportType AND psp.Bettype = psd.BetType
 			INNER JOIN dbo.CustProductStatus cps  WITH (NOLOCK) ON cps.CustID =  @CustID
@@ -41,7 +37,7 @@ BEGIN
 			SELECT DISTINCT P.productID,P.ProductName,psd.SettingLevel,psd.SportType,psd.Bettype
 			, dbo.f_GetProductStatus(cps.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
 			, dbo.f_GetProductStatus(cps.bitmapIsHidden, PSP.bitmapOrder) AS IsHidden
-			FROM DBPRO.bodb02.dbo.Products P WITH (NOLOCK)
+			FROM DBAGE.bodb02.dbo.Products P WITH (NOLOCK)
 				INNER JOIN dbo.ProductSettingDetail psd WITH(NOLOCK)  ON P.productID = PSD.ProductID
 				INNER JOIN dbo.ProductStatusProfile psp WITH (NOLOCK) ON psp.Sporttype = psd.SportType AND psp.Bettype = psd.BetType
 				INNER JOIN dbo.CustProductStatus cps  WITH (NOLOCK) ON cps.CustID IN (SELECT CustID FROM custInfo WITH (NOLOCK) WHERE srecommend = @CustID AND roleid = 3)
@@ -53,7 +49,7 @@ BEGIN
 			SELECT DISTINCT P.productID,P.ProductName,psd.SettingLevel,psd.SportType,psd.Bettype
 			, dbo.f_GetProductStatus(cps.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
 			, dbo.f_GetProductStatus(cps.bitmapIsHidden, PSP.bitmapOrder) AS IsHidden
-			FROM DBPRO.bodb02.dbo.Products P WITH (NOLOCK)
+			FROM DBAGE.bodb02.dbo.Products P WITH (NOLOCK)
 				INNER JOIN dbo.ProductSettingDetail psd WITH(NOLOCK)  ON P.productID = PSD.ProductID
 				INNER JOIN dbo.ProductStatusProfile psp WITH (NOLOCK) ON psp.Sporttype = psd.SportType AND psp.Bettype = psd.BetType
 				INNER JOIN dbo.CustProductStatus cps  WITH (NOLOCK) ON cps.CustID IN (SELECT CustID FROM custInfo WITH (NOLOCK) WHERE mrecommend = @CustID AND roleid = 2)
@@ -65,7 +61,7 @@ BEGIN
 			SELECT DISTINCT P.productID,P.ProductName,psd.SettingLevel,psd.SportType,psd.Bettype
 			, dbo.f_GetProductStatus(cps.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
 			, dbo.f_GetProductStatus(cps.bitmapIsHidden, PSP.bitmapOrder) AS IsHidden
-			FROM DBPRO.bodb02.dbo.Products P WITH (NOLOCK)
+			FROM DBAGE.bodb02.dbo.Products P WITH (NOLOCK)
 				INNER JOIN dbo.ProductSettingDetail psd WITH(NOLOCK)  ON P.productID = PSD.ProductID
 				INNER JOIN dbo.ProductStatusProfile psp WITH (NOLOCK) ON psp.Sporttype = psd.SportType AND psp.Bettype = psd.BetType
 				INNER JOIN dbo.CustProductStatus cps  WITH (NOLOCK) ON cps.CustID IN (SELECT CustID FROM custInfo WITH (NOLOCK) WHERE recommend = @CustID AND roleid = 1)
