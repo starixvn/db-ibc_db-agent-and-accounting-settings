@@ -25,6 +25,7 @@ AS
 	Revisions:
 	-20150612@Winnie: Add Microgaming & bettrade
 	-20150807@Winnie: Change way create bettrade member
+	-20151026@Jim: support feature #44780
 	Param's Explanation:
 */
 BEGIN
@@ -117,7 +118,7 @@ BEGIN
 	FROM dbo.Dep_SupperProductSetting WITH (NOLOCK) 
 	WHERE CustID = @CustID AND ProductId=@ProductId
 	-- Update Status for Super
-	IF (EXISTS(SELECT 1 FROM dbo.Dep_SupperProductSetting WITH (NOLOCK) WHERE CustID = @CustID AND ProductId=@ProductId ))
+	IF (EXISTS(SELECT 1 FROM dbo.Dep_SupperProductSetting WITH (NOLOCK) WHERE CustID = @CustID AND ProductId=@ProductId AND @ProductId<>14))
 	BEGIN
 		UPDATE dbo.Dep_SupperProductSetting WITH(ROWLOCK)
 		SET IsEnabled = @IsEnable
@@ -129,7 +130,7 @@ BEGIN
 		RETURN
 		END
 	END
-	ELSE
+	ELSE IF (@ProductId<>14)
 	BEGIN
 		INSERT INTO dbo.Dep_SupperProductSetting (CustID, ProductId,IsEnabled)
 		VALUES (@CustID, @ProductId, @IsEnable)
@@ -530,7 +531,7 @@ BEGIN
 
 		SELECT @RowCount = @@rowcount
 
-		WHILE (@CurrRow <= @RowCount)
+		WHILE (@CurrRow <= @RowCount AND @ProductId<>14)
 		BEGIN
 			UPDATE dbo.Dep_CustProductSetting WITH (ROWLOCK, UPDLOCK)
 			SET IsEnabled = @IsEnable
