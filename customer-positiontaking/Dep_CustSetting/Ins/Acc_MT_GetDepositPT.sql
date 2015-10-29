@@ -16,7 +16,7 @@ AS
   Created: Winnie
   Date: 20150612
   Task: View PT setting of deposit customer 
-  DB: DBCUST/CUSTDB
+  DB: DBCUST/CUSTDB 
 
   Revisions:
 
