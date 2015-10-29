@@ -40,6 +40,7 @@ BEGIN
 	) x
 	WHERE rn = 1
 
+	--Insert settings of PT Group
 	INSERT INTO [dbo].[CustPTGroupSetting3rd_Member]
 	   ([AgentID]
 	   ,[SportType]
@@ -66,7 +67,8 @@ BEGIN
 	FROM [dbo].[CustPTSetting3rd_Member] mb
 		INNER JOIN #tempGroup tmp ON mb.CustID = tmp.repCustID
 		
-		
+	
+	--Update group mode	
 	UPDATE main
 	SET IsGrouped = 1
 	FROM dbo.CustSettingMode3rd main WITH(ROWLOCK,UPDLOCK)
@@ -76,6 +78,15 @@ BEGIN
 		ON tmp1.cs1 = tmp2.cs1
 			AND tmp1.cs2 = tmp2.cs2
 			AND tmp1.recommend = tmp2.recommend
+	
+	--Delete individual settings		
+	DELETE cs
+	FROM dbo.CustPTSetting3rd_Member cs
+	INNER JOIN #tempData tmp1 WITH(NOLOCK)
+		ON tmp1.custid = cs.CustID
+	INNER JOIN dbo.CustSettingMode3rd m WITH(NOLOCK)
+		ON cs.CustID = m.CustID
+	WHERE m.IsGrouped = 1
 			
 
 	DROP TABLE #tempdata
