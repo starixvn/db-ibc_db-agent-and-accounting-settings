@@ -1,11 +1,11 @@
-CREATE PROCEDURE dbo.DBA_CustSetting_SetupGroupSetting  
+ALTER PROCEDURE dbo.DBA_CustSetting_SetupGroupSetting  
 	@srecommend INT
 AS
 /*  
 	Created By: Dominic  
 	Created Date: 20151027  
-	Description: This SP is used to setup Group PT for a specific agent. Plz be noted that that this SP
-		is applied for agents that do not have any data in dbo.CustPTSetting3rd_Member  
+	Description: This SP is used to setup Group PT for a specific super. Plz be noted that that this SP
+		is applied for super that do not have any data in dbo.CustPTSetting3rd_Member  
 
 	Param explaination:  
 		@agentID: recommend    
@@ -14,9 +14,8 @@ AS
 BEGIN
 	SET NOCOUNT ON
 		
-	CREATE TABLE #tempData (custid int, cs1 bigint, cs2 int)
-
-	CREATE TABLE #tempGroup(cs1 bigint, cs2 int, memberCNT int, repCustID int)
+	create table #tempData (recommend int, custid int, cs1 bigint, cs2 int)
+	create table #tempGroup(recommend int, cs1 bigint, cs2 int, memberCNT int, repCustID int)
 
 	;WITH _s as (
 		SELECT c.recommend, c.custid	
@@ -26,7 +25,6 @@ BEGIN
 			INNER JOIN dbo.CustPTSetting3rd_Member pt WITH(NOLOCK) ON c.custid = pt.custid		
 		WHERE srecommend = @srecommend
 			AND roleid = 1
-			AND c.custid < @maxcustid
 	)
 	INSERT INTO #tempdata (recommend, custid, cs1, cs2)
 	SELECT recommend, custid, SUM(CONVERT(bigint,rdSetting) + POWER(2, rdProduct%10+1)), CHECKSUM_AGG(CHECKSUM(HASHBYTES('SHA1', CONVERT(nvarchar(max), rdSetting))))
@@ -54,7 +52,7 @@ BEGIN
 	   ,[AutoMasterPT]
 	   ,[IsAutoSuperPT]
 	   ,[AutoSuperPT])
-	SELECT @agentID
+	SELECT tmp.recommend
 	  ,[SportType]
 	  ,[BetType]
 	  ,[IsLive]
@@ -77,9 +75,9 @@ BEGIN
 	INNER JOIN #tempGroup tmp2 WITH(NOLOCK)
 		ON tmp1.cs1 = tmp2.cs1
 			AND tmp1.cs2 = tmp2.cs2
+			AND tmp1.recommend = tmp2.recommend
 			
 
-	DROP TABLE #tmpMembers
 	DROP TABLE #tempdata
 	DROP TABLE #tempGroup
 END
