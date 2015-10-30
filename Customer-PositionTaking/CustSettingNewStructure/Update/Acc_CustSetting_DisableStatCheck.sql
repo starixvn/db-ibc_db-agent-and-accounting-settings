@@ -84,6 +84,7 @@ BEGIN
 		END
 		ELSE IF @RoleID = 2
 		BEGIN
+			INSERT INTO #ErrorSportTypeTbl
 			SELECT PSP.SportType
 				, psp.BetType
 			FROM #NewDisableStatTbl tmp
@@ -95,6 +96,7 @@ BEGIN
 		END
 		ELSE IF @RoleID = 1
 		BEGIN
+			INSERT INTO #ErrorSportTypeTbl
 			SELECT psp.SportType
 				, psp.BetType
 			FROM #NewDisableStatTbl tmp
