@@ -1,15 +1,6 @@
 ﻿USE [CustDB]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_Dep_CustomerInsMember_Ag]    Script Date: 06/10/2015 17:28:09 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/19/2015 12:03:01 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/13/2015 9:10:10 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/13/2015 9:07:25 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 3/9/2015 11:12:59 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_Dep_CustomerInsMember_Ag    Script Date: 12/11/2013 10:37:36 AM ******/
+
 ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
 	@custid		int OUTPUT,
 	@creator	int,
@@ -54,7 +45,11 @@ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
 	@MinBetv11 money,
 	@MaxBetv11 money,
 	@MaxPerMatchv11 money,
-
+	
+	@MinBetv44 money,
+	@MaxBetv44 money,
+	@MaxPerMatchv44 money,
+	
 	@MinBetv99 money,
 	@MaxBetv99 money,
 	@MaxPerMatchv99 money,
@@ -146,6 +141,8 @@ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerInsMember_Ag]
 
 	@v11apositiontaking_1 smallmoney,
 	@v11apositiontaking_20 smallmoney,
+	
+	@v44apositiontaking_3 smallmoney,
 
 	@v99apositiontaking_1 smallmoney,
 	@v99apositiontaking_2 smallmoney,
@@ -227,8 +224,8 @@ Revisions:
 	- 20140505@Florent: Add sport HR Fix Odds
 	- 20140512@Florent: Add new sport: 202 Keno
     - 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
-     - 20150610@Kathy: Migrate custDB to new server DBCust (temp GameType table, call Task_Cust_CheckBalance_Exception_Ins by linked server) [Redmine:#36216]
-    
+    - 20150610@Kathy: Migrate custDB to new server DBCust (temp GameType table, call Task_Cust_CheckBalance_Exception_Ins by linked server) [Redmine:#36216]
+    - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
 Param's Explanation:
 • @ErrCode:
     = 0: Create member successfully.
@@ -428,7 +425,9 @@ declare
 
 	@v11mpositiontaking_1 smallmoney,
 	@v11mpositiontaking_20 smallmoney,
-
+	
+	@v44mpositiontaking_3 smallmoney,
+	
 	@v99mpositiontaking_1 smallmoney,
 	@v99mpositiontaking_2 smallmoney,
 	@v99mpositiontaking_3 smallmoney,
@@ -514,6 +513,8 @@ declare
 	
 	@v11spositiontaking_1 smallmoney,	
 	@v11spositiontaking_20 smallmoney,
+	
+	@v44spositiontaking_3 smallmoney,
 	
 	@v99spositiontaking_1 smallmoney,
 	@v99spositiontaking_2 smallmoney,
@@ -643,7 +644,9 @@ SELECT @v1mpositiontaking_1 = CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 AND 
 
 	@v11mpositiontaking_1 = CASE WHEN cs.sporttype = 11 AND cs.bettype = 1 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	@v11mpositiontaking_20  = CASE WHEN cs.sporttype = 11 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
-
+	
+	@v44mpositiontaking_3 = CASE WHEN cs.sporttype = 44 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
+	
 	@v99mpositiontaking_1  = CASE WHEN cs.sporttype = 99 AND cs.bettype = 1 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	@v99mpositiontaking_2 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 2 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
 	@v99mpositiontaking_3 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.mpositiontaking ELSE 0 END,
@@ -732,7 +735,9 @@ SELECT @v1spositiontaking_1 = CASE WHEN cs.sporttype = 1 AND cs.bettype = 1 AND 
 
 	@v11spositiontaking_1 = CASE WHEN cs.sporttype = 11 AND cs.bettype = 1 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	@v11spositiontaking_20  = CASE WHEN cs.sporttype = 11 AND cs.bettype = 20 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
-
+	
+	@v44spositiontaking_3 = CASE WHEN cs.sporttype = 44 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
+	
 	@v99spositiontaking_1  = CASE WHEN cs.sporttype = 99 AND cs.bettype = 1 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	@v99spositiontaking_2 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 2 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
 	@v99spositiontaking_3 = CASE WHEN cs.sporttype = 99 AND cs.bettype = 3 AND cs.islive = 0 THEN cs.spositiontaking ELSE 0 END,
@@ -841,7 +846,11 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 	@MinBetv11				= @MinBetv11,
 	@MaxBetv11				= @MaxBetv11,
 	@MaxPerMatchv11			= @MaxPerMatchv11,
-
+	
+	@MinBetv44				= @MinBetv44,
+	@MaxBetv44				= @MaxBetv44,
+	@MaxPerMatchv44			= @MaxPerMatchv44,
+	
 	@MinBetv99				=@MinBetv99,
 	@MaxBetv99				=@MaxBetv99,
 	@MaxPerMatchv99			=@MaxPerMatchv99,	
@@ -904,7 +913,9 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Ag_CheckParam
 								
 	@v11apositiontaking_1		= @v11apositiontaking_1,
 	@v11apositiontaking_20		= @v11apositiontaking_20,
-								
+	
+	@v44apositiontaking_3		= @v44apositiontaking_3,
+	
 	@v99apositiontaking_1		= @v99apositiontaking_1,
 	@v99apositiontaking_2		= @v99apositiontaking_2,
 	@v99apositiontaking_3		= @v99apositiontaking_3,
@@ -1016,6 +1027,7 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@MaxPerMatchv8 = @MaxPerMatchv8,
 	@MaxPerMatchv10 = @MaxPerMatchv10,
 	@MaxPerMatchv11 = @MaxPerMatchv11,
+	@MaxPerMatchv44 = @MaxPerMatchv44,
 	@MaxPerMatchv99 = @MaxPerMatchv99,
 	@MaxPerMatchv154 = @MaxPerMatchv154,
 	@DisableHRFO	=  @DisableHRFO,
@@ -1127,6 +1139,8 @@ UNION ALL	SELECT @custid, 20, 10, @v10apositiontaking_20, @v10mpositiontaking_20
 
 UNION ALL	SELECT @custid, 1, 11, @v11apositiontaking_1, @v11mpositiontaking_1, @v11spositiontaking_1, 0, 0, 0, 0, @MinBetv11, @MaxBetv11, 0
 UNION ALL	SELECT @custid, 20, 11, @v11apositiontaking_20, @v11mpositiontaking_20, @v11spositiontaking_20, 0, 0, 0, 0, @MinBetv11, @MaxBetv11, 0
+
+UNION ALL	SELECT @custid, 1, 11, @v44apositiontaking_3, @v44mpositiontaking_3, @v44spositiontaking_3, 0, 0, 0, 0, @MinBetv44, @MaxBetv44, 0  
 
 UNION ALL	SELECT @custid, 1, 99, @v99apositiontaking_1, @v99mpositiontaking_1, @v99spositiontaking_1, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
 UNION ALL	SELECT @custid, 2, 99, @v99apositiontaking_2, @v99mpositiontaking_2, @v99spositiontaking_2, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
@@ -1698,6 +1712,11 @@ Select @LogSPData = '<Acc_Dep_CustomerInsMember_Ag custid="'+ coalesce(cast(@cus
 'MinBv11="'+ coalesce(cast(@minbetv11 as varchar(50)),space(1)) + '" ' +
 'MaxBv11="'+ coalesce(cast(@maxbetv11 as varchar(50)),space(1)) + '" ' +
 'MPMv11="'+ coalesce(cast(@maxpermatchv11 as varchar(50)),space(1)) + '" ' +
+
+'MinBv44="'+ coalesce(cast(@minbetv44 as varchar(50)),space(1)) + '" ' +
+'MaxBv44="'+ coalesce(cast(@maxbetv44 as varchar(50)),space(1)) + '" ' +
+'MPMv44="'+ coalesce(cast(@maxpermatchv44 as varchar(50)),space(1)) + '" ' +
+
 'MinBv99="'+ coalesce(cast(@minbetv99 as varchar(50)),space(1)) + '" ' +
 'MaxBv99="'+ coalesce(cast(@maxbetv99 as varchar(50)),space(1)) + '" ' +
 'MPMv99="'+ coalesce(cast(@maxpermatchv99 as varchar(50)),space(1)) + '" ' +
@@ -1908,6 +1927,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Ag><s spt_1="'+ COALESCE(CAST(@v
 
 'v11mpt_1="'+ COALESCE(CAST(@v11mpositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v11mpt_20="'+ COALESCE(CAST(@v11mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v44mpt_3="'+ COALESCE(CAST(@v44mpositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
 'v99mpt_1="'+ COALESCE(CAST(@v99mpositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_2="'+ COALESCE(CAST(@v99mpositiontaking_2 AS VARCHAR(50)),SPACE(1)) + '" ' +
