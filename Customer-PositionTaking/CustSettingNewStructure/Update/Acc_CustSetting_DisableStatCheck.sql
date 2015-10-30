@@ -116,7 +116,7 @@ BEGIN
 	IF EXISTS(SELECT TOP 1 1 FROM #ErrorSportTypeTbl)
 	BEGIN
 		SET @xml = (
-				SELECT 60031 AS '@MsgID'
+				SELECT 60033 AS '@MsgID'
 					, 'Account disabled for this product. Unable to edit downlines.' AS '@Msg'
 					, (
 						SELECT SportType AS '@SportType'
