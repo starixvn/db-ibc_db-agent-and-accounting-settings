@@ -5,10 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/24/2015 1:51:24 AM ******/
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/23/2015 9:21:05 AM ******/
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/21/2015 10:42:44 AM ******/
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 7/3/2015 4:54:43 PM ******/  
+  
 ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]   
  @FirstName nvarchar(50),  
  @LastName nvarchar(50),  
@@ -152,7 +149,7 @@ Revisions:
  - 20150721@Winnie: Change for support Bettrade
  - 20150722@Winnie: support Microgaming
  - 20150806@Patrick: Remove insert default balance value for Credit/Debit Game (merge code)
-
+ - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
 Param's Explanation:  
 • @CustID: return new 12bet Player Cust ID  
 • @Username: return new 12bet Player User name  
@@ -284,6 +281,10 @@ declare @currency int,
  @maxbetv11 money,   
  @maxpermatchv11 money,  
   
+ @minbetv44 money,   
+ @maxbetv44 money,   
+ @maxpermatchv44 money, 
+ 
  @minbetv151 money,   
  @maxbetv151 money,   
  @maxpermatchv151_31 money,  
@@ -414,7 +415,9 @@ Declare @apositiontaking_1 smallmoney,
   
  @v11apositiontaking_1 smallmoney,  
  @v11apositiontaking_20 smallmoney,   
-   
+ 
+ @v44apositiontaking_3 smallmoney,    
+ 
  @v151apositiontaking_31 smallmoney,  
  @v151apositiontaking_32 smallmoney,  
  @v151apositiontaking_41 smallmoney,  
@@ -486,7 +489,9 @@ declare @transcode bigint,
  @MinMinBetv8 money, @MaxMaxBetv8 money, @MaxMaxPerMatchv8 money,  
  @MinMinBetv10 money, @MaxMaxBetv10 money, @MaxMaxPerMatchv10 money,  
  @MinMinBetv11 money, @MaxMaxBetv11 money, @MaxMaxPerMatchv11 money,  
-   
+
+ @MinMinBetv44 money, @MaxMaxBetv44 money, @MaxMaxPerMatchv44 money,
+ 
  --v151  
  @MinMinBetv151 money, @MaxMaxBetv151 money, @MaxMaxPerMatchv151 money,  
  --v151OT  
@@ -582,7 +587,7 @@ declare @transcode bigint,
  @v11mpositiontaking_1 smallmoney,  
   
  @v11mpositiontaking_20 smallmoney,  
-  
+ @v44mpositiontaking_3 smallmoney,  
  --v151  
  @v151mpositiontaking_31 smallmoney,  
  @v151mpositiontaking_32 smallmoney,  
@@ -690,7 +695,7 @@ declare @transcode bigint,
   
  @v11spositiontaking_1 smallmoney,  
  @v11spositiontaking_20 smallmoney,  
-  
+ @v44spositiontaking_3 smallmoney, 
  --v151  
  @v151spositiontaking_31 smallmoney,  
  @v151spositiontaking_32 smallmoney,  
@@ -869,6 +874,7 @@ select
  @maxpermatchv8 = maxpermatch8,  
  @maxpermatchv10 = maxpermatch10,  
  @maxpermatchv11 = maxpermatch11,  
+ @maxpermatchv44 = maxpermatch44,
  @maxpermatchv151_31 = maxpermatch151,  
  @maxpermatchv161 = maxpermatch161,--number game  
  @maxperballv161 = maxperball161,  
@@ -965,7 +971,11 @@ SELECT  @minbet  = MAX(CASE WHEN sporttype = 1 AND bettype = 1 THEN minbet ELSE 
   ,@minbetv10  = MAX(CASE WHEN sporttype = 10 AND bettype =1 THEN minbet ELSE 0 END)  
   ,@maxbetv10  = MAX(CASE WHEN sporttype = 10 AND bettype =1 THEN maxbet ELSE 0 END)  
   ,@minbetv11  = MAX(CASE WHEN sporttype = 11 AND bettype =1 THEN minbet ELSE 0 END)  
-  ,@maxbetv11  = MAX(CASE WHEN sporttype = 11 AND bettype =1 THEN maxbet ELSE 0 END)  
+  ,@maxbetv11  = MAX(CASE WHEN sporttype = 11 AND bettype =1 THEN maxbet ELSE 0 END) 
+
+  ,@minbetv44 = MAX(CASE WHEN sporttype = 44 AND bettype =3 THEN minbet ELSE 0 END)  
+  ,@maxbetv44  = MAX(CASE WHEN sporttype = 44 AND bettype =3 THEN maxbet ELSE 0 END)
+  
   ,@minbetv99  = MAX(CASE WHEN sporttype = 99 AND bettype =1 THEN minbet ELSE 0 END)  
   ,@maxbetv99  = MAX(CASE WHEN sporttype = 99 AND bettype =1 THEN maxbet ELSE 0 END)  
   ,@minbetv99MP = MAX(CASE WHEN sporttype = 99 AND bettype =9 THEN minbet ELSE 0 END)  
@@ -1066,6 +1076,8 @@ BEGIN
    @maxpermatchv10  = ISNULL(MAX(CASE WHEN SportType = 10 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv10),  
    @maxbetv11   = ISNULL(MAX(CASE WHEN SportType = 11 AND Bettype = 1 THEN MaxBet ELSE NULL END),@maxbetv11),   
    @maxpermatchv11  = ISNULL(MAX(CASE WHEN SportType = 11 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv11),  
+   @maxbetv44   = ISNULL(MAX(CASE WHEN SportType = 44 AND Bettype = 3 THEN MaxBet ELSE NULL END),@maxbetv44),   
+   @maxpermatchv44  = ISNULL(MAX(CASE WHEN SportType = 44 AND Bettype = 3 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv44),
    @maxbetv99   = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 1 THEN MaxBet ELSE NULL END),@maxbetv99),   
    @maxpermatchv99  = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv99),  
    @maxbetv99MP  = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 9 THEN MaxBet ELSE NULL END),@maxbetv99MP),   
@@ -1108,7 +1120,11 @@ BEGIN
   @maxbetv10    = ISNULL(MAX(CASE WHEN SportType = 10 AND Bettype = 1 THEN MaxBet ELSE NULL END),@maxbetv10),   
   @maxpermatchv10   = ISNULL(MAX(CASE WHEN SportType = 10 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv10),  
   @maxbetv11    = ISNULL(MAX(CASE WHEN SportType = 11 AND Bettype = 1 THEN MaxBet ELSE NULL END),@maxbetv11),   
-  @maxpermatchv11   = ISNULL(MAX(CASE WHEN SportType = 11 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv11),  
+  @maxpermatchv11   = ISNULL(MAX(CASE WHEN SportType = 11 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv11),
+  --
+  @maxbetv44    = ISNULL(MAX(CASE WHEN SportType = 44 AND Bettype = 3 THEN MaxBet ELSE NULL END),@maxbetv44),   
+  @maxpermatchv44   = ISNULL(MAX(CASE WHEN SportType = 44 AND Bettype = 3 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv44),  
+   
   @maxbetv99    = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 1 THEN MaxBet ELSE NULL END),@maxbetv99),   
   @maxpermatchv99   = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 1 THEN  MaxPerMatch ELSE NULL END),@maxpermatchv99),  
   @maxbetv99MP   = ISNULL(MAX(CASE WHEN SportType = 99 AND Bettype = 9 THEN MaxBet ELSE NULL END),@maxbetv99MP),   
@@ -1300,10 +1316,12 @@ SELECT  @apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 1 AND isL
     
   ,@v11apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 11 AND isLive = 0 THEN apositiontaking ELSE 0 END)    
   ,@v11apositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 11 AND isLive = 0 THEN apositiontaking ELSE 0 END)    
-    
   ,@v11mpositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 11 AND isLive = 0 THEN mpositiontaking ELSE 0 END)    
   ,@v11mpositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 11 AND isLive = 0 THEN mpositiontaking ELSE 0 END)    
-    
+  
+  ,@v44apositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 44 AND isLive = 0 THEN apositiontaking ELSE 0 END)   
+  ,@v44mpositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 44 AND isLive = 0 THEN mpositiontaking ELSE 0 END)
+  
   ,@v99apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)    
   ,@v99apositiontaking_2 = MAX(CASE WHEN bettype = 2 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)    
   ,@v99apositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)    
@@ -1466,6 +1484,8 @@ select @v10spositiontaking_20 = 0
   
 select @v11spositiontaking_1 = 0  
 select @v11spositiontaking_20 = 0  
+
+select @v44spositiontaking_3 = 0 
   
 select @v151spositiontaking_31 = 0  
 select @v151spositiontaking_32 = 0  
@@ -1622,6 +1642,8 @@ SELECT  @MinMinBet  = ISNULL(MAX(CASE WHEN sporttype = 1 AND bettype = 1 AND min
   ,@MaxMaxBetv10 = ISNULL(MIN(CASE WHEN sporttype = 10 AND bettype = 1 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)  
   ,@MinMinBetv11 = ISNULL(MAX(CASE WHEN sporttype = 11 AND bettype = 1 AND minbet <> 0 THEN minbet ELSE NULL END),0)  
   ,@MaxMaxBetv11 = ISNULL(MIN(CASE WHEN sporttype = 11 AND bettype = 1 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)  
+  ,@MinMinBetv44 = ISNULL(MAX(CASE WHEN sporttype = 44 AND bettype = 3 AND minbet <> 0 THEN minbet ELSE NULL END),0)  
+  ,@MaxMaxBetv44 = ISNULL(MIN(CASE WHEN sporttype = 44 AND bettype = 3 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)  
   ,@MinMinBetv99 = ISNULL(MAX(CASE WHEN sporttype = 99 AND bettype = 1 AND minbet <> 0 THEN minbet ELSE NULL END),0)    ,@MaxMaxBetv99 = ISNULL(MIN(CASE WHEN sporttype = 99 AND bettype = 1 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)  
   ,@MinMinBetv99MP= ISNULL(MAX(CASE WHEN sporttype = 99 AND bettype = 9 AND minbet <> 0 THEN minbet ELSE NULL END),0)  
   ,@MaxMaxBetv99MP= ISNULL(MIN(CASE WHEN sporttype = 99 AND bettype = 9 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)  
@@ -1724,6 +1746,7 @@ Select
  @MaxMaxPerMatchv8 = IsNull(Min(case when cs.MaxPerMatch8 = 0 then NULL else cs.MaxPerMatch8 end),0),  
  @MaxMaxPerMatchv10 = IsNull(Min(case when cs.MaxPerMatch10 = 0 then NULL else cs.MaxPerMatch10 end),0),  
  @MaxMaxPerMatchv11 = IsNull(Min(case when cs.MaxPerMatch11 = 0 then NULL else cs.MaxPerMatch11 end),0),  
+ @MaxMaxPerMatchv44 = IsNull(Min(case when cs.MaxPerMatch44 = 0 then NULL else cs.MaxPerMatch44 end),0),  
  @MaxMaxPerMatchv154 = IsNull(Min(case when cs.MaxPerMatch154 = 0 then NULL else cs.MaxPerMatch154 end),0),  
  --v151  
  @MaxMaxPerMatchv151 = IsNull(Min(case when cs.MaxPerMatch151 = 0 then NULL else cs.MaxPerMatch151 end),0),  
@@ -1869,6 +1892,7 @@ from @tmp_Sports sports inner join
  union all select 8 as sporttype, @MinBetv8 as MinBet, @MinMinBetv8 as MinMinBet  
  union all select 10 as sporttype, @MinBetv10 as MinBet, @MinMinBetv10 as MinMinBet  
  union all select 11 as sporttype, @MinBetv11 as MinBet, @MinMinBetv11 as MinMinBet   
+ union all select 44 as sporttype, @MinBetv44 as MinBet, @MinMinBetv44 as MinMinBet   
  union all select 154 as sporttype, @MinBetv154 as MinBet, @MinMinBetv154 as MinMinBet   
  --v151  
  union all select 151 as sporttype, @MinBetv151 as MinBet, @MinMinBetv151 as MinMinBet  
@@ -1912,6 +1936,7 @@ from @tmp_Sports sports inner join
  union all select 8 as sporttype, @MaxBetv8 as MaxBet, @MaxMaxBetv8 as MaxMaxBet  
  union all select 10 as sporttype, @MaxBetv10 as MaxBet, @MaxMaxBetv10 as MaxMaxBet  
  union all select 11 as sporttype, @MaxBetv11 as MaxBet, @MaxMaxBetv11 as MaxMaxBet   
+ union all select 44 as sporttype, @MaxBetv44 as MaxBet, @MaxMaxBetv44 as MaxMaxBet  
  union all select 154 as sporttype, @MaxBetv154 as MaxBet, @MaxMaxBetv154 as MaxMaxBet   
  --v151  
  union all select 151 as sporttype, @MaxBetv151 as MaxBet, @MaxMaxBetv151 as MaxMaxBet   
@@ -1954,6 +1979,7 @@ from @tmp_Sports sports inner join
  union all select 8 as sporttype, @MaxPerMatchv8 as MaxPerMatch, @MaxMaxPerMatchv8 as MaxMaxPerMatch  
  union all select 10 as sporttype, @MaxPerMatchv10 as MaxPerMatch, @MaxMaxPerMatchv10 as MaxMaxPerMatch  
  union all select 11 as sporttype, @MaxPerMatchv11 as MaxPerMatch, @MaxMaxPerMatchv11 as MaxMaxPerMatch  
+ union all select 44 as sporttype, @MaxPerMatchv44 as MaxPerMatch, @MaxMaxPerMatchv44 as MaxMaxPerMatch
  union all select 154 as sporttype, @MaxPerMatchv154 as MaxPerMatch, @MaxMaxPerMatchv154 as MaxMaxPerMatch  
  --v151  
  union all select 151 as sporttype, @MaxPerMatchv151_31 as MaxPerMatch, @MaxMaxPerMatchv151 as MaxMaxPerMatch   
@@ -2134,6 +2160,7 @@ EXEC dbo.Acc_CustomerInsUserInfo
  @MaxPerMatchv8 = @MaxPerMatchv8,  
  @MaxPerMatchv10 = @MaxPerMatchv10,  
  @MaxPerMatchv11 = @MaxPerMatchv11,  
+ @MaxPerMatchv44 = @MaxPerMatchv44,
  --@MaxPerMatchv151 = @MaxPerMatchv151,  
  @MaxPerMatchv151_31 = @MaxPerMatchv151_31,  
    
@@ -2255,6 +2282,8 @@ UNION ALL
 select @custid, 1, 11, @v11apositiontaking_1, @v11mpositiontaking_1, @v11spositiontaking_1, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv11, @MaxBetv11, 0  
 UNION ALL  
 select @custid, 20, 11, @v11apositiontaking_20, @v11mpositiontaking_20, @v11spositiontaking_20, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, @MinBetv11, @MaxBetv11, 0  
+UNION ALL  
+select @custid, 1, 44, @v44apositiontaking_3, @v44mpositiontaking_3, @v44spositiontaking_3, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv44, @MaxBetv44, 0  
   
 UNION ALL  
 select @custid, 1, 99, @v99apositiontaking_1, @v99mpositiontaking_1, @v99spositiontaking_1, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv99, @MaxBetv99, 0  
