@@ -130,6 +130,7 @@ BEGIN
 		SELECT  @custid                         AS '@CustID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
                 @userid                         AS '@UserID',
+                @IP                             AS '@IP',
                 (
 					SELECT  cs.sporttype        AS '@SportType',
                             cs.bettype          AS '@BetType',
