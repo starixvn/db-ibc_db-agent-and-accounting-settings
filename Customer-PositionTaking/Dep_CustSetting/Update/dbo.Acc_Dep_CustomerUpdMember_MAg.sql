@@ -792,7 +792,7 @@ if
 BEGIN
 	Select @ErrMsg = 	case @Language 
 						when 'E' then 'Wrong Min bet/ Max bet/ Max per match (for MuayThai).'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10003,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11,@Language) + ')'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10003,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](44,@Language) + ')'
 				end, @ErrCode = 107
 	return
 END
@@ -1228,7 +1228,7 @@ BEGIN
 	SELECT @ErrMsg =	@UserName + ': '+
 					case @Language 
 						when 'E' then 'Min bet must be less than max bet and max bet must be less than max bet per match (for MuayThai)'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11,@Language) + ')'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10005,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](44,@Language) + ')'
 					end						
 					+ char(13) + char(10) + convert(varchar(20), @MinBetv44) + '-' + convert(varchar(20), @MaxBetv44) + '-' + convert(varchar(20), @MaxPerMatchv44), @ErrCode = 112					 
 		
@@ -1240,7 +1240,7 @@ BEGIN
 	SELECT @ErrMsg =	@UserName + ': '+
 					case @Language 
 						when 'E' then 'Min bet must be equal to or greater than Master Agent min bet (for MuayThai)'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10019,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11,@Language) + ')'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10019,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](44,@Language) + ')'
 					end						
 					+' (' + convert(varchar(20), @MinMinBetv44) + ').', @ErrCode = 113					 
 		
@@ -1252,7 +1252,7 @@ BEGIN
 	SELECT @ErrMsg =	@UserName + ': '+
 					case @Language 
 						when 'E' then 'Max bet must be equal to or less than Master Agent max bet (for MuayThai)'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10020,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11,@Language) + ')'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10020,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](44,@Language) + ')'
 					end						
 					+' (' + convert(varchar(20), @MaxMaxBetv44) + ').', @ErrCode = 114					 
 		
@@ -1263,7 +1263,7 @@ BEGIN
 	SELECT @ErrMsg =	@UserName + ': '+
 					case @Language 
 						when 'E' then 'Max Per Match must be equal to or less than Master Agent Max Per Match (for MuayThai)'
-						ELSE [dbo].[f_Get_MsgNamebyMsgID](10021,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](11,@Language) + ')'
+						ELSE [dbo].[f_Get_MsgNamebyMsgID](10021,@Language) + ' (' + [dbo].[f_Get_SportNameBySporttype](44,@Language) + ')'
 					end						
 					+' (' + convert(varchar(20), @MaxMaxPerMatchv44) + ').', @ErrCode = 114					 
 		
@@ -2556,8 +2556,8 @@ UPDATE Customer Setting
 
 UPDATE Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET	
-	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end)  when 154 then @MinBetv154 else MinBet end,
-	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end)  when 154 then @MaxBetv154 else MaxBet end,
+	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 44 then @MinBetv44 when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end)  when 154 then @MinBetv154 else MinBet end,
+	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 44 then @MaxBetv44 when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end)  when 154 then @MaxBetv154 else MaxBet end,
 	apositiontaking = CASE
 						WHEN sporttype = 1 and bettype = 1 and islive = 0 THEN @v1apositiontaking_1
 						WHEN sporttype = 1 and bettype = 2 and islive = 0 THEN @v1apositiontaking_2
