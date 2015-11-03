@@ -15,6 +15,7 @@ AS
 		
 		Revisions:
             - 20151015@Billy: Fix log xml structure and naming
+			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] - [Redmine: #46781]
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
@@ -124,13 +125,13 @@ BEGIN
 		        @userid AS '@UserID',				
 			    @IP     AS '@IP',
 			    (           
-					SELECT  cs.SportType    AS '@SportType',
-						    cs.BetType      AS '@BetType',
-						    cs.IsLive       AS '@IsLive',
-						    cs.SuperPT      AS '@SuperPT',
-						    cs.MasterPT     AS '@MasterPT',
-						    cs.AgentPT      AS '@AgentPT',
-						    cs.MinPT        AS '@SuperMinPT'
+					SELECT  cs.SportType							AS '@SportType',
+						    cs.BetType								AS '@BetType',
+						    cs.IsLive								AS '@IsLive',
+						    CAST(cs.SuperPT   /100.0 AS SMALLMONEY)	AS '@SuperPT',
+						    CAST(cs.MasterPT  /100.0 AS SMALLMONEY)	AS '@MasterPT',
+						    CAST(cs.AgentPT   /100.0 AS SMALLMONEY)	AS '@AgentPT',
+						    CAST(cs.MinPT     /100.0 AS SMALLMONEY)	AS '@SuperMinPT'
 					FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
 					INNER JOIN  @tblPT t 
                             ON  cs.sporttype = t.SportType 
@@ -244,13 +245,13 @@ BEGIN
                 @userid AS '@UserID',
                 @IP     AS '@IP',
 				(
-					SELECT  cs.SportType    AS '@SportType',
-						    cs.BetType      AS '@BetType',
-						    cs.IsLive       AS '@IsLive',
-						    cs.SuperPT      AS '@SuperPT',
-						    cs.MasterPT     AS '@MasterPT', 
-						    cs.AgentPT      AS '@AgentPT',
-						    cs.SuperMinPT   AS '@SuperMinPT'					
+					SELECT  cs.SportType							AS '@SportType',
+						    cs.BetType								AS '@BetType',
+						    cs.IsLive								AS '@IsLive',
+						    CAST(cs.SuperPT   /100.0 AS SMALLMONEY)	AS '@SuperPT',
+						    CAST(cs.MasterPT  /100.0 AS SMALLMONEY)	AS '@MasterPT',
+						    CAST(cs.AgentPT   /100.0 AS SMALLMONEY)	AS '@AgentPT',
+						    CAST(cs.SuperMinPT/100.0 AS SMALLMONEY)	AS '@SuperMinPT'
 					FROM    @tblPT	cs							
 					FOR XML PATH('PT'), 
                     TYPE
