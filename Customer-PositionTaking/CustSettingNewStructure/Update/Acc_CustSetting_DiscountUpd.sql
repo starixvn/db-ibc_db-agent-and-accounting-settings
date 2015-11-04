@@ -14,6 +14,9 @@ AS
 	DB: DBCUST/CustDB
 	Original:
 
+	Revisions:
+		- 20151104@Billy: Update log structure - [Redmine: #46788]
+
 	Param's Explanation:
 	• @Discount:
 		<ROOT>
@@ -56,6 +59,10 @@ BEGIN
 			,	BetType		SMALLINT
 			,	Discount	DECIMAL(9, 8)
 		)
+
+	DECLARE @ProductID		TINYINT,
+			@ProductName	VARCHAR(50),
+			@SettingLevel	TINYINT
 
 	--Check if XML is null or empty
 	IF @Discount IS NULL
@@ -235,39 +242,189 @@ BEGIN
 			, @mode			= 'Others'
 
 	--START LOGGING		
-	SET @xml = (
-			SELECT @CustID AS '@CustID'
-				, @UserID AS '@UserID'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP AS '@IP'
-				, (
-					SELECT SportType AS '@SportType'
-						, BetType AS '@BetType'
-						, Discount AS '@Discount'
-					FROM @oldDiscountTbl
-					FOR XML PATH('Discount')
-						, TYPE
-					)
-			FOR XML PATH('Acc_CustSetting_DiscountUpd')
-				, TYPE
-			)
+
+	-- Select ProductID and SettingLevel
+	SELECT @ProductID = ProductID, @SettingLevel = SettingLevel
+	FROM (	SELECT TOP 1 psd.ProductID, psd.SettingLevel
+			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewDiscountTbl AS tmp
+					ON	psd.SportType = tmp.SportType
+					AND	psd.BetType = tmp.BetType
+			WHERE	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+		 ) iq
+
+	-- Select ProductName
+	SELECT @ProductName = p.ProductName
+	FROM DBPRO.bodb02.dbo.Products AS p WITH(NOLOCK)
+	WHERE p.ProductID = @ProductID
+
+	-- Log old value
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+					SELECT	@ProductID			AS '@ProductID',
+							Discount			AS '@Discount'
+					FROM	@oldDiscountTbl
+					FOR XML PATH('Discount'),
+					TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+					SELECT	SportType			AS '@SportType',
+							Discount			AS '@Discount'
+					FROM	@oldDiscountTbl
+					FOR XML PATH('Discount'),
+					TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+					SELECT	BetType				AS '@BetType',
+							Discount			AS '@Discount'
+					FROM	@oldDiscountTbl
+					FOR XML PATH('Discount'),
+					TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+					SELECT	SportType			AS '@SportType',
+							BetType				AS '@BetType',
+							Discount			AS '@Discount'
+					FROM	@oldDiscountTbl
+					FOR XML PATH('Discount'),
+					TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-	SET @xml = (
-			SELECT @CustID AS '@CustID'
-				, @UserID AS '@UserID'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP AS '@IP'
-				, (
-					SELECT SportType AS '@SportType'
-						, BetType AS '@BetType'
-						, Discount AS '@Discount'
-					FROM @NewDiscountTbl
-					FOR XML PATH('Discount')
-						, TYPE
-					)
-			FOR XML PATH('Acc_CustSetting_DiscountUpd')
-				, TYPE
-			)
+
+	-- Log new updated value
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+				SELECT	@ProductID				AS '@ProductID',
+						Discount				AS '@Discount'
+				FROM	@NewDiscountTbl
+				FOR XML PATH('Discount'),
+				TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+				SELECT	SportType				AS '@SportType',
+						Discount				AS '@Discount'
+				FROM	@NewDiscountTbl
+				FOR XML PATH('Discount'),
+				TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+				SELECT	BetType					AS '@BetType',
+						Discount				AS '@Discount'
+				FROM	@NewDiscountTbl
+				FOR XML PATH('Discount'),
+				TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+		SELECT	@ProductID						AS '@ProductID',
+				@ProductName					AS '@ProductName',
+				@CustID							AS '@CustID',
+				@UserID							AS '@UserID',
+				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+				@IP								AS '@IP',
+				(
+				SELECT	SportType				AS '@SportType',
+						BetType					AS '@BetType',
+						Discount				AS '@Discount'
+				FROM	@NewDiscountTbl
+				FOR XML PATH('Discount'),
+				TYPE
+				)
+		FOR XML PATH('Acc_CustSetting_DiscountUpd'),
+		TYPE
+	)
+	END
 	SET @logSpData	= REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
 	SELECT @endRun	= GETDATE()

@@ -15,7 +15,7 @@ AS
 		
 		Revisions:
             - 20151015@Billy: Fix log xml structure and naming
-			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] - [Redmine: #46781]
+			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
 		
 		Parameter's Explanation:
 			@PT = <ROOT>
@@ -36,6 +36,10 @@ BEGIN
 			,@xml			XML
 			,@UpdateMinPT BIT
 			,@UpdatePresetPT BIT
+
+	DECLARE @ProductID		TINYINT,
+			@ProductName	VARCHAR(50),
+			@SettingLevel	TINYINT
     
     SET @startRun = GETDATE()
 			
@@ -118,33 +122,139 @@ BEGIN
 	FROM dbo.f_DCS_PT_XMLParse(@PT)
 	
 	-- end read xml	
+
+	-- Select ProductID and SettingLevel
+	SELECT @ProductID = ProductID, @SettingLevel = SettingLevel
+	FROM (	SELECT TOP 1 psd.ProductID, psd.SettingLevel
+			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@tblPT AS tmp
+					ON	psd.SportType = tmp.SportType
+					AND	psd.BetType = tmp.BetType
+					AND psd.IsLive = tmp.IsLive
+			WHERE	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+		 ) iq
+
+	-- Select ProductName
+	SELECT @ProductName = p.ProductName
+	FROM DBPRO.bodb02.dbo.Products AS p WITH(NOLOCK)
+	WHERE p.ProductID = @ProductID
 	
 	-- Log old data
-	SET @xml = (
-		SELECT  @custid AS '@CustID',
-		        @userid AS '@UserID',				
-			    @IP     AS '@IP',
-			    (           
-					SELECT  cs.SportType							AS '@SportType',
-						    cs.BetType								AS '@BetType',
-						    cs.IsLive								AS '@IsLive',
-						    CAST(cs.SuperPT   /100.0 AS SMALLMONEY)	AS '@SuperPT',
-						    CAST(cs.MasterPT  /100.0 AS SMALLMONEY)	AS '@MasterPT',
-						    CAST(cs.AgentPT   /100.0 AS SMALLMONEY)	AS '@AgentPT',
-						    CAST(cs.MinPT     /100.0 AS SMALLMONEY)	AS '@SuperMinPT'
-					FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
-					INNER JOIN  @tblPT t 
-                            ON  cs.sporttype = t.SportType 
-							AND cs.bettype = t.BetType 
-							AND cs.isLive = t.IsLive
-					WHERE       custid = @custid
-					FOR XML PATH('PT'), 
-                    TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_SuperPTUpd'), 
-        TYPE
-	)
-	
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',				
+					@IP				AS '@IP',
+					(           
+						SELECT  @ProductID									AS '@ProductID',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.MinPT     /100.0)	AS '@SuperMinPT'
+						FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t 
+								ON  cs.sporttype = t.SportType 
+								AND cs.bettype = t.BetType 
+								AND cs.isLive = t.IsLive
+						WHERE       custid = @custid
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'), 
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',				
+					@IP				AS '@IP',
+					(           
+						SELECT  cs.SportType								AS '@SportType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.MinPT     /100.0)	AS '@SuperMinPT'
+						FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t 
+								ON  cs.sporttype = t.SportType 
+								AND cs.bettype = t.BetType 
+								AND cs.isLive = t.IsLive
+						WHERE       custid = @custid
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'), 
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',				
+					@IP				AS '@IP',
+					(           
+						SELECT  cs.BetType									AS '@BetType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.MinPT     /100.0)	AS '@SuperMinPT'
+						FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t 
+								ON  cs.sporttype = t.SportType 
+								AND cs.bettype = t.BetType 
+								AND cs.isLive = t.IsLive
+						WHERE       custid = @custid
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'), 
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',				
+					@IP				AS '@IP',
+					(           
+						SELECT  cs.SportType								AS '@SportType',
+								cs.BetType									AS '@BetType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.MinPT     /100.0)	AS '@SuperMinPT'
+						FROM        CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN  @tblPT t 
+								ON  cs.sporttype = t.SportType 
+								AND cs.bettype = t.BetType 
+								AND cs.isLive = t.IsLive
+						WHERE       custid = @custid
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'), 
+			TYPE
+		)
+	END
+
 	SET @logSPData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
 	--check PT change or not	
@@ -240,25 +350,100 @@ BEGIN
     END
     
     -- Log new updated data
-	SET @xml = (
-	    SELECT  @custid AS '@CustID',
-                @userid AS '@UserID',
-                @IP     AS '@IP',
-				(
-					SELECT  cs.SportType							AS '@SportType',
-						    cs.BetType								AS '@BetType',
-						    cs.IsLive								AS '@IsLive',
-						    CAST(cs.SuperPT   /100.0 AS SMALLMONEY)	AS '@SuperPT',
-						    CAST(cs.MasterPT  /100.0 AS SMALLMONEY)	AS '@MasterPT',
-						    CAST(cs.AgentPT   /100.0 AS SMALLMONEY)	AS '@AgentPT',
-						    CAST(cs.SuperMinPT/100.0 AS SMALLMONEY)	AS '@SuperMinPT'
-					FROM    @tblPT	cs							
-					FOR XML PATH('PT'), 
-                    TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_SuperPTUpd'),
-        TYPE				
-	)
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',
+					@IP				AS '@IP',
+					(
+						SELECT  @ProductID									AS '@ProductID',
+								cs.BetType									AS '@BetType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.SuperMinPT/100.0)	AS '@SuperMinPT'
+						FROM    @tblPT	cs							
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'),
+			TYPE				
+		)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',
+					@IP				AS '@IP',
+					(
+						SELECT  cs.SportType								AS '@SportType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.SuperMinPT/100.0)	AS '@SuperMinPT'
+						FROM    @tblPT	cs							
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'),
+			TYPE				
+		)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',
+					@IP				AS '@IP',
+					(
+						SELECT  cs.BetType									AS '@BetType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.SuperMinPT/100.0)	AS '@SuperMinPT'
+						FROM    @tblPT	cs							
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'),
+			TYPE				
+		)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT  @ProductID		AS '@ProductID',
+					@ProductName	AS '@ProductName',
+					@custid			AS '@CustID',
+					@userid			AS '@UserID',
+					@IP				AS '@IP',
+					(
+						SELECT  cs.SportType								AS '@SportType',
+								cs.BetType									AS '@BetType',
+								cs.IsLive									AS '@IsLive',
+								CONVERT(DECIMAL(10,2), cs.SuperPT   /100.0)	AS '@SuperPT',
+								CONVERT(DECIMAL(10,2), cs.MasterPT  /100.0)	AS '@MasterPT',
+								CONVERT(DECIMAL(10,2), cs.AgentPT   /100.0)	AS '@AgentPT',
+								CONVERT(DECIMAL(10,2), cs.SuperMinPT/100.0)	AS '@SuperMinPT'
+						FROM    @tblPT	cs							
+						FOR XML PATH('PT'), 
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_SuperPTUpd'),
+			TYPE				
+		)
+	END
 	
 	SET @logSPData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	

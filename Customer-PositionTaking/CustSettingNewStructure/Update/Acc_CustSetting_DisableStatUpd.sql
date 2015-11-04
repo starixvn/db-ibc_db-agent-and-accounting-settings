@@ -14,6 +14,9 @@ AS
 	DB: DBCUST/CustDB
 	Original:
 
+	Revisions:
+		- 20151104@Billy: Update log structure - [Redmine: #46788]
+
 	Param's Explanation:
 	• @IsDisabled
 		<ROOT>
@@ -41,7 +44,11 @@ BEGIN
 		, @MasterID		INT
 		, @SuperID		INT
 		, @RoleID		INT
-		
+	
+	DECLARE @ProductID		TINYINT,
+			@ProductName	VARCHAR(50),
+			@SettingLevel	TINYINT
+
 	CREATE TABLE #NewDisableStatTbl (
 		SportType				SMALLINT
 		, BetType				SMALLINT
@@ -236,43 +243,196 @@ BEGIN
 	END
 	
 	--START LOGGING		
-	SET @xml = (
-			SELECT @CustID	AS '@CustID'
-				, @UserID	AS '@UserID'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP		AS '@IP'
-				, (
-					SELECT SportType	AS '@SportType'
-						, BetType		AS '@BetType'
-						, IsDisabled	AS '@IsDisabled'
-						, IsDisabledDownline AS '@IsDisabledDownline'
-					FROM #OldDisableStatTbl
-					FOR XML PATH('ProductStatus')
-						, TYPE
+
+	-- Select ProductID and SettingLevel
+	SELECT @ProductID = ProductID, @SettingLevel = SettingLevel
+	FROM (	SELECT TOP 1 psd.ProductID, psd.SettingLevel
+			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	#OldDisableStatTbl AS tmp
+					ON	psd.SportType = tmp.SportType
+					AND	psd.BetType = tmp.BetType
+			WHERE	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+		 ) iq
+
+	-- Select ProductName
+	SELECT @ProductName = p.ProductName
+	FROM DBPRO.bodb02.dbo.Products AS p WITH(NOLOCK)
+	WHERE p.ProductID = @ProductID
+
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #OldDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
 					)
-			FOR XML PATH('Acc_CustSetting_DisableStatUpd')
-				, TYPE
-			)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #OldDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #OldDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #OldDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
 	
 	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	
-	SET @xml = (
-			SELECT @CustID	AS '@CustID'
-				, @UserID	AS '@UserID'
-				, dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP		AS '@IP'
-				, (
-					SELECT SportType	AS '@SportType'
-						, BetType		AS '@BetType'
-						, IsDisabled	AS '@IsDisabled'
-						, IsDisabledDownline			AS '@IsDisabledDownline'
-					FROM #NewDisableStatTbl
-					FOR XML PATH('ProductStatus')
-						, TYPE
+	IF @SettingLevel = 1			-- Product setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #NewDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
 					)
-			FOR XML PATH('Acc_CustSetting_DisableStatUpd')
-				, TYPE
-			)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 2		-- SportType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #NewDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 3		-- BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #NewDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
+	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+	BEGIN
+		SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								IsDisabled			AS '@IsDisabled',
+								IsDisabledDownline	AS '@IsDisabledDownline'
+						FROM #NewDisableStatTbl
+						FOR XML PATH('ProductStatus'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_DisableStatUpd'),
+			TYPE
+		)
+	END
 	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
 	SELECT @endRun = GETDATE()

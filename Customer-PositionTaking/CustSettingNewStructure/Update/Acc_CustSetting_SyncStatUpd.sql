@@ -14,6 +14,9 @@ AS
   DB: DBCUST/CustDB
   Task: Update synchronize status on a product 
     
+  Revisions:
+	- 20151104@Billy: Update log structure - [Redmine: #46788]
+
   Parameters Explanation:  
 	* @IsSync_XML:	   <ROOT>
 								<ProductStatus
