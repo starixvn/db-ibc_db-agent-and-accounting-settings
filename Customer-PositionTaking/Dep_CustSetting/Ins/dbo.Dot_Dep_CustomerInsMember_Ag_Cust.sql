@@ -2287,7 +2287,7 @@ UNION ALL
 select @custid, 20, 11, @v11apositiontaking_20, @v11mpositiontaking_20, @v11spositiontaking_20, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, @MinBetv11, @MaxBetv11, 0    
  
 UNION ALL    
-select @custid, 3, 44, @v11apositiontaking_3, @v44mpositiontaking_3, @v44spositiontaking_3, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv44, @MaxBetv44, 0  
+select @custid, 3, 44, @v44apositiontaking_3, @v44mpositiontaking_3, @v44spositiontaking_3, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv44, @MaxBetv44, 0  
     
 UNION ALL    
 select @custid, 1, 99, @v99apositiontaking_1, @v99mpositiontaking_1, @v99spositiontaking_1, @playerdiscount, @discount, @adiscount, @sdiscount, @MinBetv99, @MaxBetv99, 0    
