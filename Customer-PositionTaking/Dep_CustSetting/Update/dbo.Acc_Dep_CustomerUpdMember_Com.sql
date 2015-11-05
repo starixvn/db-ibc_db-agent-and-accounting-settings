@@ -1,4 +1,12 @@
-﻿ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_Com]
+﻿USE [CustDB]
+GO
+ /
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ 
+ALTER PROCEDURE [dbo].[Acc_Dep_CustomerUpdMember_Com]
 	
 	@CustID INT, -- Super ID
 
@@ -553,7 +561,7 @@ CREATE Table #data_old
 		AgRBDiscount Money
 	)
 	INSERT INTO #data_old (Custid,Sporttype,Bettype ,islive,MinB,MaxB,MPM,MPB,spt,mpt,apt,SupRBDiscount,MastRBDiscount,	AgRBDiscount)
-				EXEC dbo.Acc_Dep_CustomerSelInfo @Custid
+								EXEC dbo.Acc_Dep_CustomerSelInfo_xtest @Custid
 	 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -574,7 +582,7 @@ SELECT @ErrCode = 0
 SELECT @currency = currency FROM CustInfo WHERE custid = @CustID
 --Validate PT
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
+EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam 
 			@custid						= @CustID OUTPUT,
 			@currency					= @currency,
 			
@@ -1437,8 +1445,8 @@ UPDATE Customer Setting
 
 UPDATE Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET	
-	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end) when 154 then @MinBetv154 else MinBet end,
-	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end) when 154 then @MaxBetv154  else MaxBet end,
+	MinBet = case sporttype when 1 then @MinBetv1 when 2 then @MinBetv2 when 3 then @MinBetv3 when 5 then @MinBetv5 when 8 then @MinBetv8 when 10 then @MinBetv10 when 11 then @MinBetv11 when 44 then @MinBetv44  when 99 then (case bettype when 9 then @MinBetv99MP else @MinBetv99 end) when 154 then @MinBetv154 else MinBet end,
+	MaxBet = case sporttype when 1 then @MaxBetv1 when 2 then @MaxBetv2 when 3 then @MaxBetv3 when 5 then @MaxBetv5 when 8 then @MaxBetv8 when 10 then @MaxBetv10 when 11 then @MaxBetv11 when 44 then @MaxBetv44  when 99 then (case bettype when 9 then @MaxBetv99MP else @MaxBetv99 end) when 154 then @MaxBetv154  else MaxBet end,
 	apositiontaking = CASE
 						WHEN sporttype = 1 and bettype = 1 and islive = 0 THEN @v1apositiontaking_1
 						WHEN sporttype = 1 and bettype = 2 and islive = 0 THEN @v1apositiontaking_2
@@ -2259,7 +2267,7 @@ BEGIN
 			IF @RoleID = 3
 				BEGIN
 					--update Master
-																				exec dbo.Acc_Dep_CustomerUpdMember_SAg
+																																								exec dbo.Acc_Dep_CustomerUpdMember_SAg_xtest
 					@custid  = @MasterID ,
 					@UserID  = @UserID ,
 					@minbetv1  = @minbetv1 ,
@@ -2506,7 +2514,7 @@ BEGIN
 				END 
 			IF @RoleID = 2 -- update Agent
 				BEGIN					
-																				exec dbo.Acc_Dep_CustomerUpdMember_MAg
+																																								exec dbo.Acc_Dep_CustomerUpdMember_MAg_xtest
 					@custid  = @AgentID ,
 					@UserID  = @UserID ,
 

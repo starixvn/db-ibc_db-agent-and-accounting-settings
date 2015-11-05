@@ -1324,7 +1324,7 @@ SELECT  @apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 1 AND isL
   
   ,@v11mpositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 11 AND isLive = 0 THEN mpositiontaking ELSE 0 END)      
   ,@v11mpositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 11 AND isLive = 0 THEN mpositiontaking ELSE 0 END)      
-      
+  ,@v44mpositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 44 AND isLive = 0 THEN mpositiontaking ELSE 0 END)   
   ,@v99apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)      
   ,@v99apositiontaking_2 = MAX(CASE WHEN bettype = 2 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)      
   ,@v99apositiontaking_3 = MAX(CASE WHEN bettype = 3 AND sporttype = 99 AND isLive = 0 THEN apositiontaking ELSE 0 END)      
