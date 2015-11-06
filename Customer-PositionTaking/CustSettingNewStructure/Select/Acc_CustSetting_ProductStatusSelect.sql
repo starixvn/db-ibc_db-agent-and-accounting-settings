@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductStatusSelect]   
+CREATE PROCEDURE [dbo].[Acc_CustSetting_ProductStatusSelect]   
 	@CustID	INT = NULL, @IsMultiple INT = 0
 AS  
 /*  

@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd] 
+alter PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd] 
 	  @CustID			INT
 	, @IsDisabled	VARCHAR(MAX)
 	, @SubAccID			INT				= 0

@@ -1,4 +1,4 @@
-alter PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_StatusSettingSelect] 
 	  @CustID		INT
 	, @ProductID	TINYINT = NULL
 	, @SettingType	SMALLINT = 4
@@ -39,9 +39,9 @@ BEGIN
 			
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
-			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
-			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
+			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
+			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN pdt.SettingStatus = 0 AND dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 			
 			, CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
@@ -62,7 +62,8 @@ BEGIN
 												AND pdt.IsLive = ft.islive
 												AND pdt.SettingType = ft.SettingType
 			INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = pdt.BetType AND PSP.Sporttype = PDT.SportType															
-			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+			LEFT JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+			
 		WHERE pdt.SettingType = @SettingType
 		
 	END
@@ -77,9 +78,9 @@ BEGIN
    
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
-			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
-			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
+			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
+			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN pdt.SettingStatus = 0 AND dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 			
 			, CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
@@ -100,8 +101,8 @@ BEGIN
 												AND pdt.IsLive = ft.islive
 												AND pdt.SettingType = ft.SettingType
 			INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = pdt.BetType AND PSP.Sporttype = PDT.SportType															
-			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
-			INNER JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @SuperID
+			LEFT JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+			LEFT JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @SuperID
 			
 		WHERE pdt.SettingType = @SettingType
 	
@@ -116,9 +117,9 @@ BEGIN
    
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
-			, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
-			, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
-			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
+			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
+			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN pdt.SettingStatus = 0 AND dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE  dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder)END  as isDisabled
 			
 			, CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
@@ -140,8 +141,8 @@ BEGIN
 												AND pdt.IsLive = ft.islive
 												AND pdt.SettingType = ft.SettingType
 			INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = pdt.BetType AND PSP.Sporttype = PDT.SportType															
-			INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
-			INNER JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @MasterID
+			LEFT JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+			LEFT JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @MasterID
 			
 		WHERE pdt.SettingType = @SettingType
 		
@@ -150,9 +151,9 @@ BEGIN
 	BEGIN
 		SELECT pdt.ProductID, pdt.SportType
 				, pdt.BetType
-				, dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) as IsSync
-				, dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) as isHidden
-				, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) as isDisabled
+				, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
+				, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN pdt.SettingStatus = 0 AND dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+				, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 				, 0 AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 				, 0 As HasDownline
@@ -162,8 +163,8 @@ BEGIN
 													AND pdt.IsLive = ft.islive
 													AND pdt.SettingType = ft.SettingType
 				INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = pdt.BetType AND PSP.Sporttype = PDT.SportType															
-				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
-				INNER JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @AgentID
+				LEFT JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @CustID
+				LEFT JOIN  dbo.CustProductStatus stt_UPLINE WITH (NOLOCK)	ON stt_UPLINE.CustID = @AgentID
 				
 			WHERE pdt.SettingType = @SettingType
 						
