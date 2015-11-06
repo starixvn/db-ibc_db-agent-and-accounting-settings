@@ -11,7 +11,7 @@ AS
 /*
 Created: 20090701@Phuc
 Task : Update Disable auto master PT
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 
 Revisions:
     - 20090723@Phuc: Write log subaccname instead of subaccid.
