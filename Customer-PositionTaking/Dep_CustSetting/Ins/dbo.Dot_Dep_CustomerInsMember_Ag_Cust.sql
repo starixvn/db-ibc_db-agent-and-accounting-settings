@@ -993,7 +993,7 @@ SELECT  @minbet  = MAX(CASE WHEN sporttype = 1 AND bettype = 1 THEN minbet ELSE 
   ,@discountHRFixedOdds = MAX(CASE WHEN sporttype = 154 AND bettype = 20 THEN discount ELSE 0 END)    
 FROM Dep_Custsetting WITH(NOLOCK)    
 WHERE custid = @recommend AND islive=0    
- AND bettype IN (1,4,5,9,20) AND sporttype IN (1,2,3,5,8,10,11,99,154)    
+ AND bettype IN (1,3,4,5,9,20) AND sporttype IN (1,2,3,5,8,10,11,44,99,154)    
     
     
 SELECT  @minbetv151  = MAX(CASE WHEN sporttype = 151 AND bettype = 31 THEN minbet ELSE 0 END)    
@@ -1341,7 +1341,7 @@ SELECT  @apositiontaking_1 = MAX(CASE WHEN bettype = 1 AND sporttype = 1 AND isL
   ,@v154mpositiontaking_20= MAX(CASE WHEN bettype = 20 AND sporttype= 154 AND isLive = 0 THEN mpositiontaking ELSE 0 END)      
     
 FROM Dep_Custsetting WITH(NOLOCK)    
-WHERE custid = @recommend and bettype IN (1,2,3,4,5,6,7,8,9,10,20) and sporttype IN (1,2,3,5,8,10,11,99,154)    
+WHERE custid = @recommend and bettype IN (1,2,3,4,5,6,7,8,9,10,20) and sporttype IN (1,2,3,5,8,10,11,44,99,154)    
     
     
 SELECT  @v151apositiontaking_31 = MAX(CASE WHEN bettype = 31 AND sporttype = 151 THEN apositiontaking ELSE 0 END)      
@@ -1655,7 +1655,7 @@ SELECT  @MinMinBet  = ISNULL(MAX(CASE WHEN sporttype = 1 AND bettype = 1 AND min
   ,@MaxMaxBetv154 = ISNULL(MIN(CASE WHEN sporttype = 154 AND bettype = 20 AND maxbet <> 0 THEN maxbet ELSE NULL END),0)    
 FROM Dep_Custsetting cs WITH(NOLOCK)    
  INNER JOIN custinfo ci WITH(NOLOCK) ON (cs.custid = ci.custid or cs.custid = ci.mrecommend or cs.custid = ci.srecommend)    
-WHERE ci.custid = @recommend AND cs.bettype IN (1,9,20) AND cs.sporttype IN (1,2,3,5,8,10,11,99,154) and cs.islive = 0    
+WHERE ci.custid = @recommend AND cs.bettype IN (1,3,9,20) AND cs.sporttype IN (1,2,3,5,8,10,11,44,99,154) and cs.islive = 0    
     
     
     
