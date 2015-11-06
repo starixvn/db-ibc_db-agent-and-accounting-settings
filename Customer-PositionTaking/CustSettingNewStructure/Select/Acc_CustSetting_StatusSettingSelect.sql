@@ -7,7 +7,7 @@ AS
 /*
 	Created: 20151012@Helen
 	Task : setting values of a product
-	DB: DBCUST/CustDB, DBAGE/bodb02, DBACC/bodb02
+	DB: DBCUST/CustDB, DBAGE/bodb02
 	Original:
 
 	Param's Explanation:
@@ -25,7 +25,7 @@ BEGIN
 	
 	SELECT ProductID,SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
-	FROM dbo.ProductSettingDetail WITH(NOLOCK)  
+	FROM DBCUST.CUSTDB.dbo.ProductSettingDetail WITH(NOLOCK)  
 	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType)
 	
 	IF @RoleID = 4
@@ -56,7 +56,7 @@ BEGIN
 			 END AS IsDisabledDownline
 			, 0 AS isDisabledUpline
 			, ISNULL(@downlines,0) As HasDownline
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
 												AND pdt.IsLive = ft.islive
@@ -95,7 +95,7 @@ BEGIN
 			 END AS IsDisabledDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 			 , ISNULL(@downlines,0) As HasDownline
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
 												AND pdt.IsLive = ft.islive
@@ -135,7 +135,7 @@ BEGIN
 			 
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 			, ISNULL(@downlines,0) As HasDownline
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 												AND pdt.BetType = ft.bettype
 												AND pdt.IsLive = ft.islive
@@ -157,7 +157,7 @@ BEGIN
 				, 0 AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 				, 0 As HasDownline
-			FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+			FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 				INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
 													AND pdt.BetType = ft.bettype
 													AND pdt.IsLive = ft.islive
