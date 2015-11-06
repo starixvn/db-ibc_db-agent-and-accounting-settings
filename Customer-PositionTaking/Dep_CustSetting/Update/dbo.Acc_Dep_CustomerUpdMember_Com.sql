@@ -561,7 +561,7 @@ CREATE Table #data_old
 		AgRBDiscount Money
 	)
 	INSERT INTO #data_old (Custid,Sporttype,Bettype ,islive,MinB,MaxB,MPM,MPB,spt,mpt,apt,SupRBDiscount,MastRBDiscount,	AgRBDiscount)
-								EXEC dbo.Acc_Dep_CustomerSelInfo_xtest @Custid
+								EXEC dbo.Acc_Dep_CustomerSelInfo @Custid
 	 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
