@@ -2267,7 +2267,7 @@ BEGIN
 			IF @RoleID = 3
 				BEGIN
 					--update Master
-																																								exec dbo.Acc_Dep_CustomerUpdMember_SAg_xtest
+																																								exec dbo.Acc_Dep_CustomerUpdMember_SAg 
 					@custid  = @MasterID ,
 					@UserID  = @UserID ,
 					@minbetv1  = @minbetv1 ,
@@ -2514,7 +2514,7 @@ BEGIN
 				END 
 			IF @RoleID = 2 -- update Agent
 				BEGIN					
-																																								exec dbo.Acc_Dep_CustomerUpdMember_MAg_xtest
+																																								exec dbo.Acc_Dep_CustomerUpdMember_MAg 
 					@custid  = @AgentID ,
 					@UserID  = @UserID ,
 
