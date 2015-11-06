@@ -1,25 +1,27 @@
-ALTER PROCEDURE [dbo].[Dot_Dep_3rdProductSelCustStatus]  
- @CustID   INT,  
- @ProductId  INT,  
- @IsEnabled  BIT=NULL    OUTPUT  
+
+ALTER PROCEDURE dbo.Dot_Dep_3rdProductSelCustStatus @CustID INT
+	, @ProductId INT
+	, @IsEnabled BIT = NULL OUTPUT  
 AS  
 /*  
  Created: 20150304@Winnie  
  Task: Get 3rd product status of member  
- DB: DBTXN/CustDB  
+ DB: DBCUST/CustDB  
  Original:  
  Revisions:  
 	- 20151002@Patrick: Support MGC
+	- 20151106@Patrick: Support RnG Game & rename field named DisableMicroGame to DisableMicroGameLC
 
  Param's Explanation:  
 */  
 BEGIN  
 	SET NOCOUNT ON  
    
-	IF @ProductId = 14 --MGC
+	IF @ProductId IN (14,17) --MGC
 	BEGIN
 		SET @IsEnabled = 0
-		SELECT @IsEnabled = CASE WHEN ISNULL(DisableMicrogame, 1) = 1 THEN 0 ELSE 1 END
+		SELECT @IsEnabled = CASE WHEN @ProductId = 14 THEN ~DisableMicrogameLC
+								WHEN @ProductId = 17 THEN ~DisableMicrogameRNG END--CASE WHEN ISNULL(DisableMicrogame, 1) = 1 THEN 0 ELSE 1 END
 		FROM dbo.custInfo WITH(NOLOCK)
 		WHERE custid = @CustID
 	END
