@@ -1,7 +1,6 @@
 ALTER PROCEDURE [dbo].[Acc_DynamicCustSetting3rd_06]
     @CustId int,
     @RoleId int,
-    @mode varchar(30),
 	@Discount_XML VARCHAR(MAX) = NULL
 AS
 /*
@@ -18,7 +17,7 @@ BEGIN
 	IF dbo.f_CheckRepTable('CustDiscount3rd_Member') = 0 RETURN
 	IF dbo.f_CheckRepTable('CustDiscount3rd_Agent') = 0 RETURN
 
-    
+
 	DECLARE @NewDiscountTbl TABLE(
 		SportType SMALLINT,
 		BetType SMALLINT,
@@ -172,16 +171,5 @@ BEGIN
 		 AND tmp.BetType=main.BetType 
 	   WHERE main.CustID=@CustID  
 	END
-    
 END
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
 GO 

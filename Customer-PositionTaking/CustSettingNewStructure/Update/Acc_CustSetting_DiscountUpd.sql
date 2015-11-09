@@ -239,7 +239,7 @@ BEGIN
 			@CustId			= @custid
 			, @RoleId		= @RoleId
 			, @Discount_XML = @CorrectedDiscount_XML
-			, @mode			= 'Others'
+			
 
 	--START LOGGING		
 
