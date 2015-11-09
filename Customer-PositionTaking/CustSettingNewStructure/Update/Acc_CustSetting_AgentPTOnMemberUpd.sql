@@ -589,6 +589,7 @@ BEGIN
 					AND psd.IsLive = tmp.IsLive
 			WHERE	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
+				AND psd.SettingType = 1	-- Position Taking
 		 ) iq
 
 	-- Select ProductName

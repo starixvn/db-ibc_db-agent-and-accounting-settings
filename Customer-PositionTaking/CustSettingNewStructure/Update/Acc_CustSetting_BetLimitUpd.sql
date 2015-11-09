@@ -236,6 +236,7 @@ BEGIN
 					AND	psd.BetType = tmp.BetType
 			WHERE	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
+				AND psd.SettingType = 2	-- Bet Limit
 		 ) iq
 
 	-- Select ProductName
