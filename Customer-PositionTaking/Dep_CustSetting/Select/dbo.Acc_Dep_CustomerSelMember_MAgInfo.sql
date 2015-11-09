@@ -544,6 +544,7 @@ Select
 	@MaxPerMatchv8_Min = 0,
 	@MaxPerMatchv10_Min = 0,
 	@MaxPerMatchv11_Min = 0,
+	@MaxPerMatchv44_Min = 0,
 	@MaxPerMatchv99_Min = 0,
 	@MaxPerMatchv154_Min = 0,
 	@MaxPerMatchv99MP_Min = 0,
