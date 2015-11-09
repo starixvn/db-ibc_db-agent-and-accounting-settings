@@ -1,6 +1,6 @@
 ﻿USE [CustDB]
 GO
- /
+ 
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2514,7 +2514,7 @@ BEGIN
 				END 
 			IF @RoleID = 2 -- update Agent
 				BEGIN					
-																																								exec dbo.Acc_Dep_CustomerUpdMember_MAg 
+					 exec dbo.Acc_Dep_CustomerUpdMember_MAg 
 					@custid  = @AgentID ,
 					@UserID  = @UserID ,
 
