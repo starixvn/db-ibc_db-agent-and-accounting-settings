@@ -118,6 +118,8 @@ Revisions:
 	- 20130731@Elodie: Apply progressive bonus
 	- 20131014@Francis: Add some new virtual sports' max per match
 	- 20140512@Florent: Add Sport HRFO and param HideKeno
+	- 20150309@Johnson: separate virtual rate settings by sporttype , bettype [RedmineID #31927]
+	- 20151029@Billy: Change to new VirtualRate structure [Redmine: #46541]
 	- 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
 	
 Param's Explanation:
@@ -206,6 +208,61 @@ BEGIN
 	RETURN
 END
 
+--Virtual rate
+INSERT INTO [dbo].[CustVirtualSetting] (custid, seqNo, bitmapVirtual)
+SELECT	@Custid, 
+		seqNo,
+		(
+			SELECT TOP 1 bitmap
+			FROM dbo.f_GenerateVirtualSetting_multiple(0x00, CONVERT(VARCHAR(MAX), virtualXML))
+		) AS bitmapVirtual
+FROM (
+	SELECT DISTINCT seqNo
+	FROM ProfileVirtualSetting WITH(NOLOCK)
+) pvs
+CROSS APPLY (
+	SELECT (
+		SELECT	(
+					SELECT	ipvs.profileID			AS '@p',
+							vr.virtualMultiplier	AS '@v'
+					FROM	ProfileVirtualSetting	AS ipvs WITH(NOLOCK)
+					CROSS APPLY (
+						SELECT CAST(1.00 AS SMALLMONEY) AS virtualMultiplier
+					) vr
+					WHERE	ipvs.seqNo = pvs.seqNo
+					FOR XML PATH ('r'), 
+					TYPE
+				)
+		FOR XML PATH ('root'), 
+		TYPE
+	) AS virtualXML
+) p	
+
+IF @@ERROR <> 0
+BEGIN
+	SELECT @ErrMsg = CASE @Language 
+							WHEN 'E' THEN 'Create customer failed. Please try again.'
+							ELSE [dbo].[f_Get_MsgNamebyMsgID](40004,@Language)
+						END,
+		@ErrCode = 112
+		
+	-- ROLLBACK MANUALLY
+	IF @RoleID = 4
+	BEGIN
+		DELETE FROM CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+		DELETE FROM Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	END
+	ELSE IF @RoleID = 3
+		DELETE FROM CustMaster WITH(ROWLOCK) WHERE custId = @CustID
+	ELSE IF @RoleID = 2
+		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
+		
+	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
+	DELETE FROM CustVirtualSetting WITH(ROWLOCK) WHERE custId = @CustID
+	
+	RETURN
+END		
+
 INSERT INTO [dbo].[custinfo](
 	[custId], [currency], [maxpermatch], [maxpermatch2], [maxpermatch3], [maxpermatch5], [maxpermatch8], [maxpermatch10], [maxpermatch11],[maxpermatch44], [maxpermatch201],[maxpermatch151],[maxpermatch151_OT], MaxPerMatch151_AU, MaxPerMatch152_UK, MaxPerMatch152_AU, MaxPerMatch153_AU, [maxpermatch99]
 	,[roleid], srecommend, [mrecommend], [recommend], [dangercust], [autosuspend], [reject], [credit], [closed], [username], MatchLimit, VirtualMultiplier
@@ -238,9 +295,10 @@ BEGIN
 		DELETE FROM CustAgent WITH(ROWLOCK) WHERE custId = @CustID
 		
 	DELETE FROM Customer WITH(ROWLOCK) WHERE custId = @CustID
-
+	DELETE FROM CustVirtualSetting WITH(ROWLOCK) WHERE custId = @CustID
+	
 	RETURN
 END
-
 GO
+
 GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerInsUserInfo] TO [vnteam] AS [dbo]
