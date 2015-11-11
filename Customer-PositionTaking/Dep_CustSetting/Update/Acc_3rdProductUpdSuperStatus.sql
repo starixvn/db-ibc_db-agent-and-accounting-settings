@@ -47,7 +47,12 @@ BEGIN
 			, @RoleId = RoleId
 		FROM dbo.custInfo WITH (NOLOCK)
 		WHERE CustID = @CustID
-
+		
+		IF @IsEnable = @IsEnabled_Old
+		BEGIN
+			SELECT @ErrMsg = 'Could not update'
+			RETURN
+		END
 		IF @ProductID = 14
 		BEGIN
 			UPDATE dbo.custInfo WITH (ROWLOCK)
@@ -168,7 +173,7 @@ BEGIN
 					FROM dbo.Dep_SupperProductSetting WITH (NOLOCK)
 					WHERE CustID = @CustID
 						AND ProductId = @ProductId
-						AND @ProductId <> 14)
+						AND @ProductId NOT IN (14,17))
 				)
 		BEGIN
 			UPDATE dbo.Dep_SupperProductSetting WITH (ROWLOCK)
@@ -183,7 +188,7 @@ BEGIN
 				RETURN
 			END
 		END
-		ELSE IF (@ProductId <> 14)
+		ELSE IF (@ProductId NOT IN (14,17))
 		BEGIN
 			INSERT INTO dbo.Dep_SupperProductSetting (CustID, ProductId, IsEnabled)
 			VALUES (@CustID, @ProductId, @IsEnable)
