@@ -50,7 +50,7 @@ BEGIN
 		
 		IF @IsEnable = @IsEnabled_Old
 		BEGIN
-			SELECT @ErrMsg = 'Could not update'
+			SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'
 			RETURN
 		END
 		IF @ProductID = 14
