@@ -661,7 +661,7 @@ BEGIN
 		+ '" ' + 'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(8000)), SPACE(1)) + '" />'
 
 	SELECT @TrackingValue2 = '<Acc_3rdProductUpdSuperStatus CustID="' + COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) 
-		+ '" ' + '@ProductName="' + COALESCE(CAST(@ProductName AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'ProductName="' + COALESCE(CAST(@ProductName AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'IsEnable="' + COALESCE(CAST(@IsEnabled_Old AS VARCHAR(1)), SPACE(1)) 
 		+ '" ' + 'ApplyToMember=""' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(40)), SPACE(1)) 
