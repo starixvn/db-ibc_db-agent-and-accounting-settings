@@ -1,7 +1,7 @@
 USE CustDB
 GO
 
-ALTER PROCEDURE dbo.Acc_3rdProductSelSuperStatus @ProductID INT
+ALTER PROCEDURE dbo.Acc_3rdProductSelSuperStatus_uat1 @ProductID INT
 	, @CustID INT
 	, @SupperStatus BIT = 0 OUTPUT
 	, @DownlineStatus BIT = 0 OUTPUT
@@ -19,14 +19,15 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
+	DECLARE @StatusTable TABLE(ProductId TINYINT, SupperStatus BIT, DownlineStatus BIT)
+	DECLARE @EnableMicrogameLC BIT, @EnableMicrogameRNG BIT
 
-	IF @ProductID IN (14,17) -- Microgaming
+	IF @ProductID = 14 -- Microgaming for both : LC & RnG
 	BEGIN
 		DECLARE @RoleId INT
 
-		SELECT @SupperStatus = CASE WHEN @ProductID = 14 THEN ISNULL(~ DisableMicrogameLC, 0)
-									WHEN @ProductID = 17 THEN ISNULL(~ DisableMicrogameRNG, 0)
-									END
+		SELECT @EnableMicrogameLC = ISNULL(~ DisableMicrogameLC, 0)
+			, @EnableMicrogameRNG= ISNULL(~ DisableMicrogameRNG, 0)
 			, @RoleId = RoleId
 		FROM CustInfo WITH (NOLOCK)
 		WHERE CustID = @CustID
@@ -67,37 +68,41 @@ BEGIN
 				AND ag.Username NOT LIKE '%' + ag.site + 'ACC%'
 		END
 		--for Microgaming LC
-		IF @ProductID = 14
-		BEGIN
-			IF EXISTS (SELECT TOP 1 1
+		IF EXISTS (SELECT TOP 1 1
 					FROM CustInfo a WITH (NOLOCK)
 						INNER JOIN #CustList14 b ON a.CustID = b.CustID
 					WHERE ISNULL(a.DisableMicrogameLC, 1) = 1)
 				AND EXISTS (SELECT TOP 1 1 FROM #CustList14 b)
-			BEGIN
-				SELECT @DownlineStatus = 0
-			END
-			ELSE
-			BEGIN
-				SELECT @DownlineStatus = 1
-			END
-		END
-		ELSE IF @ProductID = 17--for Microgaming RNG
 		BEGIN
-			IF EXISTS (
+			SELECT @DownlineStatus = 0
+		END
+		ELSE
+		BEGIN
+			SELECT @DownlineStatus = 1
+		END
+
+		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
+		VALUES(14, @EnableMicrogameLC, @DownlineStatus)
+
+		--for RnG
+		IF EXISTS (
 					SELECT TOP 1 1
 					FROM CustInfo a WITH (NOLOCK)
 						INNER JOIN #CustList14 b ON a.CustID = b.CustID
 					WHERE ISNULL(a.DisableMicrogameRNG, 1) = 1)
 				AND EXISTS (SELECT TOP 1 1 FROM #CustList14 b)
-			BEGIN
-				SELECT @DownlineStatus = 0
-			END
-			ELSE
-			BEGIN
-				SELECT @DownlineStatus = 1
-			END
+		BEGIN
+			SELECT @DownlineStatus = 0
 		END
+		ELSE
+		BEGIN
+			SELECT @DownlineStatus = 1
+		END
+
+		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
+		VALUES(17, @EnableMicrogameRNG, @DownlineStatus)
+
+		SELECT ProductId, SupperStatus, DownlineStatus FROM @StatusTable
 
 		RETURN
 	END
@@ -130,6 +135,11 @@ BEGIN
 		SELECT @DownlineStatus = 1
 	ELSE
 		SELECT @DownlineStatus = 0
+
+	INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
+	VALUES(@ProductId, @SupperStatus, @DownlineStatus)
+
+	SELECT ProductId, SupperStatus, DownlineStatus FROM @StatusTable
 END
 GO
 
