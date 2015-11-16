@@ -778,7 +778,7 @@ BEGIN
 										AND pdt.BetType = mempt.BetType
 										AND pdt.IsLive = mempt.IsLive
 										AND pdt.SettingType = 1	
-							WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
+							WHERE mempt.IsAutoSuperPT = 0 AND mpt.IsAutoSuperPT = 0
 								AND mempt.SuperPT >  
 									CASE 
 										WHEN CASE 
@@ -836,7 +836,7 @@ BEGIN
 										AND pdt.BetType = mempt.BetType
 										AND pdt.IsLive = mempt.IsLive
 										AND pdt.SettingType = 1	
-							WHERE mempt.IsAutoSuperPT = 0 AND mempt.IsAutoSuperPT = 0
+							WHERE mempt.IsAutoSuperPT = 0 AND mpt.IsAutoSuperPT = 0
 								AND mempt.SuperPT < CASE 
 														WHEN spt.MinPT > mempt.MasterPT + mempt.AgentPT
 															THEN spt.MinPT - mempt.MasterPT - mempt.AgentPT

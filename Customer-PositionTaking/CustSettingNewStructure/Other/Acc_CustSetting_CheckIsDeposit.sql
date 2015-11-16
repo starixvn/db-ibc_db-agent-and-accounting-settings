@@ -1,5 +1,15 @@
-ALTER PROCEDURE Acc_CustSetting_CheckIsDeposit @UserName NVARCHAR(50)=''
+CREATE PROCEDURE Acc_CustSetting_CheckIsDeposit @UserName NVARCHAR(50)=''
 AS
+/*  
+ Created: 201511111@Dominic  
+ Task : Check if a customer is a deposit customer or not
+ DB:  DBCUST/CustDB   
+ Original:  
+  
+ Param's Explanation:  
+ 
+   
+ */  
 BEGIN
 	DECLARE @IsDeposit BIT = 0
 	IF EXISTS (SELECT TOP 1 1

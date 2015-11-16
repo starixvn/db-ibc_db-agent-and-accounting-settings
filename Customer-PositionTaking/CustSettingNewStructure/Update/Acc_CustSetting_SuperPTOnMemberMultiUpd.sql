@@ -514,6 +514,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -536,6 +537,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -558,6 +560,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -580,6 +583,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -606,6 +610,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -628,6 +633,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -650,6 +656,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -672,6 +679,7 @@ BEGIN
 		SET @xml = (
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
+				@CustIDList						AS '@CustIDList',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
