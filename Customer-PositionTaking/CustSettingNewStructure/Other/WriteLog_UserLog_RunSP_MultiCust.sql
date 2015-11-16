@@ -19,134 +19,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	DECLARE @NewPTTble TABLE (
-		  SportType			SMALLINT
-		, BetType			SMALLINT
-		, IsLive			BIT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, AgentPT			TINYINT
-		, IsAutoMasterPT	TINYINT
-		, AutoMasterPT		TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
-		)
-	DECLARE @OldPTTble TABLE (
-		  SportType			SMALLINT
-		, BetType			SMALLINT
-		, IsLive			BIT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, AgentPT			TINYINT
-		, IsAutoMasterPT	TINYINT
-		, AutoMasterPT		TINYINT
-		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT
-		)
 	DECLARE @tblCust TABLE (CustID INT)
 
 	--Parse affected Customer
-	INSERT INTO @tblCust (CustID)
-	SELECT CONVERT(INT, val)
-	FROM CustDB.dbo.strSplit(@CustIDList, ',')
-
-	DECLARE @iDoc INT
-
-	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @OldPT_XML
-
-	INSERT @OldPTTble
-	SELECT *
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType			SMALLINT
-			, BetType			SMALLINT
-			, IsLive			BIT
-			, SuperPT			TINYINT
-			, MasterPT			TINYINT
-			, AgentPT			TINYINT
-			, IsAutoMasterPT	TINYINT
-			, AutoMasterPT		TINYINT
-			, IsAutoSuperPT		BIT
-			, AutoSuperPT		TINYINT
-			)
-
-	EXEC sp_xml_removedocument @iDoc
-
-	EXEC sp_xml_preparedocument @iDoc OUTPUT
-		, @NewPT_XML
-
-	INSERT @NewPTTble
-	SELECT *
-	FROM OPENXML(@iDoc, '/ROOT/PT', 1) WITH (
-			SportType			SMALLINT
-			, BetType			SMALLINT
-			, IsLive			BIT
-			, SuperPT			TINYINT
-			, MasterPT			TINYINT
-			, AgentPT			TINYINT
-			, IsAutoMasterPT	TINYINT
-			, AutoMasterPT		TINYINT
-			, IsAutoSuperPT		BIT
-			, AutoSuperPT		TINYINT
-			)
-
-	EXEC sp_xml_removedocument @iDoc
-
-	DECLARE @logSpData NVARCHAR(MAX)
-		, @logSpData_Old NVARCHAR(MAX)
-		, @xml XML
-
-	--START LOGGING		
-	SET @xml = (
-			SELECT @CustIDList AS '@CustIDList'
-				, @UserID AS '@UserID'
-				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP AS '@IP'
-				, @Language AS '@Language'
-				, (
-					SELECT SportType AS '@SportType'
-						, BetType AS '@BetType'
-						, IsLive AS '@IsLive'
-						, SuperPT AS '@SuperPT'
-						, MasterPT AS '@MasterPT'
-						, AgentPT AS '@AgentPT'
-						, IsAutoMasterPT AS '@IsAutoMasterPT'
-						, AutoMasterPT AS '@AutoMasterPT'
-						, IsAutoSuperPT AS '@IsAutoSuperPT'
-						, AutoSuperPT AS '@AutoSuperPT'
-					FROM @OldPTTble
-					FOR XML PATH('PT')
-						, TYPE
-					)
-			FOR XML PATH('r')
-				, TYPE
-			)
-	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
-	SET @xml = (
-			SELECT @CustIDList AS '@CustIDList'
-				, @UserID AS '@UserID'
-				, CustDB.dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName'
-				, @IP AS '@IP'
-				, @Language AS '@Language'
-				, (
-					SELECT SportType AS '@SportType'
-						, BetType AS '@BetType'
-						, IsLive AS '@IsLive'
-						, SuperPT AS '@SuperPT'
-						, MasterPT AS '@MasterPT'
-						, AgentPT AS '@AgentPT'
-						, IsAutoMasterPT AS '@IsAutoMasterPT'
-						, AutoMasterPT AS '@AutoMasterPT'
-						, IsAutoSuperPT AS '@IsAutoSuperPT'
-						, AutoSuperPT AS '@AutoSuperPT'
-					FROM @NewPTTble
-					FOR XML PATH('PT')
-						, TYPE
-					)
-			FOR XML PATH('r')
-				, TYPE
-			)
-	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	 DECLARE @XML XML  
+	 SET @XML = N'<root><r>' + REPLACE(@CustIDList, ',', '</r><r>') + '</r></root>'  
+	   
+	 INSERT INTO @tblCust (CustID)   SELECT r.value('.','INT')  
+	 FROM @xml.nodes('//root/r') AS RECORDS(r) 
 
 	INSERT INTO dbo.UserLog_RunSP (
 		UserID
@@ -163,8 +43,8 @@ BEGIN
 		, @SPName
 		, @Doing
 		, @ActionId
-		, @logSpData
-		, @logSpData_Old
+		, @NewPT_XML
+		, @OldPT_XML
 		, @Duration
 	FROM @tblCust tmp
 END
