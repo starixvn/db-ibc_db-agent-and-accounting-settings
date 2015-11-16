@@ -120,7 +120,9 @@ BEGIN
 		INNER JOIN dbo.CustPTSetting3rd_Agent s ON m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
 		INNER JOIN @tblPT a ON s.sporttype = a.sporttype AND s.bettype = a.bettype AND s.IsLive = a.IsLive
 	WHERE m.custid = @MasterID AND s.custid = @SuperID
-	    	    
+	  
+	SELECT @ErrCode = ISNULL(@ErrCode,0)
+	  	    
     --Update Min PT        
 	IF @UpdateMinPT = 1        
 	BEGIN        
@@ -504,6 +506,5 @@ BEGIN
 				RETURN
 			END  
 		END
-	 END-- end check      
-	 SELECT @ErrCode = 0
+	 END-- end check      	 
 END
