@@ -1,4 +1,4 @@
-alter PROCEDURE [dbo].[Acc_CustSetting_06]
+ALTER PROCEDURE [dbo].[Acc_CustSetting_06]
     @CustId              INT
   , @RoleId              INT
   , @groupa              DECIMAL(9, 8) = 0
@@ -35,6 +35,7 @@ AS
 			+ Separate custDB to new server DBCUST   
 		- 20150616@Johnson: Add more hard customers not give commission [Redmine: #34798]
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
+		- 20151111@Helen: Add more hard customers not give commission [Redmine: #47068]
 	    		
     Param's Explanation: 
 
@@ -103,6 +104,10 @@ BEGIN
 	UNION SELECT 	1540595		,	1	-- 	08HK
 	UNION SELECT 	15976531	,	1	-- 	6666AHK005
 	UNION SELECT 	640041		,	1	-- 	M3000
+	
+	--20151111Helen: hardcode for 919RMB and VS3077HK
+	UNION SELECT	12163698	,	1	--	919RMB
+	UNION SELECT	19573984	,	1	--	VS3077HK
  
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
