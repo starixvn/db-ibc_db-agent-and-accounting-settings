@@ -698,7 +698,7 @@ BEGIN
 		TYPE
 	)
 	END
-	
+	SET @New_PT_XML = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')	
 
 	SELECT @EndRun	= GETDATE()
 		, @Duration = DATEDIFF(MILLISECOND, @StartRun, @EndRun)
