@@ -1,14 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerInfo_Execrep_02]    Script Date: 04/27/2015 11:12:09 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/14/2014 2:13:15 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/11/2014 5:04:54 PM ******/
-
-/****** Object:  Stored Procedure dbo.Acc_CustomerInfo_Execrep_02    Script Date: 3/11/2014 4:19:39 PM ******/
 ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_02]
 	@custid INT =0,
 	@ExistingCustid INT = 0,
@@ -26,10 +15,11 @@ AS
 		- 20140303@Patrick	: Add more sport: 202 for Keno
 		- 20150427@Kathy: Add Gold Deluxe product [Redmine:#34486] 
 	     
-	     - 20150610@Daniel: 
+	    - 20150610@Daniel: 
 		  + Separate custDB to new server DBCUST: 
 		  + Improve medthod check table existing in subscribers			
-		
+		- 20141217@Dominic: Add logic for new customer setting structure - Redmine Feature #26274			  
+		- 20151016@Elodie: Add new product Colossus Bet and Myanmar Odds [Redmine: #41264, 41470]
 	Parameter's Explanation:
 */ 
 BEGIN
@@ -41,10 +31,13 @@ BEGIN
 		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
 		  AND dbo.f_CheckRepTable('CustSettingGame') = 1 
 		  AND dbo.f_CheckRepTable('CustOverrideGame') = 1
-		  AND dbo.f_CheckRepTable('CustGameType') = 1
+		  AND dbo.f_CheckRepTable('CustGameType') = 1		 
+		  AND dbo.f_CheckRepTable('AgentCommRate') = 1	
 	   )
 	   RETURN	
 	
+	DECLARE @DCSErrCode INT = 0
+		
 	-- insert custSetting info
 	INSERT INTO dbo.custSetting
 	SELECT
@@ -333,6 +326,64 @@ BEGIN
 		RETURN
 	END
 	--End Keno
+
+	--Colossus Bet, Myanmar Odds
+	DECLARE @IsMyanmarOdds BIT = 0
+	SET @IsMyanmarOdds = dbo.fn_IsMyanmarOdds (@ExistingCustid)
+
+	IF @IsMyanmarOdds = 1
+		INSERT INTO dbo.AgentCommRate (CustID,SportType,BetType,CommRate) 
+		SELECT @custid, SportType, Bettype, CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid
+	ELSE
+		INSERT INTO dbo.AgentCommRate (CustID,SportType,BetType,CommRate) 
+		SELECT @custid, SportType, Bettype, CommRate
+		FROM AgentCommRate WITH (NOLOCK)
+		WHERE CustId = @ExistingCustid AND Sporttype <> 1 AND Bettype <> 301 
+
+	IF @@ERROR <> 0
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 157
+			
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE dbo.AgentCommRate WITH(ROWLOCK) WHERE custid = @CustID 
+
+		RETURN
+	END
+
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	EXEC dbo.Acc_DynamicCustomerInfo_02
+			@CustID				= @CustID
+			, @ExistingCustid	= @ExistingCustid
+			, @ErrCode			= @DCSErrCode OUTPUT
+			
+	IF @DCSErrCode <> 0 
+	BEGIN
+		--Error Occurs
+		SELECT @ErrCode = 911
+		
+		-- ROLLBACK MANUALLY
+		DELETE FROM dbo.CustSetting WITH(ROWLOCK) WHERE CustID = @CustID
+		DELETE FROM custsetting3rd WITH (ROWLOCK) WHERE custid =  @CustID		
+		DELETE FROM custoverride WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custoverride3rd WITH (ROWLOCK) WHERE custid =  @CustID
+		IF(dbo.f_CheckRepTable('P2PGAMESETTING') = 1) DELETE FROM P2PGameSetting WITH (ROWLOCK) WHERE custid =  @CustID					
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE FROM P2PGroupComm WITH (ROWLOCK) WHERE custid =  @CustID
+		DELETE FROM custsettingGame with (ROWLOCK) where custid = @CustID
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE dbo.AgentCommRate WITH(ROWLOCK) WHERE custid = @CustID 
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 END
 
 GO

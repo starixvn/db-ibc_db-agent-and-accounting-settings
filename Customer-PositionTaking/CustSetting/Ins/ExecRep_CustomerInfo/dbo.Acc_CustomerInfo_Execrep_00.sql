@@ -817,7 +817,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]
 			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 			- 20150904@Helen: commission setting for MO [Redmine #41470]
-						  
+			- 20151015@Dominic: Add logic for new customer setting structure [Redmine #26274]
 			  	
 		Parameter's Explanation:
 		
@@ -841,7 +841,7 @@ BEGIN
 	   )
 	   RETURN
 
-	
+	DECLARE @DCSErrCode INT = 0
     DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
     DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
     DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
@@ -2834,12 +2834,41 @@ DECLARE @currency INT
 				DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
 				
 				RETURN
-		END
+			END
 		END
 		
 	
 	END
 	
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+	EXEC dbo.Acc_DynamicCustomerInfo_00
+			@CustID				= @CustID
+			, @SuperID			= @srecommend
+			, @MasterID			= @mrecommend
+			, @AgentID			= @recommend
+			, @RoleID			= @roleid
+			, @ProductID		= NULL
+			, @ErrCode			= @DCSErrCode OUTPUT
+				
+	IF @DCSErrCode <> 0 
+	BEGIN
+		--Error occur
+		SET @ErrCode = 911
+				
+		-- ROLLBACK MANUALLY
+		DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+		DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+		DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+		DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid		
+		DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	
 END
 
