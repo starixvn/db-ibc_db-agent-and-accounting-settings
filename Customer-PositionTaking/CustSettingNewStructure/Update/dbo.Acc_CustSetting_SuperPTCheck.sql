@@ -83,6 +83,8 @@ BEGIN
 		INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON s.SportType = ps.Sporttype AND s.BetType = ps.bettype AND s.IsLive = ps.IsLive
 	WHERE ps.SettingType = 1
 
+	SELECT @ErrCode = ISNULL(@ErrCode,0)
+
 	IF @ErrCode = 200
 	BEGIN
 		SET @ErrType =
@@ -145,6 +147,8 @@ BEGIN
 		FROM #MasterTbl c 
 			INNER JOIN dbo.CustPTSetting3rd_Agent m WITH (NOLOCK) ON m.CustID = c.CustID
 			INNER JOIN @tblPT s ON m.sporttype = s.sporttype AND m.bettype = s.bettype AND m.IsLive = s.IsLive
+		
+		SELECT @ErrCode = ISNULL(@ErrCode,0)
 
 		IF @ErrCode = 198
 		BEGIN
@@ -256,6 +260,8 @@ BEGIN
 			INNER JOIN dbo.CustPTGroupSetting3rd_Member cs WITH(NOLOCK) ON c.custid = cs.AgentID
 			INNER JOIN @tblPT s ON cs.sporttype = s.sporttype AND cs.bettype = s.bettype AND cs.IsLive = s.IsLive
 		
+		SELECT @ErrCode = ISNULL(@ErrCode,0)
+		SELECT @ErrCodeGroup = ISNULL(@ErrCodeGroup,0)
 
 		SELECT @ErrCode = CASE WHEN @ErrCode < @ErrCodeGroup THEN @ErrCodeGroup ELSE @ErrCode END -- get max ErrCode to return first error
 

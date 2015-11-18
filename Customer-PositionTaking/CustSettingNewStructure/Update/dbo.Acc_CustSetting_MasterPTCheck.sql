@@ -97,7 +97,9 @@ BEGIN
 		INNER JOIN @tblPT m ON s.sporttype = m.sporttype AND s.bettype = m.bettype AND s.IsLive = m.IsLive
 		INNER JOIN ProductSettingDetail ps WITH(NOLOCK) ON m.SportType = ps.Sporttype AND m.BetType = ps.bettype AND m.IsLive = ps.IsLive
 	WHERE s.custid = @SuperID AND ps.SettingType = 1
-			
+	
+	SELECT @ErrCode = ISNULL(@ErrCode,0)
+				
 	IF 	@ErrCode = 200
 	BEGIN
 		SET @ErrType =
@@ -345,6 +347,8 @@ BEGIN
 		FROM #AgentTbl c
 			INNER JOIN dbo.CustPTSetting3rd_Agent a WITH(NOLOCK) on c.custid = a.custid
 			INNER JOIN @tblPT m ON a.sporttype = m.sporttype AND a.bettype = m.bettype AND a.IsLive = m.IsLive		
+
+		SELECT @ErrCode = ISNULL(@ErrCode,0)
 
 		IF @ErrCode = 191
 		BEGIN
