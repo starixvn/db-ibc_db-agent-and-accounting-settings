@@ -1,7 +1,7 @@
 USE CustDB
 GO
 
-ALTER PROCEDURE dbo.Acc_3rdProductSelSuperStatus_uat1 @ProductID INT
+ALTER PROCEDURE dbo.Acc_3rdProductSelSuperStatus @ProductID INT
 	, @CustID INT
 	, @SupperStatus BIT = 0 OUTPUT
 	, @DownlineStatus BIT = 0 OUTPUT
@@ -19,8 +19,8 @@ AS
 */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @StatusTable TABLE(ProductId TINYINT, SupperStatus BIT, DownlineStatus BIT)
-	DECLARE @EnableMicrogameLC BIT, @EnableMicrogameRNG BIT
+	DECLARE @StatusTable TABLE(ProductId TINYINT, SupperStatus BIT, DownlineStatus BIT, UplineStatus BIT)
+	DECLARE @EnableMicrogameLC BIT, @EnableMicrogameRNG BIT, @UplineStatusLC BIT, @UplineStatusRnG BIT
 
 	IF @ProductID = 14 -- Microgaming for both : LC & RnG
 	BEGIN
@@ -32,40 +32,63 @@ BEGIN
 		FROM CustInfo WITH (NOLOCK)
 		WHERE CustID = @CustID
 
+		--get upline status
+		IF @RoleId = 1
+		BEGIN
+			SELECT @UplineStatusLC = ISNULL(~ DisableMicrogameLC, 0)
+				, @UplineStatusRnG= ISNULL(~ DisableMicrogameRNG, 0)
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT recommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 2
+		BEGIN
+			SELECT @UplineStatusLC = ISNULL(~ DisableMicrogameLC, 0)
+				, @UplineStatusRnG= ISNULL(~ DisableMicrogameRNG, 0)
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT mrecommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 3
+		BEGIN
+			SELECT @UplineStatusLC = ISNULL(~ DisableMicrogameLC, 0)
+				, @UplineStatusRnG= ISNULL(~ DisableMicrogameRNG, 0)
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT srecommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 4--not checking the upline when the customer is the super
+		BEGIN
+			SELECT @UplineStatusLC = 1, @UplineStatusRnG= 1
+		END
+
 		CREATE TABLE #CustList14 (CustID INT)
 
 		IF @RoleId = 4
 		BEGIN
 			INSERT INTO #CustList14 (CustID)
-			SELECT rm.CustID
-			FROM Customer rm WITH (NOLOCK)
-				INNER JOIN Customer ag WITH (NOLOCK)
-				ON rm.recommend = ag.Custid
-			WHERE rm.srecommend = @CustID
-				AND rm.custid <> @CustID
-				AND ag.Username NOT LIKE '%' + ag.site + 'ACC%'
+			SELECT s.CustID
+			FROM dbo.Customer s WITH (NOLOCK)
+				INNER JOIN dbo.Customer m WITH (NOLOCK) ON s.mrecommend = m.custid
+			WHERE s.srecommend = @CustID
+				AND s.custid <> @CustID
+				AND m.Username NOT LIKE '%' + m.site + 'ACC%'
 		END
 		ELSE IF @RoleId = 3
 		BEGIN
 			INSERT INTO #CustList14 (CustID)
-			SELECT rm.CustID
-			FROM Customer rm WITH (NOLOCK)
-				INNER JOIN Customer ag WITH (NOLOCK)
-				ON rm.recommend = ag.Custid
-			WHERE rm.mrecommend = @CustID
-				AND rm.custid <> @CustID
-				AND ag.Username NOT LIKE '%' + ag.site + 'ACC%'
+			SELECT m.CustID
+			FROM dbo.Customer m WITH (NOLOCK)
+				INNER JOIN dbo.Customer a WITH (NOLOCK) ON m.recommend = a.custid
+			WHERE m.mrecommend = @CustID
+				AND m.custid <> @CustID
+				AND a.Username NOT LIKE '%' + a.site + 'ACC%'
 		END
 		ELSE
 		BEGIN
 			INSERT INTO #CustList14 (CustID)
-			SELECT rm.CustID
-			FROM Customer rm WITH (NOLOCK)
-				INNER JOIN Customer ag WITH (NOLOCK)
-				ON rm.recommend = ag.Custid
-			WHERE rm.recommend = @CustID
-				AND rm.custid <> @CustID
-				AND ag.Username NOT LIKE '%' + ag.site + 'ACC%'
+			SELECT a.CustID
+			FROM dbo.Customer a WITH (NOLOCK)
+			WHERE a.recommend = @CustID
+				AND a.custid <> @CustID
+				AND a.Username NOT LIKE '%' + ISNULL(a.site, '') + 'ACC%'
 		END
 		--for Microgaming LC
 		IF EXISTS (SELECT TOP 1 1
@@ -81,8 +104,8 @@ BEGIN
 			SELECT @DownlineStatus = 1
 		END
 
-		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
-		VALUES(14, @EnableMicrogameLC, @DownlineStatus)
+		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus, UplineStatus)
+		VALUES(14, @EnableMicrogameLC, @DownlineStatus, @UplineStatusLC)
 
 		--for RnG
 		IF EXISTS (
@@ -99,10 +122,12 @@ BEGIN
 			SELECT @DownlineStatus = 1
 		END
 
-		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
-		VALUES(17, @EnableMicrogameRNG, @DownlineStatus)
+		INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus, UplineStatus)
+		VALUES(17, @EnableMicrogameRNG, @DownlineStatus, @UplineStatusRnG)
 
-		SELECT ProductId, SupperStatus, DownlineStatus FROM @StatusTable
+		SELECT ProductId, SupperStatus, DownlineStatus, UplineStatus FROM @StatusTable
+
+		DROP TABLE #CustList14
 
 		RETURN
 	END
@@ -112,6 +137,9 @@ BEGIN
 	FROM Dep_SupperProductSetting WITH (NOLOCK)
 	WHERE CustID = @CustID
 		AND ProductId = @ProductId
+
+	IF @SupperStatus IS NULL
+		SET @SupperStatus = 0
 
 	CREATE TABLE #CustList (CustID INT)
 
@@ -136,10 +164,10 @@ BEGIN
 	ELSE
 		SELECT @DownlineStatus = 0
 
-	INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus)
-	VALUES(@ProductId, @SupperStatus, @DownlineStatus)
+	INSERT INTO @StatusTable(ProductId, SupperStatus, DownlineStatus, UplineStatus)
+	VALUES(@ProductId, @SupperStatus, @DownlineStatus, 1)
 
-	SELECT ProductId, SupperStatus, DownlineStatus FROM @StatusTable
+	SELECT ProductId, SupperStatus, DownlineStatus, UplineStatus FROM @StatusTable
 END
 GO
 

@@ -48,11 +48,47 @@ BEGIN
 		FROM dbo.custInfo WITH (NOLOCK)
 		WHERE CustID = @CustID
 		
+		--check concurrent users
 		IF @IsEnable = @IsEnabled_Old
 		BEGIN
 			SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'
 			RETURN
 		END
+
+		--check upline status
+		DECLARE @UplineStatus BIT
+		IF @RoleId = 1
+		BEGIN
+			SELECT @UplineStatus = CASE WHEN @ProductID = 14 THEN ~ ISNULL(DisableMicrogameLC, 1)
+										WHEN  @ProductID = 17 THEN ~ ISNULL(DisableMicrogameRNG, 1) END
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT recommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 2
+		BEGIN
+			SELECT @UplineStatus = CASE WHEN @ProductID = 14 THEN ~ ISNULL(DisableMicrogameLC, 1)
+										WHEN  @ProductID = 17 THEN ~ ISNULL(DisableMicrogameRNG, 1) END
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT mrecommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 3
+		BEGIN
+			SELECT @UplineStatus = CASE WHEN @ProductID = 14 THEN ~ ISNULL(DisableMicrogameLC, 1)
+										WHEN  @ProductID = 17 THEN ~ ISNULL(DisableMicrogameRNG, 1) END
+			FROM dbo.custInfo WITH (NOLOCK)
+			WHERE custid = (SELECT srecommend FROM dbo.custInfo WITH (NOLOCK) WHERE custid = @CustID)
+		END
+		ELSE IF @RoleId = 4--not checking the upline when the customer is the super
+		BEGIN
+			SET @UplineStatus = 1
+		END
+		
+		IF @UplineStatus = 0 AND @IsEnable = 1
+		BEGIN
+			SELECT @ErrMsg = 'Upline was disabled. Can not enable.'
+			RETURN
+		END
+
 		IF @ProductID = 14
 		BEGIN
 			UPDATE dbo.custInfo WITH (ROWLOCK)
@@ -663,7 +699,7 @@ BEGIN
 	SELECT @TrackingValue2 = '<Acc_3rdProductUpdSuperStatus CustID="' + COALESCE(CAST(@CustID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'ProductName="' + COALESCE(CAST(@ProductName AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'IsEnable="' + COALESCE(CAST(@IsEnabled_Old AS VARCHAR(1)), SPACE(1)) 
-		+ '" ' + 'ApplyToMember=""' + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
+		+ '" ' + 'ApplyToMember=""' + SPACE(1) + 'UserID="' + COALESCE(CAST(@UserID AS VARCHAR(50)), SPACE(1)) 
 		+ '" ' + 'IP="' + COALESCE(CAST(@IP AS VARCHAR(40)), SPACE(1)) 
 		+ '" ' + 'ErrMsg="' + COALESCE(CAST(@ErrMsg AS VARCHAR(8000)), SPACE(1)) + '" />'
 
