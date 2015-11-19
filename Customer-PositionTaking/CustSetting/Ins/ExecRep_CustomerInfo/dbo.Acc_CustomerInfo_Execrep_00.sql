@@ -842,7 +842,6 @@ BEGIN
 	   )
 	BEGIN
 
-	DECLARE @DCSErrCode INT = 0
     DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
     DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
     DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
@@ -2842,7 +2841,8 @@ BEGIN
 	END
 	END
 	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
-				EXEC dbo.Acc_DynamicCustomerInfo_00
+	DECLARE @DCSErrCode INT = 0
+	EXEC dbo.Acc_DynamicCustomerInfo_00
 			@CustID				= @CustID
 			, @SuperID			= @srecommend
 			, @MasterID			= @mrecommend
