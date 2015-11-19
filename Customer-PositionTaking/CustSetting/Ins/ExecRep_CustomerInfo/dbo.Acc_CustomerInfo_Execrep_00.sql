@@ -817,7 +817,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20150910@Elodie: Fix bug no record of gametypeid 1701,1702 for member in case agent has no bet limit or all bet limit unchecked [Redmine:#41823]
 			- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 			- 20150904@Helen: commission setting for MO [Redmine #41470]
-						  
+			- 20151015@Dominic: Add logic for new customer setting structure [Redmine #26274]
+			- 20151119@Dominic: Fix bug when inserting setting into DCS structure Redmine Feature #26274
 			  	
 		Parameter's Explanation:
 		
@@ -825,7 +826,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 BEGIN
     SET NOCOUNT ON
 			
-     if NOT(dbo.f_CheckRepTable('CustSetting') = 1 
+     if (dbo.f_CheckRepTable('CustSetting') = 1 
 		  AND dbo.f_CheckRepTable('CustOverride') = 1 
 		  AND dbo.f_CheckRepTable('CustSetting3rd') = 1 
 		  AND dbo.f_CheckRepTable('CustOverride3rd') = 1 
@@ -839,9 +840,9 @@ BEGIN
 		  --AND dbo.f_CheckRepTable('P2PGAMESETTING') = 1 
 		  --AND dbo.f_CheckRepTable('P2PGroupComm') = 1		  
 	   )
-	   RETURN
+	BEGIN
 
-	
+	DECLARE @DCSErrCode INT = 0
     DECLARE @tmp_GameType TABLE (GameTypeID INT, IBCBettypeID INT)
     DECLARE @ProductGlobalSetting TABLE (Sporttype INT, Bettype INT, MaxPositiontaking SMALLMONEY, IsDep BIT)
     DECLARE @ProductBetSetting TABLE (Currency TINYINT, Bettype INT, MinBet MONEY)
@@ -860,7 +861,7 @@ BEGIN
 	   END CATCH
    
 	   
-DECLARE @currency INT
+	DECLARE @currency INT
           , @super    INT
           , @master   INT
 
@@ -2834,15 +2835,42 @@ DECLARE @currency INT
 				DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
 				
 				RETURN
-		END
+			END
 		END
 		
 	
 	END
-	
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-START*/
+				EXEC dbo.Acc_DynamicCustomerInfo_00
+			@CustID				= @CustID
+			, @SuperID			= @srecommend
+			, @MasterID			= @mrecommend
+			, @AgentID			= @recommend
+			, @RoleID			= @roleid
+			, @ProductID		= NULL
+			, @ErrCode			= @DCSErrCode OUTPUT
+				
+	IF @DCSErrCode <> 0 
+	BEGIN
+		--Error occur
+		SET @ErrCode = 911
+				
+		-- ROLLBACK MANUALLY
+		IF(dbo.f_CheckRepTable('custSetting') = 1) DELETE dbo.custSetting WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('CustSetting3rd') = 1) DELETE dbo.CustSetting3rd WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('custOverride') = 1) DELETE dbo.custOverride WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('custOverride3rd') = 1) DELETE dbo.custOverride3rd WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('P2PGameSetting') = 1) DELETE dbo.P2PGameSetting WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('P2PGroupComm') = 1) DELETE dbo.P2PGroupComm WITH (ROWLOCK) WHERE custId = @custid
+		IF(dbo.f_CheckRepTable('CustSettingGame') = 1) DELETE dbo.CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+		IF(dbo.f_CheckRepTable('CustOverrideGame') = 1) DELETE dbo.CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
+		IF(dbo.f_CheckRepTable('CustGameType') = 1) DELETE dbo.CustGameType WITH(ROWLOCK) WHERE custid = @custid 
+		IF(dbo.f_CheckRepTable('AgentCommRate') = 1) DELETE AgentCommRate WITH (ROWLOCK) WHERE custId  =@custid		
+		IF(dbo.f_CheckRepTable('CustCommRate') = 1) DELETE CustCommRate WITH (ROWLOCK) WHERE custId  = @custid
+	END
+	/*DOMINIC-CUSTOMER SETTING RENOVATION-END*/
 	
 END
-
-GO 
-GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam]
- 
+GO
+GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerInfo_Execrep_00] TO [vnteam] AS [dbo]

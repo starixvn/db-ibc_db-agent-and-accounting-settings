@@ -54,6 +54,7 @@ Revisions:
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
 	- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
+	- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
 	
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -83,6 +84,10 @@ B: 'B%'
 	Declare @tbDummySuper table (custid int primary key)
 	Declare @tbCurrency table (exchangeId int primary key)
 
+	-- For MuayThai
+    DECLARE @bitmapOrder INT 
+    SET @bitmapOrder = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
+    
 	IF(@System = 'ACCOUNTING')
 	BEGIN
 		IF @TotalPages = 0
@@ -141,6 +146,11 @@ B: 'B%'
 			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
 			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
 			ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
+			
+			-- For MuayThai
+		   ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder),0)  AS DisableMuayThai,
+		   ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder),0) AS HideMuayThai,
+		   
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,  
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
@@ -169,6 +179,8 @@ B: 'B%'
 			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)			
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 		   LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
+		   LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
+		   
 		WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 			and ci.closed = case when @closed is null then ci.closed else @closed end
 			and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
@@ -202,7 +214,8 @@ B: 'B%'
 			
 			ci.HideColossusBet,
 			ci.DisableColossusBet,
-			
+			cps.bitmapIsDisabled,
+			cps.bitmapIsHidden,
 			groupa, 
 			groupb, 
 			groupc, 
@@ -280,6 +293,11 @@ B: 'B%'
 			
 			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
 			ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
+			
+			-- For MuayThai
+		    ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder),0)  AS DisableMuayThai,
+		    ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder),0) AS HideMuayThai,
+		   
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
@@ -292,6 +310,8 @@ B: 'B%'
 			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 			LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 AND csuper.IsMyanmarOdds = 1
+			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
+			
 		WHERE	
 				m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
 				AND m.roleid=4 
@@ -325,6 +345,8 @@ B: 'B%'
 			ci.DisableGoldDeluxe,
 			ci.HideColossusBet,
 			ci.DisableColossusBet,
+			cps.bitmapIsDisabled,
+			cps.bitmapIsHidden,
 			csuper.IsMyanmarOdds,
 			ac.CommRate
 		) a
