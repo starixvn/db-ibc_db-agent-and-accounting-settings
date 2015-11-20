@@ -1,13 +1,10 @@
-USE [CustDB]
+
+SET QUOTED_IDENTIFIER ON 
 GO
-/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 10/26/2015 05:10:05 ******/
-SET ANSI_NULLS ON
+SET ANSI_NULLS ON 
 GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 10/14/2015 1:11:21 AM ******/
-/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 9/30/2015 6:07:43 PM ******/
-ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
+ 
+CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
 	@FirstName nvarchar(50),    
 	@LastName nvarchar(50),    
 	@Email nvarchar(50),    
@@ -155,14 +152,14 @@ Revisions:
  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
  
 Param's Explanation:    
-• @CustID: return new 12bet Player Cust ID    
-• @Username: return new 12bet Player User name    
+? @CustID: return new 12bet Player Cust ID    
+? @Username: return new 12bet Player User name    
     
-• @ErrCode:    
+? @ErrCode:    
  = 0: Transaction recorded successfully.    
  > 0: Specific Error.    
      
-• @ErrMsg: Error description.    
+? @ErrMsg: Error description.    
 */    
 SET NOCOUNT ON    
     
@@ -1749,7 +1746,8 @@ Select
  @MaxMaxPerMatchv5 = IsNull(Min(case when cs.MaxPerMatch5 = 0 then NULL else cs.MaxPerMatch5 end),0),    
  @MaxMaxPerMatchv8 = IsNull(Min(case when cs.MaxPerMatch8 = 0 then NULL else cs.MaxPerMatch8 end),0),    
  @MaxMaxPerMatchv10 = IsNull(Min(case when cs.MaxPerMatch10 = 0 then NULL else cs.MaxPerMatch10 end),0),    
- @MaxMaxPerMatchv11 = IsNull(Min(case when cs.MaxPerMatch11 = 0 then NULL else cs.MaxPerMatch11 end),0),    
+ @MaxMaxPerMatchv11 = IsNull(Min(case when cs.MaxPerMatch11 = 0 then NULL else cs.MaxPerMatch11 end),0), 
+ @MaxMaxPerMatchv44 = IsNull(Min(case when cs.MaxPerMatch44 = 0 then NULL else cs.MaxPerMatch44 end),0), 
  @MaxMaxPerMatchv154 = IsNull(Min(case when cs.MaxPerMatch154 = 0 then NULL else cs.MaxPerMatch154 end),0),    
  --v151    
  @MaxMaxPerMatchv151 = IsNull(Min(case when cs.MaxPerMatch151 = 0 then NULL else cs.MaxPerMatch151 end),0),    
@@ -2854,15 +2852,25 @@ BEGIN CATCH
   @TrackingValue = @LogSPData,    
   @duration = @duration    
 END CATCH
+
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet] AS [dbo]
+
+SET QUOTED_IDENTIFIER OFF 
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet] AS [dbo]
+SET ANSI_NULLS ON 
 GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member] AS [dbo]
-GO
-GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam] AS [dbo]
+
+
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam]
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet]
+GO 
+ GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet]
+GO 
