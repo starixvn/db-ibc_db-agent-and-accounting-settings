@@ -70,41 +70,38 @@ BEGIN
 		SELECT		cptgs3.SportType,
 					cptgs3.BetType,
 					cptgs3.IsLive,
-					CASE WHEN cpts3.CustID IS NOT NULL	THEN CASE	WHEN csm3.IsGrouped = 0	THEN CASE WHEN roleid = 2 THEN cpts3.AgentPT
-																									  WHEN roleid = 3 THEN cpts3.MasterPT
-																									  WHEN roleid = 4 THEN cpts3.SuperPT
-																													  ELSE NULL
-																								 END
-																							ELSE CASE WHEN roleid = 2 THEN cptgs3.AgentPT
-																									  WHEN roleid = 3 THEN cptgs3.MasterPT
-																									  WHEN roleid = 4 THEN cptgs3.SuperPT
-																													  ELSE NULL
-																								 END
-																							END
-														ELSE CASE	WHEN roleid = 2 THEN cptgs3.AgentPT
-																	WHEN roleid = 3 THEN cptgs3.MasterPT
-																	WHEN roleid = 4 THEN cptgs3.SuperPT
-																					ELSE NULL
-																	END
-					END AS positiontaking
+					CASE WHEN roleid = 2 THEN cptgs3.AgentPT
+						  WHEN roleid = 3 THEN cptgs3.MasterPT
+						  WHEN roleid = 4 THEN cptgs3.SuperPT
+										  ELSE NULL
+				   END  AS positiontaking
 		FROM		CustSettingMode3rd				AS csm3 WITH(NOLOCK)
-		INNER JOIN	CustPTGroupSetting3rd_Member	AS cptgs3 WITH(NOLOCK)
-				ON	cptgs3.AgentID = @Recommend
-		INNER JOIN	#SportBettype AS sbt
-				ON	cptgs3.SportType = sbt.SportType
-				AND	cptgs3.BetType = sbt.BetType
-				AND	cptgs3.IsLive = sbt.IsLive
-		LEFT OUTER JOIN CustPTSetting3rd_Member		AS cpts3 WITH(NOLOCK)
-				ON	csm3.CustID = cpts3.CustID
-				AND	cptgs3.SportType = cpts3.SportType
-				AND cptgs3.BetType = cpts3.BetType
-				AND cptgs3.IsLive = cpts3.IsLive
-		WHERE		csm3.CustID = info.custid
+		INNER JOIN	CustPTGroupSetting3rd_Member	AS cptgs3 WITH(NOLOCK)	ON	cptgs3.AgentID = @Recommend AND csm3.IsGrouped = 1
+		INNER JOIN	#SportBettype AS sbt	ON	cptgs3.SportType = sbt.SportType	AND	cptgs3.BetType = sbt.BetType	AND	cptgs3.IsLive = sbt.IsLive
+		WHERE csm3.CustID = info.custid
+		
+		UNION ALL
+		
+		SELECT		sbt.SportType,
+					sbt.BetType,
+					sbt.IsLive,
+					CASE WHEN roleid = 2 THEN cpts3.AgentPT
+						WHEN roleid = 3 THEN cpts3.MasterPT
+						WHEN roleid = 4 THEN cpts3.SuperPT
+										ELSE NULL
+					END AS positiontaking
+		
+		FROM #SportBettype AS sbt
+			INNER JOIN CustPTSetting3rd_Member AS cpts3 WITH(NOLOCK) ON	cpts3.SportType = cpts3.SportType
+				AND cpts3.BetType = cpts3.BetType
+				AND cpts3.IsLive = cpts3.IsLive
+			INNER JOIN CustSettingMode3rd csm3 WITH(NOLOCK)	ON 	csm3.CustID = cpts3.CustID AND csm3.IsGrouped = 0
+		WHERE csm3.CustID = info.custid
+		
 	) pt
 	WHERE RowNumber >= (@PageIndex - 1) * @PageSize + 1 AND RowNumber <= @PageIndex * @PageSize
 	ORDER BY RowNumber, SportType, islive, BetType, roleid
-END
-
+	
 GO
 
 SET QUOTED_IDENTIFIER OFF 
