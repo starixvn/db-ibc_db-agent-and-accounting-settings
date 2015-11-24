@@ -23,6 +23,7 @@ CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]
 	@ErrCode int = 0 OUTPUT,    
 	@ErrMsg nvarchar(2000) = '' OUTPUT     
 AS    
+
 /*    
 Created:     
 Task : Create a 12 bet player account for this Affiliate on IBC system    
