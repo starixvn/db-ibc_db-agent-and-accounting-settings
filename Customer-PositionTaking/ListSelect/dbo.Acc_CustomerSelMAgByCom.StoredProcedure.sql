@@ -41,7 +41,8 @@ BEGIN
 		- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
 		- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
-
+		- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
+		
 	Pattern Explanation:
 	Search keyword: '%keyword%'
 	First char
@@ -85,6 +86,10 @@ BEGIN
 					and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
 			) t
 	END
+	-- For MuayThai
+    DECLARE @bitmapOrder INT 
+    SET @bitmapOrder = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
+    
 	Select * From 
 	(
 		SELECT 		
@@ -129,6 +134,10 @@ BEGIN
 			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
 			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
 			ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
+			-- For MuayThai
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder),0)  AS DisableMuayThai,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder),0) AS HideMuayThai,
+			
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
@@ -143,6 +152,8 @@ BEGIN
 			INNER JOIN CustSuper csuper WITH (NOLOCK) ON csuper.custid = ci.srecommend
 			INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 			LEFT JOIN AgentCommRate ac WITH (NOLOCK) ON ac.CustId = ci.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
+			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid
+			 
 		WHERE m.SRecommend < 100 and m.roleid=3
 			and m.currency = case when @Currency is null then m.currency else @Currency end
 			and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -179,6 +190,8 @@ BEGIN
 			ci.DisableGoldDeluxe,
 			ci.HideColossusBet,
 			ci.DisableColossusBet,
+			cps.bitmapIsDisabled,
+			cps.bitmapIsHidden,
 			AC.CommRate,
 			ac.CustId
 			
