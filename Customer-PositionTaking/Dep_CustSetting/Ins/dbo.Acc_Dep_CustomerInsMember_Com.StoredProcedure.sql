@@ -33,7 +33,11 @@
 	@MinBetv11 MONEY,
 	@MaxBetv11 MONEY,
 	@MaxPerMatchv11 MONEY,
-
+	
+	@MinBetv44 MONEY,
+	@MaxBetv44 MONEY,
+	@MaxPerMatchv44 MONEY,
+	
 	@MinBetv99 MONEY,
 	@MaxBetv99 MONEY,
 	@MaxPerMatchv99 MONEY,
@@ -123,7 +127,9 @@
 
 	@v11spositiontaking_1 SMALLMONEY,
 	@v11spositiontaking_20 SMALLMONEY,
-
+	
+	@v44spositiontaking_3 SMALLMONEY,
+	
 	@v99spositiontaking_1 SMALLMONEY,
 	@v99spositiontaking_2 SMALLMONEY,
 	@v99spositiontaking_3 SMALLMONEY,
@@ -205,7 +211,9 @@
 
 	@v11mpositiontaking_1 SMALLMONEY,
 	@v11mpositiontaking_20 SMALLMONEY,
-
+	
+	@v44mpositiontaking_3 SMALLMONEY,
+	
 	@v99mpositiontaking_1 SMALLMONEY,
 	@v99mpositiontaking_2 SMALLMONEY,
 	@v99mpositiontaking_3 SMALLMONEY,
@@ -287,7 +295,9 @@
 
 	@v11apositiontaking_1 SMALLMONEY,
 	@v11apositiontaking_20 SMALLMONEY,
-
+	
+	@v44apositiontaking_3 SMALLMONEY,
+	
 	@v99apositiontaking_1 SMALLMONEY,
 	@v99apositiontaking_2 SMALLMONEY,
 	@v99apositiontaking_3 SMALLMONEY,
@@ -388,6 +398,7 @@ Revisions:
 	- 20140605@Florent: Remove checking for Super
 	- 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
     - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+	- 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
        
 Param's Explanation:
 • @ErrCode:
@@ -568,7 +579,11 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@MinBetv11					= @MinBetv11,
 			@MaxBetv11					= @MaxBetv11,
 			@MaxPerMatchv11				= @MaxPerMatchv11,
-
+			
+			@MinBetv44					= @MinBetv44,
+			@MaxBetv44					= @MaxBetv44,
+			@MaxPerMatchv44				= @MaxPerMatchv44,
+			
 			@MinBetv99					= @MinBetv99,
 			@MaxBetv99					= @MaxBetv99,
 			@MaxPerMatchv99				= @MaxPerMatchv99,
@@ -654,6 +669,8 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v11spositiontaking_1		= @v11spositiontaking_1,
 			@v11spositiontaking_20		= @v11spositiontaking_20,
 			
+			@v44spositiontaking_3		= @v44spositiontaking_3,
+			
 			@v99spositiontaking_1		= @v99spositiontaking_1,
 			@v99spositiontaking_2		= @v99spositiontaking_2,
 			@v99spositiontaking_3		= @v99spositiontaking_3,
@@ -730,6 +747,8 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v11mpositiontaking_1		= @v11mpositiontaking_1,
 			@v11mpositiontaking_20		= @v11mpositiontaking_20,
 			
+			@v44mpositiontaking_3		= @v44mpositiontaking_3,
+			
 			@v99mpositiontaking_1		= @v99mpositiontaking_1,
 			@v99mpositiontaking_2		= @v99mpositiontaking_2,
 			@v99mpositiontaking_3		= @v99mpositiontaking_3,
@@ -805,6 +824,8 @@ EXEC dbo.Acc_Dep_CustomerInsMember_Com_CheckParam
 			@v10apositiontaking_20		= @v10apositiontaking_20,
 			@v11apositiontaking_1		= @v11apositiontaking_1,
 			@v11apositiontaking_20		= @v11apositiontaking_20,
+			
+			@v44apositiontaking_3		= @v44apositiontaking_3,
 			
 			@v99apositiontaking_1		= @v99apositiontaking_1,
 			@v99apositiontaking_2		= @v99apositiontaking_2,
@@ -929,6 +950,7 @@ EXEC dbo.Acc_Dep_CustomerInsUserInfo
 	@MaxPerMatchv8 = @MaxPerMatchv8,
 	@MaxPerMatchv10 = @MaxPerMatchv10,
 	@MaxPerMatchv11 = @MaxPerMatchv11,
+	@MaxPerMatchv44 = @MaxPerMatchv44,
 	@MaxPerMatchv99 = @MaxPerMatchv99,
 	@MaxPerMatchv99MP = @MaxPerMatchv99MP,
 	@MaxPerMatchv161 = @MaxPerMatchv161,
@@ -1046,6 +1068,8 @@ UNION ALL	SELECT @custid, 20, 10, @v10apositiontaking_20, @v10mpositiontaking_20
 
 UNION ALL	SELECT @custid, 1, 11, @v11apositiontaking_1, @v11mpositiontaking_1, @v11spositiontaking_1, 0, 0, 0, 0, @MinBetv11, @MaxBetv11, 0
 UNION ALL	SELECT @custid, 20, 11, @v11apositiontaking_20, @v11mpositiontaking_20, @v11spositiontaking_20, 0, 0, 0, 0, @MinBetv11, @MaxBetv11, 0
+
+UNION ALL	SELECT @custid, 3, 44, @v44apositiontaking_3, @v44mpositiontaking_3, @v44spositiontaking_3, 0, 0, 0, 0, @MinBetv44, @MaxBetv44, 0
 
 UNION ALL	SELECT @custid, 1, 99, @v99apositiontaking_1, @v99mpositiontaking_1, @v99spositiontaking_1, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
 UNION ALL	SELECT @custid, 2, 99, @v99apositiontaking_2, @v99mpositiontaking_2, @v99spositiontaking_2, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0
@@ -1468,6 +1492,11 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com custid="'+ COALESCE(CAST(@cu
 'MinBv11="'+ COALESCE(CAST(@MinBetv11 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MaxBv11="'+ COALESCE(CAST(@MaxBetv11 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPMv11="'+ COALESCE(CAST(@MaxPerMatchv11 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'MinBv44="'+ COALESCE(CAST(@MinBetv44 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MaxBv44="'+ COALESCE(CAST(@MaxBetv44 AS VARCHAR(50)),SPACE(1)) + '" ' +
+'MPMv44="'+ COALESCE(CAST(@MaxPerMatchv44 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
 'MinBv99="'+ COALESCE(CAST(@MinBetv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MaxBv99="'+ COALESCE(CAST(@MaxBetv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'MPMv99="'+ COALESCE(CAST(@MaxPerMatchv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1585,6 +1614,9 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com><s spt_1="'+ COALESCE(CAST(@
 'v11spt_1="'+ COALESCE(CAST(@v11spositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v11spt_20="'+ COALESCE(CAST(@v11spositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'v44spt_3="'+ COALESCE(CAST(@v44spositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+
 'v99spt_1="'+ COALESCE(CAST(@v99spositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99spt_2="'+ COALESCE(CAST(@v99spositiontaking_2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99spt_3="'+ COALESCE(CAST(@v99spositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1667,6 +1699,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com><s spt_1="'+ COALESCE(CAST(@
 'v11mpt_1="'+ COALESCE(CAST(@v11mpositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v11mpt_20="'+ COALESCE(CAST(@v11mpositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
+'v44mpt_3="'+ COALESCE(CAST(@v44mpositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+
 'v99mpt_1="'+ COALESCE(CAST(@v99mpositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_2="'+ COALESCE(CAST(@v99mpositiontaking_2 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99mpt_3="'+ COALESCE(CAST(@v99mpositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1747,6 +1781,8 @@ SELECT @LogSPData = '<Acc_Dep_CustomerInsMember_Com><s spt_1="'+ COALESCE(CAST(@
 
 'v11apt_1="'+ COALESCE(CAST(@v11apositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v11apt_20="'+ COALESCE(CAST(@v11apositiontaking_20 AS VARCHAR(50)),SPACE(1)) + '" ' +
+
+'v44apt_3="'+ COALESCE(CAST(@v44apositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
 
 'v99apt_1="'+ COALESCE(CAST(@v99apositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 'v99apt_2="'+ COALESCE(CAST(@v99apositiontaking_2 AS VARCHAR(50)),SPACE(1)) + '" ' +

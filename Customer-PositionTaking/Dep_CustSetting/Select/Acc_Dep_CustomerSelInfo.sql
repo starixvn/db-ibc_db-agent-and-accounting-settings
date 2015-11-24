@@ -5,6 +5,7 @@ AS
 /*
 Revisions:
   - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
 */
 
 BEGIN	
@@ -31,6 +32,7 @@ BEGIN
 	   WHEN 8 THEN  ci.maxpermatch8
 	   WHEN 10 THEN  ci.maxpermatch10
 	   WHEN 11 THEN  ci.maxpermatch11
+	   WHEN 44 THEN  ci.maxpermatch44
 	   WHEN 99 THEN  CASE WHEN dc.bettype =9 THEN ci.maxpermatch99MP 
 							ELSE ci.maxpermatch99
 					 END 

@@ -20,7 +20,7 @@ Revisions:
 - 20140505@Florent: Add new Sport HRFO
 - 20140512@Florent: add Sport 202 Keno
 - 20150603@Kathy: Move SP to DBCust.custDB [Redmine:#36216]
-
+- 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
     
 Param's Explanation:
 • @CustID: member ID
@@ -35,7 +35,8 @@ DECLARE @UserName			NVARCHAR(50),
 		@MinBetv5			MONEY,  
 		@MinBetv8			MONEY,  
 		@MinBetv10			MONEY,  
-		@MinBetv11			MONEY,  
+		@MinBetv11			MONEY, 
+		@MinBetv44			MONEY,  	
 		@MinBetv99			MONEY,  
 		@MinBetv154			MONEY,
 
@@ -46,6 +47,7 @@ DECLARE @UserName			NVARCHAR(50),
 		@MaxBetv8			MONEY,
 		@MaxBetv10			MONEY,
 		@MaxBetv11			MONEY,
+		@MaxBetv44			MONEY,
 		@MaxBetv99			MONEY,
 		@MaxBetv154			MONEY,
 		
@@ -76,6 +78,7 @@ DECLARE @UserName			NVARCHAR(50),
 		@MaxPerMatchv8		MONEY,
 		@MaxPerMatchv10		MONEY,
 		@MaxPerMatchv11		MONEY,		
+		@MaxPerMatchv44		MONEY,
 		@MaxPerMatchv99		MONEY,
 		@MaxPerMatchv154	MONEY,
 		@MaxPerMatchv99MP	MONEY,
@@ -157,6 +160,7 @@ SELECT @MinBetv5 = MinBet,	@MaxBetv5 = MaxBet FROM Dep_CustSetting AS cs WITH (N
 SELECT @MinBetv8 = MinBet,	@MaxBetv8 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 1 and cs.sporttype=8
 SELECT @MinBetv10 = MinBet,@MaxBetv10 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 1 and cs.sporttype=10
 SELECT @MinBetv11 = MinBet, @MaxBetv11 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 1 and cs.sporttype=11
+SELECT @MinBetv44 = MinBet, @MaxBetv44 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 3 and cs.sporttype=44
 SELECT @MinBetv99 = MinBet, @MaxBetv99 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 1 and cs.sporttype=99
 --HRFO
 SELECT @MinBetv154 = MinBet, @MaxBetv154 = MaxBet FROM Dep_CustSetting AS cs WITH (NOLOCK) WHERE cs.custid = @CustID and cs.bettype = 20 and cs.sporttype=154
@@ -281,6 +285,7 @@ SELECT  @MinBetv1 AS MinBetv1,
 		@MinBetv8  AS MinBetv8,
 		@MinBetv10 AS MinBetv10,
 		@MinBetv11 AS MinBetv11,	
+		@MinBetv44 AS MinBetv44,
 		@MinBetv99 AS MinBetv99,
 		@MinBetv154 AS MinBetv154,
 		@MinBetv99MP AS MinBetv99MP,
@@ -307,6 +312,7 @@ SELECT  @MinBetv1 AS MinBetv1,
 		@MaxBetv8 AS MaxBetv8,
 		@MaxBetv10 AS MaxBetv10,
 		@MaxBetv11 AS MaxBetv11,	
+		@MaxBetv44 AS MaxBetv44,
 		@MaxBetv99 AS MaxBetv99,
 		@MaxBetv154 AS MaxBetv154,
 		@MaxBetv99MP AS MaxBetv99MP,
@@ -329,6 +335,7 @@ SELECT  @MinBetv1 AS MinBetv1,
 		ci.MaxPerMatch8					AS MaxPerMatchv8,			
 		ci.MaxPerMatch10				AS MaxPerMatchv10,			
 		ci.MaxPerMatch11				AS MaxPerMatchv11,			
+		ci.MaxPerMatch44				AS MaxPerMatchv44,
 		ci.MaxPerMatch99				AS MaxPerMatchv99,			
 		ci.MaxPerMatch154				AS MaxPerMatchv154,
 		ci.MaxPerMatch99MP				AS MaxPerMatchv99MP,		

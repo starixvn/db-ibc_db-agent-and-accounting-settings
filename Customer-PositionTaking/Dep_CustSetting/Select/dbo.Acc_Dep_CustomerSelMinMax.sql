@@ -22,6 +22,9 @@ ALTER PROCEDURE [dbo].[Acc_Dep_CustomerSelMinMax]
 	@MinBetv11 MONEY OUTPUT,
 	@MaxBetv11 MONEY OUTPUT,
 	@MaxPerMatchv11 MONEY OUTPUT,
+	@MinBetv44 MONEY OUTPUT,
+	@MaxBetv44 MONEY OUTPUT,
+	@MaxPerMatchv44 MONEY OUTPUT,
 	@MinBetv99 MONEY OUTPUT,
 	@MaxBetv99 MONEY OUTPUT,
 	@MaxPerMatchv99 MONEY OUTPUT,
@@ -41,7 +44,7 @@ DB: DBTRANS.bodb02
 Original:Acc_CustomerSelMinMax
 
 Revisions:
-    
+    - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
 Param's Explanation:
 • @custid: custid that need to be viewed.   
 */
@@ -75,7 +78,11 @@ WHERE custid = @CustID AND bettype = 1 AND sporttype = 10
 SELECT @MinBetv11 = isnull(MinBet, 0), @MaxBetv11 = isnull(MaxBet, 0)
 FROM Dep_CustSetting WITH (NOLOCK)
 WHERE custid = @CustID AND bettype = 1 AND sporttype = 11
-
+--
+SELECT @MinBetv44 = isnull(MinBet, 0), @MaxBetv44 = isnull(MaxBet, 0)
+FROM Dep_CustSetting WITH (NOLOCK)
+WHERE custid = @CustID AND bettype = 3 AND sporttype = 44
+--
 SELECT @MinBetv99 = isnull(MinBet, 0), @MaxBetv99 = isnull(MaxBet, 0)
 FROM Dep_CustSetting WITH (NOLOCK)
 WHERE custid = @CustID AND bettype = 1 AND sporttype = 99
@@ -96,6 +103,7 @@ SELECT @MaxperMatch = MaxPerMatch,
 		@MaxPerMatchv8 = MaxPerMatch8,
 		@MaxPerMatchv10 = MaxPerMatch10,
 		@MaxPerMatchv11 = MaxPerMatch11,
+		@MaxPerMatchv44 = MaxPerMatch44,
 		@MaxPerMatchv99 = MaxPerMatch99,
 		@MaxPerMatchv99MP = MaxPerMatch99MP,
 		@MaxPerMatchv161 = MaxPerMatch161,

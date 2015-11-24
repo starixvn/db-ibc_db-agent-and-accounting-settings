@@ -19,6 +19,7 @@ Revisions:
 - 20140418@Francis: Fix not returning data of bet setting (when customer does not have 3rd party game) bug
 - 20140512@Florent: Add sport Keno
 - 20150603@Kathy: Move SP to DBCust.custDB [Redmine:#36216]
+- 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
     
 Param's Explanation:
 • @CustID: member ID
@@ -39,7 +40,9 @@ DECLARE @MinBetv1						MONEY,
 		@MinBetv10						MONEY,  
 		@MinBetv10_Min					MONEY,  
 		@MinBetv11						MONEY,  
-		@MinBetv11_Min					MONEY,  
+		@MinBetv11_Min					MONEY, 
+		@MinBetv44						MONEY,  
+		@MinBetv44_Min					MONEY, 	
 		@MinBetv99						MONEY,  
 		@MinBetv99_Min					MONEY,  
 		@MinBetv154						MONEY,  
@@ -59,6 +62,8 @@ DECLARE @MinBetv1						MONEY,
 		@MaxBetv10_Max					MONEY,
 		@MaxBetv11						MONEY,
 		@MaxBetv11_Max					MONEY,
+		@MaxBetv44						MONEY,
+		@MaxBetv44_Max					MONEY,
 		@MaxBetv99						MONEY,
 		@MaxBetv99_Max					MONEY,
 		@MaxBetv154						MONEY,
@@ -97,6 +102,7 @@ DECLARE @MinBetv1						MONEY,
 		@MaxPerMatchv8_Min				MONEY,
 		@MaxPerMatchv10_Min				MONEY,
 		@MaxPerMatchv11_Min				MONEY,
+		@MaxPerMatchv44_Min				MONEY,
 		@MaxPerMatchv99_Min				MONEY,
 		@MaxPerMatchv154_Min			MONEY,
 		@MaxPerMatchv99MP_Min			MONEY,
@@ -125,7 +131,9 @@ DECLARE @MinBetv1						MONEY,
 		@MaxPerMatchv10					MONEY,
 		@MaxPerMatchv10_Max				MONEY,
 		@MaxPerMatchv11					MONEY,
-		@MaxPerMatchv11_Max				MONEY,		
+		@MaxPerMatchv11_Max				MONEY,
+		@MaxPerMatchv44					MONEY,
+		@MaxPerMatchv44_Max				MONEY,	
 		@MaxPerMatchv99					MONEY,
 		@MaxPerMatchv99_Max				MONEY,
 		@MaxPerMatchv154				MONEY,
@@ -274,7 +282,10 @@ SELECT  @MinBetv1 = max(CASE WHEN cs.bettype = 1 AND cs.sporttype = 1 THEN cs.mi
 
 		@MinBetv11 = max(CASE WHEN cs.bettype = 1 AND cs.sporttype = 11 THEN cs.minbet ELSE 0 END),
 		@MaxBetv11 = max(CASE WHEN cs.bettype = 1 AND cs.sporttype = 11 THEN cs.maxbet ELSE 0 END),
-
+		
+		@MinBetv44 = max(CASE WHEN cs.bettype = 3 AND cs.sporttype = 44 THEN cs.minbet ELSE 0 END),
+		@MaxBetv44 = max(CASE WHEN cs.bettype = 3 AND cs.sporttype = 44 THEN cs.maxbet ELSE 0 END),
+		
 		@MinBetv99 = max(CASE WHEN cs.bettype = 1 AND cs.sporttype = 99 THEN cs.minbet ELSE 0 END),
 		@MaxBetv99 = max(CASE WHEN cs.bettype = 1 AND cs.sporttype = 99 THEN cs.maxbet ELSE 0 END),
 		@MinBetv154 = max(CASE WHEN cs.bettype = 20 AND cs.sporttype = 154 THEN cs.minbet ELSE 0 END),
@@ -398,7 +409,14 @@ FROM
 	dep_custsetting AS cs WITH (NOLOCK)
 	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend) AND cs.bettype = 1 AND cs.sporttype=11
 WHERE ci.custid = @CustID		
-
+---
+SELECT	@MinBetv44_Min = max(case when MinBet = 0 then NULL else MinBet end),
+		@MaxBetv44_Max = min(case when MaxBet = 0 then NULL else MaxBet end)
+FROM 
+	dep_custsetting AS cs WITH (NOLOCK)
+	INNER JOIN custinfo AS ci WITH (NOLOCK) ON (cs.CustID = ci.MRecommend OR cs.CustID = ci.SRecommend) AND cs.bettype = 3 AND cs.sporttype=44
+WHERE ci.custid = @CustID
+--
 SELECT	@MinBetv99_Min = max(case when MinBet = 0 then NULL else MinBet end),
 		@MaxBetv99_Max = min(case when MaxBet = 0 then NULL else MaxBet end)
 FROM 
@@ -526,6 +544,7 @@ Select
 	@MaxPerMatchv8_Min = 0,
 	@MaxPerMatchv10_Min = 0,
 	@MaxPerMatchv11_Min = 0,
+	@MaxPerMatchv44_Min = 0,
 	@MaxPerMatchv99_Min = 0,
 	@MaxPerMatchv154_Min = 0,
 	@MaxPerMatchv99MP_Min = 0,
@@ -545,6 +564,7 @@ Select
 	@MaxPerMatchv8_Max = Min(case when cs.MaxPerMatch8 = 0 then NULL else cs.MaxPerMatch8 end),
 	@MaxPerMatchv10_Max = Min(case when cs.MaxPerMatch10 = 0 then NULL else cs.MaxPerMatch10 end),
 	@MaxPerMatchv11_Max = Min(case when cs.MaxPerMatch11 = 0 then NULL else cs.MaxPerMatch11 end),	
+	@MaxPerMatchv44_Max = Min(case when cs.MaxPerMatch44 = 0 then NULL else cs.MaxPerMatch44 end),
 	@MaxPerMatchv99_Max = Min(case when cs.MaxPerMatch99 = 0 then NULL else cs.MaxPerMatch99 end),
 	@MaxPerMatchv154_Max = Min(case when cs.MaxPerMatch154 = 0 then NULL else cs.maxpermatch154 end),
 	@MaxPerMatchv99MP_Max = Min(case when cs.MaxPerMatch99MP = 0 then NULL else cs.MaxPerMatch99MP end),
@@ -742,6 +762,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	@MinBetv8     AS MinBetv8,
 	@MinBetv10    AS MinBetv10,
 	@MinBetv11    AS MinBetv11,	
+	@MinBetv44    AS MinBetv44,	
 	@MinBetv99    AS MinBetv99,
 	@MinBetv154    AS MinBetv154,
 	@MinBetv99MP  AS minbetv99MP,
@@ -755,6 +776,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	isnull(@MinBetv8_Min,0)     AS MinBetv8_Min,
 	isnull(@MinBetv10_Min,0)    AS MinBetv10_Min,
 	isnull(@MinBetv11_Min,0)    AS MinBetv11_Min,	
+	isnull(@MinBetv44_Min,0)    AS MinBetv44_Min,
 	isnull(@MinBetv99_Min,0)    AS MinBetv99_Min,
 	isnull(@MinBetv154_Min,0)    AS MinBetv154_Min,
 	isnull(@MinBetv99MP_Min,0)  AS minbetv99MP_Min,
@@ -795,6 +817,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	@MaxBetv8		AS MaxBetv8,
 	@MaxBetv10		AS MaxBetv10,
 	@MaxBetv11		AS MaxBetv11,	
+	@MaxBetv44		AS MaxBetv44,
 	@MaxBetv99		AS MaxBetv99,
 	@MaxBetv154		AS MaxBetv154,
 	@MaxBetv99MP	AS maxbetv99MP,
@@ -808,6 +831,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	isnull(@MaxBetv8_Max,0) AS MaxBetv8_Max,
 	isnull(@MaxBetv10_Max,0) AS MaxBetv10_Max,
 	isnull(@MaxBetv11_Max,0) AS MaxBetv11_Max,	
+	isnull(@MaxBetv44_Max,0) AS MaxBetv44_Max,
 	isnull(@MaxBetv99_Max,0) AS MaxBetv99_Max,
 	isnull(@MaxBetv154_Max,0) AS MaxBetv154_Max,
 	isnull(@MaxBetv99MP_Max,0) AS Maxbetv99MP_Max,
@@ -845,6 +869,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	isnull(@MaxPerMatchv8_Max,0)			AS MaxPerMatchv8_Max,		
 	isnull(@MaxPerMatchv10_Max,0)			AS MaxPerMatchv10_Max,		
 	isnull(@MaxPerMatchv11_Max,0)			AS MaxPerMatchv11_Max,		
+	isnull(@MaxPerMatchv44_Max,0)			AS MaxPerMatchv44_Max,
 	isnull(@MaxPerMatchv99_Max,0)			AS MaxPerMatchv99_Max,		
 	isnull(@MaxPerMatchv154_Max,0)			AS MaxPerMatchv154_Max,		
 	isnull(@MaxPerMatchv99MP_Max,0)			AS MaxPerMatchv99MP_Max,	
@@ -865,6 +890,7 @@ SELECT @MinBetv1  AS MinBetv1,
 	ci.MaxPerMatch8				AS MaxPerMatchv8,		
 	ci.MaxPerMatch10			AS MaxPerMatchv10,		
 	ci.MaxPerMatch11			AS MaxPerMatchv11,		
+	ci.MaxPerMatch44			AS MaxPerMatchv44,
 	ci.MaxPerMatch99			AS MaxPerMatchv99,		
 	ci.MaxPerMatch154			AS MaxPerMatchv154,		
 	ci.MaxPerMatch99MP			AS MaxPerMatchv99MP,	
