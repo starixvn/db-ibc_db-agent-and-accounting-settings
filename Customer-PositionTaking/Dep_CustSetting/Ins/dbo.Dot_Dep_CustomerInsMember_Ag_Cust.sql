@@ -152,6 +152,7 @@ Revisions:
  - 20150930@Elodie: Balance Improvement [Redmine:#40125]	
  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
  
+ 
 Param's Explanation:    
 ? @CustID: return new 12bet Player Cust ID    
 ? @Username: return new 12bet Player User name    
