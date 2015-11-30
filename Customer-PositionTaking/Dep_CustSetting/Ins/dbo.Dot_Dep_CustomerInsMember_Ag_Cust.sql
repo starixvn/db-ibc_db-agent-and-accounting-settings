@@ -1,10 +1,12 @@
-
-SET QUOTED_IDENTIFIER ON 
+USE [CustDB]
 GO
-SET ANSI_NULLS ON 
+/****** Object:  StoredProcedure [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]    Script Date: 11/30/2015 1:42:43 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
  
-CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
+ALTER PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
 	@FirstName nvarchar(50),    
 	@LastName nvarchar(50),    
 	@Email nvarchar(50),    
@@ -23,7 +25,6 @@ CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]
 	@ErrCode int = 0 OUTPUT,    
 	@ErrMsg nvarchar(2000) = '' OUTPUT     
 AS    
-
 /*    
 Created:     
 Task : Create a 12 bet player account for this Affiliate on IBC system    
@@ -151,8 +152,8 @@ Revisions:
  - 20150928@Victor: Set uGroup = C for all new Asiabet88 KRW members [redmine: 44141]
  - 20150930@Elodie: Balance Improvement [Redmine:#40125]	
  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
- 
- 
+ - 20151124@Winnie:Change for AG Casino Single wallet Feature #43672
+
 Param's Explanation:    
 ? @CustID: return new 12bet Player Cust ID    
 ? @Username: return new 12bet Player User name    
@@ -2712,7 +2713,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 --Set default bet setting of AG Casino    
 EXEC Lrf_AGC_Customer_SetDefaultSetting      
  @CustID = @CustID,    
- @SuperID = @srecommend,      
+ @SuperID = @recommend,      
  @ErrCode = @ErrCode OUTPUT,      
  @ErrMsg = @ErrMsg OUTPUT    
     
@@ -2855,24 +2856,3 @@ BEGIN CATCH
   @duration = @duration    
 END CATCH
 
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
-
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam]
-GO 
- GRANT VIEW DEFINITION ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [vnteam]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [Dot_Member]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbAdminNet]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbDownlineNet]
-GO 
- GRANT EXECUTE ON [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust] TO [bodbExtAccNet]
-GO 
