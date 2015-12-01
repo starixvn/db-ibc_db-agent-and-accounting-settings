@@ -205,7 +205,7 @@ BEGIN
 			SELECT CustID 
 			FROM Customer c WITH (NOLOCK) 
 			WHERE recommend = @CustID AND roleid = 1
-				AND NOT EXISTS(SELECT 1 FROM dbo.Dep_CustSetting_AGCasino cs WITH (NOLOCK) WHERE cs.CustID = c.CustID AND LEN(cs.AGGroup) > 0)
+				--AND NOT EXISTS(SELECT 1 FROM dbo.Dep_CustSetting_AGCasino cs WITH (NOLOCK) WHERE cs.CustID = c.CustID AND LEN(cs.AGGroup) > 0)
 			
 			SELECT @RowCount = @@rowcount
 
