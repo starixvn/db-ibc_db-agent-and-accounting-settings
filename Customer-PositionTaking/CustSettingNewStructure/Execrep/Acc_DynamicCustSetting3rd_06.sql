@@ -8,7 +8,7 @@ AS
     Task : Update commission 
     DB: DBCust/CustDB
     Revision:
-		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652      
+		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652, #48671      
 */
 BEGIN
     SET NOCOUNT ON;
@@ -236,7 +236,7 @@ BEGIN
 		--downline_member_playerdiscount = min(downline_member_playerdiscount, downline_member_discount)
 		UPDATE dcmem
 		SET
-			@AgentDiscount = dcmem.AgentDiscount,
+			@AgentDiscount = dca.Discount,
 			@PlayerDiscount = dcmem.PlayerDiscount,	
 			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
 			dcmem.AgentDiscount = @AgentDiscount,
