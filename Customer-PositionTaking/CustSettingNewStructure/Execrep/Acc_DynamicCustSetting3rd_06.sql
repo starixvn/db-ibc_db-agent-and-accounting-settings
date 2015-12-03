@@ -7,7 +7,8 @@ AS
     Created: 20151007@Dominic
     Task : Update commission 
     DB: DBCust/CustDB
-            
+    Revision:
+		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652      
 */
 BEGIN
     SET NOCOUNT ON;
@@ -92,6 +93,10 @@ BEGIN
 	
 	--Parse XML	
 	DECLARE @iDoc INT
+	DECLARE @SuperDiscount DECIMAL(9,8),
+			@MasterDiscount DECIMAL(9,8),
+			@AgentDiscount DECIMAL(9,8),
+			@PlayerDiscount DECIMAL(9,8)
 	
 	EXEC sp_xml_preparedocument @iDoc OUTPUT, @Discount_XML
 	
@@ -144,10 +149,17 @@ BEGIN
 		--downline_member_playerdiscount = min(downline_member_playerdiscount, downline_member_discount)									
 		UPDATE dcmem
 		SET
-			dcmem.SuperDiscount=dcs.Discount,
-			dcmem.MasterDiscount= CASE WHEN dcmem.MasterDiscount < dcmem.SuperDiscount THEN dcmem.MasterDiscount ELSE dcmem.SuperDiscount END,
-			dcmem.AgentDiscount= CASE WHEN dcmem.AgentDiscount < dcmem.MasterDiscount THEN dcmem.AgentDiscount ELSE dcmem.MasterDiscount END,
-			dcmem.PlayerDiscount= CASE WHEN dcmem.PlayerDiscount < dcmem.AgentDiscount THEN dcmem.PlayerDiscount ELSE dcmem.AgentDiscount END
+			@SuperDiscount = dcs.Discount,
+			@MasterDiscount = dcmem.MasterDiscount,
+			@AgentDiscount = dcmem.AgentDiscount,
+			@PlayerDiscount = dcmem.PlayerDiscount,			
+			@MasterDiscount= CASE WHEN @MasterDiscount < @SuperDiscount THEN @MasterDiscount ELSE @SuperDiscount END,
+			@AgentDiscount= CASE WHEN @AgentDiscount < @MasterDiscount THEN @AgentDiscount ELSE @MasterDiscount END,
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			dcmem.SuperDiscount = @SuperDiscount,
+			dcmem.MasterDiscount = @MasterDiscount,
+			dcmem.AgentDiscount = @AgentDiscount,
+			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.srecommend = @CustID
@@ -189,9 +201,14 @@ BEGIN
 		--downline_member_playerdiscount = min(downline_member_playerdiscount, downline_member_discount)									
 		UPDATE dcmem
 		SET
-			dcmem.MasterDiscount= dcm.Discount,
-			dcmem.AgentDiscount= CASE WHEN dcmem.AgentDiscount < dcmem.MasterDiscount THEN dcmem.AgentDiscount ELSE dcmem.MasterDiscount END,
-			dcmem.PlayerDiscount= CASE WHEN dcmem.PlayerDiscount < dcmem.AgentDiscount THEN dcmem.PlayerDiscount ELSE dcmem.AgentDiscount END
+			@MasterDiscount = dcm.Discount,
+			@AgentDiscount = dcmem.AgentDiscount,
+			@PlayerDiscount = dcmem.PlayerDiscount,	
+			@AgentDiscount= CASE WHEN @AgentDiscount < @MasterDiscount THEN @AgentDiscount ELSE @MasterDiscount END,
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			dcmem.MasterDiscount = @MasterDiscount,
+			dcmem.AgentDiscount = @AgentDiscount,
+			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.mrecommend = @CustID
@@ -219,8 +236,11 @@ BEGIN
 		--downline_member_playerdiscount = min(downline_member_playerdiscount, downline_member_discount)
 		UPDATE dcmem
 		SET
-			dcmem.AgentDiscount= dca.Discount,
-			dcmem.PlayerDiscount= CASE WHEN dcmem.PlayerDiscount < dcmem.AgentDiscount THEN dcmem.PlayerDiscount ELSE dcmem.AgentDiscount END
+			@AgentDiscount = dcmem.AgentDiscount,
+			@PlayerDiscount = dcmem.PlayerDiscount,	
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			dcmem.AgentDiscount = @AgentDiscount,
+			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.recommend = @CustID
