@@ -19,10 +19,12 @@ AS
   DB: DBCUST/CUSTDB
 
   Revisions:
-
+  -- 20150917@Winnie: Add AGCasino
   Parameters Explanation:
  */
 SET NOCOUNT ON
+IF @Sporttype=250
+SELECT @Bettype=1801
 DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))	
 declare @roleid int,
         @custid int,

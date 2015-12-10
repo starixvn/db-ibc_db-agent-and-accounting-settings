@@ -99,7 +99,7 @@ BEGIN
 		  ,@UplineCheckedGroup AS UplineCheckedGroup
 	END
 
-	EXEC Acc_Dep_CustomerSelSetting_xtest
+	EXEC Acc_Dep_CustomerSelSetting
 	 @custid	=@custid,
 	 @SportType =250
 END
