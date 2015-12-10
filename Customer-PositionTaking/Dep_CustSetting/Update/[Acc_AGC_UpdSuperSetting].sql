@@ -239,8 +239,13 @@ BEGIN
 	
 	END
 
-	SELECT @v250_1801PT_Old=apositiontaking from Dep_CustSettingGame(NOLOCK) where CustID=@Custid AND Sporttype=250 AND Bettype=1801
-	IF @v250_1801PT_Old<>@v250_1801PT OR @v250_1801PT_Old IS NULL
+	SELECT @v250_1801PT_Old=
+	CASE WHEN @RoleId IN(1,2) THEN	apositiontaking 
+	WHEN @RoleId =3 THEN	mpositiontaking 
+	WHEN @RoleId =4 THEN	spositiontaking END
+	FROM Dep_CustSettingGame(NOLOCK) WHERE CustID=@Custid AND Sporttype=250 AND Bettype=1801
+
+	IF @v250_1801PT_Old<>@v250_1801PT OR @v250_1801PT_Old IS NULL	
 	BEGIN
 	EXEC Acc_Dep_CustomerUpdSetting
 	@CustID				=@CustID,
