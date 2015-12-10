@@ -41,6 +41,8 @@ AS
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
 	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
+	- 20151030@Billy: Change to new VirtualRate structure [Redmine: #46541]
+	
  Explanation's Param:  
 	• @ErrCode:
 		= 0: Create agent successfully.
@@ -209,8 +211,8 @@ BEGIN
 			
 	BEGIN TRY
 		-- insert CustSuper info
-		INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting,IsMyanmarOdds)  
-		SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting,IsMyanmarOdds
+		INSERT INTO CustSuper(custId, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, IsInternal, TransferOption, LimitPerIP, SelectedBetting)  
+		SELECT	@CustID, AutoIBCPositionTaking_Tote, AutoIBCPositionTaking_Fixed, AutoIBCPT151_AU, AutoIBCPT152_UK, AutoIBCPT152_AU, AutoIBCPT153_AU, @IsInternal, TransferOption, LimitPerIP, SelectedBetting
 		FROM CustSuper WITH(NOLOCK)
 		WHERE custid=@ExistingCustid		
 	END TRY
@@ -482,59 +484,35 @@ BEGIN
 	END CATCH
 	
 	BEGIN TRY
-		INSERT INTO [dbo].[CustVirtualRate]
-           ([custid]
-           ,[sporttype]
-           ,[bettype]
-           ,[isLive]
-           ,[virtualMultiplier])		
-		SELECT @custid,
-			t.sporttype,
-			t.bettype,
-			b.isLive,
-			1 as virtualMutiplier
+		
+		INSERT INTO [dbo].[CustVirtualSetting] (custid, seqNo, bitmapVirtual)
+		SELECT	@Custid, 
+				seqNo,
+				(
+					SELECT TOP 1 bitmap
+					FROM dbo.f_GenerateVirtualSetting_multiple(0x00, CONVERT(VARCHAR(MAX), virtualXML))
+				) AS virtualXML
 		FROM (
-			SELECT 1 as sporttype, 1 as bettype
-			UNION 
-			SELECT 1 as sporttype, 2 as bettype
-			UNION 
-			SELECT 1 as sporttype, 3 as bettype
-			UNION 
-			SELECT 1 as sporttype, 7 as bettype
-			UNION 
-			SELECT 1 as sporttype, 8 as bettype
-			UNION 
-			SELECT 1 as sporttype, 12 as bettype
-			UNION 		
-			SELECT 99 as sporttype, 1 as bettype
-			UNION 
-			SELECT 99 as sporttype, 2 as bettype
-			UNION 
-			SELECT 99 as sporttype, 3 as bettype
-			UNION 
-			SELECT 99 as sporttype, 7 as bettype
-			UNION 
-			SELECT 99 as sporttype, 8 as bettype
-			UNION 
-			SELECT 99 as sporttype, 12 as bettype 
-			UNION 
-			SELECT 99 as sporttype, 20 as bettype 
-			UNION
-			SELECT 99 as sporttype, 21 as bettype 
-			UNION 
-			SELECT 99 as sporttype, 154 as bettype 
-			UNION 
-			SELECT 99 as sporttype, 1301 as bettype 
-			UNION 
-			SELECT 99 as sporttype, 1311 as bettype 
-			UNION 
-			SELECT 99 as sporttype, 1324 as bettype 		 
-			) t
-			CROSS APPLY (
-			SELECT 0 as isLive
-			UNION 
-			SELECT 1 as isLive
-			)b        
+			SELECT DISTINCT seqNo
+			FROM ProfileVirtualSetting WITH(NOLOCK)
+		) pvs
+		CROSS APPLY (
+			SELECT (
+				SELECT	(
+							SELECT	ipvs.profileID			AS '@p',
+									vr.virtualMultiplier	AS '@v'
+							FROM	ProfileVirtualSetting	AS ipvs WITH(NOLOCK)
+							CROSS APPLY (
+								SELECT CAST(1.00 AS SMALLMONEY) AS virtualMultiplier
+							) vr
+							WHERE	ipvs.seqNo = pvs.seqNo
+							FOR XML PATH ('r'), 
+							TYPE
+						)
+				FOR XML PATH ('root'), 
+				TYPE
+			) AS virtualXML
+		) p	   
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrMsg = CASE @Language 

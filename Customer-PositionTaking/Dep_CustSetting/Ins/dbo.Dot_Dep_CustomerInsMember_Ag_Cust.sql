@@ -3,6 +3,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON 
 GO
+
+/****** Object:  Stored Procedure dbo.Dot_Dep_CustomerInsMember_Ag_Cust    Script Date: 12/2/2015 2:23:52 PM ******/
  
 CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]     
 	@FirstName nvarchar(50),    
@@ -23,7 +25,6 @@ CREATE PROCEDURE [dbo].[Dot_Dep_CustomerInsMember_Ag_Cust]
 	@ErrCode int = 0 OUTPUT,    
 	@ErrMsg nvarchar(2000) = '' OUTPUT     
 AS    
-
 /*    
 Created:     
 Task : Create a 12 bet player account for this Affiliate on IBC system    
@@ -151,7 +152,8 @@ Revisions:
  - 20150928@Victor: Set uGroup = C for all new Asiabet88 KRW members [redmine: 44141]
  - 20150930@Elodie: Balance Improvement [Redmine:#40125]	
  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
- 
+ - 20151124@Winnie:Change for AG Casino Single wallet Feature #43672
+
 Param's Explanation:    
 ? @CustID: return new 12bet Player Cust ID    
 ? @Username: return new 12bet Player User name    
@@ -2711,7 +2713,7 @@ EXEC DBLIC.bodb_Licensee.dbo.Lrf_CustomerSetDefaultComm
 --Set default bet setting of AG Casino    
 EXEC Lrf_AGC_Customer_SetDefaultSetting      
  @CustID = @CustID,    
- @SuperID = @srecommend,      
+ @SuperID = @recommend,      
  @ErrCode = @ErrCode OUTPUT,      
  @ErrMsg = @ErrMsg OUTPUT    
     
@@ -2853,6 +2855,7 @@ BEGIN CATCH
   @TrackingValue = @LogSPData,    
   @duration = @duration    
 END CATCH
+
 
 GO
 
