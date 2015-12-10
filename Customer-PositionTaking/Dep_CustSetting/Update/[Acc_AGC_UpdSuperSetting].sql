@@ -273,7 +273,7 @@ BEGIN
 	SELECT @TrackingValue2 = '<Acc_AGC_UpdSuperSetting CustID="'+ COALESCE(CAST(@CustID as VARCHAR(50)),SPACE(1)) + '" ' +
 						'CheckedGroup="'+ COALESCE(CAST(@CheckedGroup_Old as VARCHAR(500)),SPACE(1)) + '" ' +
 						'DefaultGroup="'+ COALESCE(CAST(@DefaultGroup_Old as VARCHAR(20)),SPACE(1)) + '" ' +
-						'ApplyGroupToMember=""' +
+						'ApplyGroupToMember=""' + '" ' +
 						'UserID="'+ COALESCE(CAST(@UserID as VARCHAR(50)),SPACE(1)) + '" ' +
 						'IP="'+ COALESCE(CAST(@IP as VARCHAR(40)),SPACE(1)) + '" ' +
 						'ErrCode="'+ COALESCE(CAST(@ErrCode as VARCHAR(50)),SPACE(1)) + '" ' +
@@ -288,5 +288,7 @@ BEGIN
 				@duration = @duration
 	
 END
+
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_AGC_UpdSuperSetting] TO [bodbAdminNet] AS [dbo]
