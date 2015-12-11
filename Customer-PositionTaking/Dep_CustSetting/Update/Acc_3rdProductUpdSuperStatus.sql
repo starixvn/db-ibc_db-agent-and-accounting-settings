@@ -1,6 +1,3 @@
-USE CustDB
-GO
-
 ALTER PROCEDURE dbo.Acc_3rdProductUpdSuperStatus @ProductID INT
 	, @CustID INT
 	, @IsEnable BIT
@@ -20,15 +17,25 @@ AS
 		- 20150807@Winnie: Change way create bettrade member
 		- 20151026@Jim: support feature #44780
 		- 20151105@Patrick: Support RnG Game & rename field named DisableMicroGame to DisableMicroGameLC
+		- 20151211@Billy: Integrate Binary Options - Product Status [Redmine: #48694]
 
 	Param's Explanation:
 */
 BEGIN
 	SET NOCOUNT ON
 
-	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @LogSPData VARCHAR(MAX)
-		, @TrackingValue2 VARCHAR(MAX), @IsEnabled_Old BIT = 0, @ProductName VARCHAR(50), @CurrRow INT = 1
-		, @RowPerBatch INT = 10000, @RowCount INT = 0
+	DECLARE	@startRun			DATETIME,
+			@endRun				DATETIME,
+			@duration			INT,
+			@LogSPData			VARCHAR(MAX),
+			@TrackingValue2		VARCHAR(MAX),
+			@IsEnabled_Old		BIT = 0,
+			@ProductName		VARCHAR(50),
+			@CurrRow			INT = 1,
+			@RowPerBatch		INT = 10000,
+			@RowCount			INT = 0
+	DECLARE	@RoleId				INT,
+			@UplineStatus		BIT = 1
 
 	CREATE TABLE #CustList (RowNo INT IDENTITY(1, 1), CustID INT)
 
@@ -38,10 +45,125 @@ BEGIN
 	FROM DBLIC.bodb_Licensee.dbo.Product3rd WITH (NOLOCK)
 	WHERE ProductID = @ProductID
 
-	IF @Productid IN (14,17) -- Microgaming
+	IF @ProductID = 18				-- Binary Options --
 	BEGIN
-		DECLARE @RoleId INT
+		SELECT	@IsEnabled_Old = ~ COALESCE(i.DisableBinaryOptions, CAST(1 AS BIT)),
+				@RoleId = i.roleid
+		FROM	custInfo i WITH(NOLOCK)
+		WHERE	i.custid = @CustID
 
+		IF	@IsEnable = @IsEnabled_Old
+		BEGIN
+			SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'
+			RETURN
+        END
+
+		IF	@RoleId = 3
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.srecommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE IF	@RoleId = 2
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.mrecommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE IF	@RoleId = 1
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.recommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE
+		BEGIN
+			SELECT	@UplineStatus = 0
+		END
+
+		IF @UplineStatus = 1 AND @IsEnable = 1
+		BEGIN
+			SELECT @ErrMsg = 'Upline was disabled. Can not enable.'
+			RETURN
+		END
+
+		UPDATE	custInfo
+		SET		DisableBinaryOptions = ~ @IsEnable
+		WHERE	custid = @CustID
+
+		IF @@error <> 0
+		BEGIN
+			SELECT @ErrMsg = 'Could not update'
+			RETURN
+		END
+
+		IF @IsEnable = 0
+		BEGIN
+			SELECT @ApplyToMember = 1
+		END
+
+		IF	@ApplyToMember = 1
+		AND EXISTS (
+			SELECT	TOP(1) 1
+			FROM	Customer c WITH(NOLOCK)
+			WHERE	c.custid IN (
+				SELECT	c1.srecommend
+				FROM	Customer c1
+				WHERE	c1.custid = @CustID
+			)
+				AND	c.username NOT LIKE '%' + c.site + '%ACC%'
+		)
+		BEGIN
+			IF @RoleId = 4
+			BEGIN
+				INSERT INTO #CustList (CustID)
+				SELECT	c.custid
+				FROM	Customer c WITH(NOLOCK)
+				WHERE	c.srecommend = @CustID
+			END
+			ELSE IF @RoleId = 3
+			BEGIN
+				INSERT INTO #CustList (CustID)
+				SELECT	c.custid
+				FROM	Customer c WITH(NOLOCK)
+				WHERE	c.mrecommend = @CustID
+			END
+			ELSE IF @RoleId = 2
+			BEGIN
+				INSERT INTO #CustList (CustID)
+				SELECT	c.custid
+				FROM	Customer c WITH(NOLOCK)
+				WHERE	c.recommend = @CustID
+			END
+
+			SELECT	@RowCount = COUNT(1)
+			FROM	#CustList cl
+
+			WHILE	@RowCount > 0
+			BEGIN
+				UPDATE	custInfo WITH(ROWLOCK,UPDLOCK)
+				SET		DisableBinaryOptions = ~ @IsEnable
+				WHERE	custid IN (
+					SELECT	cl.CustID
+					FROM	#CustList cl
+					WHERE	cl.RowNo BETWEEN @RowCount - @RowPerBatch + 1 AND @RowCount
+				)
+
+				IF	@@error <> 0
+				BEGIN
+					SELECT	@ErrMsg = 'Could not update'
+					RETURN
+				END
+
+				SELECT	@RowCount = @RowCount - @RowPerBatch
+				WAITFOR DELAY '00:00:00.280'
+			END
+		END
+
+		DROP TABLE #CustList
+	END
+	ELSE IF @Productid IN (14,17)	-- Microgaming
+	BEGIN
 		SELECT @IsEnabled_Old = CASE WHEN @ProductID = 14 THEN ~ ISNULL(DisableMicrogameLC, 1)
 									WHEN  @ProductID = 17 THEN ~ ISNULL(DisableMicrogameRNG, 1) END
 			, @RoleId = RoleId
@@ -56,7 +178,6 @@ BEGIN
 		END
 
 		--check upline status
-		DECLARE @UplineStatus BIT
 		IF @RoleId = 1
 		BEGIN
 			SELECT @UplineStatus = CASE WHEN @ProductID = 14 THEN ~ ISNULL(DisableMicrogameLC, 1)

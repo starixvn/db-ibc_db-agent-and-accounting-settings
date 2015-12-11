@@ -14,6 +14,7 @@ AS
 	Revisions:
 		- 20150612@Winnie: Add Microgaming
 		- 20151105@Patrick: Support RnG Game & rename field named DisableMicroGame to DisableMicroGameLC
+		- 20151211@Billy: Integrate Binary Options - Product Status [Redmine: #48694]
 
 	Param's Explanation:
 */
@@ -21,11 +22,84 @@ BEGIN
 	SET NOCOUNT ON
 	DECLARE @StatusTable TABLE(ProductId TINYINT, SupperStatus BIT, DownlineStatus BIT, UplineStatus BIT)
 	DECLARE @EnableMicrogameLC BIT, @EnableMicrogameRNG BIT, @UplineStatusLC BIT, @UplineStatusRnG BIT
+	DECLARE	@UplineStatus	BIT,
+			@RoleID			TINYINT
 
+	IF @ProductID = 18		-- Binary Options --
+	BEGIN
+		SELECT	@SupperStatus = COALESCE(i.DisableBinaryOptions, CAST(1 AS BIT)),
+				@RoleId = i.roleid
+		FROM	custInfo i WITH(NOLOCK)
+		WHERE	i.custid = @CustID
+
+		IF	@RoleId = 3
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.srecommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE IF	@RoleId = 2
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.mrecommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE IF	@RoleId = 1
+		BEGIN
+			SELECT	@UplineStatus = i.DisableBinaryOptions
+			FROM	custInfo i WITH(NOLOCK)
+			WHERE	i.custid = (SELECT i1.recommend FROM custInfo i1 WITH(NOLOCK) WHERE i1.custid = @CustID)
+		END
+		ELSE
+		BEGIN
+			SELECT	@UplineStatus = 0
+		END
+
+		SELECT @DownlineStatus = 0
+
+		IF EXISTS (
+			SELECT	TOP(1) 1
+			FROM	Customer c WITH(NOLOCK)
+			WHERE	c.custid IN (
+				SELECT	c1.srecommend
+				FROM	Customer c1
+				WHERE	c1.custid = @CustID
+			)
+				AND	c.username NOT LIKE '%' + c.site + '%ACC%'
+		)
+		BEGIN
+			IF @RoleID = 4
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableBinaryOptions, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.srecommend = @CustID
+					AND	i.custid <> @CustID
+			END
+			ELSE IF @RoleID = 3
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableBinaryOptions, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.mrecommend = @CustID
+					AND	i.custid <> @CustID
+			END
+			ELSE IF @RoleID = 2
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableBinaryOptions, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.recommend = @CustID
+					AND	i.custid <> @CustID
+			END
+		END
+
+		SELECT	@ProductID			ProductID,
+				~ @SupperStatus		SupperStatus,
+				~ @DownlineStatus	DownlineStatus,
+				~ @UplineStatus		UplineStatus
+
+		RETURN
+	END
 	IF @ProductID = 14 -- Microgaming for both : LC & RnG
 	BEGIN
-		DECLARE @RoleId INT
-
 		SELECT @EnableMicrogameLC = ISNULL(~ DisableMicrogameLC, 0)
 			, @EnableMicrogameRNG= ISNULL(~ DisableMicrogameRNG, 0)
 			, @RoleId = RoleId
