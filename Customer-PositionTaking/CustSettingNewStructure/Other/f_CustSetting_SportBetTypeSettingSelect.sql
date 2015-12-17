@@ -24,3 +24,6 @@ BEGIN
 	
 	RETURN
 END
+go
+GRANT SELECT ON f_CustSetting_SportBetTypeSettingSelect TO [bodbDownlineNet] 
+
