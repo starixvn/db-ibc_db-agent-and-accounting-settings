@@ -42,6 +42,7 @@ BEGIN
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
 		- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
 		- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
+		- 20151209@Helen: Member information for Cockfighting [Redmine: #48133]
 		
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -86,9 +87,27 @@ BEGIN
 					and ci.DoubleCommLosing = case when @DoubleCommLosing is null then ci.DoubleCommLosing else @DoubleCommLosing end
 			) t
 	END
-	-- For MuayThai
-    DECLARE @bitmapOrder INT 
-    SET @bitmapOrder = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
+ 
+    -- For DCS Product
+    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT
+    
+    SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
+    SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
+    
+    DECLARE @IsHidden_MuayThai INT = 1
+    DECLARE @IsHidden_CockFighting INT = 1
+    
+    DECLARE @SportBook2 INT = 16
+    DECLARE @CockFighting INT = 19
+    
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
+	BEGIN
+		SET @IsHidden_MuayThai = 0
+	END
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@CockFighting,4))
+	BEGIN
+		SET @IsHidden_CockFighting = 0
+	END
     
 	Select * From 
 	(
@@ -135,8 +154,11 @@ BEGIN
 			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
 			ISNULL(ci.HideColossusBet,1) AS HideColossusBet,
 			-- For MuayThai
-			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder),0)  AS DisableMuayThai,
-			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder),0) AS HideMuayThai,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_MuayThai),1) AS DisableMuayThai,
+			CAST(CASE WHEN @IsHidden_MuayThai = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_MuayThai),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideMuayThai,
+			-- For CockFighting
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_CockFighting),1) AS DisableCockFighting,
+			CAST(CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCockFighting,
 			
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
