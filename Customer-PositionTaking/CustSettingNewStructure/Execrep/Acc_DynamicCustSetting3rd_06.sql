@@ -1,4 +1,11 @@
-ALTER PROCEDURE [dbo].[Acc_DynamicCustSetting3rd_06]
+
+SET QUOTED_IDENTIFIER ON 
+GO
+SET ANSI_NULLS ON 
+GO
+
+/****** Object:  Stored Procedure dbo.Acc_DynamicCustSetting3rd_06    Script Date: 12/9/2015 12:57:52 PM ******/
+CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting3rd_06]
     @CustId int,
     @RoleId int,
 	@Discount_XML VARCHAR(MAX) = NULL
@@ -124,6 +131,7 @@ BEGIN
 		SET
 			dcm.Discount=CASE WHEN dcs.Discount < dcm.Discount THEN dcs.Discount ELSE dcm.Discount  END
 		FROM dbo.CustDiscount3rd_Agent dcm WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dcm.sporttype = fil.sporttype AND dcm.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcm.custid = ci.custid
 										   AND ci.srecommend = @CustID
 										   AND ci.roleid = 3
@@ -135,6 +143,7 @@ BEGIN
 		SET
 			dca.Discount=CASE WHEN dcs.Discount < dca.Discount THEN dcs.Discount ELSE dca.Discount  END
 		FROM dbo.CustDiscount3rd_Agent dca WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dca.sporttype = fil.sporttype AND dca.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dca.custid = ci.custid
 										   AND ci.srecommend = @CustID
 										   AND ci.roleid = 2
@@ -161,6 +170,7 @@ BEGIN
 			dcmem.AgentDiscount = @AgentDiscount,
 			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dcmem.sporttype = fil.sporttype AND dcmem.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.srecommend = @CustID
 										   AND ci.roleid = 1
@@ -188,6 +198,7 @@ BEGIN
 		SET
 			dca.Discount=CASE WHEN dcm.Discount < dca.Discount THEN dcm.Discount ELSE dca.Discount  END
 		FROM dbo.CustDiscount3rd_Agent dca WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dca.sporttype = fil.sporttype AND dca.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dca.custid = ci.custid
 										   AND ci.mrecommend = @CustID
 										   AND ci.roleid = 2
@@ -210,6 +221,7 @@ BEGIN
 			dcmem.AgentDiscount = @AgentDiscount,
 			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dcmem.sporttype = fil.sporttype AND dcmem.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.mrecommend = @CustID
 										   AND ci.roleid = 1
@@ -242,6 +254,7 @@ BEGIN
 			dcmem.AgentDiscount = @AgentDiscount,
 			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
+		INNER JOIN @NewDiscountTbl fil ON dcmem.sporttype = fil.sporttype AND dcmem.bettype = fil.bettype
 		INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON dcmem.custid = ci.custid
 										   AND ci.recommend = @CustID
 										   AND ci.roleid = 1
@@ -265,3 +278,15 @@ BEGIN
 			AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)    
 	END
 END
+
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+
+
+GO 
+ GRANT VIEW DEFINITION ON [dbo].[Acc_DynamicCustSetting3rd_06] TO [vnteam]
+GO 
