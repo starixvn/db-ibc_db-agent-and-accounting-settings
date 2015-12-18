@@ -32,6 +32,9 @@ AS
 								
 						/>
 				</ROOT>
+				
+	Revision:
+		- Fix bug when checking PT setting on members #49586
 
 	*/
 BEGIN
@@ -50,15 +53,15 @@ BEGIN
 		  SportType			SMALLINT
 		, BetType			SMALLINT
 		, IsLive			BIT
-		, SuperPT			TINYINT
-		, MasterPT			TINYINT
-		, AgentPT			TINYINT
-		, AgentPT_Max		TINYINT
-		, AgentAPT_Max		TINYINT
-		, IsAutoMasterPT	TINYINT
-		, AutoMasterPT		TINYINT
+		, SuperPT			SMALLINT
+		, MasterPT			SMALLINT
+		, AgentPT			SMALLINT
+		, AgentPT_Max		SMALLINT
+		, AgentAPT_Max		SMALLINT
+		, IsAutoMasterPT	BIT
+		, AutoMasterPT		SMALLINT
 		, IsAutoSuperPT		BIT
-		, AutoSuperPT		TINYINT)
+		, AutoSuperPT		SMALLINT)
 		
 	DECLARE @IsGrouped BIT = 0
 
@@ -148,7 +151,7 @@ BEGIN
 		
 		--Check n2<=a1<=l2
 		SELECT @ErrInfo = (
-							SELECT pdt.SportType,pdt.BetType,pdt.IsLive,apt.MinPT,apt.AgentPT
+							SELECT pdt.SportType,pdt.BetType,pdt.IsLive,apt.MinPT,apt.MaxPT
 							FROM @NewPTTble mempt
 								INNER JOIN dbo.CustPTSetting3rd_Agent apt WITH (NOLOCK)
 									ON apt.SportType=mempt.SportType
@@ -160,7 +163,7 @@ BEGIN
 										AND pdt.BetType = mempt.BetType
 										AND pdt.IsLive = mempt.IsLive
 										AND pdt.SettingType = 1	
-							WHERE mempt.AgentPT > apt.AgentPT OR mempt.AgentPT < apt.MinPT
+							WHERE mempt.AgentPT > apt.MaxPT OR mempt.AgentPT < apt.MinPT
 							FOR XML RAW('Row'), TYPE
 		)
 		IF @ErrInfo IS NOT NULL
