@@ -1,6 +1,3 @@
-USE CustDB
-GO
-
 ALTER PROCEDURE dbo.Acc_3rdProductSelSuperStatus @ProductID INT
 	, @CustID INT
 	, @SupperStatus BIT = 0 OUTPUT
