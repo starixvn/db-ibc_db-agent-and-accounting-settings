@@ -46,7 +46,7 @@ BEGIN
 		, AgentPT			TINYINT
 		, IsAutoSuperPT		BIT
 		, AutoSuperPT		TINYINT
-		, IsAutoMasterPT	TINYINT
+		, IsAutoMasterPT	BIT
 		, AutoMasterPT		TINYINT
 		)
 	
@@ -59,7 +59,7 @@ BEGIN
 		, AgentPT			TINYINT
 		, IsAutoSuperPT		BIT
 		, AutoSuperPT		TINYINT
-		, IsAutoMasterPT	TINYINT
+		, IsAutoMasterPT	BIT
 		, AutoMasterPT		TINYINT
 		)	
 		

@@ -63,7 +63,7 @@ BEGIN
 			, AgentPT			TINYINT
 			, AgentPT_Max		TINYINT
 			, AgentAPT_Max		TINYINT
-			, IsAutoMasterPT	TINYINT
+			, IsAutoMasterPT	BIT
 			, AutoMasterPT		TINYINT
 			, IsAutoSuperPT		BIT
 			, AutoSuperPT		TINYINT
@@ -76,7 +76,7 @@ BEGIN
 			, SuperPT			TINYINT
 			, MasterPT			TINYINT
 			, AgentPT			TINYINT
-			, IsAutoMasterPT	TINYINT
+			, IsAutoMasterPT	BIT
 			, AutoMasterPT		TINYINT
 			, IsAutoSuperPT		BIT
 			, AutoSuperPT		TINYINT
