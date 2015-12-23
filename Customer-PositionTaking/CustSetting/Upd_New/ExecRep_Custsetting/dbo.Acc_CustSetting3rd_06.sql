@@ -58,6 +58,7 @@ AS
 		- 20150616@Johnson: Add more hard customers not give commission [Redmine: #34798]	
 		- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 		- 20151111@Helen: Add more hard customers not give commission [Redmine: #47068]
+		- 20151222@Johnson: Add more customers not give commission [Redmine: #49494]
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
@@ -137,6 +138,10 @@ BEGIN
 	--20151111Helen: hardcode for 919RMB and VS3077HK
 	UNION SELECT	12163698	,	1	--	919RMB
 	UNION SELECT	19573984	,	1	--	VS3077HK
+	
+	--20151222Johnson: hardcode for 55HK and 169RMB
+	UNION SELECT	19980168	,	1	--	55HK
+	UNION SELECT	20044385	,	1	--	169RMB
 	
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
