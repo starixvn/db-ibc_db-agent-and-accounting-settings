@@ -161,7 +161,7 @@ Begin DataProject = "AgentPT"
                Script = "Acc_CustOverrideUpdKeno.sql"
             End
             Begin Folder = "LiveCS"
-               Script = "dbo.Acc_CustomerUpdSuperLiveCS_CustOverride.sql"
+               Script = "dbo.Acc_CustomerUpdSuperLiveCS.sql"
             End
             Begin Folder = "VirtualSport"
                Script = "dbo.Acc_CustOverrideUpdVS.sql"
