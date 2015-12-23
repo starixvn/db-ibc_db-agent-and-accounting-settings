@@ -42,6 +42,7 @@ AS
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
 	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
 	- 20151030@Billy: Change to new VirtualRate structure [Redmine: #46541]
+	- 20151223@Patrick: Add Max/Loss limit for RnG Casino [Redmine: #49528]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -401,10 +402,14 @@ BEGIN
 	END CATCH
 
 	BEGIN TRY
-		--insert default value
-		INSERT INTO dbo.CustWinLimit(CustId, SportType, BetType, MaxWinLimit, IsAutoReset)
-		SELECT @custid, SportType, BetType, MaxWinLimit, IsAutoReset
-		FROM dbo.CustWinLimit WITH(NOLOCK) WHERE CustId = @ExistingCustid AND SportType = 255 AND BetType = 1701
+		--insert default value from upline
+		EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
+			, @UplineId = @ExistingCustid
+			, @IP = @IP
+			, @UserId = @Creator
+			, @ErrCode = @ErrCode OUTPUT
+			, @ErrMsg = @ErrMsg OUTPUT
+
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrMsg = CASE @Language 
