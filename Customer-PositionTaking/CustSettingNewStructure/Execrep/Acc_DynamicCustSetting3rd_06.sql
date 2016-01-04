@@ -8,14 +8,22 @@ GO
 CREATE PROCEDURE [dbo].[Acc_DynamicCustSetting3rd_06]
     @CustId int,
     @RoleId int,
+    @SettingType	SMALLINT		=	3,
 	@Discount_XML VARCHAR(MAX) = NULL
 AS
 /*
     Created: 20151007@Dominic
     Task : Update commission 
     DB: DBCust/CustDB
-    Revision:
-		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652, #48671      
+    
+    Revisions:
+		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652, #48671  
+		- 20160104@Dominic: Implementing Charge Commission Plugin - [Redmine: #49689]
+		
+    Param's Explanation:
+		• @SettingType: 3 - Given Comm
+						5 - Charge Comm
+            
 */
 BEGIN
     SET NOCOUNT ON;
@@ -90,6 +98,9 @@ BEGIN
 	--20151111Helen: hardcode for 919RMB and VS3077HK
 	UNION SELECT	12163698	,	1	--	919RMB
 	UNION SELECT	19573984	,	1	--	VS3077HK
+	--20151222Johnson: hardcode for 55HK and 169RMB
+	UNION SELECT	19980168	,	1	-- 55HK
+	UNION SELECT	20044385	,	1	-- 169RMB
 	
 	--20151222Johnson: hardcode for 55HK and 169RMB
 	UNION SELECT	19980168	,	1	-- 55HK
@@ -168,7 +179,7 @@ BEGIN
 			@PlayerDiscount = dcmem.PlayerDiscount,			
 			@MasterDiscount= CASE WHEN @MasterDiscount < @SuperDiscount THEN @MasterDiscount ELSE @SuperDiscount END,
 			@AgentDiscount= CASE WHEN @AgentDiscount < @MasterDiscount THEN @AgentDiscount ELSE @MasterDiscount END,
-			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount OR @SettingType = 5 THEN @PlayerDiscount ELSE @AgentDiscount END,
 			dcmem.SuperDiscount = @SuperDiscount,
 			dcmem.MasterDiscount = @MasterDiscount,
 			dcmem.AgentDiscount = @AgentDiscount,
@@ -220,7 +231,7 @@ BEGIN
 			@AgentDiscount = dcmem.AgentDiscount,
 			@PlayerDiscount = dcmem.PlayerDiscount,	
 			@AgentDiscount= CASE WHEN @AgentDiscount < @MasterDiscount THEN @AgentDiscount ELSE @MasterDiscount END,
-			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount OR @SettingType = 5 THEN @PlayerDiscount ELSE @AgentDiscount END,
 			dcmem.MasterDiscount = @MasterDiscount,
 			dcmem.AgentDiscount = @AgentDiscount,
 			dcmem.PlayerDiscount = @PlayerDiscount
@@ -254,7 +265,7 @@ BEGIN
 		SET
 			@AgentDiscount = dca.Discount,
 			@PlayerDiscount = dcmem.PlayerDiscount,	
-			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount THEN @PlayerDiscount ELSE @AgentDiscount END,
+			@PlayerDiscount= CASE WHEN @PlayerDiscount < @AgentDiscount OR @SettingType = 5 THEN @PlayerDiscount ELSE @AgentDiscount END,
 			dcmem.AgentDiscount = @AgentDiscount,
 			dcmem.PlayerDiscount = @PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dcmem WITH(ROWLOCK, UPDLOCK)
@@ -279,7 +290,8 @@ BEGIN
 		ON tmp.SportType=main.SportType  
 			AND tmp.BetType=main.BetType 
 		WHERE main.CustID=@CustID  
-			AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)    
+			AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1) 
+			AND @SettingType = 3   
 	END
 END
 

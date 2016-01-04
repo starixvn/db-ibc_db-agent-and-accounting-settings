@@ -3,6 +3,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DiscountUpd]
 	, @Discount			VARCHAR(MAX)
 	, @SubAccID				INT				= 0
 	, @UserID				INT
+	, @SettingType			SMALLINT		=	3
 	, @IP					VARCHAR(50)		= ''
 	, @ErrCode			INT				= 0		OUTPUT
 	, @MsgType			INT				= 0		OUTPUT
@@ -16,17 +17,21 @@ AS
 
 	Revisions:
 		- 20151104@Billy: Update log structure - [Redmine: #46788]
+		- 20160104@Dominic: Implementing Charge Commission Plugin - [Redmine: #49689]
 
 	Param's Explanation:
-	• @Discount:
-		<ROOT>
-				<Discount 
-						SportType="1" 
-						BetType="1" 
-						Discount="0.0025"
-				/>
-		</ROOT>
-
+		• @Discount:
+			<ROOT>
+					<Discount 
+							SportType="1" 
+							BetType="1" 
+							Discount="0.0025"
+					/>
+			</ROOT>
+		
+		• @SettingType: 3 - Given Comm
+						5 - Charge Comm
+	
 	*/
 BEGIN
 	SET NOCOUNT ON
@@ -209,7 +214,7 @@ BEGIN
 				AND tmp.BetType = dcm.BetType
 				AND dcm.custid	= @MasterID
 	END
-	ELSE IF @RoleID = 1
+	ELSE IF @RoleID = 1 AND @SettingType = 3
 	BEGIN
 		--Update NEW_DISCOUNT = MIN( @NEW_DISCOUNT, agent_discount)
 		UPDATE tmp
@@ -238,6 +243,7 @@ BEGIN
 	EXEC dbo.Acc_DynamicCustSetting3rd_06
 			@CustId			= @custid
 			, @RoleId		= @RoleId
+			, @SettingType  = @SettingType
 			, @Discount_XML = @CorrectedDiscount_XML
 			
 
@@ -252,7 +258,7 @@ BEGIN
 					AND	psd.BetType = tmp.BetType
 			WHERE	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType = 3	-- Discount
+				AND psd.SettingType = @SettingType	-- Discount
 		 ) iq
 
 	-- Select ProductName
@@ -267,6 +273,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -287,6 +294,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -307,6 +315,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -327,6 +336,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -351,6 +361,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -371,6 +382,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -391,6 +403,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -411,6 +424,7 @@ BEGIN
 		SELECT	@ProductID						AS '@ProductID',
 				@ProductName					AS '@ProductName',
 				@CustID							AS '@CustID',
+				@SettingType					AS '@SettingType',
 				@UserID							AS '@UserID',
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
@@ -431,11 +445,16 @@ BEGIN
 	SELECT @endRun	= GETDATE()
 		, @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
 
+	DECLARE @ActionID INT = 237
+	
+	IF @SettingType = 5
+		SELECT @ActionID = 248
+	
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID				= @UserID
 			, @CustID			= @CustID
-			, @ActionID			= 237
+			, @ActionID			= @ActionID
 			, @TrackingValue	= @logSpData
 			, @TrackingValue2	= @logSpData_Old
 			, @duration			= @duration
@@ -445,7 +464,7 @@ BEGIN
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 			@UserID				= @UserID
 			, @CustID			= @CustID
-			, @ActionID			= 237
+			, @ActionID			= @ActionID
 			, @TrackingValue	= @logSpData
 			, @TrackingValue2	= @logSpData_Old
 			, @duration			= @duration
