@@ -15,6 +15,9 @@ AS
 	DB: DBCUST/CustDB
 	Original:
 
+	Revision:
+	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
+	
 	Param's Explanation:
 	• @CustID: Super's ID
 	

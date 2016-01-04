@@ -14,6 +14,9 @@ AS
  Task : Get Master'setting values of a product  
  DB:  DBCUST/CustDB  
  Original:  
+ 
+ Revision:
+	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
   
  Param's Explanation:  
  • @CustID: Master's ID  
@@ -101,8 +104,8 @@ BEGIN
 			AND pdt.BetType = sbl.bettype  
 			AND sbl.custid = @SuperID  
 	END 
-	--Discount Setting  
-	ELSE IF @SettingType = 3
+	--Discount Setting  / Charge Comm
+	ELSE IF @SettingType IN (3,5)
 	BEGIN 
 		SELECT pdt.SportType  
 			, pdt.BetType  
