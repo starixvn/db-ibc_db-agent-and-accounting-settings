@@ -14,6 +14,7 @@ AS
 	Original:
 
 	Revision
+		- 20160104@Dominic: Implementing Charge Commission Plugin - Redmine #49689
 		- 20160115@Dominic: Do not update setting when there is no data Redmine: #50937
 
 	*/
