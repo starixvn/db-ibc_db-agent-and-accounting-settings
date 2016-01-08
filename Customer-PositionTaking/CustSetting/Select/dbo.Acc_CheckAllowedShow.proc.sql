@@ -22,6 +22,7 @@ Revisions:
 	- 20120821@Dan: Check allow VS
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	- 20151231@Helen: Cockfighting - [Redmine: #48133]
+	- 20151231@Helen: Cockfighting - Fix bug [Redmine: #48133]
 	
 */
 
@@ -29,13 +30,17 @@ Revisions:
 
 	Declare @mCurrencyID int, @RoleID int, @SyncCasino bit, @SyncBingo bit, @DisableBingo bit, @SyncLiveCS BIT  , @HideVirtualSports BIT
 	Declare @srecommend int, @mrecommend int, @recommend int
-
+	DECLARE @IsHideCockfighting INT
+	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
 		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
 		
 	from custinfo with (nolock) where CustID=@CustID
 	
-	SET @AllowedCockfighting = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 THEN 1 ELSE 0 END
+	SET @IsHideCockfighting = (SELECT SettingStatus FROM ProductSettingDetail WITH (NOLOCK) WHERE ProductID = 19 AND SettingType = 4)
+	
+	SET @AllowedCockfighting = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
+										AND @IsHideCockfighting = 0 THEN 1 ELSE 0 END
 	
 	If @RoleID=4
 	BEGIN	
