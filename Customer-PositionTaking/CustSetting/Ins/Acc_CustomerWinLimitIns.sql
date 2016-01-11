@@ -91,7 +91,7 @@ BEGIN
 						THEN COALESCE(CAST(MaxWinlimit AS VARCHAR(50)), SPACE(1)) + 'X'
 						ELSE COALESCE(CAST(CAST(MaxWinlimit AS INT) AS VARCHAR(50)), SPACE(1)) + 'X' END
 					END + '"' + SPACE(1)
-			+ 'MaxLossLimit' + '=' + '"' + CAST(ISNULL(MaxLossLimit, 0) AS VARCHAR(50)) + '"' + SPACE(1)
+			+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit' + '=' + '"' + CAST(ISNULL(MaxLossLimit, 0) AS VARCHAR(50)) + '"' + SPACE(1) ELSE '' END
 			+ 'IsAutoReset' + '=' + '"' + CAST(IsAutoReset AS VARCHAR(1)) + '"' + SPACE(1)
 			+ 'SportType' + '=' + '"' + CAST(SportType AS VARCHAR(10)) + '"' + SPACE(1) 
 			--+ 'BetType' + '=' + '"' + CAST(BetType AS VARCHAR(10)) + '"' + SPACE(1) 
@@ -117,7 +117,7 @@ BEGIN
 						THEN COALESCE(CAST(MaxWinlimit AS VARCHAR(50)), SPACE(1)) + 'X'
 						ELSE COALESCE(CAST(CAST(MaxWinlimit AS INT) AS VARCHAR(50)), SPACE(1)) + 'X' END
 					END + '"' + SPACE(1)
-				+ 'MaxLossLimit' + '=' + '"' + CAST(ISNULL(MaxLossLimit, 0) AS VARCHAR(50)) + '"' + SPACE(1)
+				+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit' + '=' + '"' + CAST(ISNULL(MaxLossLimit, 0) AS VARCHAR(50)) + '"' + SPACE(1) ELSE '' END
 				+ 'IsAutoReset' + '=' + '"' + CAST(IsAutoReset AS VARCHAR(1)) + '"' + SPACE(1)
 				+ 'SportType' + '=' + '"' + CAST(SportType AS VARCHAR(10)) + '"' + SPACE(1) 
 				--+ 'BetType' + '=' + '"' + CAST(BetType AS VARCHAR(10)) + '"' + SPACE(1) 
