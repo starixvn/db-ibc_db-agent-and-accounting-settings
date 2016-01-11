@@ -44,7 +44,7 @@ BEGIN
 				WHEN @Amount > 0 AND @CreditAmount > 0 AND MaxWinLimit > 0 THEN @Amount * 100/(MaxWinLimit * @CreditAmount) 
 				ELSE 0 END AS WinPercent
 	FROM DBCUST.CustDB.dbo.CustWinLimit c WITH(NOLOCK)
-	WHERE CustId = @CustId AND @RoleId = 1
+	WHERE CustId = @CustId AND SportType = @SportType AND BetType = @BetType AND @RoleId = 1
 END
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerWinLimitSel] TO [bodbAdminNet] AS [dbo]

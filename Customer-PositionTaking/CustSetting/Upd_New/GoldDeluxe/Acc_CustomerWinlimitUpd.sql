@@ -175,6 +175,9 @@ BEGIN
 		OR (@MaxWinLimit_Old != @MaxWinLimit
 			AND @MaxWinLimit > 0
 			AND (@MaxWinLimit_Old = 0 OR @MaxWinLimit < @MaxWinLimit_Old))
+		OR (@MaxLossLimit_Old != @MaxLossLimit
+			AND @MaxLossLimit > 0
+			AND (@MaxLossLimit_Old = 0 OR @MaxLossLimit < @MaxLossLimit_Old))
 	BEGIN
 		EXEC dbo.Acc_CustomerInfo_Execrep_08 @CustId = @CustId
 			, @RoleId = @RoleId
@@ -195,8 +198,10 @@ BEGIN
 									THEN COALESCE(CAST(@MaxWinLimit AS VARCHAR(50)), SPACE(1)) + 'X'
 									ELSE COALESCE(CAST(CAST(@MaxWinLimit AS INT) AS VARCHAR(50)), SPACE(1)) + 'X' END -- cut off decimal  
 							END + '" ' 
-		+ 'IsAutoReset="' + COALESCE(CAST(@IsAutoReset AS VARCHAR(50)), SPACE(1)) + '" ' 
-		+ 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' 
+		+ 'IsAutoReset="' + COALESCE(CAST(@IsAutoReset AS VARCHAR(50)), SPACE(1)) + '" '
+		+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' ELSE '' END --only write log for One-RnG
+		+ 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) + '" ' 
+		--+ 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) + '" ' 
 		+ 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' 
 		+ 'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)), SPACE(1)) + '" ' 
 		+ 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' 
@@ -211,7 +216,9 @@ BEGIN
 										ELSE COALESCE(CAST(CAST(@MaxWinLimit_Old AS INT) AS VARCHAR(50)), SPACE(1)) + 'X' END-- cut off decimal  
 								END + '" ' 
 		+ 'IsAutoReset="' + COALESCE(CAST(@IsAutoReset_Old AS VARCHAR(50)), SPACE(1)) + '" ' 
-		+ 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' 
+		+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' ELSE '' END --only write log for One-RnG
+		+ 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) + '" ' 
+		--+ 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) + '" ' 
 		+ 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' 
 		+ 'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)), SPACE(1)) + '" ' 
 		+ 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' 
@@ -241,6 +248,8 @@ BEGIN
 								END + '" ' 
 			+ 'IsAutoReset="' + COALESCE(CAST(@IsAutoReset AS VARCHAR(50)), SPACE(1)) + '" ' 
 			+ 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' 
+			+ 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) + '" ' 
+			--+ 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) + '" ' 
 			+ 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' 
 			+ 'userid="' + COALESCE(CAST(@userid AS VARCHAR(50)), SPACE(1)) + '" ' 
 			+ 'Language="' + COALESCE(CAST(@Language AS VARCHAR(2)), SPACE(1)) + '" ' 
