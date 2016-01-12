@@ -179,7 +179,7 @@ BEGIN
 			AND @MaxLossLimit > 0
 			AND (@MaxLossLimit_Old = 0 OR @MaxLossLimit < @MaxLossLimit_Old))
 	BEGIN
-		EXEC dbo.Acc_CustomerInfo_Execrep_08 @CustId = @CustId
+		EXEC dbo.Acc_CustSetting3rd_15 @CustId = @CustId
 			, @RoleId = @RoleId
 			, @MaxWinLimit = @MaxWinLimit
 			, @IsAutoReset = @IsAutoReset
