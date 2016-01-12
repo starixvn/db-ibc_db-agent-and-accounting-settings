@@ -216,7 +216,7 @@ BEGIN
 										ELSE COALESCE(CAST(CAST(@MaxWinLimit_Old AS INT) AS VARCHAR(50)), SPACE(1)) + 'X' END-- cut off decimal  
 								END + '" ' 
 		+ 'IsAutoReset="' + COALESCE(CAST(@IsAutoReset_Old AS VARCHAR(50)), SPACE(1)) + '" ' 
-		+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit AS VARCHAR(50)), SPACE(1)) + '" ' ELSE '' END --only write log for One-RnG
+		+ CASE WHEN @SportType = 208 THEN 'MaxLossLimit="' + COALESCE(CAST(@MaxLossLimit_Old AS VARCHAR(50)), SPACE(1)) + '" ' ELSE '' END --only write log for One-RnG
 		+ 'SportType="' + COALESCE(CAST(@SportType AS VARCHAR(50)), SPACE(1)) + '" ' 
 		--+ 'BetType="' + COALESCE(CAST(@BetType AS VARCHAR(50)), SPACE(1)) + '" ' 
 		+ 'SubAccName="' + COALESCE(CAST(dbo.f_GetSubUsername(@SubAccID) AS VARCHAR(30)), SPACE(1)) + '" ' 
