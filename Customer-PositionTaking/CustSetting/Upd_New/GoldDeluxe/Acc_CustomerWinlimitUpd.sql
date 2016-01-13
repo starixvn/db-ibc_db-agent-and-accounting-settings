@@ -149,7 +149,7 @@ BEGIN
 		IF @UplineMaxLossLimit > 0
 			AND (@MaxLossLimit = 0 OR @UplineMaxLossLimit < @MaxLossLimit)
 		BEGIN
-			SELECT @ErrMsg = 'Minimum Loss should be less than or equal to Minimum Loss of Direct Upline!'
+			SELECT @ErrMsg = 'Maximum Loss should be less than or equal to Maximum Loss of Direct Upline!'
 				, @ErrCode = 104
 
 			RETURN
