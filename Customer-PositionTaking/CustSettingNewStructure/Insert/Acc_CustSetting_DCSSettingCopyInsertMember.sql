@@ -21,7 +21,7 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML
+	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLimit XML
 	DECLARE @xmlStr VARCHAR(MAX)
 	SELECT @ErrCode = 0
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
@@ -295,6 +295,49 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT	
 		END
+	END
+
+	/********************************************* SMA Win Limit : SettingType = 6 ****************************************/
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,6))
+	BEGIN
+		DECLARE @NewWinLimitTbl TABLE (
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, MaxWinLimit		MONEY
+			, IsAutoReset		MONEY
+			)
+
+		INSERT INTO @NewWinLimitTbl
+		SELECT wl.SportType
+			, wl.BetType
+			, wl.MaxWinLimit
+			, wl.IsAutoReset
+		FROM dbo.CustBetLimit3rd_Member wl WITH (NOLOCK)		
+		WHERE wl.custid = @ExistingCustID
+
+		SET @xmlWinLimit = (SELECT (
+									SELECT SportType	AS '@SportType'
+										, BetType		AS '@BetType'
+										, MaxWinLimit		AS '@MaxWinLimit'
+										, IsAutoReset	AS '@IsAutoReset'
+									FROM @NewWinLimitTbl
+									FOR XML PATH('WinLimit')
+										, TYPE
+									)
+							FOR XML PATH('ROOT')
+								, TYPE
+							)
+	
+		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlWinLimit)
+
+		EXEC Acc_CustSetting_WinLimitUpd 
+			  @CustID = @CustID
+			, @BetLimit = @xmlStr
+			, @SubAccID = @SubAccID
+			, @IP = @IP
+			, @UserID = @UserID
+			, @ErrCode = @ErrCode OUTPUT
+			, @ErrMsg = @ErrMsg OUTPUT
 	END
 END
 
