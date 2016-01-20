@@ -1,5 +1,6 @@
 ALTER PROCEDURE [dbo].[Acc_CustSetting_DCSSettingCopyInsertMember] 
 	@CustID				INT
+	, @ProductID		TINYINT = NULL
 	, @ExistingCustID	INT		
 	, @SubAccID			INT				= 0
 	, @IP				VARCHAR(50)		= ''
@@ -24,7 +25,7 @@ BEGIN
 	DECLARE @xmlStr VARCHAR(MAX)
 	SELECT @ErrCode = 0
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
-	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,1))
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1))
 	BEGIN
 		DECLARE @NewPTTble TABLE (
 				  SportType			SMALLINT
@@ -56,6 +57,7 @@ BEGIN
 						, CASE WHEN mcs.agentPT > acs.agentPT THEN acs.agentPT ELSE mcs.agentPT END
 					FROM dbo.CustPTSetting3rd_Member mcs WITH (NOLOCK)
 						INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH (NOLOCK) ON acs.sporttype = mcs.sporttype AND acs.bettype = mcs.bettype AND acs.islive = mcs.islive
+						INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1) fil ON fil.SportType = mcs.SportType AND fil.BetType = mcs.BetType AND fil.IsLive = mcs.IsLive
 					WHERE mcs.custid = @ExistingCustID AND acs.custid = @AgentID
 		END
 		ELSE
@@ -79,6 +81,7 @@ BEGIN
 						, CASE WHEN mcs.agentPT > acs.agentPT THEN acs.agentPT ELSE mcs.agentPT END
 					FROM dbo.CustPTGroupSetting3rd_Member mcs WITH (NOLOCK)
 						INNER JOIN dbo.CustPTSetting3rd_Agent acs WITH (NOLOCK) ON acs.sporttype = mcs.sporttype AND acs.bettype = mcs.bettype AND acs.islive = mcs.islive
+						INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1) fil ON fil.SportType = mcs.SportType AND fil.BetType = mcs.BetType AND fil.IsLive = mcs.IsLive
 					WHERE mcs.AgentID = @AgentID AND acs.custid = @AgentID		
 		END
 	
@@ -97,18 +100,21 @@ BEGIN
 						)
 	
 		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlPT)
-
-		EXEC Acc_CustSetting_AgentPTOnMemberUpd
-			@CustID = @CustID
-			, @PT = @xmlStr
-			, @SubAccID = @SubAccID
-			, @IP = @IP
-			, @UserID = @UserID
-			, @ErrCode = @ErrCode OUTPUT
-			, @ErrMsg = @ErrMsg OUTPUT
+		
+		IF EXISTS (SELECT TOP 1 1 FROM @NewPTTble)
+		BEGIN
+			EXEC Acc_CustSetting_AgentPTOnMemberUpd
+				@CustID = @CustID
+				, @PT = @xmlStr
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+		END
 	END
 	/********************************************* Bet Limit : SettingType = 2 ****************************************/
-	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,2))
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,2))
 	BEGIN
 		DECLARE @NewBetLimitTbl TABLE (
 			SportType			SMALLINT
@@ -124,7 +130,8 @@ BEGIN
 			, bl.MinBet
 			, bl.MaxBet
 			, bl.MaxPerMatch
-		FROM dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)		
+		FROM dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,2) fil ON fil.SportType = bl.SportType AND fil.BetType = bl.BetType		
 		WHERE bl.custid = @ExistingCustID
 
 		SET @xmlBetLimit = (SELECT (
@@ -143,14 +150,17 @@ BEGIN
 	
 		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlBetLimit)
 
-		EXEC Acc_CustSetting_BetLimitUpd 
-			  @CustID = @CustID
-			, @BetLimit = @xmlStr
-			, @SubAccID = @SubAccID
-			, @IP = @IP
-			, @UserID = @UserID
-			, @ErrCode = @ErrCode OUTPUT
-			, @ErrMsg = @ErrMsg OUTPUT
+		IF EXISTS(SELECT TOP 1 1 FROM @NewBetLimitTbl)
+		BEGIN
+			EXEC Acc_CustSetting_BetLimitUpd 
+				  @CustID = @CustID
+				, @BetLimit = @xmlStr
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+		END
 	END
 	/********************************************* Commision : SettingType = 3 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,3))
@@ -166,6 +176,7 @@ BEGIN
 			, dc.BetType
 			, dc.PlayerDiscount
 		FROM dbo.CustDiscount3rd_Member dc WITH(NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,3) fil ON fil.SportType = dc.SportType AND fil.BetType = dc.BetType
 		WHERE dc.CustID	= @ExistingCustID
 
 		SET @xmlDiscount = ( SELECT (
@@ -194,8 +205,53 @@ BEGIN
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
 	END
+	/*********************************************Charge Commision : SettingType = 5 ****************************************/
+	DECLARE @NewChargeCommTbl TABLE (
+					SportType	SMALLINT
+				,	BetType		SMALLINT
+				,	Discount	DECIMAL(9, 8)
+			)
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,5))
+	BEGIN
+	
+		INSERT INTO @NewChargeCommTbl
+		SELECT dc.SportType
+			, dc.BetType
+			, dc.PlayerDiscount
+		FROM dbo.CustDiscount3rd_Member dc WITH(NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,5) fil ON fil.SportType = dc.SportType AND fil.BetType = dc.BetType
+		WHERE dc.CustID	= @ExistingCustID
+
+		SET @xmlDiscount = ( SELECT (
+									SELECT SportType AS '@SportType'
+										, BetType AS '@BetType'
+										, Discount AS '@Discount'
+									FROM @NewChargeCommTbl
+									FOR XML PATH('Discount')
+										, TYPE
+									)
+							FOR XML PATH('ROOT')
+								, TYPE
+							)
+
+		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlDiscount)
+
+		IF EXISTS(SELECT TOP 1 1 FROM @NewChargeCommTbl)
+		BEGIN
+			EXEC Acc_CustSetting_DiscountUpd 		
+				  @CustID = @CustID
+				, @Discount = @xmlStr
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @SettingType = 5
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+		END
+		END
+	END
 	/********************************************* Product Status: SettingType = 4 ************************************/
-	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,4))
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4))
 	BEGIN
 		DECLARE @NewDisableStatTbl TABLE(
 			SportType				SMALLINT
@@ -210,7 +266,8 @@ BEGIN
 			, dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
 			, 0 AS IsDisabledDownline
 		FROM dbo.CustProductStatus stt WITH (NOLOCK) 
-			CROSS JOIN ProductStatusProfile PSP WITH (NOLOCK) 
+			CROSS JOIN ProductStatusProfile PSP WITH (NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4) fil ON fil.SportType = PSP.SportType AND fil.BetType = PSP.BetType 
 		WHERE stt.CustID = @ExistingCustID
 
 		SET @xmlStatus = (SELECT (
@@ -228,14 +285,17 @@ BEGIN
 
 		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlStatus)
 
-		EXEC Acc_CustSetting_DisableStatUpd
-			  @CustID = @CustID
-			, @IsDisabled = @xmlStr
-			, @SubAccID = @SubAccID
-			, @IP = @IP
-			, @UserID = @UserID
-			, @ErrCode = @ErrCode OUTPUT
-			, @ErrMsg = @ErrMsg OUTPUT	
+		IF EXISTS(SELECT TOP 1 1 FROM @NewDisableStatTbl)
+		BEGIN
+			EXEC Acc_CustSetting_DisableStatUpd
+				  @CustID = @CustID
+				, @IsDisabled = @xmlStr
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT	
+		END
 	END
 END
 

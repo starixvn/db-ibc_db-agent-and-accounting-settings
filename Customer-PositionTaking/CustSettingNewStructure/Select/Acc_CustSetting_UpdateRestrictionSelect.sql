@@ -5,9 +5,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [dbo].[Acc_CustSetting_UpdateRestrictionSelect]   
-	@ProductID	TINYINT = NULL,
-	@SettingType SMALLINT = NULL,
-	@SystemID	TINYINT  = 0,
+	@ProductID	TINYINT ,
+	@SystemID	TINYINT,
 	@TargetID	INT,
 	@ActorRoleID TINYINT,
 	@TargetRoleID TINYINT
@@ -23,20 +22,17 @@ AS
    
  */  
 BEGIN   
-	DECLARE @SuperID INT
 	
-	SELECT @SuperID = srecommend
-	FROM dbo.custinfo WITH(NOLOCK)
-	WHERE CustID = @TargetID
-	
-	SELECT @ProductID ProductID,@SettingType SettingType,@SystemID SystemID,@TargetID TargetID,@ActorRoleID ActorRoleID,@TargetRoleID TargetRoleID,@SuperID SuperID
+	SELECT DISTINCT @ProductID ProductID,fil.SettingType,@SystemID SystemID,@TargetID TargetID,@ActorRoleID ActorRoleID,@TargetRoleID TargetRoleID
 	INTO #tmp
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,NULL) fil
+	
 	
 	SELECT t.SettingType,ISNULL(rs.RestrictionMode,1) RestrictionMode,ISNULL(rs.ErrCode,0) ErrCode
 	FROM #tmp t WITH(NOLOCK)
 	LEFT JOIN dbo.ProductSettingUpdateRestriction rs WITH(NOLOCK)
 		ON rs.ProductID = t.ProductID AND rs.SettingType = t.SettingType AND rs.SystemID = t.SystemID 
-		AND rs.ActorRoleID = t.ActorRoleID AND rs.TargetRoleID = t.TargetRoleID AND rs.SuperID = t.SuperID
+		AND rs.ActorRoleID = t.ActorRoleID AND rs.TargetRoleID = t.TargetRoleID
 	
 END  
   
