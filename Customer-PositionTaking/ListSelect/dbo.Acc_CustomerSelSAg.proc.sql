@@ -56,7 +56,7 @@ Revisions:
 	- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
 	- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
 	- 20151209@Helen: Member information for Cockfighting [Redmine: #48133]
-	
+	- 20160114@Helen: Cricket - [Redmine: #50027]
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -67,16 +67,16 @@ B: 'B%'
 
 	SET NOCOUNT ON
 	----- Elodie @ 01 JUN 2015 -------------------
-		DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
+	DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)	
 
-		BEGIN TRY		
-			INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
-			SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
-		END TRY
-		BEGIN CATCH		
-			INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
-			SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
-		END CATCH
+	BEGIN TRY		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBAGE.bodb02.dbo.GameType WITH (NOLOCK)
+	END TRY
+	BEGIN CATCH		
+		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
+		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
+	END CATCH
 	----- /Elodie @ 01 JUN 2015 -------------------
 
 	DECLARE @RowCount int, @RowStart int, @RowEnd int
@@ -86,16 +86,19 @@ B: 'B%'
 	Declare @tbCurrency table (exchangeId int primary key)
 
 	 -- For DCS Product
-    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT
+    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT, @bitmapOrder_Cricket INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
+    SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
     
     DECLARE @IsHidden_MuayThai INT = 1
     DECLARE @IsHidden_CockFighting INT = 1
+    DECLARE @IsHidden_Cricket INT = 1
     
     DECLARE @SportBook2 INT = 16
     DECLARE @CockFighting INT = 19
+    DECLARE @Cricket INT = 20
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -106,6 +109,11 @@ B: 'B%'
 		SET @IsHidden_CockFighting = 0
 	END
     
+    IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@Cricket,4))
+	BEGIN
+		SET @IsHidden_Cricket = 0
+	END
+	
 	IF(@System = 'ACCOUNTING')
 	BEGIN
 		IF @TotalPages = 0
@@ -174,6 +182,13 @@ B: 'B%'
 		   
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,  
+			
+			-- Cricket
+			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
+			ISNULL(cda.Discount,0) AS discountCricket,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_Cricket),1) AS DisableCricket,
+			CAST(CASE WHEN m.[site] = 'IMBC' AND @IsHidden_Cricket = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_Cricket),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCricket,
+			
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 			
 		FROM 
@@ -201,6 +216,7 @@ B: 'B%'
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 		   LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
 		   LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
+		   LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
 		   
 		WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 			and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -245,7 +261,8 @@ B: 'B%'
 			discount1x2,
 			discountHRFixedOdds,
 			AC.CommRate	,
-			ac.CustId	
+			ac.CustId,
+			m.[site],cda.Discount	
 		--ORDER BY ci.closed, m.username
 		) a
 		WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
@@ -324,6 +341,14 @@ B: 'B%'
 					   
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
+			
+			-- Cricket
+			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
+			ISNULL(cda.Discount,0) AS discountCricket,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_Cricket),1) AS DisableCricket,
+			CAST(CASE WHEN m.[site] = 'IMBC' AND @IsHidden_Cricket = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_Cricket),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCricket,
+			
+			
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		FROM 
 			customer AS m with (NOLOCK)
@@ -335,6 +360,7 @@ B: 'B%'
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 			LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 AND csuper.IsMyanmarOdds = 1
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
+			LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
 			
 		WHERE	
 				m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
@@ -372,7 +398,9 @@ B: 'B%'
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
 			csuper.IsMyanmarOdds,
-			ac.CommRate
+			ac.CommRate,
+			m.[site],cda.Discount
+			
 		) a
 		WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 	END

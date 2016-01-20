@@ -10,6 +10,10 @@ AS
 	DB: DBCUST/CustDB, DBAGE/bodb02
 	Original:
 
+	Revisions:
+		- 20160114@Helen: Cricket - [Redmine: #50027]
+
+
 	Param's Explanation:
 	• @CustID: 
 	
@@ -17,12 +21,15 @@ AS
 BEGIN
 	
 	DECLARE @IsDisabledDownline BIT, @downlines BIT  = 0 
-	DECLARE @SuperID INT, @MasterID INT, @AgentID INT  
+	DECLARE @SuperID INT, @MasterID INT, @AgentID INT , @IsIMBC BIT = 0 
 	
 	SELECT @SuperID=ci.srecommend, @MasterID=ci.mrecommend , @AgentID = ci.recommend  
 	FROM dbo.custInfo ci WITH(NOLOCK)  
 	WHERE ci.custid=@CustID 
 	
+	IF EXISTS (SELECT 1 FROM Customer WITH (NOLOCK) WHERE custid = @SuperID AND [Site] = 'IMBC')
+		SET @IsIMBC = 1
+		
 	SELECT @ProductID AS ProductID,SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
 	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
@@ -39,7 +46,10 @@ BEGIN
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
-			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			
+			, CAST(CASE WHEN stt.CustID IS NULL  OR (@IsIMBC = 0 AND pdt.ProductID = 20) THEN 1 ELSE 
+														(CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			
 			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 			
 			, CASE 	
@@ -78,7 +88,7 @@ BEGIN
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
-			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			, CAST(CASE WHEN stt.CustID IS NULL OR (@IsIMBC = 0 AND pdt.ProductID = 20) THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
 			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 			
 			, CASE 	
@@ -117,7 +127,7 @@ BEGIN
 		SELECT pdt.ProductID, pdt.SportType
 			, pdt.BetType
 			, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
-			, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+			, CAST(CASE WHEN stt.CustID IS NULL OR (@IsIMBC = 0 AND pdt.ProductID = 20) THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
 			, CASE WHEN stt.CustID IS NULL THEN 1 ELSE  dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder)END  as isDisabled
 			
 			, CASE 	
@@ -151,7 +161,7 @@ BEGIN
 		SELECT pdt.ProductID, pdt.SportType
 				, pdt.BetType
 				, CASE WHEN stt.CustID IS NULL THEN 0 ELSE dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder) END as IsSync
-				, CAST(CASE WHEN stt.CustID IS NULL THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
+				, CAST(CASE WHEN stt.CustID IS NULL OR (@IsIMBC = 0 AND pdt.ProductID = 20) THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
 				, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 				, 0 AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
