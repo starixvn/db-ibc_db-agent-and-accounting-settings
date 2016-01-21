@@ -26,7 +26,8 @@ AS
  */
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @StartRun DATETIME, @EndRun DATETIME, @Duration INT, @RoleId TINYINT, @ErrAcc NVARCHAR(4000)
+	DECLARE @StartRun DATETIME, @EndRun DATETIME, @Duration INT
+		, @RoleId TINYINT, @ErrAcc NVARCHAR(4000), @Currency INT
 	SET @StartRun = GETDATE()
 
 	SELECT @ErrCode = 0, @ErrMsg = ''
@@ -46,7 +47,7 @@ BEGIN
 	DECLARE @MaxWinLimit_Old SMALLMONEY, @IsAutoReset_Old BIT, @MaxLossLimit_Old MONEY
 		, @UplineMaxWinLimit SMALLMONEY, @UplineIsAutoReset BIT, @UplineMaxLossLimit MONEY
 
-	SELECT @RoleID = roleid
+	SELECT @RoleID = roleid, @Currency = currency
 	FROM dbo.Custinfo WITH (NOLOCK)
 	WHERE CustID = @CustId
 
@@ -115,7 +116,11 @@ BEGIN
 
 		IF @RoleID = 4
 		BEGIN
-			SELECT @UplineMaxWinLimit = 0, @UplineIsAutoReset = 1, @UplineMaxLossLimit = 0 --not checking the upline when the customer is the super
+			SELECT @UplineMaxWinLimit = 0, @UplineIsAutoReset = 1--not checking the upline when the customer is the super
+			
+			SELECT @UplineMaxLossLimit = ISNULL(MinLossLimit, 1)
+			FROM dbo.LossLimit_GlobalSetting l WITH(NOLOCK)
+			WHERE ProductId = 6 AND ExchangeId = @Currency
 		END
 	END
 
