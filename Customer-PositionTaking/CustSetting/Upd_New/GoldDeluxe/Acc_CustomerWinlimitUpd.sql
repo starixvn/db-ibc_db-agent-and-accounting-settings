@@ -5,7 +5,7 @@ ALTER PROCEDURE dbo.Acc_CustomerWinLimitUpd @CustId INT
 	, @IsAutoReset BIT
 	, @SportType SMALLINT
 	, @BetType SMALLINT
-	, @MaxLossLimit SMALlMONEY = 0
+	, @MaxLossLimit MONEY = 0
 
 	, @SubAccId INT = 0 -- Sub Account  
 	, @IP VARCHAR(50) = ''
@@ -43,8 +43,8 @@ BEGIN
 		RETURN
 	END
 
-	DECLARE @MaxWinLimit_Old SMALLMONEY, @IsAutoReset_Old BIT, @MaxLossLimit_Old SMALLMONEY
-		, @UplineMaxWinLimit SMALLMONEY, @UplineIsAutoReset BIT, @UplineMaxLossLimit SMALLMONEY
+	DECLARE @MaxWinLimit_Old SMALLMONEY, @IsAutoReset_Old BIT, @MaxLossLimit_Old MONEY
+		, @UplineMaxWinLimit SMALLMONEY, @UplineIsAutoReset BIT, @UplineMaxLossLimit MONEY
 
 	SELECT @RoleID = roleid
 	FROM dbo.Custinfo WITH (NOLOCK)
