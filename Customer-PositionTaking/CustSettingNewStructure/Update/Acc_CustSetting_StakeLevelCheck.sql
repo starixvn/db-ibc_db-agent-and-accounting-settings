@@ -51,13 +51,18 @@ BEGIN
 		,	@UplineStakeLevelList	VARCHAR(100)
 		,	@invalidStakeLevelID	VARCHAR(100);
 
+	DECLARE	@xml					XML
+		,	@SettingType			SMALLINT;
+
 	IF @StakeLevel IS NULL OR @StakeLevel = ''
 		RETURN;
 
 	SELECT	@ErrCode	= 0
 		,	@MsgType	= 0
 		,	@ErrMsg		= '';
-
+		
+	-- Stake Level Member Single Selection
+	SELECT	@SettingType = 7;
 
 	EXEC sys.sp_xml_preparedocument @iDoc OUTPUT, @StakeLevel;
 
@@ -112,19 +117,30 @@ BEGIN
 			WHERE val NOT IN (SELECT val FROM dbo.strSplit(@UplineStakeLevelList,','));  
 
 			IF @invalidStakeLevelID > 0  
-			BEGIN  
-				--Return Data  
-				SELECT @ErrCode = 1000;  
-				BEGIN TRY  
-					 SELECT @ErrMsg = 'This user''s upline does not have Stake Level for ' + typenamee   
-					 FROM DBAGE.bodb02.dbo.bettype WITH(NOLOCK)  
-					 WHERE typeid = @BetType;  
-				END TRY  
-				BEGIN CATCH  
-					 SELECT @ErrMsg = 'This user''s upline does not have Stake Level for ' + typenamee   
-					 FROM DBTXN.bodb02.dbo.bettype WITH(NOLOCK)  
-					 WHERE typeid = @BetType;  
-				END CATCH;   
+			BEGIN
+				SELECT	@xml =	(
+									SELECT	100001												AS '@MsgID'
+										,	'This user''s upline does not have Stake Level.'	AS '@Msg'
+										,	(
+												SELECT	psd.SportType							AS '@SportType'
+													,	psd.BetType								AS '@BetType'
+												FROM		dbo.StakeLevel AS sl WITH(NOLOCK)
+												INNER JOIN	#tmpStake AS ts
+														ON	ts.BetType = sl.GameTypeID
+														AND	sl.StakeLevelID = CAST(@invalidStakeLevelID AS INT)
+												INNER JOIN	dbo.ProductSettingDetail AS psd WITH(NOLOCK)
+														ON	psd.SportType = ts.SportType
+														AND	psd.BetType = ts.BetType
+														AND	psd.SettingType = @SettingType
+												FOR XML PATH ('Row')
+											,	TYPE
+											)
+									FOR XML PATH ('Root')
+								,	TYPE
+								);
+				SELECT	@ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+					,	@MsgType = 131
+					,	@ErrCode = 100001;
 				RETURN;   
 			END;   
 
