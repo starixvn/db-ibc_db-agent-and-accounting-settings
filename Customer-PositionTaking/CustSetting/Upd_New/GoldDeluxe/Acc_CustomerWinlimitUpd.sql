@@ -46,6 +46,7 @@ BEGIN
 
 	DECLARE @MaxWinLimit_Old SMALLMONEY, @IsAutoReset_Old BIT, @MaxLossLimit_Old MONEY
 		, @UplineMaxWinLimit SMALLMONEY, @UplineIsAutoReset BIT, @UplineMaxLossLimit MONEY
+		, @UplineMinLossLimit MONEY
 
 	SELECT @RoleID = roleid, @Currency = currency
 	FROM dbo.Custinfo WITH (NOLOCK)
@@ -117,12 +118,13 @@ BEGIN
 		IF @RoleID = 4
 		BEGIN
 			SELECT @UplineMaxWinLimit = 0, @UplineIsAutoReset = 1--not checking the upline when the customer is the super
-			
-			SELECT @UplineMaxLossLimit = ISNULL(MinLossLimit, 1)
-			FROM dbo.LossLimit_GlobalSetting l WITH(NOLOCK)
-			WHERE ProductId = 6 AND ExchangeId = @Currency
 		END
 	END
+
+	--get min loss limit from setting table
+	SELECT @UplineMinLossLimit = ISNULL(MinLossLimit, 1)
+	FROM dbo.LossLimit_GlobalSetting l WITH(NOLOCK)
+	WHERE ProductId = 6 AND ExchangeId = @Currency
 
 	IF @MaxWinLimit_Old != @MaxWinLimit
 	BEGIN
@@ -152,13 +154,22 @@ BEGIN
 	IF @MaxLossLimit_Old != @MaxLossLimit
 	BEGIN
 		IF @UplineMaxLossLimit > 0
-			AND (@MaxLossLimit = 0 OR @UplineMaxLossLimit < @MaxLossLimit)
+			AND (@MaxLossLimit = 0 OR @MaxLossLimit NOT BETWEEN @UplineMinLossLimit AND @UplineMaxLossLimit)
 		BEGIN
 			SELECT @ErrMsg = 'Maximum Loss should be less than or equal to Maximum Loss of Direct Upline!'
 				, @ErrCode = 104
 
 			RETURN
 		END
+
+		IF @RoleId = 4 AND @MaxLossLimit < @UplineMinLossLimit
+		BEGIN
+			SELECT @ErrMsg = 'Maximum Loss should be less than or equal to Maximum Loss of Direct Upline!'
+				, @ErrCode = 104
+
+			RETURN
+		END
+
 	END
 	
 	UPDATE dbo.CustWinLimit WITH (UPDLOCK, ROWLOCK)
