@@ -22,7 +22,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @Discount:
+		@StakeLevel:
 		<ROOT>
 				<StakeLevel 
 						SportType="211" 
@@ -42,7 +42,7 @@ BEGIN
 					,	StakeLevelList	VARCHAR(200)
 					,	isValidated		BIT DEFAULT 0
 					,	PRIMARY KEY CLUSTERED (SportType, BetType)
-					)
+					);
 	
 	DECLARE	@iDoc					INT;
 
@@ -69,7 +69,7 @@ BEGIN
 		SportType		SMALLINT
 	,	BetType			INT
 	,	StakeLevelList	VARCHAR(200)	
-	) AS ox
+	) AS ox;
 
 	EXEC sys.sp_xml_removedocument @iDoc;
 
@@ -135,8 +135,8 @@ BEGIN
 	END;
 
 END;
-
 GO
+
 GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelCheck TO [bodbAdminNet];
 GO
 GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelCheck TO [bodbDownlineNet];

@@ -1,4 +1,4 @@
-ALTER PROCEDURE	[dbo].[Acc_CustSetting_StakeLevelSelect]
+ALTER PROCEDURE	dbo.Acc_CustSetting_StakeLevelSelect
 					@CustID			INT
 				,	@ProductID		TINYINT
 AS
@@ -11,21 +11,19 @@ AS
 	Param's Explanation:
 */
 BEGIN
-    SET NOCOUNT ON
+    SET NOCOUNT ON;
 
-	DECLARE	@SQL						NVARCHAR(100)
-		,	@SettingStatus				TINYINT
-		,	@SettingType				SMALLINT
+	DECLARE	@SettingType				SMALLINT
 		,	@Currency					TINYINT
 		,	@RoleID						TINYINT
 		,	@srecommend					INT
 		,	@mrecommend					INT
-		,	@recommend					INT
+		,	@recommend					INT;
 
 	CREATE TABLE	#SportBetTypeFilter (
 						SportType		SMALLINT
 					,	BetType			INT
-					)
+					);
 
 	CREATE TABLE	#CustStakeLevel (
 						SportType		SMALLINT
@@ -34,36 +32,16 @@ BEGIN
 					,	StakeLevelName	NVARCHAR(100)
 					,	isChecked		BIT
 					,	PRIMARY KEY CLUSTERED (SportType, BetType, StakeLevelID)
-					)
-
-	-- Test version detection
-	SELECT	@SQL = OBJECT_NAME(@@PROCID)
-	
-	IF	@SQL LIKE '%[_]xtest%'
-	OR	@SQL LIKE '%[_]xpre%'
-	OR	@SQL LIKE '%[_]uat1%'
-	OR	@SQL LIKE '%[_]uat2%'
-	OR	@SQL LIKE '%[_]uat3%'
-	OR	@SQL LIKE '%[_]uat4%'
-	BEGIN
-	    SELECT	@SettingStatus = 1	-- On UAT
-	END
-	ELSE
-	BEGIN
-	    SELECT	@SettingStatus = 0	-- On PROD
-	END
+					);
 
 	-- Stake Level Member Single Selection
-	SELECT	@SettingType = 7
+	SELECT	@SettingType = 7;
 
 	-- Select SportType & BetType of current ProductID
 	INSERT INTO #SportBetTypeFilter
-				(	SportType    , BetType)
-	SELECT DISTINCT	psd.SportType, psd.BetType
-	FROM	dbo.ProductSettingDetail AS psd WITH(NOLOCK)
-	WHERE	psd.SettingType = @SettingType
-		AND psd.ProductID = @ProductID
-		AND	psd.SettingStatus <= @SettingStatus
+		(	SportType         , BetType)
+	SELECT	fcssbtss.SportType, fcssbtss.Bettype
+	FROM	dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID, @SettingType) AS fcssbtss;
 
 	-- Select customer's information
 	SELECT	@Currency   = c.currency
@@ -72,7 +50,7 @@ BEGIN
 		,	@mrecommend = c.mrecommend
 		,	@recommend  = c.recommend
 	FROM	dbo.Customer AS c WITH(NOLOCK)
-	WHERE	c.custid = @CustID
+	WHERE	c.custid = @CustID;
 
 	-- Select available stake levels
 	IF	@RoleID = 4
@@ -83,8 +61,8 @@ BEGIN
 		FROM		dbo.StakeLevel AS sl WITH(NOLOCK)
 		INNER JOIN	#SportBetTypeFilter AS sbtf
 				ON	sbtf.BetType = sl.GameTypeID
-		WHERE	sl.ExchangeId = @Currency
-	END
+		WHERE	sl.ExchangeId = @Currency;
+	END;
 	ELSE IF	@RoleID IN (3, 2, 1)
 	BEGIN
 	    INSERT INTO	#CustStakeLevel
@@ -101,8 +79,8 @@ BEGIN
 		WHERE	csla.CustID =	CASE	WHEN @RoleID = 3 THEN @srecommend
 										WHEN @RoleID = 2 THEN @mrecommend
 										WHEN @RoleID = 1 THEN @recommend
-								END
-	END
+								END;
+	END;
 
 	-- Select checked stake levels
 	IF	@RoleID IN (4, 3, 2)
@@ -119,8 +97,8 @@ BEGIN
 		INNER JOIN	ccsl
 				ON	ccsl.SportType = csl.SportType
 				AND	ccsl.BetType = csl.BetType
-				AND	ccsl.StakeLevelID = csl.StakeLevelID
-	END
+				AND	ccsl.StakeLevelID = csl.StakeLevelID;
+	END;
 	ELSE IF @RoleID = 1
 	BEGIN
 		WITH ccsl AS (
@@ -135,8 +113,8 @@ BEGIN
 		INNER JOIN	ccsl
 				ON	ccsl.SportType = csl.SportType
 				AND	ccsl.BetType = csl.BetType
-				AND	ccsl.StakeLevelID = csl.StakeLevelID
-	END
+				AND	ccsl.StakeLevelID = csl.StakeLevelID;
+	END;
 
 	-- View result
 	SELECT	csl.SportType
@@ -144,9 +122,16 @@ BEGIN
 		,	csl.StakeLevelID
 		,	csl.StakeLevelName
 		,	csl.isChecked
-	FROM	#CustStakeLevel AS csl
+	FROM	#CustStakeLevel AS csl;
 
 	-- Cleanup
-	DROP TABLE #CustStakeLevel
-	DROP TABLE #SportBetTypeFilter
-END
+	DROP TABLE #CustStakeLevel;
+	DROP TABLE #SportBetTypeFilter;
+END;
+GO
+
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelSelect TO bodbAdminNet;
+GO
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelSelect TO bodbDownlineNet;
+GO
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelSelect TO bodbExtAccNet;

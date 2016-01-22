@@ -17,7 +17,7 @@ AS
 	Revisions:
 
 	Param's Explanation:
-	• @StakeLevel:
+		@StakeLevel:
 		<ROOT>
 				<StakeLevel
 						SportType="211"
