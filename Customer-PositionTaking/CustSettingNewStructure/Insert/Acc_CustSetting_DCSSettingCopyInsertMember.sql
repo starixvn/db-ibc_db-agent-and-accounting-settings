@@ -14,6 +14,7 @@ AS
 	Original:
 
 	Revision
+		- 20160115@Dominic: Do not update setting when there is no data Redmine: #50937
 
 	*/
 BEGIN
@@ -180,14 +181,17 @@ BEGIN
 
 		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlDiscount)
 
-		EXEC Acc_CustSetting_DiscountUpd 		
-			  @CustID = @CustID
-			, @Discount = @xmlStr
-			, @SubAccID = @SubAccID
-			, @IP = @IP
-			, @UserID = @UserID
-			, @ErrCode = @ErrCode OUTPUT
-			, @ErrMsg = @ErrMsg OUTPUT
+		IF EXISTS(SELECT TOP 1 1 FROM @NewDiscountTbl)
+		BEGIN
+			EXEC Acc_CustSetting_DiscountUpd 		
+				  @CustID = @CustID
+				, @Discount = @xmlStr
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+		END
 	END
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,4))
