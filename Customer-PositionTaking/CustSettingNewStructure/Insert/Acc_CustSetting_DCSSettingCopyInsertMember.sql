@@ -248,7 +248,6 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
-		END
 	END
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4))
