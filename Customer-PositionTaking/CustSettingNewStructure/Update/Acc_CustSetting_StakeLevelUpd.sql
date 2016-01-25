@@ -74,7 +74,7 @@ BEGIN
 					,	StakeLevelList			VARCHAR(200)
 					,	StakeLevelList_New		VARCHAR(200)
 					,	StakeLevelList_Upline	VARCHAR(200)
-					,	PRIMARY KEY CLUSTERED (CustID, GameTypeID)
+					,	PRIMARY KEY CLUSTERED (CustID, BetType)
 					);
 
 	--Check if XML is null or empty
@@ -190,8 +190,8 @@ BEGIN
 		FROM		#tmpStake ts
 		INNER JOIN	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
 				ON	ts.BetType = csla.BetType
-		WHERE	cslm.CustID = @CustID 
-			AND	T.StakeLevelList = csla.StakeLevelList;
+		WHERE	csla.CustID = @CustID 
+			AND	ts.StakeLevelList = csla.StakeLevelList;
 
 		INSERT INTO	#StakeLevelList_Excluded	-- Get excluded level compared with old 
 		SELECT	csla.BetType

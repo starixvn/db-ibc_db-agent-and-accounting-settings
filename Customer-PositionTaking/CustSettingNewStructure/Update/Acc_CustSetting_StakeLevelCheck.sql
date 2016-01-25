@@ -35,7 +35,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	
-	CREATE TABLE	#tmpStake (
+	CREATE TABLE	#tmpStakeCheck (
 						ID				INT IDENTITY (1,1)
 					,	SportType		SMALLINT
 					,	BetType			INT
@@ -66,7 +66,7 @@ BEGIN
 
 	EXEC sys.sp_xml_preparedocument @iDoc OUTPUT, @StakeLevel;
 
-	INSERT INTO #tmpStake
+	INSERT INTO #tmpStakeCheck
 		(	SportType   , BetType   , StakeLevelList)
 	SELECT	ox.SportType, ox.BetType, ox.StakeLevelList
 	FROM OPENXML (@iDoc, '/ROOT/StakeLevel', 1) 
@@ -84,7 +84,7 @@ BEGIN
 		BEGIN
 		    SELECT TOP(1)	@BetType		= BetType
 						,	@StakeLevelList = StakeLevelList   
-			FROM #tmpStake  
+			FROM #tmpStakeCheck  
 			WHERE isValidated = 0;  
 
 			IF @@ROWCOUNT = 0
@@ -125,7 +125,7 @@ BEGIN
 												SELECT	psd.SportType							AS '@SportType'
 													,	psd.BetType								AS '@BetType'
 												FROM		dbo.StakeLevel AS sl WITH(NOLOCK)
-												INNER JOIN	#tmpStake AS ts
+												INNER JOIN	#tmpStakeCheck AS ts
 														ON	ts.BetType = sl.GameTypeID
 														AND	sl.StakeLevelID = CAST(@invalidStakeLevelID AS INT)
 												INNER JOIN	dbo.ProductSettingDetail AS psd WITH(NOLOCK)
@@ -144,12 +144,13 @@ BEGIN
 				RETURN;   
 			END;   
 
-			UPDATE	#tmpStake  
+			UPDATE	#tmpStakeCheck
 			SET		isValidated = 1  
 			WHERE	BetType = @BetType;
 		END;
 	END;
 
+	DROP TABLE #tmpStakeCheck;
 END;
 GO
 
