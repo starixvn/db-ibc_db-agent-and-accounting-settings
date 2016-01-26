@@ -17,11 +17,12 @@ AS
 	Revision
 		- 20160104@Dominic: Implementing Charge Commission Plugin - Redmine #49689
 		- 20160115@Dominic: Do not update setting when there is no data Redmine: #50937
+		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLimit XML
+	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLimit XML, @xmlStakeLevel XML
 	DECLARE @xmlStr VARCHAR(MAX)
 	SELECT @ErrCode = 0
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
@@ -338,6 +339,46 @@ BEGIN
 			, @UserID = @UserID
 			, @ErrCode = @ErrCode OUTPUT
 			, @ErrMsg = @ErrMsg OUTPUT
+
+
+	END
+
+	
+	/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
+	IF EXISTS (SELECT TOP(1) 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7))
+	BEGIN
+		DECLARE	@NewStakeLevelTbl TABLE (
+					SportType		SMALLINT
+				,	BetType			SMALLINT
+				,	StakeLevelList	VARCHAR(200)
+				)
+
+		INSERT INTO @NewStakeLevelTbl
+			(	SportType     , BetType     , StakeLevelList)
+		SELECT	cslm.SportType, cslm.BetType, cslm.StakeLevelList
+		FROM	dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)		
+		WHERE	cslm.CustID = @ExistingCustID
+
+		SELECT	@xmlStakeLevel =	(
+										SELECT	nslt.SportType			AS '@SportType'
+											,	nslt.BetType			AS '@BetType'
+											,	nslt.StakeLevelList		AS '@StakeLevelList'
+										FROM	@NewStakeLevelTbl AS nslt
+										FOR XML PATH('StakeLevel')
+									,	ROOT('ROOT')
+									,	TYPE
+									)
+	
+		SELECT	@xmlStr = CONVERT(VARCHAR(MAX), @xmlStakeLevel)
+
+		EXEC	dbo.Acc_CustSetting_StakeLevelUpd 
+					@CustID		= @CustID
+				,	@StakeLevel	= @xmlStr
+				,	@SubAccID	= @SubAccID
+				,	@UserID		= @UserID
+				,	@IP			= @IP
+				,	@ErrCode	= @ErrCode		OUTPUT
+				,	@ErrMsg		= @ErrMsg		OUTPUT
 	END
 END
 
