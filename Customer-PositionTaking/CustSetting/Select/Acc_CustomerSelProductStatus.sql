@@ -13,6 +13,7 @@ AS
 	Revisions:
 
 	Param's Explanation:
+	- 20160126@Helen: get CB Status - [Redmine: 51387]
 
 */
 BEGIN
@@ -58,9 +59,52 @@ BEGIN
 					AND	i.custid <> @CustID
 			END
 	END
+	
+	IF @SportName = 'ColossusBets'
+	BEGIN
+		SELECT @Status = DisableColossusBet
+		FROM CustInfo WITH (NOLOCK)
+		WHERE custid = @CustID
+
+		IF @UplineID <> 0
+			SELECT @UplineStatus = DisableColossusBet 
+			FROM CustInfo WITH (NOLOCK)
+			WHERE custid = @UplineID
+
+		IF @RoleID = 4
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableColossusBet, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.srecommend = @CustID
+					AND	i.custid <> @CustID
+			END
+			ELSE IF @RoleID = 3
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableColossusBet, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.mrecommend = @CustID
+					AND	i.custid <> @CustID
+			END
+			ELSE IF @RoleID = 2
+			BEGIN
+				SELECT	@DownlineStatus = @DownlineStatus | COALESCE(i.DisableColossusBet, CAST(1 AS BIT))
+				FROM	custInfo i WITH(NOLOCK)
+				WHERE	i.recommend = @CustID
+					AND	i.custid <> @CustID
+			END
+	END
+	
+	
 END	
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelProductStatus] TO [bodbAdminNet] AS [dbo]
 GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelProductStatus] TO [bodbExtAccNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelProductStatus] TO [bodbDownlineNet] AS [dbo]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustomerSelProductStatus] TO [bodbDownlineNetView] AS [dbo]
+GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustomerSelProductStatus] TO [vnteam] AS [dbo]
+
