@@ -57,7 +57,7 @@ BEGIN
 	BEGIN
 		INSERT INTO	#CustStakeLevel
 			(	SportType     , BetType     , StakeLevelID   , StakeLevelName                  , isChecked)
-		SELECT	sbtf.SportType, sbtf.BetType, sl.StakeLevelID, sl.MinLabel + N'-' + sl.MaxLabel, 0
+		SELECT	sbtf.SportType, sbtf.BetType, sl.StakeLevelID, sl.MinLabel + N' - ' + sl.MaxLabel, 0
 		FROM		dbo.StakeLevel AS sl WITH(NOLOCK)
 		INNER JOIN	#SportBetTypeFilter AS sbtf
 				ON	sbtf.BetType = sl.GameTypeID
@@ -67,7 +67,7 @@ BEGIN
 	BEGIN
 	    INSERT INTO	#CustStakeLevel
 			(	SportType     , BetType     , StakeLevelID   , StakeLevelName                  , isChecked)
-		SELECT	csla.SportType,	csla.BetType, sl.StakeLevelID, sl.MinLabel + N'-' + sl.MaxLabel, 0
+		SELECT	csla.SportType,	csla.BetType, sl.StakeLevelID, sl.MinLabel + N' - ' + sl.MaxLabel, 0
 		FROM		dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
 		INNER JOIN	#SportBetTypeFilter AS sbtf
 				ON	sbtf.SportType = csla.SportType
