@@ -363,27 +363,50 @@ BEGIN
 			WHERE csld.StakeLevelList_New IS NULL;
 
 				-- Update members: Get lowest value of Agent if member has no value
-			UPDATE	csld
-			SET		csld.StakeLevelList_New = sr.LowestStakeLevel
-			FROM		#CustStakeLevelDownlines AS csld
-			INNER JOIN	#CustStakeLevelDownlines AS csld_upline
-					ON	csld.DirectUplineID = csld_upline.CustID
-					AND	csld_upline.BetType = csld.BetType
-					AND	csld_upline.StakeLevelList_New <> ''
-			CROSS APPLY (
-				SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
-				FROM (
-					SELECT	CAST(val AS INT) AS val
-					FROM	dbo.strSplit(csld_upline.StakeLevelList_New, ',')
-				) AS ss
-				INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
-						ON	ss.val = sl.StakeLevelID
-				WHERE	sl.MinStake <> 0
-					AND	sl.MaxStake <> 0
-				ORDER BY	sl.MinStake, sl.MaxStake
-			) sr
-			WHERE	csld.RoleID = 1
-				AND	csld.StakeLevelList_New = '';
+			IF	@RoleID IN (4, 3)
+			BEGIN
+				UPDATE	csld
+				SET		csld.StakeLevelList_New = sr.LowestStakeLevel
+				FROM		#CustStakeLevelDownlines AS csld
+				INNER JOIN	#CustStakeLevelDownlines AS csld_upline
+						ON	csld.DirectUplineID = csld_upline.CustID
+						AND	csld_upline.BetType = csld.BetType
+						AND	csld_upline.StakeLevelList_New <> ''
+				CROSS APPLY (
+					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
+					FROM (
+						SELECT	CAST(val AS INT) AS val
+						FROM	dbo.strSplit(csld_upline.StakeLevelList_New, ',')
+					) AS ss
+					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
+							ON	ss.val = sl.StakeLevelID
+					WHERE	sl.MinStake <> 0
+						AND	sl.MaxStake <> 0
+					ORDER BY	sl.MinStake, sl.MaxStake
+				) sr
+				WHERE	csld.RoleID = 1
+					AND	csld.StakeLevelList_New = '';
+			END
+			ELSE IF	@RoleID = 2
+			BEGIN
+				UPDATE	csld
+				SET		csld.StakeLevelList_New = sr.LowestStakeLevel
+				FROM	#CustStakeLevelDownlines AS csld
+				CROSS APPLY (
+					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
+					FROM (
+						SELECT	CAST(val AS INT) AS val
+						FROM	dbo.strSplit(csld.StakeLevelList_Upline, ',')
+					) AS ss
+					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
+							ON	ss.val = sl.StakeLevelID
+					WHERE	sl.MinStake <> 0
+						AND	sl.MaxStake <> 0
+					ORDER BY	sl.MinStake, sl.MaxStake
+				) sr
+				WHERE	csld.RoleID = 1
+					AND	csld.StakeLevelList_New = '';
+			END
 			
 			-- No need to update if having the same value between old and new
 			DELETE	#CustStakeLevelDownlines
