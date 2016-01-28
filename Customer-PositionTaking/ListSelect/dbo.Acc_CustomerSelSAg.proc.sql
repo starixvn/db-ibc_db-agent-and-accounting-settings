@@ -124,7 +124,7 @@ B: 'B%'
     IF EXISTS(SELECT TOP(1) 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@AllBet, 4))
 	BEGIN
 	    SET	@IsHidden_AllBet = 0
-	ENDs
+	END
     
     IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@Cricket,4))
 	BEGIN
