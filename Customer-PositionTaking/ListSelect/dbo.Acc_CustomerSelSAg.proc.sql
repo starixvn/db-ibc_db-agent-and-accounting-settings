@@ -1,12 +1,8 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSAg]    Script Date: 07/10/2015 09:44:14 ******/
-SET ANSI_NULLS ON
+﻿SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 7/1/2015 1:08:45 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 6/24/2015 10:09:54 AM ******/
+
 alter PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
