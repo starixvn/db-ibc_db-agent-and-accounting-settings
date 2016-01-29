@@ -257,7 +257,7 @@ BEGIN
 						ON	cslm.CustID = ci.custid
 				INNER JOIN	#tmpStake					AS ts 
 						ON	ts.BetType = cslm.BetType
-				WHERE	ci.recommend = @CustID 
+				WHERE	ci.srecommend = @CustID 
 					AND	ci.roleid = 1;
 			END;
 			ELSE IF @RoleID = 3
@@ -298,7 +298,7 @@ BEGIN
 						ON	cslm.CustID = ci.custid
 				INNER JOIN	#tmpStake					AS ts 
 						ON	ts.BetType = cslm.BetType
-				WHERE	ci.recommend = @CustID 
+				WHERE	ci.mrecommend = @CustID 
 					AND	ci.roleid = 1;
 			END;
 			ELSE IF @roleid = 2
