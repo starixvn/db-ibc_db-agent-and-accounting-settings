@@ -1,15 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdUserInfo]    Script Date: 06/10/2015 16:25:19 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdUserInfo    Script Date: 6/2/2014 2:04:21 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdUserInfo    Script Date: 6/2/2014 12:38:18 PM ******/
-
-
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdUserInfo]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdUserInfo]
 	@CustID         int,	
 	@firstname      nvarchar(50) = NULL,
 	@lastname       nvarchar(50) = NULL,
@@ -62,6 +51,7 @@ Revisions:
 	- 20140519@Logan:   1.Updating remarks for SAg, MAg, Ag and members
 	                    2.Code aligning
 	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB) [Redmine:#36216]	                    
+	- 20160128@Elodie: Don't update and write log with the fiels don't show on Alpha site
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -166,20 +156,21 @@ if @roleid = 4
 
 IF ISNULL(@old_firstname,'') <> ISNULL(@firstname,'') OR
 ISNULL(@old_lastname,'') <> ISNULL(@lastname,'') OR
-ISNULL(@old_address,'')<> ISNULL(@address,'') OR
-ISNULL(@old_postal,'') <> ISNULL(@postal,'') OR
-ISNULL(@old_city,'') <> ISNULL(@city,'') OR
-ISNULL(@old_state,'') <> ISNULL(@state,'') OR
-ISNULL(@old_country,'') <> ISNULL(@country,'') OR
 ISNULL(@old_phone,'') <> ISNULL(@phone,'') OR
 ISNULL(@old_mobilephone,'') <> ISNULL(@mobilephone,'') OR
 ISNULL(@old_fax,'') <> ISNULL(@fax,'') OR
-ISNULL(@old_email,'') <> ISNULL(@email,'') OR
-ISNULL(@old_birthday,'1900-01-01') <> ISNULL(@birthday,'1900-01-01') OR
-ISNULL(@old_refcode1,'') <> ISNULL(@refcode1,'') OR
-ISNULL(@old_refcode2,'') <> ISNULL(@refcode2,'') OR
-ISNULL(@old_remark,'') <> ISNULL(@remark,'') OR
-ISNULL(@old_important,0) <> ISNULL(@important,0)
+
+(@address IS NOT NULL AND ISNULL(@old_address,'')<> ISNULL(@address,'')) OR
+(@postal IS NOT NULL AND ISNULL(@old_postal,'') <> ISNULL(@postal,'')) OR
+(@city IS NOT NULL AND ISNULL(@old_city,'') <> ISNULL(@city,'')) OR
+(@state IS NOT NULL AND ISNULL(@old_state,'') <> ISNULL(@state,'')) OR
+(@country IS NOT NULL AND ISNULL(@old_country,'') <> ISNULL(@country,'')) OR
+(@email IS NOT NULL AND ISNULL(@old_email,'') <> ISNULL(@email,'')) OR
+(@birthday IS NOT NULL AND ISNULL(@old_birthday,'1900-01-01') <> ISNULL(@birthday,'1900-01-01')) OR
+(@refcode1 IS NOT NULL AND ISNULL(@old_refcode1,'') <> ISNULL(@refcode1,'')) OR
+(@refcode2 IS NOT NULL AND ISNULL(@old_refcode2,'') <> ISNULL(@refcode2,'')) OR
+(@remark IS NOT NULL AND ISNULL(@old_remark,'') <> ISNULL(@remark,'')) OR
+(@important IS NOT NULL AND ISNULL(@old_important,0) <> ISNULL(@important,0))
 
 BEGIN
 	Update customer with (ROWLOCK)
@@ -234,73 +225,22 @@ ELSE RETURN
 
 declare @LogSPData nvarchar(max)
 declare @TrackingValue2 nvarchar(max)
-
-Select @LogSPData = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
-					'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1)))+ '" ' +
-					'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1)))+ '" ' +
-					'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@address as nvarchar(80)),space(1)))+ '" ' +
-					'postal="'+ dbo.f_EncodeXMLValue(coalesce(cast(@postal as nvarchar(50)),space(1)))+ '" ' +
-					'city="'+ dbo.f_EncodeXMLValue(coalesce(cast(@city as nvarchar(50)),space(1)))+ '" ' +
-					'state="'+ dbo.f_EncodeXMLValue(coalesce(cast(@state as nvarchar(50)),space(1)))+ '" ' +
-					'country="'+ coalesce(cast(@country as nvarchar(50)),space(1))+ '" ' +
-					'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as nvarchar(50)),space(1)))+ '" ' +
-					'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as nvarchar(50)),space(1)))+ '" ' +
-					'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as nvarchar(50)),space(1)))+ '" ' +
-					'email="'+ dbo.f_EncodeXMLValue(coalesce(cast(@email as nvarchar(50)),space(1)))+ '" ' +
-					'birthday="'+ coalesce(cast(@birthday as varchar(50)),space(1))+ '" ' +
-					'refcode1="'+ dbo.f_EncodeXMLValue(coalesce(cast(@refcode1 as nvarchar(50)),space(1)))+ '" ' +
-					'refcode2="'+ dbo.f_EncodeXMLValue(coalesce(cast(@refcode2 as nvarchar(50)),space(1)))+ '" ' +
-					'remark="'+ dbo.f_EncodeXMLValue(coalesce(cast(@remark as nvarchar(50)),space(1)))+ '" ' +
-					'important="'+ coalesce(cast(@important as varchar(50)),space(1))+ '" ' +
-					'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
-					'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
-					'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-					'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
-					'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
-					'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
-					
-Select @TrackingValue2 = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
-					'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_firstname as nvarchar(50)),space(1)))+ '" ' +
-					'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_lastname as nvarchar(50)),space(1)))+ '" ' +
-					'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_address as nvarchar(80)),space(1)))+ '" ' +
-					'postal="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_postal as nvarchar(50)),space(1)))+ '" ' +
-					'city="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_city as nvarchar(50)),space(1)))+ '" ' +
-					'state="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_state as nvarchar(50)),space(1)))+ '" ' +
-					'country="'+ coalesce(cast(@old_country as nvarchar(50)),space(1))+ '" ' +
-					'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_phone as nvarchar(50)),space(1)))+ '" ' +
-					'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_mobilephone as nvarchar(50)),space(1)))+ '" ' +
-					'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_fax as nvarchar(50)),space(1)))+ '" ' +
-					'email="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_email as nvarchar(50)),space(1)))+ '" ' +
-					'birthday="'+ coalesce(cast(@old_birthday as varchar(50)),space(1))+ '" ' +
-					'refcode1="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_refcode1 as nvarchar(50)),space(1)))+ '" ' +
-					'refcode2="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_refcode2 as nvarchar(50)),space(1)))+ '" ' +
-					'remark="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_remark as nvarchar(50)),space(1)))+ '" ' +
-					'important="'+ coalesce(cast(@old_important as varchar(50)),space(1))+ '" ' +
-					'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
-					'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
-					'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-					'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
-					'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
-					'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
-
-set @endRun = getdate()
-set @duration  = datediff (millisecond,@startRun,@endRun)
-
-BEGIN TRY
-	/*604 Acc_CustomerUpdUserInfo Update customer info */
-	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-		@UserID = @UserID,
-		@CustID = @CustID,
-		@ActionID = 604,
-		@TrackingValue = @LogSPData,
-		@TrackingValue2 = @TrackingValue2,
-		@duration = @duration
-END TRY
-BEGIN CATCH			
+IF @address IS NOT NULL AND
+   @postal IS NOT NULL AND
+   @city IS NOT NULL AND 
+   @state IS NOT NULL AND
+   @country IS NOT NULL AND
+   @email IS NOT NULL AND
+   @birthday IS NOT NULL AND
+   @refcode1 IS NOT NULL AND
+   @refcode2 IS NOT NULL AND
+   @remark IS NOT NULL AND
+   @important IS NOT NULL
+BEGIN
 	Select @LogSPData = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
 						'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1)))+ '" ' +
 						'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1)))+ '" ' +
-						'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@address as nvarchar(80)),space(1)))+ '" ' +
+						'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@address as nvarchar(80)),space(1))) + '" ' +
 						'postal="'+ dbo.f_EncodeXMLValue(coalesce(cast(@postal as nvarchar(50)),space(1)))+ '" ' +
 						'city="'+ dbo.f_EncodeXMLValue(coalesce(cast(@city as nvarchar(50)),space(1)))+ '" ' +
 						'state="'+ dbo.f_EncodeXMLValue(coalesce(cast(@state as nvarchar(50)),space(1)))+ '" ' +
@@ -317,10 +257,10 @@ BEGIN CATCH
 						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 						'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
 						'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-						'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
-						'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+						'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+						'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
 						'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
-						
+					
 	Select @TrackingValue2 = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
 						'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_firstname as nvarchar(50)),space(1)))+ '" ' +
 						'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_lastname as nvarchar(50)),space(1)))+ '" ' +
@@ -341,10 +281,140 @@ BEGIN CATCH
 						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
 						'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
 						'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
-						'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
-						'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+						'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+						'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
+						'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+END
+ELSE
+BEGIN	
+	Select @LogSPData = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+						'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1)))+ '" ' +
+						'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1)))+ '" ' +
+						'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as nvarchar(50)),space(1)))+ '" ' +
+						'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as nvarchar(50)),space(1)))+ '" ' +
+						'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as nvarchar(50)),space(1)))+ '" ' +
+						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+						'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+						'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+						'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+						'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
 						'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
 					
+	Select @TrackingValue2 = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+						'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_firstname as nvarchar(50)),space(1)))+ '" ' +
+						'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_lastname as nvarchar(50)),space(1)))+ '" ' +
+						'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_phone as nvarchar(50)),space(1)))+ '" ' +
+						'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_mobilephone as nvarchar(50)),space(1)))+ '" ' +
+						'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_fax as nvarchar(50)),space(1)))+ '" ' +
+						'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+						'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+						'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+						'ErrCode="'+ coalesce(cast(@ErrCode as varchar(50)),space(1))+ '" ' +
+						'ErrMsg="'+ coalesce(cast(@ErrMsg as varchar(4000)),space(1))+ '" ' +
+						'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+END
+set @endRun = getdate()
+set @duration  = datediff (millisecond,@startRun,@endRun)
+
+BEGIN TRY
+	/*604 Acc_CustomerUpdUserInfo Update customer info */
+	EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
+		@UserID = @UserID,
+		@CustID = @CustID,
+		@ActionID = 604,
+		@TrackingValue = @LogSPData,
+		@TrackingValue2 = @TrackingValue2,
+		@duration = @duration
+END TRY
+BEGIN CATCH			
+	IF @address IS NOT NULL AND
+	   @postal IS NOT NULL AND
+	   @city IS NOT NULL AND 
+	   @state IS NOT NULL AND
+	   @country IS NOT NULL AND
+	   @email IS NOT NULL AND
+	   @birthday IS NOT NULL AND
+	   @refcode1 IS NOT NULL AND
+	   @refcode2 IS NOT NULL AND
+	   @remark IS NOT NULL AND
+	   @important IS NOT NULL
+	BEGIN
+		Select @LogSPData = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+							'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1)))+ '" ' +
+							'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1)))+ '" ' +
+							'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@address as nvarchar(80)),space(1)))+ '" ' +
+							'postal="'+ dbo.f_EncodeXMLValue(coalesce(cast(@postal as nvarchar(50)),space(1)))+ '" ' +
+							'city="'+ dbo.f_EncodeXMLValue(coalesce(cast(@city as nvarchar(50)),space(1)))+ '" ' +
+							'state="'+ dbo.f_EncodeXMLValue(coalesce(cast(@state as nvarchar(50)),space(1)))+ '" ' +
+							'country="'+ coalesce(cast(@country as nvarchar(50)),space(1))+ '" ' +
+							'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as nvarchar(50)),space(1)))+ '" ' +
+							'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as nvarchar(50)),space(1)))+ '" ' +
+							'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as nvarchar(50)),space(1)))+ '" ' +
+							'email="'+ dbo.f_EncodeXMLValue(coalesce(cast(@email as nvarchar(50)),space(1)))+ '" ' +
+							'birthday="'+ coalesce(cast(@birthday as varchar(50)),space(1))+ '" ' +
+							'refcode1="'+ dbo.f_EncodeXMLValue(coalesce(cast(@refcode1 as nvarchar(50)),space(1)))+ '" ' +
+							'refcode2="'+ dbo.f_EncodeXMLValue(coalesce(cast(@refcode2 as nvarchar(50)),space(1)))+ '" ' +
+							'remark="'+ dbo.f_EncodeXMLValue(coalesce(cast(@remark as nvarchar(50)),space(1)))+ '" ' +
+							'important="'+ coalesce(cast(@important as varchar(50)),space(1))+ '" ' +
+							'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+							'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+							'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+							'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
+							'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+							'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+						
+		Select @TrackingValue2 = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+							'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_firstname as nvarchar(50)),space(1)))+ '" ' +
+							'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_lastname as nvarchar(50)),space(1)))+ '" ' +
+							'address="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_address as nvarchar(80)),space(1)))+ '" ' +
+							'postal="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_postal as nvarchar(50)),space(1)))+ '" ' +
+							'city="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_city as nvarchar(50)),space(1)))+ '" ' +
+							'state="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_state as nvarchar(50)),space(1)))+ '" ' +
+							'country="'+ coalesce(cast(@old_country as nvarchar(50)),space(1))+ '" ' +
+							'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_phone as nvarchar(50)),space(1)))+ '" ' +
+							'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_mobilephone as nvarchar(50)),space(1)))+ '" ' +
+							'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_fax as nvarchar(50)),space(1)))+ '" ' +
+							'email="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_email as nvarchar(50)),space(1)))+ '" ' +
+							'birthday="'+ coalesce(cast(@old_birthday as varchar(50)),space(1))+ '" ' +
+							'refcode1="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_refcode1 as nvarchar(50)),space(1)))+ '" ' +
+							'refcode2="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_refcode2 as nvarchar(50)),space(1)))+ '" ' +
+							'remark="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_remark as nvarchar(50)),space(1)))+ '" ' +
+							'important="'+ coalesce(cast(@old_important as varchar(50)),space(1))+ '" ' +
+							'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+							'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+							'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+							'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
+							'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+							'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+	END
+	ELSE
+	BEGIN
+		Select @LogSPData = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+							'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@firstname as nvarchar(50)),space(1)))+ '" ' +
+							'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@lastname as nvarchar(50)),space(1)))+ '" ' +
+							'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@phone as nvarchar(50)),space(1)))+ '" ' +
+							'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@mobilephone as nvarchar(50)),space(1)))+ '" ' +
+							'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@fax as nvarchar(50)),space(1)))+ '" ' +
+							'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+							'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+							'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+							'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
+							'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+							'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+						
+		Select @TrackingValue2 = '<Acc_CustomerUpdUserInfo CustID="'+ coalesce(cast(@CustID as varchar(50)),space(1))+ '" ' + 
+							'fname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_firstname as nvarchar(50)),space(1)))+ '" ' +
+							'lname="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_lastname as nvarchar(50)),space(1)))+ '" ' +
+							'phone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_phone as nvarchar(50)),space(1)))+ '" ' +
+							'mphone="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_mobilephone as nvarchar(50)),space(1)))+ '" ' +
+							'fax="'+ dbo.f_EncodeXMLValue(coalesce(cast(@old_fax as nvarchar(50)),space(1)))+ '" ' +
+							'SubAccName="'+ coalesce(cast(dbo.f_GetSubUsername(@SubAccID) as varchar(30)),space(1))+ '" ' +
+							'UserID="'+ coalesce(cast(@UserID as varchar(50)),space(1))+ '" ' +
+							'Language="'+ coalesce(cast(@Language as varchar(2)),space(1))+ '" ' +
+							'ErrCode="'+ coalesce(cast(ERROR_NUMBER() as varchar(50)),space(1))+ '" ' +
+							'ErrMsg="'+ coalesce(cast(ERROR_MESSAGE() as varchar(4000)),space(1))+ '" ' +
+							'IP="'+ coalesce(cast(@IP as varchar(15)),space(1))+'" />'
+	END			
 	/*604 Acc_CustomerUpdUserInfo Update customer info */
 	EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
 		@UserID = @UserID,
