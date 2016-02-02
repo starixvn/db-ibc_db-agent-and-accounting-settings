@@ -1,13 +1,4 @@
-﻿USE [bodb02]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelRefSport_Bettype]    Script Date: 06/06/2015 14:30:15 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelRefSport_Bettype    Script Date: 9/29/2014 12:50:42 PM ******/
-
-ALTER PROCEDURE  [dbo].[Acc_CustomerSelRefSport_Bettype]
+﻿ALTER PROCEDURE  [dbo].[Acc_CustomerSelRefSport_Bettype]
 	 @CustID		INT = NULL
 	,@RoleID		INT = 0 
 	,@isShowAll		BIT = 1 
@@ -21,7 +12,7 @@ AS
 	Revision: 
 		- 20150606@Kathy: Change link server DBTXN.CustDB to DBCust.CustDB [Redmine:#36216]
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
-		
+		- 20160201@Percy: Support new Cricket [Redmine: #50027]
 
 	Param's Explanation: 
 		@CustID (Login account): =NULL: Admin ; =NOT NULL: SMA 
@@ -39,6 +30,17 @@ BEGIN
 			,@DisableNumber			BIT = 0 
 			,@IsMyanmarOdds BIT = 0
 			,@recommend INT = 0
+			,@isIMBC BIT = 0
+
+	IF @RoleID = 1 AND ISNULL(@CustID, 0) <> 0
+		IF (SELECT [Site] FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
+						  WHERE custid = (SELECT recommend FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
+										  WHERE custid = @CustID)) = 'IMBC'
+			SELECT @isIMBC = 1
+	ELSE
+		IF (SELECT [Site] FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
+						  WHERE custid = @CustID) = 'IMBC'
+			SELECT @isIMBC = 1
 	
 	IF @RoleID BETWEEN 2 AND 4 
 	BEGIN
@@ -79,9 +81,22 @@ BEGIN
 				,CASE WHEN @DisableNumber = 1 THEN 161 ELSE 0 END					--Number Game
 				,CASE WHEN @HideKeno = 1 OR @DisableKeno = 1 THEN 202 ELSE 0 END	--Keno 
 				,CASE WHEN @IsMyanmarOdds = 0 AND Bettype IN (301,302,303,304) THEN 1 ELSE 0 END -- MyanmarOdds
+				,27, 50 -- Cricket
 			)
 			AND isLicensee = 0 
-			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END 
+			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
+	UNION ALL
+	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
+	FROM Sport_Bettype_Reference
+	WHERE   Sporttype IN (27, 50)
+			AND [Site] IN (
+				 CASE WHEN ISNULL(@CustID, 0) = 0 THEN 'IMBC' END -- ALL
+				,CASE WHEN ISNULL(@CustID, 0) = 0 THEN 'ALL'  END -- ALL
+				,CASE WHEN ISNULL(@CustID, 0) <> 0 AND @isIMBC = 1 THEN 'IMBC' END -- IMBC only
+				,CASE WHEN ISNULL(@CustID, 0) <> 0 AND @isIMBC = 0 THEN 'ALL'  END -- MBC  only
+			)
+			AND isLicensee = 0 
+			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
 	ORDER BY Sporttype, Bettype, SporttypeRef, BettypeRef
 
 END
