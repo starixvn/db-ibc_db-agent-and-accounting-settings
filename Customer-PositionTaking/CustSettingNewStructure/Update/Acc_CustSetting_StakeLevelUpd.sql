@@ -358,7 +358,7 @@ BEGIN
 						ON	ss.val = sl.StakeLevelID
 				WHERE	sl.MinStake <> 0
 					AND	sl.MaxStake <> 0
-				ORDER BY	sl.MinStake, sl.MaxStake
+				ORDER BY	sl.MaxStake, sl.MinStake
 			) sr
 			WHERE csld.StakeLevelList_New IS NULL;
 
@@ -382,7 +382,7 @@ BEGIN
 							ON	ss.val = sl.StakeLevelID
 					WHERE	sl.MinStake <> 0
 						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MinStake, sl.MaxStake
+					ORDER BY	sl.MaxStake, sl.MinStake
 				) sr
 				WHERE	csld.RoleID = 1
 					AND	csld.StakeLevelList_New = '';
@@ -402,7 +402,7 @@ BEGIN
 							ON	ss.val = sl.StakeLevelID
 					WHERE	sl.MinStake <> 0
 						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MinStake, sl.MaxStake
+					ORDER BY	sl.MaxStake, sl.MinStake
 				) sr
 				WHERE	csld.RoleID = 1
 					AND	csld.StakeLevelList_New = '';
