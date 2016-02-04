@@ -119,7 +119,7 @@ BEGIN
 			IF @invalidStakeLevelID > 0  
 			BEGIN
 				SELECT	@xml =	(
-									SELECT	100001												AS '@MsgID'
+									SELECT	10034												AS '@MsgID'
 										,	'This user''s upline does not have Stake Level.'	AS '@Msg'
 										,	(
 												SELECT	psd.SportType							AS '@SportType'
@@ -140,7 +140,7 @@ BEGIN
 								);
 				SELECT	@ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 					,	@MsgType = 131
-					,	@ErrCode = 100001;
+					,	@ErrCode = 10034;
 				RETURN;   
 			END;   
 
