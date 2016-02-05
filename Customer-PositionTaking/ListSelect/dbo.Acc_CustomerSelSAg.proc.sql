@@ -195,6 +195,7 @@ B: 'B%'
 		   -- For AllBet
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
 			CAST(CASE WHEN @IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideAllBet,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
 
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,  
@@ -269,6 +270,7 @@ B: 'B%'
 			ci.DisableColossusBet,
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
+			cps.bitmapHasSynced,
 			groupa, 
 			groupb, 
 			groupc, 
@@ -357,7 +359,8 @@ B: 'B%'
 			-- For AllBet
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
 			CAST(CASE WHEN @IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideAllBet,
-	   
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
 			
@@ -416,6 +419,7 @@ B: 'B%'
 			ci.DisableColossusBet,
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
+			cps.bitmapHasSynced,
 			csuper.IsMyanmarOdds,
 			ac.CommRate,
 			m.[site],cda.Discount
