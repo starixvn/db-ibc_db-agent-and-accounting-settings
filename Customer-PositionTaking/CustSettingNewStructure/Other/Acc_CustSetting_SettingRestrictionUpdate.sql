@@ -15,12 +15,12 @@ BEGIN
 	IF @IsAllowed = 1
 	BEGIN
 		UPDATE dbo.ProductSettingUpdateRestriction
-		SET RestrictionMode = 2 --Read Only
+		SET RestrictionMode = 1 --Read & Write
 	END
 	ELSE
 	BEGIN
 		UPDATE dbo.ProductSettingUpdateRestriction
-		SET RestrictionMode = 1 --Read & Write
+		SET RestrictionMode = 2 --Read Only
 	END
 	
 END   
