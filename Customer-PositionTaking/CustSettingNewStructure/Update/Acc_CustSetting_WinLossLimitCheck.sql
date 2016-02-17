@@ -5,7 +5,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_WinLossLimitCheck]
 	, @MasterID		INT
 	, @SuperID		INT
 	, @Limit		VARCHAR(MAX)
-	, @SettingType	SMALLINT	
+	, @SettingType	SMALLINT		= 6
 	, @ErrCode		INT				= 0		OUTPUT
 	, @MsgType		INT				= 0		OUTPUT
 	, @ErrMsg		NVARCHAR(MAX)	= ''	OUTPUT
@@ -55,7 +55,7 @@ AS
 	*/
 BEGIN
 	SET NOCOUNT ON
-
+	DECLARE @xml XML
 	DECLARE @UplineLimitTbl TABLE (
 			SportType			SMALLINT
 			, BetType			SMALLINT
@@ -107,7 +107,7 @@ BEGIN
 	IF @SettingType = 8
 	BEGIN
 		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
-		SELECT SportType, BetType, MaxWinLimit, 0, IsAutoReset
+		SELECT SportType, BetType, MaxWinLimit, 0 AS MaxLossLimit, IsAutoReset
 		FROM OPENXML(@iDoc, '/ROOT/Limit', 1) WITH (
 							SportType		SMALLINT
 							, BetType		SMALLINT
@@ -119,7 +119,7 @@ BEGIN
 	IF @SettingType = 9
 	BEGIN
 		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
-		SELECT SportType, BetType, 0, MaxLossLimit, IsAutoReset
+		SELECT SportType, BetType, 0 AS MaxWinLimit, MaxLossLimit, IsAutoReset
 		FROM OPENXML(@iDoc, '/ROOT/Limit', 1) WITH (
 							SportType		SMALLINT
 							, BetType		SMALLINT
@@ -179,10 +179,26 @@ BEGIN
 					WHERE uwl.MaxWinLimit > 0 AND (nwl.MaxWinLimit = 0 OR uwl.MaxWinLimit < nwl.MaxWinLimit)
 				)
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="10024" Msg="Maximum Win should be less than or equal to Maximum Win of Direct Upline!" />'
-							, @ErrCode = 2                    
-							, @MsgType = 100--just return msgID
-			RETURN	
+			SET @xml = (
+					SELECT 10024 AS '@MsgID'
+						, 'Maximum Win should be less than or equal to Maximum Win of Direct Upline!' AS '@Msg'
+						, (
+							SELECT uwl.SportType AS '@SportType'
+								, uwl.BetType AS '@BetType'
+							FROM @UplineLimitTbl uwl
+								INNER JOIN @NewLimitTbl nwl ON uwl.Sporttype = nwl.SportType AND uwl.Bettype = nwl.BetType
+							WHERE uwl.MaxWinLimit > 0 AND (nwl.MaxWinLimit = 0 OR uwl.MaxWinLimit < nwl.MaxWinLimit)
+							FOR XML PATH('Row')
+								, TYPE
+							)
+					FOR XML PATH('Root')
+						, TYPE
+					)		
+			SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+			SET @MsgType = 111
+			SET @ErrCode = 2
+
+			RETURN
 		END
 	END
 
@@ -195,10 +211,26 @@ BEGIN
 					WHERE uwl.MaxLossLimit > 0 AND (nwl.MaxLossLimit = 0 OR uwl.MaxLossLimit < nwl.MaxLossLimit)
 				)
 		BEGIN
-			SELECT @ErrMsg = '<Root MsgID="10024" Msg="Maximum Loss should be less than or equal to Maximum Loss of Direct Upline!" />'
-							, @ErrCode = 3                    
-							, @MsgType = 100--just return msgID
-			RETURN	
+			SET @xml = (
+					SELECT 10033 AS '@MsgID'
+						, 'Maximum Loss should be less than or equal to Maximum Loss of Direct Upline!' AS '@Msg'
+						, (
+							SELECT uwl.SportType AS '@SportType'
+								, uwl.BetType AS '@BetType'
+							FROM @UplineLimitTbl uwl
+								INNER JOIN @NewLimitTbl nwl ON uwl.Sporttype = nwl.SportType AND uwl.Bettype = nwl.BetType
+							WHERE uwl.MaxLossLimit > 0 AND (nwl.MaxLossLimit = 0 OR uwl.MaxLossLimit < nwl.MaxLossLimit)
+							FOR XML PATH('Row')
+								, TYPE
+							)
+					FOR XML PATH('Root')
+						, TYPE
+					)		
+			SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+			SET @MsgType = 112
+			SET @ErrCode = 3
+
+			RETURN			
 		END
 	END
 
@@ -209,11 +241,27 @@ BEGIN
 				WHERE uwl.IsAutoReset = 1 AND nwl.IsAutoReset = 0
 			)
 	BEGIN
-		SELECT @ErrMsg = '<Root MsgID="10022" Msg="You are not allowed to change Daily auto reset limit." />'
-                        , @ErrCode = 4              
-						, @MsgType = 100--just return msgID
-        RETURN	
-	END
+		SET @xml = (
+				SELECT 10022 AS '@MsgID'
+					, 'You are not allowed to change Daily auto reset limit.' AS '@Msg'
+					, (
+						SELECT uwl.SportType AS '@SportType'
+							, uwl.BetType AS '@BetType'
+						FROM @UplineLimitTbl uwl
+							INNER JOIN @NewLimitTbl nwl ON uwl.Sporttype = nwl.SportType AND uwl.Bettype = nwl.BetType
+						WHERE uwl.IsAutoReset = 1 AND nwl.IsAutoReset = 0
+						FOR XML PATH('Row')
+							, TYPE
+						)
+				FOR XML PATH('Root')
+					, TYPE
+				)		
+		SET @ErrMsg = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		SET @MsgType = 113
+		SET @ErrCode = 4
+
+		RETURN	
+END
 	
 END
 

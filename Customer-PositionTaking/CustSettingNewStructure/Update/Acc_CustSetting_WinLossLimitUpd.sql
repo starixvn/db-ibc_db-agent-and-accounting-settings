@@ -1,7 +1,7 @@
 ALTER PROCEDURE [dbo].[Acc_CustSetting_WinLossLimitUpd] 
 	  @CustID		INT
 	, @Limit		VARCHAR(MAX)
-	, @SettingType	SMALLINT
+	, @SettingType	SMALLINT		= 6
 	, @SubAccID		INT				= 0
 	, @UserID		INT
 	, @IP			VARCHAR(50)		= ''
@@ -81,8 +81,8 @@ BEGIN
 	DECLARE @NewLimitTbl TABLE (
 		SportType			SMALLINT
 		, BetType			SMALLINT
-		, MaxWinLimit		SMALLMONEY DEFAULT(0)
-		, MaxLossLimit		MONEY DEFAULT(0)
+		, MaxWinLimit		SMALLMONEY 
+		, MaxLossLimit		MONEY 
 		, IsAutoReset		BIT
 		)
 
@@ -168,8 +168,8 @@ BEGIN
 
 	IF @SettingType = 8
 	BEGIN
-		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, IsAutoReset)
-		SELECT SportType, BetType, MaxWinLimit, IsAutoReset
+		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
+		SELECT SportType, BetType, MaxWinLimit, 0 AS MaxLossLimit, IsAutoReset
 		FROM OPENXML(@iDoc, '/ROOT/Limit', 1) WITH (
 							SportType		SMALLINT
 							, BetType		SMALLINT
@@ -180,8 +180,8 @@ BEGIN
 
 	IF @SettingType = 9
 	BEGIN
-		INSERT @NewLimitTbl (SportType, BetType, MaxLossLimit, IsAutoReset)
-		SELECT SportType, BetType, MaxLossLimit, IsAutoReset
+		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
+		SELECT SportType, BetType, 0 AS MaxWinLimit, MaxLossLimit, IsAutoReset
 		FROM OPENXML(@iDoc, '/ROOT/Limit', 1) WITH (
 							SportType		SMALLINT
 							, BetType		SMALLINT
@@ -220,26 +220,36 @@ BEGIN
 			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = wl.sporttype AND tmp.BetType = wl.bettype
 		WHERE wl.custid = @CustID
 
-		IF @SettingType = 8
+		IF @SettingType = 6
 			--update new settings
 			UPDATE main
 			SET main.MaxWinLimit = tmp.MaxWinLimit
 				, main.IsAutoReset = tmp.IsAutoReset
-				, main.MasLossLimit = tmp.MaxLossLimit
-			FROM dbo.CustWinLimit3rd_Member main WITH(ROWLOCK,UPDLOCK)
+				, main.MaxLossLimit = tmp.MaxLossLimit
+			FROM dbo.CustWinLossLimit_Member main WITH(ROWLOCK,UPDLOCK)
 			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
 			WHERE main.custid = @CustID
-				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
+				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset OR main.MaxLossLimit <> tmp.MaxLossLimit)
 
 		IF @SettingType = 8
 			--update new settings
 			UPDATE main
 			SET main.MaxWinLimit = tmp.MaxWinLimit
 				, main.IsAutoReset = tmp.IsAutoReset
-			FROM dbo.CustWinLimit3rd_Member main WITH(ROWLOCK,UPDLOCK)
+			FROM dbo.CustWinLossLimit_Member main WITH(ROWLOCK,UPDLOCK)
 			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
 			WHERE main.custid = @CustID
 				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
+
+		IF @SettingType = 9
+			--update new settings
+			UPDATE main
+			SET main.MaxLossLimit = tmp.MaxLossLimit
+				, main.IsAutoReset = tmp.IsAutoReset
+			FROM dbo.CustWinLossLimit_Member main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
+			WHERE main.custid = @CustID
+				AND (main.MaxLossLimit <> tmp.MaxLossLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 	END
 	ELSE IF @RoleID IN (2, 3, 4)
 	BEGIN
@@ -254,21 +264,43 @@ BEGIN
 			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = wl.sporttype AND tmp.BetType = wl.bettype
 		WHERE wl.custid = @CustID
 
-		--update new settings
-		UPDATE main
-		SET main.MaxWinLimit = tmp.MaxWinLimit
-			, main.IsAutoReset = tmp.IsAutoReset
-		FROM dbo.CustWinLimit3rd_Agent main WITH(ROWLOCK,UPDLOCK)
-		INNER JOIN @NewLimitTbl tmp ON tmp.SportType	= main.sporttype AND tmp.BetType = main.bettype
-		WHERE main.custid = @CustID
-			AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
+		IF @SettingType = 6
+			--update new settings
+			UPDATE main
+			SET main.MaxWinLimit = tmp.MaxWinLimit
+				, main.IsAutoReset = tmp.IsAutoReset
+				, main.MaxLossLimit = tmp.MaxLossLimit
+			FROM dbo.CustWinLossLimit_Agent main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
+			WHERE main.custid = @CustID
+				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset OR main.MaxLossLimit <> tmp.MaxLossLimit)
+
+		IF @SettingType = 8
+			--update new settings
+			UPDATE main
+			SET main.MaxWinLimit = tmp.MaxWinLimit
+				, main.IsAutoReset = tmp.IsAutoReset
+			FROM dbo.CustWinLossLimit_Agent main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
+			WHERE main.custid = @CustID
+				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
+
+		IF @SettingType = 9
+			--update new settings
+			UPDATE main
+			SET main.MaxLossLimit = tmp.MaxLossLimit
+				, main.IsAutoReset = tmp.IsAutoReset
+			FROM dbo.CustWinLossLimit_Agent main WITH(ROWLOCK,UPDLOCK)
+			INNER JOIN @NewLimitTbl tmp ON tmp.SportType = main.sporttype AND tmp.BetType = main.bettype
+			WHERE main.custid = @CustID
+				AND (main.MaxLossLimit <> tmp.MaxLossLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 	END
 
 	
 	EXEC dbo.Acc_DynamicCustSetting3rd_00 
 		@CustId = @CustId
-		, @RoleId = @RoleId
-		, @Limit_XML = @Limit
+		,@RoleId = @RoleId
+		,@Limit_XML = @Limit
 	
 	--START LOGGING
 
@@ -276,10 +308,10 @@ BEGIN
 	SELECT @ProductID = ProductID, @SettingLevel = SettingLevel
 	FROM (	SELECT TOP 1 psd.ProductID, psd.SettingLevel
 			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
-			INNER JOIN	@NewLimitTbl AS tmp ON psd.SportType = tmp.SportType AND	psd.BetType = tmp.BetType
+			INNER JOIN	@NewLimitTbl AS tmp ON psd.SportType = tmp.SportType AND psd.BetType = tmp.BetType
 			WHERE	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType = 2	-- Bet Limit
+				AND psd.SettingType = @SettingType	-- Win Loss Limit
 		 ) iq
 
 	-- Select ProductName
@@ -287,182 +319,550 @@ BEGIN
 	FROM DBPRO.bodb02.dbo.Products AS p WITH(NOLOCK)
 	WHERE p.ProductID = @ProductID
 
-	-- Log old data
-	IF @SettingLevel = 1			-- Product setting level
+	IF @SettingType = 6
 	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	@ProductID			AS '@ProductID',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @OldLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	ELSE IF @SettingLevel = 2		-- SportType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	SportType			AS '@SportType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @OldLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	ELSE IF @SettingLevel = 3		-- BetType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	BetType				AS '@BetType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @OldLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	SportType			AS '@SportType',
-							BetType				AS '@BetType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @OldLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+		-- Log old data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
-	-- Log new updated data
-	IF @SettingLevel = 1			-- Product setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	@ProductID			AS '@ProductID',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @NewLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
+		-- Log new updated data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	END
-	ELSE IF @SettingLevel = 2		-- SportType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	SportType			AS '@SportType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @NewLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	ELSE IF @SettingLevel = 3		-- BetType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	BetType				AS '@BetType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @NewLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	ELSE IF @SettingLevel = 4		-- SportType BetType setting level
-	BEGIN
-		SET @xml = (
-		SELECT	@ProductID						AS '@ProductID',
-				@ProductName					AS '@ProductName',
-				@CustID							AS '@CustID',
-				@UserID							AS '@UserID',
-				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
-				@IP								AS '@IP',
-				(
-					SELECT	SportType			AS '@SportType',
-							BetType				AS '@BetType',
-							MaxWinLimit			AS '@MaxWinLimit',
-							IsAutoReset			AS '@IsAutoReset'
-					FROM @NewLimitTbl
-					FOR XML PATH('WinLimit'),
-					TYPE
-				)
-		FOR XML PATH('Acc_CustSetting_WinLimitUpd'),
-		TYPE
-	)
-	END
-	SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 
+	IF @SettingType = 8
+	BEGIN
+			-- Log old data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+
+		-- Log new updated data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxWinLimit			AS '@MaxWinLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('WinLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	END
+
+	IF @SettingType = 9
+	BEGIN
+			-- Log old data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @OldLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData_Old = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+
+		-- Log new updated data
+		IF @SettingLevel = 1			-- Product setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	@ProductID			AS '@ProductID',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 2		-- SportType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 3		-- BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	BetType				AS '@BetType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		ELSE IF @SettingLevel = 4		-- SportType BetType setting level
+		BEGIN
+			SET @xml = (
+			SELECT	@ProductID						AS '@ProductID',
+					@ProductName					AS '@ProductName',
+					@CustID							AS '@CustID',
+					@UserID							AS '@UserID',
+					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
+					@IP								AS '@IP',
+					(
+						SELECT	SportType			AS '@SportType',
+								BetType				AS '@BetType',
+								MaxLossLimit		AS '@MaxLossLimit',
+								IsAutoReset			AS '@IsAutoReset'
+						FROM @NewLimitTbl
+						FOR XML PATH('LossLimit'),
+						TYPE
+					)
+			FOR XML PATH('Acc_CustSetting_WinLossLimitUpd'),
+			TYPE
+		)
+		END
+		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
+	END
 	SELECT @endRun = GETDATE()
 		, @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
 
@@ -487,8 +887,8 @@ BEGIN
 END
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLimitUpd] TO [bodbadminNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLossLimitUpd] TO [bodbadminNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLimitUpd] TO [bodbDownlineNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLossLimitUpd] TO [bodbDownlineNet]
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLimitUpd] TO [bodbExtAccNet]
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_WinLossLimitUpd] TO [bodbExtAccNet]
