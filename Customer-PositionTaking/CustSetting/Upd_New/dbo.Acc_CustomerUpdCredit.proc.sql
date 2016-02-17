@@ -1,13 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdCredit]    Script Date: 6/12/2015 6:17:16 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdCredit    Script Date: 3/18/2014 4:42:57 AM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerUpdCredit    Script Date: 3/10/2014 1:06:46 PM ******/
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdCredit]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdCredit]
 	@custid int,
 	@NewCredit money,
 	@maxcredit money = null, -- max credit agent give member 	
@@ -22,7 +13,7 @@ AS
 /*
 Created: 
 Task : Update given credit of customer
-DB: DBTXN/CustDB
+DB: DBCUST/CustDB
 Original:
 
 Revisions:
@@ -43,6 +34,7 @@ Revisions:
 	- 20140224@Lukas: remove maxExposure
 	- 20140306@Dom: add outstanding from translog
 	- 20150612@Elodie: Separate CustDB to DBCUST server (use Acc_CustomerTotalAmountSel to get total amount)
+	- 20160217@Percy: Check net position of Cricket [Redmine: #50028]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -115,6 +107,11 @@ END
 if @roleid = 1
 BEGIN
 
+	
+	DECLARE	@netPosition MONEY
+		SELECT @netPosition = ISNULL(SUM(Credit - Debit), 0)
+		FROM DBPRO.bodb02.dbo.BalNetPosition WITH (NOLOCK) WHERE custid = @custid
+
 	SELECT @Credit_AllOtherMember = ISNULL(SUM(Credit), 0)	 
 	FROM custinfo WITH(NOLOCK) 
 	WHERE Recommend = @Recommend AND RoleID = 1 AND CustID <> @CustID
@@ -150,7 +147,7 @@ BEGIN
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=161, @MaxExposure = @MaxExposurev161 OUTPUT
 	EXEC bodb02.dbo.Acc_CustomerSelMaxExposure_Ag @custid = @custid, @sporttype=99, @MaxExposure = @MaxExposurev99 OUTPUT
 	*/
-	IF @TotalUse+@NewCredit<0
+	IF @TotalUse+@NewCredit+@netPosition<0
 	BEGIN
 		SELECT @ErrMsg =  @UserName + ': ' +
 						CASE @Language 
