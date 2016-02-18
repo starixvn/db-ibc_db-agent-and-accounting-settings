@@ -105,7 +105,7 @@ BEGIN
 	
 	IF (@_Site = 'IMBC' OR @Site = 'IMBC') AND @_Site <> @Site
 	BEGIN
-		SELECT @ErrMsg = 'Cannot copy super ' + @existingUsername + ' since amongs the new and old sites, one has % Odds.',@ErrCode = 204								
+		SELECT @ErrMsg = 'Not allow to copy IMBC super setting to others and vice versa!',@ErrCode = 204								
 		RETURN	
 	END
 		
