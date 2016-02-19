@@ -17,7 +17,8 @@ AS
     DB: DBCust/CustDB
     Revision:
 		- 20151203@Dominic: Fix bug when correcting discount setting on downline members  Bug #48652, #48671    
-		- 20160104@Dominic: Implementing Charge Commission Plugin - [Redmine: #49689]  
+		- 20160104@Dominic: Implementing Charge Commission Plugin - [Redmine: #49689]
+		- 20160219@Dominic: Remove commission on C981RMB - [Redmine: #51057]   
 	Param's Explanation:
 		• @SettingType: 3 - Given Comm
 						5 - Charge Comm
@@ -95,6 +96,9 @@ BEGIN
 	--20151111Helen: hardcode for 919RMB and VS3077HK
 	UNION SELECT	12163698	,	1	--	919RMB
 	UNION SELECT	19573984	,	1	--	VS3077HK
+	
+	--20160219@Dominic: Remove commission on C981RMB
+	UNION SELECT	20617088	,	1	--	C981RMB
 	
 	--20151222Johnson: hardcode for 55HK and 169RMB
 	UNION SELECT	19980168	,	1	-- 55HK
