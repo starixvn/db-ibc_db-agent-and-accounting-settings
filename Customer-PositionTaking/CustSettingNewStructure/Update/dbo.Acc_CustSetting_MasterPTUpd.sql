@@ -18,7 +18,7 @@ AS
 		Revisions:
             - 20151015@Billy: Fix log xml structure and naming
 			- 20151104@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
-		
+			- 20160122@Helen: AllBet - always correct PT for Allbet
 		Parameter's Explanation:
 			@PT = <ROOT>
 					<PT SportType="1" BetType="1" IsLive="0" SuperPT="30" IsAutoSuperPT = "0" AutoSuperPT = "0" MasterPT ="60" MinPT="0" IsUpdAllMems="1" UpdAllMems_Value="20"/>
@@ -303,36 +303,38 @@ BEGIN
     --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
 	
-	IF EXISTS (SELECT TOP 1 1
-	FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
-		INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211)) 
+		OR EXISTS (SELECT TOP 1 1
+					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 								AND cs.bettype = t.BetType 
 								AND cs.isLive = t.IsLive
-	WHERE custid = @custid
-		AND (cs.SuperPT <> t.SuperPT
-			OR cs.IsAutoSuperPT <> t.IsAutoSuperPT
-			OR cs.AutoSuperPT <> t.AutoSuperPT
-			OR cs.MasterPT <> t.MasterPT				
-		)
-	)
+				WHERE custid = @custid
+					AND (cs.SuperPT <> t.SuperPT
+						OR cs.IsAutoSuperPT <> t.IsAutoSuperPT
+						OR cs.AutoSuperPT <> t.AutoSuperPT
+						OR cs.MasterPT <> t.MasterPT				
+						)
+					)
 	BEGIN
 		SELECT @UpdatePresetPT = 1
 	END
 	
-	IF EXISTS (SELECT TOP 1 1
-	FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
-		INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211)) 
+		OR EXISTS (SELECT TOP 1 1
+					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 								AND cs.bettype = t.BetType 
 								AND cs.isLive = t.IsLive
-	WHERE custid = @custid
-		AND cs.MinPT <> t.MasterMinPT			
+					WHERE custid = @custid
+						AND cs.MinPT <> t.MasterMinPT			
 	)
 	BEGIN
 		SELECT @UpdateMinPT = 1
 	END
 	
 	--No PT change
-	IF @UpdateMinPT = 0 AND @UpdatePresetPT = 0
+	IF @UpdateMinPT = 0 AND @UpdatePresetPT = 0 
 		RETURN
 	
 	EXEC Acc_CustSetting_MasterPTCheck
@@ -370,7 +372,7 @@ BEGIN
 			OR cs.MinPT <> b.MasterMinPT					
 		)
 	
-	IF @UpdateMinPT = 1
+	IF @UpdateMinPT = 1 
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting3rd_04 
 				@MasterID = @custid
@@ -379,7 +381,7 @@ BEGIN
 				,@SportBettypeXML = @PT
 	END
 	
-	IF @UpdatePresetPT = 1
+	IF @UpdatePresetPT = 1 
 	BEGIN
 		 EXEC dbo.Acc_DynamicCustSetting3rd_05
             @SuperID = @srecommend,

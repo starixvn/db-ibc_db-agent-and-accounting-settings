@@ -18,7 +18,7 @@
 		Revisions:
             - 20151015@Billy: Fix log xml structure and naming
 			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
-		
+			- 20160122@Helen: AllBet - always correct PT for Allbet
 		Parameter's Explanation:
 			@PT = <ROOT>
 					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" MinPT="0" IsUpdAllMems="0" UpdAllMems_Value="0"/>
@@ -298,30 +298,32 @@ BEGIN
      --check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
 	
-	IF EXISTS (SELECT TOP 1 1
-	FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
-		INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
-								AND cs.bettype = t.BetType 
-								AND cs.isLive = t.IsLive
-	WHERE custid = @custid
-		AND (cs.MasterPT <> t.MasterPT
-			OR cs.IsAutoMasterPT <> t.IsAutoMasterPT
-			OR cs.AutoMasterPT <> t.AutoMasterPT
-			OR cs.AgentPT <> t.AgentPT				
-		)
-	)
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211)) 
+		OR EXISTS (SELECT TOP 1 1
+					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
+												AND cs.bettype = t.BetType 
+												AND cs.isLive = t.IsLive
+					WHERE custid = @custid
+						AND (cs.MasterPT <> t.MasterPT
+							OR cs.IsAutoMasterPT <> t.IsAutoMasterPT
+							OR cs.AutoMasterPT <> t.AutoMasterPT
+							OR cs.AgentPT <> t.AgentPT				
+					)
+				)
 	BEGIN
 		SELECT @UpdatePresetPT = 1
 	END
 	
-	IF EXISTS (SELECT TOP 1 1
-	FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
-		INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211)) 
+		OR EXISTS (SELECT TOP 1 1
+					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
+						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
 								AND cs.bettype = t.BetType 
 								AND cs.isLive = t.IsLive
-	WHERE custid = @custid
-		AND cs.MinPT <> t.AgentMinPT			
-	)
+					WHERE custid = @custid
+						AND cs.MinPT <> t.AgentMinPT			
+					)
 	BEGIN
 		SELECT @UpdateMinPT = 1
 	END
@@ -366,7 +368,7 @@ BEGIN
 			OR cs.MinPT <> b.AgentMinPT					
 		)
 	
-	IF @UpdateMinPT = 1
+	IF @UpdateMinPT = 1 
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting3rd_04 
 			@AgentID = @custid
@@ -379,7 +381,7 @@ BEGIN
 		EXEC DBONUSER.On_User.dbo.Age_MessageNoticeUpd @custID = @custid, @userID = @UserID 
 	END
 	
-	IF @UpdatePresetPT = 1
+	IF @UpdatePresetPT = 1 
 	BEGIN
 		EXEC dbo.Acc_DynamicCustSetting3rd_05
 			@SuperID = @Srecommend
