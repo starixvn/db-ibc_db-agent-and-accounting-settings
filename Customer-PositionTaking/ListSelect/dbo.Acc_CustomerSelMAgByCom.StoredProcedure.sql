@@ -43,6 +43,7 @@ BEGIN
 		- 20151019@Helen: Display wrong comm rate of Group A,B,C,D [Redmine: #45851]
 		- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
 		- 20151209@Helen: Member information for Cockfighting [Redmine: #48133]
+		- 20160114@Helen: Cricket - [Redmine: #50027]
 		
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -89,16 +90,19 @@ BEGIN
 	END
  
     -- For DCS Product
-    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT
+    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT, @bitmapOrder_Cricket INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
+    SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
     
     DECLARE @IsHidden_MuayThai INT = 1
     DECLARE @IsHidden_CockFighting INT = 1
+    DECLARE @IsHidden_Cricket INT = 1
     
     DECLARE @SportBook2 INT = 16
     DECLARE @CockFighting INT = 19
+    DECLARE @Cricket INT = 20
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -108,7 +112,12 @@ BEGIN
 	BEGIN
 		SET @IsHidden_CockFighting = 0
 	END
-    
+	
+    IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@Cricket,4))
+	BEGIN
+		SET @IsHidden_Cricket = 0
+	END
+	
 	Select * From 
 	(
 		SELECT 		
@@ -162,6 +171,13 @@ BEGIN
 			
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
+			
+			-- For Cricket
+			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
+			ISNULL(cda.Discount,0) AS discountCricket,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_Cricket),1) AS DisableCricket,
+			CAST(CASE WHEN m.[site] = 'IMBC' AND @IsHidden_Cricket = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_Cricket),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCricket,
+			
 			ROW_NUMBER() OVER (ORDER BY CASE when isnull(ci.enabled,0) = 0 then 3 WHEN isnull(ci.closed,0) = 1 THEN 2 WHEN isnull(ci.reject,0) = 1 THEN 1 ELSE 0 end, m.username) as RowNumber
 		FROM 
 			customer AS m with (NOLOCK)
@@ -175,6 +191,7 @@ BEGIN
 			INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid
 			LEFT JOIN AgentCommRate ac WITH (NOLOCK) ON ac.CustId = ci.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid
+			LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
 			 
 		WHERE m.SRecommend < 100 and m.roleid=3
 			and m.currency = case when @Currency is null then m.currency else @Currency end
@@ -215,7 +232,9 @@ BEGIN
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
 			AC.CommRate,
-			ac.CustId
+			ac.CustId,
+			m.site,
+			cda.Discount
 			
 	) a
 	WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd

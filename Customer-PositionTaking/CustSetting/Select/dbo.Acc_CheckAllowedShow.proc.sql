@@ -7,7 +7,8 @@
 	@AllowedLiveCS BIT = 0 OUTPUT,
 	@AllowedVS BIT = 0 OUTPUT,
 	@AllowedColossusbets BIT = 0 OUTPUT,
-	@AllowedCockfighting BIT = 0 OUTPUT
+	@AllowedCockfighting BIT = 0 OUTPUT,
+	@AllowedCricket BIT = 0 OUTPUT
 	
 AS
 BEGIN
@@ -23,6 +24,7 @@ Revisions:
 	- 20150825@Helen: Colossus Bet - [Redmine: #41264]
 	- 20151231@Helen: Cockfighting - [Redmine: #48133]
 	- 20151231@Helen: Cockfighting - Fix bug [Redmine: #48133]
+	- 20160114@Helen: Cricket - [Redmine: #50027]
 	
 */
 
@@ -30,7 +32,8 @@ Revisions:
 
 	Declare @mCurrencyID int, @RoleID int, @SyncCasino bit, @SyncBingo bit, @DisableBingo bit, @SyncLiveCS BIT  , @HideVirtualSports BIT
 	Declare @srecommend int, @mrecommend int, @recommend int
-	DECLARE @IsHideCockfighting INT
+	DECLARE @IsHideCockfighting INT, @IsHideCricket INT
+	DECLARE @Cricket INT = 20
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
 		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
@@ -41,6 +44,23 @@ Revisions:
 	
 	SET @AllowedCockfighting = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
 										AND @IsHideCockfighting = 0 THEN 1 ELSE 0 END
+	
+	
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@Cricket,4))
+	BEGIN
+		SET @IsHideCricket = 0
+	END
+	
+	IF @RoleID IN (2,3,4)
+	BEGIN
+		IF @IsHideCricket = 0 AND EXISTS (SELECT 1 FROM Customer WITH (NOLOCK) WHERE custid = @CustID AND [Site] = 'IMBC')
+			SET @AllowedCricket = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,3) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 THEN 1 ELSE 0 END
+	END
+	ELSE IF @RoleID = 1
+	BEGIN
+		IF @IsHideCricket = 0 AND EXISTS (SELECT 1 FROM Customer WITH (NOLOCK) WHERE custid = @recommend AND [Site] = 'IMBC')
+			SET @AllowedCricket = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,3) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 THEN 1 ELSE 0 END
+	END
 	
 	If @RoleID=4
 	BEGIN	
