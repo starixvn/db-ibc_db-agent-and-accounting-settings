@@ -43,6 +43,7 @@ AS
 	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
 	- 20151030@Billy: Change to new VirtualRate structure [Redmine: #46541]
 	- 20151223@Patrick: Add Max/Loss limit for RnG Casino [Redmine: #49528]
+	- 20160217@Dominic: Not allow to create a IMBC customer from MBC customer and and vice versa [Redmine: #50028]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -95,6 +96,18 @@ BEGIN
 		RETURN		
 
 	END			
+	
+	--Not allow to create a IMBC customer from MBC customer and and vice versa
+	DECLARE @_Site VARCHAR(10)
+	SELECT @_Site = site
+	FROM dbo.Customer WITH(NOLOCK)
+	WHERE CustID = @ExistingCustid
+	
+	IF (@_Site = 'IMBC' OR @Site = 'IMBC') AND @_Site <> @Site
+	BEGIN
+		SELECT @ErrMsg = 'Not allow to copy IMBC super setting to others and vice versa!',@ErrCode = 204								
+		RETURN	
+	END
 		
 	IF @roleid <> 4
 	BEGIN		

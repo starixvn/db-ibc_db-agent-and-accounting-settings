@@ -15,13 +15,19 @@ AS
  Original:  
   
  Param's Explanation:  
+	- 20160219@Dominic: Implement charge commission #49689
  
    
  */  
 BEGIN  
 
 	SELECT * INTO #SportBettypeFilter
+	FROM (
+	SELECT *
 	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,3) -- comm
+	UNION
+	SELECT *
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,5) ) tmp
 	
 	SET NOCOUNT ON
 	DECLARE @CustID INT

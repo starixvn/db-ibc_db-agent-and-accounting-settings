@@ -15,6 +15,9 @@ AS
 	DB: DBCUST/CustDB
 	Original:
 
+	Revision:
+	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
+	
 	Param's Explanation:
 	• @CustID: Super's ID
 	
@@ -78,8 +81,8 @@ BEGIN
 				AND pbs.BetType = bl.bettype
 				AND pbs.Currency = @Currency
 	END
-	--Discount Setting
-	ELSE IF @SettingType = 3
+	--Discount Setting / Charge Comm
+	ELSE IF @SettingType IN (3,5)
 	BEGIN
 		SELECT pdt.SportType
 			, pdt.BetType
