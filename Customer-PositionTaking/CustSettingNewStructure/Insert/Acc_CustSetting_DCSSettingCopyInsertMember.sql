@@ -17,12 +17,12 @@ AS
 	Revision
 		- 20160104@Dominic: Implementing Charge Commission Plugin - Redmine #49689
 		- 20160115@Dominic: Do not update setting when there is no data Redmine: #50937
+		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #50082]
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
-
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLimit XML, @xmlStakeLevel XML
+	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLossLimit XML, @xmlStakeLevel XML
 	DECLARE @xmlStr VARCHAR(MAX)
 	SELECT @ErrCode = 0
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
@@ -298,51 +298,52 @@ BEGIN
 		END
 	END
 
-	/********************************************* SMA Win Limit : SettingType = 6 ****************************************/
+	/********************************************* SMA Win Loss Limit : SettingType = 6 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,6))
 	BEGIN
-		DECLARE @NewWinLimitTbl TABLE (
+		DECLARE @NewWinLossLimitTbl TABLE (
 			SportType			SMALLINT
-			, BetType			SMALLINT
-			, MaxWinLimit		MONEY
-			, IsAutoReset		MONEY
+			, BetType			INT
+			, MaxWinLimit		SMALLMONEY
+			, MaxLossLimit		MONEY
+			, IsAutoReset		BIT
 			)
 
-		INSERT INTO @NewWinLimitTbl
+		INSERT INTO @NewWinLossLimitTbl
 		SELECT wl.SportType
 			, wl.BetType
 			, wl.MaxWinLimit
+			, wl.MaxLossLimit
 			, wl.IsAutoReset
-		FROM dbo.CustBetLimit3rd_Member wl WITH (NOLOCK)		
+		FROM dbo.CustWinLossLimit_Member wl WITH (NOLOCK)		
 		WHERE wl.custid = @ExistingCustID
 
-		SET @xmlWinLimit = (SELECT (
+		SET @xmlWinLossLimit = (SELECT (
 									SELECT SportType	AS '@SportType'
 										, BetType		AS '@BetType'
-										, MaxWinLimit		AS '@MaxWinLimit'
+										, MaxWinLimit	AS '@MaxWinLimit'
+										, MaxLossLimit	AS '@MaxLossLimit'
 										, IsAutoReset	AS '@IsAutoReset'
-									FROM @NewWinLimitTbl
-									FOR XML PATH('WinLimit')
+									FROM @NewWinLossLimitTbl
+									FOR XML PATH('WinLossLimit')
 										, TYPE
 									)
 							FOR XML PATH('ROOT')
 								, TYPE
 							)
 	
-		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlWinLimit)
+		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlWinLossLimit)
 
-		EXEC Acc_CustSetting_WinLimitUpd 
+		EXEC dbo.Acc_CustSetting_WinLossLimitUpd 
 			  @CustID = @CustID
-			, @BetLimit = @xmlStr
+			, @Limit = @xmlStr
+			, @SettingType = 6
 			, @SubAccID = @SubAccID
 			, @IP = @IP
 			, @UserID = @UserID
 			, @ErrCode = @ErrCode OUTPUT
 			, @ErrMsg = @ErrMsg OUTPUT
-
-
 	END
-
 	
 	/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
 	IF EXISTS (SELECT TOP(1) 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7))
