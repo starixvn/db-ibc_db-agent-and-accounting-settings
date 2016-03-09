@@ -101,7 +101,7 @@ BEGIN
 	) pt
 	WHERE RowNumber >= (@PageIndex - 1) * @PageSize + 1 AND RowNumber <= @PageIndex * @PageSize
 	ORDER BY RowNumber, SportType, islive, BetType, roleid
-	
+END	
 GO
 
 SET QUOTED_IDENTIFIER OFF 
