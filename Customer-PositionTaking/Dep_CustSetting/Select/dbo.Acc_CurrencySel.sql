@@ -1,6 +1,6 @@
 USE [bodb02]
 GO
-/****** Object:  StoredProcedure [dbo].[Acc_CurrencySel]    Script Date: 09/20/2015 23:23:49 ******/
+/****** Object:  StoredProcedure [dbo].[Acc_CurrencySel]    Script Date: 3/15/2016 8:41:43 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -16,6 +16,7 @@ AS
 	Revisions:
 	- 20140214@Francis: Add currencies with exchangeid = 27, 28
 	- 20150918@Francis: Add currency with exchangeid = 13 
+	- 20160315@Winnie: Add MKK
 */
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from interfering with SELECT statements.
@@ -43,9 +44,6 @@ BEGIN
 	select exchangeid, code, currency from exchange where code = '' and currency = 'UUS'
 	union 
 	select exchangeid, code, currency from exchange where code = 'CNY' and currency = 'RMB' 
+	union   
+	select exchangeid, code, currency from exchange where code = 'MMK' and currency = 'MKK'
 END
-
-GO
-GRANT EXECUTE ON [dbo].[Acc_CurrencySel] TO [bodbAdminNet] AS [dbo]
-GO
-GRANT VIEW DEFINITION ON [dbo].[Acc_CurrencySel] TO [vnteam] AS [dbo]
