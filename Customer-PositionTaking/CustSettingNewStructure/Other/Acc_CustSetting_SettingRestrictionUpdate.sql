@@ -67,7 +67,7 @@ BEGIN
 
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
-						, @CustID			= @UserID
+						, @CustID			= 0
 						, @ActionID			= 31301
 						, @TrackingValue	= @logSpData
 						, @TrackingValue2	= @logSpData_Old
@@ -75,7 +75,7 @@ BEGIN
 	END TRY
 	BEGIN CATCH
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP @UserID = @UserID
-						, @CustID			= @UserID
+						, @CustID			= 0
 						, @ActionID			= 31301
 						, @TrackingValue	= @logSpData
 						, @TrackingValue2	= @logSpData_Old
