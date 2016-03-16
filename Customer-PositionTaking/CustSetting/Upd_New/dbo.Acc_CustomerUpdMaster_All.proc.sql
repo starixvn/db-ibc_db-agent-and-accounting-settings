@@ -5,7 +5,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     @lastname nvarchar(50),
     @phone nvarchar(50),    
     @mobilephone nvarchar(50),
-    @email nvarchar(50) = '',
+    @email nvarchar(50) = NULL,
     @fax nvarchar(50),
     @closed bit,
     @Suspended bit,
@@ -431,7 +431,7 @@ Revisions:
     - 20140623@Johnson: Add bettype Others for soccer & tennis [Redmine #16903]
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
-
+	- 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -469,7 +469,7 @@ Param's Explanation:
 	IF @UpdateMultiple = 0
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdUserInfo 
+		EXEC dbo.Acc_CustomerUpdUserInfo_xtest 
 					@CustID = @CustID,
 					@firstname = @firstname,
 					@lastname = @lastname,

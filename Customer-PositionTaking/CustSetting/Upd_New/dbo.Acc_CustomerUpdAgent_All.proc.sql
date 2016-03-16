@@ -1,10 +1,10 @@
-﻿alter PROCEDURE [dbo].[Acc_CustomerUpdAgent_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdAgent_All]
 	@custid int,
 	@firstname nvarchar(50),
 	@lastname nvarchar(50),
 	@phone nvarchar(50),
 	@mobilephone nvarchar(50),
-	@email nvarchar(50)='',
+	@email nvarchar(50)=NULL,
 	@fax nvarchar(50),
 	@groupa decimal(9,8),
 	@groupb decimal(9,8),
@@ -444,6 +444,7 @@ Revisions:
 	- 20140626@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
+	- 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
 Param's Explanation:
 • @ErrCode:
     = 0: Update Agent successfully.
@@ -481,7 +482,7 @@ Param's Explanation:
 	IF @UpdateMultiple = 0
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''	
-		EXEC dbo.Acc_CustomerUpdUserInfo 
+		EXEC dbo.Acc_CustomerUpdUserInfo_xtest 
 					@CustID = @CustID,
 					@firstname = @firstname,
 					@lastname = @lastname,
@@ -694,7 +695,7 @@ Param's Explanation:
 		@UpdateMinMaxBetv161 = 1    
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet
+		EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet_xtest
 			@custid = @custid,
 			@minbet = @minbet,
 			@maxbet = @maxbet,

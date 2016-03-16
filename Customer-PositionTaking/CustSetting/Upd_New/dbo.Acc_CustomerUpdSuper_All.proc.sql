@@ -10,13 +10,13 @@ GO
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuper_All    Script Date: 8/21/2014 2:58:06 PM ******/
 
-alter PROCEDURE [dbo].[Acc_CustomerUpdSuper_All]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_All]
     @custid int,-- superid
     @firstname nvarchar(50),
     @lastname nvarchar(50),
     @phone nvarchar(50),
     @mobilephone nvarchar(50),
-    @email nvarchar(50)='',
+    @email nvarchar(50)=NULL,
     @fax nvarchar(50),
     @disCasino bit = 0,
     @closed bit,
@@ -325,7 +325,7 @@ Revisions:
     - 20140616@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
     - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]Param's Explanation:
     - 20150904@Helen: commission setting for MO [Redmine #41470]
-    
+    - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
 • @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
@@ -360,7 +360,7 @@ Revisions:
 	----------------------------------------------
 	--Update Info    
 	Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-	EXEC dbo.Acc_CustomerUpdUserInfo 
+	EXEC dbo.Acc_CustomerUpdUserInfo_xtest 
 		@CustID = @CustID,
 		@firstname = @firstname,
 		@lastname = @lastname,

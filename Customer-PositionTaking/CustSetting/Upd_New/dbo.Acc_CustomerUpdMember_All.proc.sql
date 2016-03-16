@@ -1,11 +1,11 @@
-﻿alter PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMember_All]  
 	@custid INT,--memberid  
 
 	@firstname NVARCHAR(50),  
 	@lastname NVARCHAR(50),  
 	@phone NVARCHAR(50),  
 	@mobilephone NVARCHAR(50),  
-	@email NVARCHAR(50) = '',  
+	@email NVARCHAR(50) = NULL,  
 	@fax NVARCHAR(50),  
 
 	@UpdateMultiple BIT = 0,  
@@ -215,6 +215,7 @@ Revisions:
  - 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
  - 20150904@Helen: commission setting for MO [Redmine #41470]
  - 20160104@Helen: Disallow SMA changes password or updates account status of members - [Redmine:#49967]  
+ - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -251,7 +252,7 @@ BEGIN
 	IF @UpdateMultiple = 0  
 	BEGIN  
 	 Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''  
-	 EXEC dbo.Acc_CustomerUpdUserInfo   
+	 EXEC dbo.Acc_CustomerUpdUserInfo_xtest   
 		@CustID = @CustID,  
 		@firstname = @firstname,  
 		@lastname = @lastname,  
@@ -852,7 +853,6 @@ BEGIN
 	 END  
 	END
 END
-
 GO 
  GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_All] TO [bodbAdminNet]
 GO 
