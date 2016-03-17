@@ -469,7 +469,7 @@ Param's Explanation:
 	IF @UpdateMultiple = 0
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdUserInfo_xtest 
+		EXEC dbo.Acc_CustomerUpdUserInfo
 					@CustID = @CustID,
 					@firstname = @firstname,
 					@lastname = @lastname,
