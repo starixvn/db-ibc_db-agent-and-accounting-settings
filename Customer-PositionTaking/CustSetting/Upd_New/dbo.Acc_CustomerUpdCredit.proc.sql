@@ -110,7 +110,7 @@ BEGIN
 	
 	DECLARE	@netPosition MONEY
 		SELECT @netPosition = ISNULL(SUM(Credit - Debit), 0)
-		FROM DBPRO.bodb02.dbo.BalNetPosition WITH (NOLOCK) WHERE custid = @custid
+		FROM DBTXN.bodb02.dbo.BalNetPosition WITH (NOLOCK) WHERE custid = @custid
 
 	SELECT @Credit_AllOtherMember = ISNULL(SUM(Credit), 0)	 
 	FROM custinfo WITH(NOLOCK) 
