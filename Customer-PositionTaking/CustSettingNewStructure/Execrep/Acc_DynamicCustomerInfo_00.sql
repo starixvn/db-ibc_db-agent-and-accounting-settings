@@ -1214,10 +1214,10 @@ BEGIN
 			ELSE IF	@RoleID = 1
 			BEGIN
 			    INSERT INTO	dbo.CustStakeLevel_Member
-					(	CustID , SportType     , BetType     , StakeLevelList     , LastUpdated)
-				SELECT	@CustID, csla.SportType, csla.BetType, sr.LowestStakeLevel, GETDATE()
+					(	CustID , SportType     , BetType     , StakeLevelList                 , LastUpdated)
+				SELECT	@CustID, csla.SportType, csla.BetType, ISNULL(sr.LowestStakeLevel, ''), GETDATE()
 				FROM	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
-				CROSS APPLY (
+				OUTER APPLY (
 					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
 					FROM (
 						SELECT	CAST(val AS INT) AS val
