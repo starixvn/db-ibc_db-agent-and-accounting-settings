@@ -1198,41 +1198,17 @@ BEGIN
 			ELSE IF	@RoleID = 3
 			BEGIN
 			    INSERT INTO	dbo.CustStakeLevel_Agent
-					(	CustID , SportType     , BetType     , StakeLevelList)
-				SELECT	@CustID, csla.SportType, csla.BetType, sr.LowestStakeLevel
+					(	CustID , SportType     , BetType     , StakeLevelList     )
+				SELECT	@CustID, csla.SportType, csla.BetType, csla.StakeLevelList
 				FROM	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
-				CROSS APPLY (
-					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
-					FROM (
-						SELECT	CAST(val AS INT) AS val
-						FROM	dbo.strSplit(csla.StakeLevelList, ',')
-					) AS ss
-					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
-							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MinStake, sl.MaxStake
-				) sr
 				WHERE	csla.CustID = @SuperID
 			END
 			ELSE IF	@RoleID = 2
 			BEGIN
 			    INSERT INTO	dbo.CustStakeLevel_Agent
-					(	CustID , SportType     , BetType     , StakeLevelList)
-				SELECT	@CustID, csla.SportType, csla.BetType, sr.LowestStakeLevel
+					(	CustID , SportType     , BetType     , StakeLevelList     )
+				SELECT	@CustID, csla.SportType, csla.BetType, csla.StakeLevelList
 				FROM	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
-				CROSS APPLY (
-					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
-					FROM (
-						SELECT	CAST(val AS INT) AS val
-						FROM	dbo.strSplit(csla.StakeLevelList, ',')
-					) AS ss
-					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
-							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MinStake, sl.MaxStake
-				) sr
 				WHERE	csla.CustID = @MasterID
 			END
 			ELSE IF	@RoleID = 1
