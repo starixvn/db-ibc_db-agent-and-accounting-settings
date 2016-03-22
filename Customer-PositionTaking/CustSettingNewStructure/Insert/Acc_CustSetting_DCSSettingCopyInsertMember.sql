@@ -325,7 +325,7 @@ BEGIN
 										, MaxLossLimit	AS '@MaxLossLimit'
 										, IsAutoReset	AS '@IsAutoReset'
 									FROM @NewWinLossLimitTbl
-									FOR XML PATH('WinLossLimit')
+									FOR XML PATH('Limit')
 										, TYPE
 									)
 							FOR XML PATH('ROOT')

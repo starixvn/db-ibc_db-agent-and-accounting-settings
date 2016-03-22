@@ -176,7 +176,7 @@ BEGIN
 		
 		/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
 		BEGIN TRY
-			IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustWinLimit3rd_Agent] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
+			IF EXISTS(SELECT TOP 1 1 FROM dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 			INSERT INTO dbo.CustStakeLevel_Agent
 					(CustID
 				,	SportType
