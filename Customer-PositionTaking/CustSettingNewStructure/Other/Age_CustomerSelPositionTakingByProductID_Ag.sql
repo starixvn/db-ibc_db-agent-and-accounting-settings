@@ -18,6 +18,7 @@ AS
 	DB: DBCUST/CustDB
 
 	Revisions:
+		- 20160322@Billy: Fix bug return multiple PT value - [Redmine: #54529]
 
 	Param's Explanation:
 	• @Recommend: Agent ID
