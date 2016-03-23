@@ -238,7 +238,7 @@ BEGIN
 	IF EXISTS(	SELECT TOP 1 1 
 				FROM @UplineLimitTbl uwl
 					INNER JOIN @NewLimitTbl nwl ON uwl.Sporttype = nwl.SportType AND uwl.Bettype = nwl.BetType
-				WHERE uwl.IsAutoReset = 1 AND nwl.IsAutoReset = 0
+				WHERE uwl.IsAutoReset = 0 AND nwl.IsAutoReset = 1
 			)
 	BEGIN
 		SET @xml = (
