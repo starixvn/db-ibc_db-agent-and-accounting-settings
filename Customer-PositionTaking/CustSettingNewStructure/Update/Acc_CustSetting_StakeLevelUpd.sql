@@ -175,6 +175,15 @@ BEGIN
 		WHERE	cslm.CustID = @CustID 
 			AND	ts.StakeLevelList = cslm.StakeLevelList;
 
+		INSERT INTO	#StakeLevelList_Excluded (BetType, StakeLevelList_old, ExcludedLevel)
+		SELECT	cslm.BetType
+			,	cslm.StakeLevelList
+			,	NULL
+		FROM	dbo.CustStakeLevel_Member AS cslm WITH (NOLOCK)
+		INNER JOIN	#tmpStake AS ts
+				ON	ts.BetType = cslm.BetType
+		WHERE	cslm.CustID = @CustID
+
 		-- Update current customer's stake level
 		UPDATE	cslm	WITH(ROWLOCK,UPDLOCK)
 		SET		cslm.StakeLevelList = ts.StakeLevelList
