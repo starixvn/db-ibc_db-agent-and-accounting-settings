@@ -1227,7 +1227,7 @@ BEGIN
 							ON	ss.val = sl.StakeLevelID
 					WHERE	sl.MinStake <> 0
 						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MinStake, sl.MaxStake
+					ORDER BY	sl.MaxStake, sl.MinStake
 				) sr
 				WHERE	csla.CustID = @AgentID
 			END
