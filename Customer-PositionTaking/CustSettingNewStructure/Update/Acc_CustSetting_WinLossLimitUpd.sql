@@ -870,7 +870,7 @@ BEGIN
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 						@UserID = @UserID
 						, @CustID			= @CustID
-						, @ActionID			= 384
+						, @ActionID			= 850
 						, @TrackingValue	= @logSpData
 						, @TrackingValue2	= @logSpData_Old
 						, @duration			= @duration
@@ -879,7 +879,7 @@ BEGIN
 		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 						@UserID = @UserID
 						, @CustID			= @CustID
-						, @ActionID			= 384
+						, @ActionID			= 850
 						, @TrackingValue	= @logSpData
 						, @TrackingValue2	= @logSpData_Old
 						, @duration			= @duration
