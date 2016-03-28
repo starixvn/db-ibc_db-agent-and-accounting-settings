@@ -17,8 +17,10 @@ RETURN (
 	FROM		dbo.Customer AS c WITH (NOLOCK)
 	INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK)
 			ON	psd.SettingType = 4
-	INNER JOIN	dbo.Site AS s WITH (NOLOCK)
-			ON	s.site = c.site
+	LEFT JOIN	dbo.Customer AS c2 WITH (NOLOCK)
+			ON	c2.custid = c.recommend
+	LEFT JOIN	dbo.Site AS s WITH (NOLOCK)
+			ON	s.site = CASE WHEN c.roleid = 1 THEN (SELECT ic.site FROM Customer ic WITH (NOLOCK) WHERE ic.custid = c.recommend) ELSE c.site END
 	LEFT JOIN	dbo.ProductStatusSiteCurrency AS pssc WITH (NOLOCK)
 			ON	pssc.SportType = psd.SportType
 			AND	pssc.BetType = psd.BetType
