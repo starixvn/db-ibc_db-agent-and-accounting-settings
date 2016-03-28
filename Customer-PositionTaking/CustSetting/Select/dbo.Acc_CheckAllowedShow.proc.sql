@@ -119,10 +119,12 @@ Revisions:
 
 	-- For AllBet
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@AllBet, 4))
-	    SELECT	@IsHideAllBet = 0
+	    SELECT	@IsHideAllBet = sbhsc.IsHidden
+		FROM	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(@CustID, @AllBet) AS sbhsc
 	ELSE
 		SELECT	@IsHideAllBet = 1
-	SELECT	@AllowedAllBet =	CASE	WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0 AND @IsHideAllBet = 0 THEN 1
+	SELECT	@AllowedAllBet =	CASE	WHEN @RoleID = 4 AND @IsHideAllBet = 0 THEN 1
+										WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0 AND @IsHideAllBet = 0 THEN 1
 										ELSE 0
 								END
 	FROM	dbo.CustProductStatus AS cps WITH (NOLOCK)

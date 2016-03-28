@@ -30,9 +30,15 @@ BEGIN
 	IF EXISTS (SELECT 1 FROM Customer WITH (NOLOCK) WHERE custid = @SuperID AND [Site] = 'IMBC')
 		SET @IsIMBC = 1
 		
-	SELECT @ProductID AS ProductID,SportType,Bettype,IsLive, SettingType 
+	SELECT ProductID,SportType,Bettype,IsLive, SettingType 
 	INTO #SportBettypeFilter
 	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
+
+	DELETE sbf
+	FROM		#SportBettypeFilter sbf
+	INNER JOIN	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(@CustID, @ProductID) AS sbhsc
+			ON	sbhsc.ProductID = sbf.ProductID
+	WHERE	sbhsc.IsHidden = 1
 	
 	IF @RoleID = 4
 	BEGIN

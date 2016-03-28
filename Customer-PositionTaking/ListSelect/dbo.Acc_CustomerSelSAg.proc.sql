@@ -194,7 +194,12 @@ B: 'B%'
 			CAST(CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCockFighting,
 		   -- For AllBet
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
-			CAST(CASE WHEN @IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideAllBet,
+			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
+								AND	MAX(sbhsc.IsHidden) = 0
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideAllBet,
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
 
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
@@ -234,6 +239,9 @@ B: 'B%'
 		   LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
 		   LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
 		   LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
+
+		   -- Check isHidden AllBet
+		   OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
 		   
 		WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 			and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -358,7 +366,12 @@ B: 'B%'
 			CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS HideCockFighting,
 			-- For AllBet
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
-			CAST(CASE WHEN @IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideAllBet,
+			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
+								AND	MAX(sbhsc.IsHidden) = 0
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideAllBet,
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
 
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
@@ -383,6 +396,10 @@ B: 'B%'
 			LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 AND csuper.IsMyanmarOdds = 1
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
 			LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
+
+		   -- Check isHidden AllBet
+		   OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
+		   
 			
 		WHERE	
 				m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
