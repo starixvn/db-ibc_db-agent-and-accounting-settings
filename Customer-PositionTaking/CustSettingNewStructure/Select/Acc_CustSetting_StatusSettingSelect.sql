@@ -12,7 +12,7 @@ AS
 
 	Revisions:
 		- 20160114@Helen: Cricket - [Redmine: #50027]
-
+		- 20160330@Elodie: Get more IsSyncedUpline infomation [Redmine: #49606]
 
 	Param's Explanation:
 	• @CustID: 
@@ -70,6 +70,7 @@ BEGIN
 							
 			 END AS IsDisabledDownline
 			, 0 AS isDisabledUpline
+			, 1 AS isSyncedUpline
 			, ISNULL(@downlines,0) As HasDownline
 		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
@@ -109,6 +110,7 @@ BEGIN
 							
 			 END AS IsDisabledDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
+			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 			 , ISNULL(@downlines,0) As HasDownline
 		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
@@ -149,6 +151,7 @@ BEGIN
 			 END AS IsDisabledDownline
 			 
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
+			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 			, ISNULL(@downlines,0) As HasDownline
 		FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 			INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
@@ -171,6 +174,7 @@ BEGIN
 				, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 				, 0 AS IsDisabledDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
+				, dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 				, 0 As HasDownline
 			FROM DBCUST.CUSTDB.dbo.ProductSettingDetail pdt WITH (NOLOCK)
 				INNER JOIN #SportBettypeFilter ft ON pdt.SportType = ft.sporttype
