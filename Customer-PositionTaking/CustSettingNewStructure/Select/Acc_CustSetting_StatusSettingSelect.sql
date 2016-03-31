@@ -12,7 +12,7 @@ AS
 
 	Revisions:
 		- 20160114@Helen: Cricket - [Redmine: #50027]
-		- 20160330@Elodie: Get more IsSyncedUpline infomation [Redmine: #49606]
+		- 20160330@Elodie: Get more IsSyncedUpline, IsSyncedDownline infomation [Redmine: #49606]
 
 	Param's Explanation:
 	• @CustID: 
@@ -69,6 +69,17 @@ BEGIN
 							), 0)
 							
 			 END AS IsDisabledDownline
+			, CASE 	
+					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),1)
+					ELSE ISNULL((
+							SELECT TOP 1 0
+							FROM dbo.custInfo ci WITH (NOLOCK)
+								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
+							WHERE srecommend = @CustID	AND roleid = 3
+								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+							), 1)
+							
+			 END AS IsSyncedDownline
 			, 0 AS isDisabledUpline
 			, 1 AS isSyncedUpline
 			, ISNULL(@downlines,0) As HasDownline
@@ -109,6 +120,17 @@ BEGIN
 							), 0)
 							
 			 END AS IsDisabledDownline
+			 , CASE 	
+					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),1)
+					ELSE ISNULL((
+							SELECT TOP 1 0
+							FROM dbo.custInfo ci WITH (NOLOCK)
+								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
+							WHERE mrecommend = @CustID	AND roleid = 2
+								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+							), 1)
+							
+			 END AS IsSyncedDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 			 , ISNULL(@downlines,0) As HasDownline
@@ -149,7 +171,17 @@ BEGIN
 							), 0)
 							
 			 END AS IsDisabledDownline
-			 
+			 , CASE 	
+					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),1)
+					ELSE ISNULL((
+							SELECT TOP 1 0
+							FROM dbo.custInfo ci WITH (NOLOCK)
+								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
+							WHERE recommend = @CustID	AND roleid = 1
+								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+							), 1)
+							
+			 END AS IsSyncedDownline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 			 , dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 			, ISNULL(@downlines,0) As HasDownline
@@ -173,6 +205,7 @@ BEGIN
 				, CAST(CASE WHEN stt.CustID IS NULL OR (@IsIMBC = 0 AND pdt.ProductID = 20) THEN 1 ELSE (CASE WHEN dbo.f_GetProductStatus(stt.bitmapIsHidden, PSP.bitmapOrder) = 0 THEN 0 ELSE 1 END) END AS BIT) AS isHidden  
 				, CASE WHEN stt.CustID IS NULL THEN 1 ELSE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) END as isDisabled
 				, 0 AS IsDisabledDownline
+				, 1 AS IsSyncedDownline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapIsDisabled, PSP.bitmapOrder) as IsDisabledUpline
 				, dbo.f_GetProductStatus(stt_UPLINE.bitmapHasSynced, PSP.bitmapOrder) as IsSyncedUpline
 				, 0 As HasDownline
