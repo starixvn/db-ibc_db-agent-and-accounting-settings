@@ -166,7 +166,7 @@ BEGIN
 							SELECT TOP 1 1
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE recommend = @CustID	--AND roleid = 1
+							WHERE recommend = @CustID	AND roleid = 1
 								AND dbo.f_GetProductStatus(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) = 1
 							), 0)
 							
@@ -177,7 +177,7 @@ BEGIN
 							SELECT TOP 1 0
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE recommend = @CustID	AND roleid = 1
+							WHERE recommend = @CustID	--AND roleid = 1
 								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
 							), 1)
 							
