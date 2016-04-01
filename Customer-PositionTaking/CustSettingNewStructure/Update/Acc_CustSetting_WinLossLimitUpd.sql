@@ -333,8 +333,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -355,8 +359,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -377,8 +385,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -400,8 +412,12 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -425,8 +441,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -447,8 +467,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -469,8 +493,12 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -492,8 +520,12 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLossLimit'),
@@ -520,7 +552,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -541,7 +575,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -562,7 +598,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -584,7 +622,9 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -608,7 +648,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -629,7 +671,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -650,7 +694,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -672,7 +718,9 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxWinLimit			AS '@MaxWinLimit',
+								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxWinLimit AS VARCHAR(20))
+								END					AS '@MaxWinLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('WinLimit'),
@@ -699,7 +747,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -720,7 +770,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -741,7 +793,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -763,7 +817,9 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @OldLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -787,7 +843,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	@ProductID			AS '@ProductID',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -808,7 +866,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	SportType			AS '@SportType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -829,7 +889,9 @@ BEGIN
 					@IP								AS '@IP',
 					(
 						SELECT	BetType				AS '@BetType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('LossLimit'),
@@ -851,7 +913,9 @@ BEGIN
 					(
 						SELECT	SportType			AS '@SportType',
 								BetType				AS '@BetType',
-								MaxLossLimit		AS '@MaxLossLimit',
+								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
+										ELSE CAST(MaxLossLimit AS VARCHAR(20))
+								END					AS '@MaxLossLimit',
 								IsAutoReset			AS '@IsAutoReset'
 						FROM @NewLimitTbl
 						FOR XML PATH('LossLimit'),
