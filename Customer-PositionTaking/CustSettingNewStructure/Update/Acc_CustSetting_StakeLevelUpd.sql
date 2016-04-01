@@ -563,14 +563,20 @@ BEGIN
 	WHERE	p.ProductID = @ProductID;
 
 	-- Update log value
+	UPDATE #StakeLevelList_Excluded
+	SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ',', ';')
+
+	UPDATE #tmpStake
+	SET StakeLevelList = REPLACE(StakeLevelList, ',', ';')
+
 	WHILE 0 = 0
 	BEGIN
 	    UPDATE	slle
 		SET	slle.StakeLevelList_old = REPLACE(slle.StakeLevelList_old, sl.StakeLevelID, sl.StakeLevelValue)
 		FROM		#StakeLevelList_Excluded AS slle
 		CROSS APPLY	(	SELECT TOP(1)	CAST(sl.StakeLevelID AS VARCHAR(10)) AS StakeLevelID
-									,	sl.MinLabel + N'-' + sl.MaxLabel AS StakeLevelValue
-						FROM		dbo.strSplit(slle.StakeLevelList_old, ',') AS ss
+									,	CAST(sl.MinLabel AS VARCHAR(20)) + '-' + CAST(sl.MaxLabel AS VARCHAR(20)) AS StakeLevelValue
+						FROM		dbo.strSplit(slle.StakeLevelList_old, ';') AS ss
 						INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 								ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
 					) sl
@@ -585,8 +591,8 @@ BEGIN
 		SET	ts.StakeLevelList = REPLACE(ts.StakeLevelList, CAST(sl.StakeLevelID AS VARCHAR), sl.StakeLevelValue)
 		FROM		#tmpStake AS ts
 		CROSS APPLY	(	SELECT TOP(1)	CAST(sl.StakeLevelID AS VARCHAR(10)) AS StakeLevelID
-									,	sl.MinLabel + N'-' + sl.MaxLabel AS StakeLevelValue
-						FROM		dbo.strSplit(ts.StakeLevelList, ',') AS ss
+									,	CAST(sl.MinLabel AS VARCHAR(20)) + '-' + CAST(sl.MaxLabel AS VARCHAR(20)) AS StakeLevelValue
+						FROM		dbo.strSplit(ts.StakeLevelList, ';') AS ss
 						INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 								ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
 					) sl
@@ -594,6 +600,12 @@ BEGIN
 		IF	@@ROWCOUNT = 0
 			BREAK
 	END
+
+	UPDATE #StakeLevelList_Excluded
+	SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ';', ',')
+
+	UPDATE #tmpStake
+	SET StakeLevelList = REPLACE(StakeLevelList, ';', ',')
 
 	-- Log old value
 	IF @SettingLevel = 1			-- Product setting level
