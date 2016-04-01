@@ -371,6 +371,74 @@ BEGIN
 			) sr
 			WHERE csld.StakeLevelList_New IS NULL;
 
+				-- Update masters: Get lowest value of Super if master has no value
+			IF	@RoleID = 4
+			BEGIN
+				UPDATE	csld
+				SET		csld.StakeLevelList_New = sr.LowestStakeLevel
+				FROM	#CustStakeLevelDownlines AS csld
+				CROSS APPLY (
+					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
+					FROM (
+						SELECT	CAST(val AS INT) AS val
+						FROM	dbo.strSplit(csld.StakeLevelList_Upline, ',')
+					) AS ss
+					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
+							ON	ss.val = sl.StakeLevelID
+					WHERE	sl.MinStake <> 0
+						AND	sl.MaxStake <> 0
+					ORDER BY	sl.MaxStake, sl.MinStake
+				) sr
+				WHERE	csld.RoleID = 3
+					AND	csld.StakeLevelList_New = '';
+			END
+
+				-- Update agents: Get lowest value of Master if agent has no value
+			IF	@RoleID = 4
+			BEGIN
+				UPDATE	csld
+				SET		csld.StakeLevelList_New = sr.LowestStakeLevel
+				FROM		#CustStakeLevelDownlines AS csld
+				INNER JOIN	#CustStakeLevelDownlines AS csld_upline
+						ON	csld.DirectUplineID = csld_upline.CustID
+						AND	csld_upline.BetType = csld.BetType
+						AND	csld_upline.StakeLevelList_New <> ''
+				CROSS APPLY (
+					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
+					FROM (
+						SELECT	CAST(val AS INT) AS val
+						FROM	dbo.strSplit(csld_upline.StakeLevelList_New, ',')
+					) AS ss
+					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
+							ON	ss.val = sl.StakeLevelID
+					WHERE	sl.MinStake <> 0
+						AND	sl.MaxStake <> 0
+					ORDER BY	sl.MaxStake, sl.MinStake
+				) sr
+				WHERE	csld.RoleID = 2
+					AND	csld.StakeLevelList_New = '';
+			END
+			ELSE IF	@RoleID = 3
+			BEGIN
+				UPDATE	csld
+				SET		csld.StakeLevelList_New = sr.LowestStakeLevel
+				FROM	#CustStakeLevelDownlines AS csld
+				CROSS APPLY (
+					SELECT TOP(1) ISNULL(CONVERT(VARCHAR(20), sl.StakeLevelID), '') AS LowestStakeLevel
+					FROM (
+						SELECT	CAST(val AS INT) AS val
+						FROM	dbo.strSplit(csld.StakeLevelList_Upline, ',')
+					) AS ss
+					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
+							ON	ss.val = sl.StakeLevelID
+					WHERE	sl.MinStake <> 0
+						AND	sl.MaxStake <> 0
+					ORDER BY	sl.MaxStake, sl.MinStake
+				) sr
+				WHERE	csld.RoleID = 2
+					AND	csld.StakeLevelList_New = '';
+			END
+
 				-- Update members: Get lowest value of Agent if member has no value
 			IF	@RoleID IN (4, 3)
 			BEGIN
@@ -493,6 +561,39 @@ BEGIN
 	SELECT	@ProductName = p.ProductName
 	FROM	DBPRO.bodb02.dbo.Products AS p WITH(NOLOCK)
 	WHERE	p.ProductID = @ProductID;
+
+	-- Update log value
+	WHILE 0 = 0
+	BEGIN
+	    UPDATE	slle
+		SET	slle.StakeLevelList_old = REPLACE(slle.StakeLevelList_old, sl.StakeLevelID, sl.StakeLevelValue)
+		FROM		#StakeLevelList_Excluded AS slle
+		CROSS APPLY	(	SELECT TOP(1)	CAST(sl.StakeLevelID AS VARCHAR(10)) AS StakeLevelID
+									,	sl.MinLabel + N'-' + sl.MaxLabel AS StakeLevelValue
+						FROM		dbo.strSplit(slle.StakeLevelList_old, ',') AS ss
+						INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
+								ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
+					) sl
+
+		IF	@@ROWCOUNT = 0
+			BREAK
+	END
+	
+	WHILE 0 = 0
+	BEGIN
+	    UPDATE	ts
+		SET	ts.StakeLevelList = REPLACE(ts.StakeLevelList, CAST(sl.StakeLevelID AS VARCHAR), sl.StakeLevelValue)
+		FROM		#tmpStake AS ts
+		CROSS APPLY	(	SELECT TOP(1)	CAST(sl.StakeLevelID AS VARCHAR(10)) AS StakeLevelID
+									,	sl.MinLabel + N'-' + sl.MaxLabel AS StakeLevelValue
+						FROM		dbo.strSplit(ts.StakeLevelList, ',') AS ss
+						INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
+								ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
+					) sl
+
+		IF	@@ROWCOUNT = 0
+			BREAK
+	END
 
 	-- Log old value
 	IF @SettingLevel = 1			-- Product setting level
