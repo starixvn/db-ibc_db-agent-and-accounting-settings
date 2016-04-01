@@ -124,7 +124,10 @@ Revisions:
 	ELSE
 		SELECT	@IsHideAllBet = 1
 	SELECT	@AllowedAllBet =	CASE	WHEN @RoleID = 4 AND @IsHideAllBet = 0 THEN 1
-										WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0 AND @IsHideAllBet = 0 THEN 1
+										WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0
+											AND dbo.f_GetProductStatus(cps.bitmapHasSynced, psp.bitmapOrder) = 0
+											AND @IsHideAllBet = 0 
+											THEN 1
 										ELSE 0
 								END
 	FROM	dbo.CustProductStatus AS cps WITH (NOLOCK)

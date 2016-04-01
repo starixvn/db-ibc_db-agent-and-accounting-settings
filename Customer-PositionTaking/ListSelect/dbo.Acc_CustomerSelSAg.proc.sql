@@ -201,6 +201,16 @@ B: 'B%'
 							ELSE 1 
 					END AS BIT) AS HideAllBet,
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+			1 AS SyncedAllBetUpline,
+			CASE	WHEN EXISTS	(	SELECT	1
+									FROM		dbo.CustProductStatus AS cpsDownline WITH (NOLOCK)
+									INNER JOIN	dbo.custInfo AS ciDownline WITH (NOLOCK)
+											ON	ciDownline.custid = cpsDownline.CustID
+									WHERE	ciDownline.srecommend = m.custid
+										AND	dbo.f_GetProductStatus(cpsDownline.bitmapHasSynced, @bitmapOrder_AllBet) = 0)
+						THEN 0
+					ELSE 1
+			END AS SyncedAllBetDownline,
 
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,  

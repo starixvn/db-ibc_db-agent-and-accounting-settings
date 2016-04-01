@@ -193,6 +193,16 @@ BEGIN
 							ELSE 1 
 					END AS BIT) AS HideAllBet,
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+			ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBetUpline,
+			CASE	WHEN EXISTS	(	SELECT	1
+									FROM		dbo.CustProductStatus AS cpsDownline WITH (NOLOCK)
+									INNER JOIN	dbo.custInfo AS ciDownline WITH (NOLOCK)
+											ON	ciDownline.custid = cpsDownline.CustID
+									WHERE	ciDownline.mrecommend = m.custid
+										AND	dbo.f_GetProductStatus(cpsDownline.bitmapHasSynced, @bitmapOrder_AllBet) = 0)
+						THEN 0
+					ELSE 1
+			END AS SyncedAllBetDownline,
 
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
@@ -218,8 +228,15 @@ BEGIN
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid
 			LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
 
-		   -- Check isHidden AllBet
-		   OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
+			-- Check isHidden AllBet
+			OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
+		
+			-- Upline Status
+			INNER JOIN	dbo.CustProductStatus AS cpsUpline WITH (NOLOCK)
+					ON	cpsUpline.CustID =	CASE	WHEN m.roleid = 1 THEN m.recommend
+													WHEN m.roleid = 2 THEN m.mrecommend
+													ELSE m.srecommend
+											END
 		   
 			 
 		WHERE m.SRecommend < 100 and m.roleid=3
@@ -261,6 +278,7 @@ BEGIN
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
 			cps.bitmapHasSynced,
+			cpsUpline.bitmapHasSynced,
 			AC.CommRate,
 			ac.CustId,
 			m.site,
