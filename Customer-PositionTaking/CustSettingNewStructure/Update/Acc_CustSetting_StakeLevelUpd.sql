@@ -167,13 +167,13 @@ BEGIN
 	-- Update Stake Level
 	IF	@RoleID = 1
 	BEGIN
-		-- Only processing if being different
-		DELETE	ts
-		FROM		#tmpStake AS ts
-		INNER JOIN	dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)
-				ON	ts.BetType = cslm.BetType
-		WHERE	cslm.CustID = @CustID 
-			AND	ts.StakeLevelList = cslm.StakeLevelList;
+		---- Only processing if being different
+		--DELETE	ts
+		--FROM		#tmpStake AS ts
+		--INNER JOIN	dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)
+		--		ON	ts.BetType = cslm.BetType
+		--WHERE	cslm.CustID = @CustID 
+		--	AND	ts.StakeLevelList = cslm.StakeLevelList;
 
 		INSERT INTO	#StakeLevelList_Excluded (BetType, StakeLevelList_old, ExcludedLevel)
 		SELECT	cslm.BetType
@@ -194,13 +194,13 @@ BEGIN
 	END;
 	ELSE IF @RoleID IN (2, 3, 4)
 	BEGIN
-		-- Downline Processing: only processing if being different.
-		DELETE	ts
-		FROM		#tmpStake ts
-		INNER JOIN	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
-				ON	ts.BetType = csla.BetType
-		WHERE	csla.CustID = @CustID 
-			AND	ts.StakeLevelList = csla.StakeLevelList;
+		---- Downline Processing: only processing if being different.
+		--DELETE	ts
+		--FROM		#tmpStake ts
+		--INNER JOIN	dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
+		--		ON	ts.BetType = csla.BetType
+		--WHERE	csla.CustID = @CustID 
+		--	AND	ts.StakeLevelList = csla.StakeLevelList;
 
 		INSERT INTO	#StakeLevelList_Excluded	-- Get excluded level compared with old 
 		SELECT	csla.BetType
