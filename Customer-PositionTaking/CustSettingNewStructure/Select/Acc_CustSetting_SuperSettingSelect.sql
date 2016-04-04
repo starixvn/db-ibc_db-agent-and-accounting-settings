@@ -19,7 +19,7 @@ AS
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
 	
 	Param's Explanation:
-	• @CustID: Super's ID
+	- @CustID: Super's ID
 	
 	*/
 BEGIN

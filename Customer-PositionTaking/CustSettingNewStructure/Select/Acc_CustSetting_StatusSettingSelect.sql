@@ -15,7 +15,7 @@ AS
 		- 20160330@Elodie: Get more IsSyncedUpline, IsSyncedDownline infomation [Redmine: #49606]
 
 	Param's Explanation:
-	• @CustID: 
+	- @CustID: 
 	
 	*/
 BEGIN

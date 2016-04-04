@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
+ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
 	@Currency int = NULL,
 	@Closed bit = NULL,
 	@DoubleCommLosing bit = NULL,

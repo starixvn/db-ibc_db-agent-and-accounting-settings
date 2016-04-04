@@ -1,4 +1,4 @@
-﻿ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
+ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
 					@CustID					INT
 				,	@AllowedFI				BIT = 1		OUTPUT --unused
 				,	@AllowedHR				BIT = 0		OUTPUT

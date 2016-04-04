@@ -18,7 +18,7 @@ AS
 	Revisions:
 
 	Param's Explanation:
-	• @Limit:
+	- @Limit:
 		6: WinLossLimit
 		<ROOT>
 				<Limit 
@@ -50,7 +50,7 @@ AS
 				/>
 		</ROOT>
 
-	• @SettingType: 6: WinLossLimit
+	- @SettingType: 6: WinLossLimit
 					8: WinLimit
 					9: LossLimit
 

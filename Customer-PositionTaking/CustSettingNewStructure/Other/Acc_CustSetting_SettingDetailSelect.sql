@@ -14,7 +14,7 @@ AS
 	Original:
 
 	Param's Explanation:
-	• @ProductID: ID of a product
+	- @ProductID: ID of a product
 	
 	*/
 BEGIN
