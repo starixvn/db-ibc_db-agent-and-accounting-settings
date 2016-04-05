@@ -35,9 +35,11 @@ BEGIN
 	if (dbo.f_CheckRepTable('CustProductStatus') = 1
 		AND dbo.f_CheckRepTable('ProductSettingDetail') = 1 
 		AND dbo.f_CheckRepTable('ProductStatusProfile') = 1
-		AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
+		--AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
 	)
 	BEGIN
+		IF (SELECT COUNT(1) FROM sys.objects WHERE NAME IN ('ProductStatusSiteCurrency')AND type = 'U') <> 1
+			RETURN
 		/********************************************* Product Status: SettingType = 4 ************************************/
 		--Get sporttype/Bettype for this setting type	
 		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
