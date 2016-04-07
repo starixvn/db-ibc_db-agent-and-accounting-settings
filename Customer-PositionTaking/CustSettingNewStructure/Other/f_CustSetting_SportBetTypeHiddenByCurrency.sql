@@ -4,6 +4,10 @@ ALTER FUNCTION	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency (
 				)
 RETURNS TABLE
 AS
+/*
+	Created:	20160325@Billy
+	Task:		Check hidden status by Site and Currency
+*/
 RETURN (
 	SELECT	c.custid
 		,	psd.ProductID
