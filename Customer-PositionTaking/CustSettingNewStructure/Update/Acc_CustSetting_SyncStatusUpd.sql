@@ -13,6 +13,7 @@ AS
 	Task: Update synchronize status on a product 
     
 	Revisions:
+		- 20160408@Billy: Remove Update Sync Log - [Redmine: #55472]
 
 	Parameters Explanation:  
 	
@@ -215,7 +216,7 @@ BEGIN
 	END
 	
 	--START LOGGING		
-
+	/*
 	-- Select ProductID and SettingLevel
 	SELECT @ProductID = ProductID, @SettingLevel = SettingLevel
 	FROM (	SELECT TOP 1 psd.ProductID, psd.SettingLevel
@@ -428,6 +429,8 @@ BEGIN
 			, @TrackingValue2	= @logSpData_Old
 			, @duration			= @duration
 	END CATCH
+	*/
+
 
 	DROP TABLE #NewSyncStatTbl
 	DROP TABLE #OldSyncStatTbl
