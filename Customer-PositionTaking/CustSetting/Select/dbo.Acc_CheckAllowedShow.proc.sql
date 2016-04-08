@@ -10,6 +10,7 @@ ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
 				,	@AllowedCockfighting	BIT = 0		OUTPUT
 				,	@AllowedCricket			BIT = 0		OUTPUT
 				,	@AllowedAllBet			BIT = 0		OUTPUT
+				,	@AllowedVoidBridge		BIT = 0		OUTPUT
 AS
 BEGIN
 /*
@@ -26,6 +27,7 @@ Revisions:
 	- 20151231@Helen: Cockfighting - Fix bug [Redmine: #48133]
 	- 20160114@Helen: Cricket - [Redmine: #50027]
 	- 20160317@Billy: AllBet - [Redmine: #53718]
+	- 20160407@Winnie: VoidBridge - [Redmine: #55532]
 */
 
 	SET NOCOUNT ON
@@ -35,8 +37,10 @@ Revisions:
 	DECLARE	@IsHideCockfighting		INT
 		,	@IsHideCricket			INT
 		,	@IsHideAllBet			INT
+		,	@IsHideVoidBridge		INT
 	DECLARE	@Cricket				INT = 20
 		,	@AllBet					INT = 21
+		,	@VoidBridge				INT = 22
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
 		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
@@ -53,6 +57,12 @@ Revisions:
 	BEGIN
 		SET @IsHideCricket = 0
 	END
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@VoidBridge,4))
+	BEGIN
+		SET @IsHideVoidBridge = 0
+	END
+	SET @AllowedVoidBridge = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
+										AND @IsHideVoidBridge = 0 THEN 1 ELSE 0 END
 	
 	IF @RoleID IN (2,3,4)
 	BEGIN
