@@ -72,7 +72,7 @@ BEGIN
 		INNER JOIN	#SportBetTypeFilter AS sbtf
 				ON	sbtf.SportType = csla.SportType
 				AND	sbtf.BetType = csla.BetType
-		CROSS APPLY	dbo.strSplit(csla.StakeLevelList, ',') AS ss
+		CROSS APPLY	dbo.strSplit(ISNULL(csla.StakeLevelList, ''), ',') AS ss
 		INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 				ON	sl.GameTypeID = sbtf.BetType
 				AND	sl.StakeLevelID = CAST(ss.val AS INT)
@@ -88,7 +88,7 @@ BEGIN
 		WITH ccsl AS (
 			SELECT csla.SportType, csla.BetType, CAST(ss.val AS INT) AS StakeLevelID
 			FROM		dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK)
-			CROSS APPLY	dbo.strSplit(csla.StakeLevelList, ',') AS ss
+			CROSS APPLY	dbo.strSplit(ISNULL(csla.StakeLevelList, ''), ',') AS ss
 			WHERE	csla.CustID = @CustID
 		)
 	    UPDATE	csl
@@ -104,7 +104,7 @@ BEGIN
 		WITH ccsl AS (
 			SELECT cslm.SportType, cslm.BetType, CAST(ss.val AS INT) AS StakeLevelID
 			FROM		dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)
-			CROSS APPLY	dbo.strSplit(cslm.StakeLevelList, ',') AS ss
+			CROSS APPLY	dbo.strSplit(ISNULL(cslm.StakeLevelList, ''), ',') AS ss
 			WHERE	cslm.CustID = @CustID
 		)
 	    UPDATE	csl
