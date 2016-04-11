@@ -176,12 +176,12 @@ BEGIN
 			
 	END
 
-	IF NOT EXISTS (
-			SELECT TOP 1 1
-			FROM #OldSyncStatTbl stt
-			WHERE stt.IsSynced <> @IsSynced
-			)
-		RETURN
+	--IF NOT EXISTS (
+	--		SELECT TOP 1 1
+	--		FROM #OldSyncStatTbl stt
+	--		WHERE stt.IsSynced <> @IsSynced
+	--		)
+	--	RETURN
 
 	--Update main table
 	
