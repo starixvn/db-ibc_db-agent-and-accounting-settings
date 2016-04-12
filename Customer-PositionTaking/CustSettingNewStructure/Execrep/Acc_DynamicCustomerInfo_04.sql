@@ -1,4 +1,4 @@
-﻿			
+			
 ALTER PROCEDURE [dbo].[Acc_DynamicCustomerInfo_04]
 	@custid int,
 	@roleid tinyint,

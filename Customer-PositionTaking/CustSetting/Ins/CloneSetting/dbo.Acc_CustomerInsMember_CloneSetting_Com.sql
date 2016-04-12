@@ -46,11 +46,11 @@ AS
 	- 20160217@Dominic: Not allow to create a IMBC customer from MBC customer and and vice versa [Redmine: #50028]
 	
  Explanation's Param:  
-	• @ErrCode:
+	- @ErrCode:
 		= 0: Create agent successfully.
 		> 0: Specific Error.
 	  
-	• @ErrMsg: Error description.	
+	- @ErrMsg: Error description.	
   
 */
 BEGIN

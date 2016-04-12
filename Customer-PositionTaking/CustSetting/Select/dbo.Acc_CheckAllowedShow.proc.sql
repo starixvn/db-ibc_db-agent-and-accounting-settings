@@ -1,15 +1,15 @@
-﻿ALTER PROCEDURE dbo.Acc_CheckAllowedShow
-	@CustID int,
-	@AllowedFI bit=1 output, --unused
-	@AllowedHR bit=0 output,
-	@AllowedCS bit=0 output,
-	@AllowedBI bit=0 output,
-	@AllowedLiveCS BIT = 0 OUTPUT,
-	@AllowedVS BIT = 0 OUTPUT,
-	@AllowedColossusbets BIT = 0 OUTPUT,
-	@AllowedCockfighting BIT = 0 OUTPUT,
-	@AllowedCricket BIT = 0 OUTPUT
-	
+ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
+					@CustID					INT
+				,	@AllowedFI				BIT = 1		OUTPUT --unused
+				,	@AllowedHR				BIT = 0		OUTPUT
+				,	@AllowedCS				BIT = 0		OUTPUT
+				,	@AllowedBI				BIT = 0		OUTPUT
+				,	@AllowedLiveCS			BIT = 0		OUTPUT
+				,	@AllowedVS				BIT = 0		OUTPUT
+				,	@AllowedColossusbets	BIT = 0		OUTPUT
+				,	@AllowedCockfighting	BIT = 0		OUTPUT
+				,	@AllowedCricket			BIT = 0		OUTPUT
+				,	@AllowedAllBet			BIT = 0		OUTPUT
 AS
 BEGIN
 /*
@@ -25,15 +25,18 @@ Revisions:
 	- 20151231@Helen: Cockfighting - [Redmine: #48133]
 	- 20151231@Helen: Cockfighting - Fix bug [Redmine: #48133]
 	- 20160114@Helen: Cricket - [Redmine: #50027]
-	
+	- 20160317@Billy: AllBet - [Redmine: #53718]
 */
 
 	SET NOCOUNT ON
 
 	Declare @mCurrencyID int, @RoleID int, @SyncCasino bit, @SyncBingo bit, @DisableBingo bit, @SyncLiveCS BIT  , @HideVirtualSports BIT
 	Declare @srecommend int, @mrecommend int, @recommend int
-	DECLARE @IsHideCockfighting INT, @IsHideCricket INT
-	DECLARE @Cricket INT = 20
+	DECLARE	@IsHideCockfighting		INT
+		,	@IsHideCricket			INT
+		,	@IsHideAllBet			INT
+	DECLARE	@Cricket				INT = 20
+		,	@AllBet					INT = 21
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
 		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
@@ -112,6 +115,31 @@ Revisions:
 
 	-- For Horse Racing	
 	Exec Acc_CheckHRAllowedCurrency @CurrencyID=@mCurrencyID, @Allowed= @AllowedHR OUTPUT
+
+
+	-- For AllBet
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@AllBet, 4))
+	    SELECT	@IsHideAllBet = sbhsc.IsHidden
+		FROM	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(@CustID, @AllBet) AS sbhsc
+	ELSE
+		SELECT	@IsHideAllBet = 1
+	SELECT	@AllowedAllBet =	CASE	WHEN @RoleID = 4 AND @IsHideAllBet = 0 THEN 1
+										WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0
+											AND dbo.f_GetProductStatus(cps.bitmapHasSynced, psp.bitmapOrder) = 1
+											AND @IsHideAllBet = 0 
+											THEN 1
+										ELSE 0
+								END
+	FROM	dbo.CustProductStatus AS cps WITH (NOLOCK)
+	CROSS JOIN	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+	INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK)
+			ON	psd.SportType = psp.Sporttype
+			AND	psd.BetType = psp.Bettype
+			AND	psd.SettingType = 4
+	WHERE	cps.CustID = @CustID
+		AND	psd.ProductID = @AllBet
+		
+
 END
 GO
 GRANT EXECUTE ON [dbo].Acc_CheckAllowedShow TO [bodbadminNet]

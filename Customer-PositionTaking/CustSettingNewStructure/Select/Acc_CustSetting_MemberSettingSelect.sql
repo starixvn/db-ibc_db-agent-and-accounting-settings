@@ -22,8 +22,8 @@ AS
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
   
  Param's Explanation:  
- • @CustID: Member's ID  
- • @RoleID:  2-Agent select  
+ - @CustID: Member's ID  
+ - @RoleID:  2-Agent select  
     3-Master select  
     4-Super select  
    

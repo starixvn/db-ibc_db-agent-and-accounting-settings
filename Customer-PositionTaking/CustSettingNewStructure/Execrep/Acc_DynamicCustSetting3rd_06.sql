@@ -20,7 +20,7 @@ AS
 		- 20160104@Dominic: Implementing Charge Commission Plugin - [Redmine: #49689]
 		- 20160219@Dominic: Remove commission on C981RMB - [Redmine: #51057]   
 	Param's Explanation:
-		• @SettingType: 3 - Given Comm
+		 @SettingType: 3 - Given Comm
 						5 - Charge Comm
 */
 BEGIN

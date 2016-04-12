@@ -20,7 +20,7 @@ AS
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
 	 
  Param's Explanation:  
- • @CustID: Agent's ID  
+ â€¢ @CustID: Agent's ID  
    
  */  
 BEGIN   

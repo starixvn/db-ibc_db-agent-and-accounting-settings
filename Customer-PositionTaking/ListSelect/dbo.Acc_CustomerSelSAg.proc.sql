@@ -1,12 +1,8 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelSAg]    Script Date: 07/10/2015 09:44:14 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 7/1/2015 1:08:45 PM ******/
-/****** Object:  Stored Procedure dbo.Acc_CustomerSelSAg    Script Date: 6/24/2015 10:09:54 AM ******/
+
 alter PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
@@ -57,6 +53,8 @@ Revisions:
 	- 20151028@Helen: Member Information to support Muay Thai  [Redmine: #45496]
 	- 20151209@Helen: Member information for Cockfighting [Redmine: #48133]
 	- 20160114@Helen: Cricket - [Redmine: #50027]
+	- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
+	
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -86,19 +84,30 @@ B: 'B%'
 	Declare @tbCurrency table (exchangeId int primary key)
 
 	 -- For DCS Product
-    DECLARE @bitmapOrder_MuayThai INT , @bitmapOrder_CockFighting INT, @bitmapOrder_Cricket INT
+    DECLARE	@bitmapOrder_MuayThai		INT
+		,	@bitmapOrder_CockFighting	INT
+		,	@bitmapOrder_Cricket		INT
+		,	@bitmapOrder_AllBet			INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
     SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
+	SET	@bitmapOrder_AllBet =	(
+									SELECT	psp.bitmapOrder
+									FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
+									WHERE	psp.Sporttype = 211
+										AND	psp.Bettype = 2401
+								)
     
-    DECLARE @IsHidden_MuayThai INT = 1
-    DECLARE @IsHidden_CockFighting INT = 1
-    DECLARE @IsHidden_Cricket INT = 1
+    DECLARE	@IsHidden_MuayThai			INT = 1
+		,	@IsHidden_CockFighting		INT = 1
+		,	@IsHidden_Cricket			INT = 1
+		,	@IsHidden_AllBet			INT = 1
     
-    DECLARE @SportBook2 INT = 16
-    DECLARE @CockFighting INT = 19
-    DECLARE @Cricket INT = 20
+    DECLARE	@SportBook2					INT = 16
+		,	@CockFighting				INT = 19
+		,	@Cricket					INT = 20
+		,	@AllBet						INT = 21
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -107,6 +116,10 @@ B: 'B%'
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@CockFighting,4))
 	BEGIN
 		SET @IsHidden_CockFighting = 0
+	END
+    IF EXISTS(SELECT TOP(1) 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@AllBet, 4))
+	BEGIN
+	    SET	@IsHidden_AllBet = 0
 	END
     
     IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@Cricket,4))
@@ -179,7 +192,26 @@ B: 'B%'
 			-- For CockFighting
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_CockFighting),1) AS DisableCockFighting,
 			CAST(CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCockFighting,
-		   
+		   -- For AllBet
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
+			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
+								AND	MAX(sbhsc.IsHidden) = 0
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideAllBet,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+			1 AS SyncedAllBetUpline,
+			CASE	WHEN EXISTS	(	SELECT	1
+									FROM		dbo.CustProductStatus AS cpsDownline WITH (NOLOCK)
+									INNER JOIN	dbo.custInfo AS ciDownline WITH (NOLOCK)
+											ON	ciDownline.custid = cpsDownline.CustID
+									WHERE	ciDownline.srecommend = m.custid
+										AND	dbo.f_GetProductStatus(cpsDownline.bitmapHasSynced, @bitmapOrder_AllBet) = 0)
+						THEN 0
+					ELSE 1
+			END AS SyncedAllBetDownline,
+
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,  
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,  
 			
@@ -217,6 +249,9 @@ B: 'B%'
 		   LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
 		   LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
 		   LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
+
+		   -- Check isHidden AllBet
+		   OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
 		   
 		WHERE m.currency = case when @Currency is null then m.currency else @Currency end
 			and ci.closed = case when @closed is null then ci.closed else @closed end
@@ -253,6 +288,7 @@ B: 'B%'
 			ci.DisableColossusBet,
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
+			cps.bitmapHasSynced,
 			groupa, 
 			groupb, 
 			groupc, 
@@ -338,7 +374,16 @@ B: 'B%'
 			-- For CockFighting
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_CockFighting),1) AS DisableCockFighting,
 			CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS HideCockFighting,
-					   
+			-- For AllBet
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
+			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
+								AND	MAX(sbhsc.IsHidden) = 0
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideAllBet,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
 			
@@ -361,6 +406,10 @@ B: 'B%'
 			LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 AND csuper.IsMyanmarOdds = 1
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
 			LEFT JOIN CustDiscount3rd_Agent cda WITH (NOLOCK) ON  cda.CustID = ci.custid AND cda.SportType = 50 AND cda.BetType = 501
+
+		   -- Check isHidden AllBet
+		   OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(m.custid, @AllBet) AS sbhsc
+		   
 			
 		WHERE	
 				m.custid IN (SELECT custid FROM DBAGE.bodb_AGE.dbo.Acc_CustGroup WITH (NOLOCK) WHERE groupname = @system AND roleid = 4)
@@ -397,6 +446,7 @@ B: 'B%'
 			ci.DisableColossusBet,
 			cps.bitmapIsDisabled,
 			cps.bitmapIsHidden,
+			cps.bitmapHasSynced,
 			csuper.IsMyanmarOdds,
 			ac.CommRate,
 			m.[site],cda.Discount

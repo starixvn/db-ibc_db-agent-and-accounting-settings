@@ -1,4 +1,4 @@
-ALTER FUNCTION dbo.f_StakeLevelcorrectString (@String VARCHAR(30), @ExcludeString VARCHAR(30))
+ALTER FUNCTION dbo.f_StakeLevelcorrectString (@String VARCHAR(100), @ExcludeString VARCHAR(100))
 RETURNS @outputTemp TABLE  
  (  
   String VARCHAR(100)
@@ -13,7 +13,7 @@ AS
 */	       
 BEGIN
 		
-	DECLARE @StringTemp VARCHAR(20) = ''
+	DECLARE @StringTemp VARCHAR(100) = ''
 			
 	IF @String <> '' AND @ExcludeString <> ''
 	BEGIN
