@@ -27,6 +27,7 @@ AS
 		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 		- 20160309@Dominic: Support controling default product status by site and by currency - [Redmine: #53604]
+		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 
 	*/
 BEGIN
@@ -35,11 +36,9 @@ BEGIN
 	if (dbo.f_CheckRepTable('CustProductStatus') = 1
 		AND dbo.f_CheckRepTable('ProductSettingDetail') = 1 
 		AND dbo.f_CheckRepTable('ProductStatusProfile') = 1
-		--AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
+		AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
 	)
 	BEGIN
-		IF (SELECT COUNT(1) FROM sys.objects WHERE NAME IN ('ProductStatusSiteCurrency')AND type = 'U') <> 1
-			RETURN
 		/********************************************* Product Status: SettingType = 4 ************************************/
 		--Get sporttype/Bettype for this setting type	
 		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
@@ -1177,8 +1176,12 @@ BEGIN
 
 		
 		/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
+		/*************************** Group Stake Level Member Single Selection : SettingType = 8 ***************************/
 		SELECT * INTO #SportBettypeFilter7
 		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,7)
+		INSERT INTO #SportBettypeFilter7
+		SELECT * 
+		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,8)
 		
 		BEGIN TRY
 			IF	@RoleID = 4

@@ -17,6 +17,7 @@ AS
             - 20151015@Billy: Fix log xml structure and naming
 			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
 			- 20160122@Helen: AllBet - always correct PT for Allbet
+			- 20160408@Winnie: VoidBridge - always correct PT for VoidBridge [RedmineID: #55532]
 		Parameter's Explanation:
 			@PT = <ROOT>
 					<PT SportType="1" BetType="1" IsLive="0" SuperPT="90" MasterPT ="90" AgentPT = "90" MinPT="0"/>
@@ -261,7 +262,7 @@ BEGIN
 	--check PT change or not	
 	SELECT @UpdateMinPT =0, @UpdatePresetPT = 0
 	
-	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211))  
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211,212))  
 		OR	EXISTS (SELECT TOP 1 1
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
@@ -277,7 +278,7 @@ BEGIN
 		SELECT @UpdatePresetPT = 1
 	END
 	
-	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211)) 
+	IF EXISTS (SELECT 1 FROM @tblPT WHERE SportType IN (211,212)) 
 		OR EXISTS (SELECT TOP 1 1
 					FROM CustPTSetting3rd_Agent cs WITH(NOLOCK)
 						INNER JOIN @tblPT t ON cs.sporttype = t.SportType 
