@@ -143,9 +143,9 @@ BEGIN
 						
 				INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced)
 				SELECT	@CustID
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrSync)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrSync)))
 						
 			END	ELSE IF @RoleID IN (3,2,1)
 			BEGIN
