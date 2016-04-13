@@ -231,7 +231,7 @@ BEGIN
 										AND	dbo.f_GetProductStatus(cpsDownline.bitmapHasSynced, @bitmapOrder_VoidBridge) = 0)
 						THEN 0
 					ELSE 1
-			END AS SyncedAllBetDownline,
+			END AS SyncedVoidBridgeDownline,
 
 			-- For Cricket
 			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
