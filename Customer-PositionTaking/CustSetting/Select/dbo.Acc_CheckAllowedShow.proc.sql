@@ -129,8 +129,9 @@ Revisions:
 
 	-- For AllBet
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@AllBet, 4))
-	    SELECT	@IsHideAllBet = sbhsc.IsHidden
-		FROM	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(@CustID, @AllBet) AS sbhsc
+		--SELECT	@IsHideAllBet = sbhsc.IsHidden
+		--FROM	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(@CustID, @AllBet) AS sbhsc
+		SELECT	@IsHideAllBet = 0
 	ELSE
 		SELECT	@IsHideAllBet = 1
 	SELECT	@AllowedAllBet =	CASE	WHEN @RoleID = 4 AND @IsHideAllBet = 0 THEN 1
