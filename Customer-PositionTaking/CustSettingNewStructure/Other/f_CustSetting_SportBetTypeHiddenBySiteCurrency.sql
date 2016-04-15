@@ -15,7 +15,7 @@ RETURN (
 		,	psd.BetType
 		,	c.currency
 		,	CASE	WHEN EXISTS (SELECT 1 FROM dbo.ProductStatusSiteCurrency AS sc WHERE sc.SportType = psd.SportType)
-						THEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) & ISNULL(pssc.IsHidden, psd.IsHidden)
+						THEN (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) & ISNULL(pssc.IsHidden, psd.IsHidden)
 					ELSE 0
 			END IsHidden
 	FROM		dbo.Customer AS c WITH (NOLOCK)
