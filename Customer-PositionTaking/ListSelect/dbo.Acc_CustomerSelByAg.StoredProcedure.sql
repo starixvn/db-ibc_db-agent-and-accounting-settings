@@ -50,6 +50,7 @@ BEGIN
 		- 20151209@Helen: Member information for Cockfighting [Redmine: #48133]
 		- 20160114@Helen: Cricket - [Redmine: #50027]
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
+		- 20160406@Dominic: HotFix Alpha-Customer List, Page Navigation is not shown If Filter Status/Double Comm <> "All" - [Redmine: #55457]
 		
 	Explanation's Param:
 		- @DoubleCommLosing:
@@ -153,18 +154,15 @@ BEGIN
 	END
 	ELSE IF @Username = ''
 	BEGIN
-		IF @Username = '' AND @Enabled IS NULL AND @Closed IS NULL AND @Suspended IS NULL  AND @DoubleCommLosing =2 -- default condition: get all
+		IF @TotalPages = 0
 		BEGIN
-			IF @TotalPages = 0
-			BEGIN
-				SELECT @TotalItems = count(ci.custid),@TotalPages=@TotalItems/@PageSize + case when @TotalItems%@PageSize > 0 then 1 else 0 end  
-				From Custinfo ci WITH(nolock)   
-				Where ci.Recommend = @recommend AND ci.roleid=1   
-					AND enabled = case when coalesce(@Closed,@Suspended) is not null then 1 else coalesce(@enabled, enabled) end  
-					AND isnull(ci.closed,0) = case when @suspended = 1 then 0 else coalesce(@closed, isnull(ci.closed, 0)) end  
-					AND isnull(ci.reject,0) = case when @Closed = 0 then 0 else coalesce(@suspended, isnull(ci.reject, 0))end     
-					and ci.DoubleCommLosing = case when @DoubleCommLosing = 2 then ci.DoubleCommLosing else @DoubleCommLosing end
-			END
+			SELECT @TotalItems = count(ci.custid),@TotalPages=@TotalItems/@PageSize + case when @TotalItems%@PageSize > 0 then 1 else 0 end  
+			From Custinfo ci WITH(nolock)   
+			Where ci.Recommend = @recommend AND ci.roleid=1   
+				AND enabled = case when coalesce(@Closed,@Suspended) is not null then 1 else coalesce(@enabled, enabled) end  
+				AND isnull(ci.closed,0) = case when @suspended = 1 then 0 else coalesce(@closed, isnull(ci.closed, 0)) end  
+				AND isnull(ci.reject,0) = case when @Closed = 0 then 0 else coalesce(@suspended, isnull(ci.reject, 0))end     
+				and ci.DoubleCommLosing = case when @DoubleCommLosing = 2 then ci.DoubleCommLosing else @DoubleCommLosing end
 		END
 		
 		INSERT INTO #memberList (custid, rn)
