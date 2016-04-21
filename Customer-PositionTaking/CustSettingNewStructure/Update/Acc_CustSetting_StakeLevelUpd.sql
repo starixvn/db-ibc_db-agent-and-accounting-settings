@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[Acc_CustSetting_StakeLevelUpd] 
+ALTER PROCEDURE dbo.Acc_CustSetting_StakeLevelUpd 
 		@CustID			INT
 	,	@StakeLevel		VARCHAR(MAX)
 	,	@SubAccID		INT				= 0
@@ -151,7 +151,7 @@ BEGIN
 
 	EXECUTE sp_xml_removedocument @iDoc;
 
-	EXECUTE [dbo].[Acc_CustSetting_StakeLevelCheck] 
+	EXECUTE dbo.Acc_CustSetting_StakeLevelCheck 
 				@CustID		= @CustID
 			,	@RoleID		= @RoleID
 			,	@AgentID	= @AgentID
@@ -183,7 +183,7 @@ BEGIN
 		FROM	dbo.CustStakeLevel_Member AS cslm WITH (NOLOCK)
 		INNER JOIN	#tmpStake AS ts
 				ON	ts.BetType = cslm.BetType
-		WHERE	cslm.CustID = @CustID
+		WHERE	cslm.CustID = @CustID;
 
 		-- Update current customer's stake level
 		UPDATE	cslm	WITH(ROWLOCK,UPDLOCK)
@@ -366,9 +366,7 @@ BEGIN
 				) AS ss
 				INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 						ON	ss.val = sl.StakeLevelID
-				WHERE	sl.MinStake <> 0
-					AND	sl.MaxStake <> 0
-				ORDER BY	sl.MaxStake, sl.MinStake
+				ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 			) sr
 			WHERE csld.StakeLevelList_New IS NULL;
 
@@ -386,13 +384,11 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csld.RoleID = 3
 					AND	csld.StakeLevelList_New = '';
-			END
+			END;
 
 				-- Update agents: Get lowest value of Master if agent has no value
 			IF	@RoleID = 4
@@ -412,13 +408,11 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csld.RoleID = 2
 					AND	csld.StakeLevelList_New = '';
-			END
+			END;
 			ELSE IF	@RoleID = 3
 			BEGIN
 				UPDATE	csld
@@ -432,13 +426,11 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csld.RoleID = 2
 					AND	csld.StakeLevelList_New = '';
-			END
+			END;
 
 				-- Update members: Get lowest value of Agent if member has no value
 			IF	@RoleID IN (4, 3)
@@ -458,13 +450,11 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csld.RoleID = 1
 					AND	csld.StakeLevelList_New = '';
-			END
+			END;
 			ELSE IF	@RoleID = 2
 			BEGIN
 				UPDATE	csld
@@ -478,13 +468,11 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csld.RoleID = 1
 					AND	csld.StakeLevelList_New = '';
-			END
+			END;
 			
 			-- No need to update if having the same value between old and new
 			DELETE	#CustStakeLevelDownlines
@@ -566,10 +554,10 @@ BEGIN
 	IF	@SettingType = 7
 	BEGIN
 		UPDATE #StakeLevelList_Excluded
-		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ',', ';')
+		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ',', ';');
 
 		UPDATE #tmpStake
-		SET StakeLevelList = REPLACE(StakeLevelList, ',', ';')
+		SET StakeLevelList = REPLACE(StakeLevelList, ',', ';');
 
 		WHILE 0 = 0
 		BEGIN
@@ -581,11 +569,11 @@ BEGIN
 							FROM		dbo.strSplit(slle.StakeLevelList_old, ';') AS ss
 							INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
-						) sl
+						) sl;
 
 			IF	@@ROWCOUNT = 0
-				BREAK
-		END
+				BREAK;
+		END;
 	
 		WHILE 0 = 0
 		BEGIN
@@ -597,18 +585,18 @@ BEGIN
 							FROM		dbo.strSplit(ts.StakeLevelList, ';') AS ss
 							INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
-						) sl
+						) sl;
 
 			IF	@@ROWCOUNT = 0
-				BREAK
-		END
+				BREAK;
+		END;
 
 		UPDATE #StakeLevelList_Excluded
-		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ';', ',')
+		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ';', ',');
 
 		UPDATE #tmpStake
-		SET StakeLevelList = REPLACE(StakeLevelList, ';', ',')
-	END
+		SET StakeLevelList = REPLACE(StakeLevelList, ';', ',');
+	END;
 	ELSE IF	@SettingType = 8
 	BEGIN
 		WHILE 0 = 0
@@ -623,11 +611,11 @@ BEGIN
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
 							INNER JOIN	dbo.GameGroup AS gg WITH (NOLOCK)
 									ON	gg.GameGroupID = sl.GameGroupID
-						) sl
+						) sl;
 
 			IF	@@ROWCOUNT = 0
-				BREAK
-		END
+				BREAK;
+		END;
 	
 		WHILE 0 = 0
 		BEGIN
@@ -641,12 +629,12 @@ BEGIN
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
 							INNER JOIN	dbo.GameGroup AS gg WITH (NOLOCK)
 									ON	gg.GameGroupID = sl.GameGroupID
-						) sl
+						) sl;
 
 			IF	@@ROWCOUNT = 0
-				BREAK
-		END
-	END
+				BREAK;
+		END;
+	END;
 
 	-- Log old value
 	IF @SettingLevel = 1			-- Product setting level
@@ -845,8 +833,8 @@ BEGIN
 END;
 
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_StakeLevelUpd] TO [bodbadminNet];
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelUpd TO bodbadminNet;
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_StakeLevelUpd] TO [bodbDownlineNet];
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelUpd TO bodbDownlineNet;
 GO
-GRANT EXECUTE ON [dbo].[Acc_CustSetting_StakeLevelUpd] TO [bodbExtAccNet];
+GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelUpd TO bodbExtAccNet;
