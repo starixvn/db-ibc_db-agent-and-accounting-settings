@@ -41,6 +41,7 @@ Revisions:
 	DECLARE	@Cricket				INT = 20
 		,	@AllBet					INT = 21
 		,	@VoidBridge				INT = 22
+		,	@bitOrderVB				INT
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
 		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
@@ -61,7 +62,9 @@ Revisions:
 	BEGIN
 		SET @IsHideVoidBridge = 0
 	END
-	SET @AllowedVoidBridge = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
+
+	SELECT TOP 1 @bitOrderVB=bitmapOrder FROM ProductStatusProfile(NOLOCK) WHERE Sporttype=212 AND Bettype=4001
+	SET @AllowedVoidBridge = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,@bitOrderVB) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
 										AND @IsHideVoidBridge = 0 THEN 1 ELSE 0 END
 	
 	IF @RoleID IN (2,3,4)

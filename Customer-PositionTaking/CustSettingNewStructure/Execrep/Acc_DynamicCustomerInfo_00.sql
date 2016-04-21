@@ -1230,9 +1230,7 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csla.CustID = @AgentID
 			END
