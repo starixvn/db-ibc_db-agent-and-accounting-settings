@@ -89,7 +89,7 @@ BEGIN
 									WHERE	srecommend = @CustID
 										--AND	roleid = 3
 										AND	dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
-								), 0)
+								), 1)
 				END AS IsSyncedDownline
 		FROM		#NewSyncStatTbl tmp
 		INNER JOIN	ProductStatusProfile PSP WITH (NOLOCK) 
@@ -120,7 +120,7 @@ BEGIN
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
 							WHERE mrecommend = @CustID	--AND roleid = 2
 								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
-							), 0)
+							), 1)
 								
 				 END AS IsSyncedDownline
 		
@@ -151,7 +151,7 @@ BEGIN
 									INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
 								WHERE recommend = @CustID	--AND roleid = 1
 									AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
-								), 0)
+								), 1)
 								
 				 END AS IsSyncedDownline
 		
@@ -432,6 +432,7 @@ BEGIN
 	DROP TABLE #NewSyncStatTbl
 	DROP TABLE #OldSyncStatTbl
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SyncStatusUpd] TO [bodbadminNet]
