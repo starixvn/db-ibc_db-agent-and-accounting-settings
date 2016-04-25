@@ -634,6 +634,12 @@ BEGIN
 			IF	@@ROWCOUNT = 0
 				BREAK;
 		END;
+
+		UPDATE #StakeLevelList_Excluded
+		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ',', ', ');
+
+		UPDATE #tmpStake
+		SET StakeLevelList = REPLACE(StakeLevelList, ',', ', ');
 	END;
 
 	-- Log old value
