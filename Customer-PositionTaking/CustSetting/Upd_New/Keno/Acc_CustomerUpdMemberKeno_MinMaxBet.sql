@@ -21,7 +21,8 @@ AS
 
 	Revisions:
         - 20141104@Logan:    Add constraint Member MinBet >= Global MinBet [Redmine: #25005]
-		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)					
+		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
+		- 20160413@Dominic: HotFix - Alpha - Update Keno setting - No error alert when update minbet=0 and minbet <upline minbet [Redmine: #55596]				
 	Param's Explanation:
 	* @ErrCode:
 		= 0: Transaction recorded successfully.
@@ -87,7 +88,7 @@ INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON cg.CustID = ci.custid
        AND cg.GameTypeID = @GameTypeID
   GROUP BY cg.GameTypeID
 
-	IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
+	IF (@MinMinBet > 0 AND NOT(@MinBet=0 AND @MaxBet=0 AND @MaxPerMatch=0) AND @MinBet < @MinMinBet)
 	BEGIN
 		SELECT @ErrMsg = @UserName + ': ' + CASE @Language
 				WHEN 'E' THEN 'Min bet must be equal to or greater than Agent min bet'
@@ -105,36 +106,39 @@ INNER JOIN dbo.custinfo ci WITH(NOLOCK) ON cg.CustID = ci.custid
        AND IsDep = 0
 
     --MinBet >= Global MinBet
-    IF (@MinMinBet > 0 AND @MinBet > 0 AND @MinBet < @MinMinBet)
-	BEGIN
-        SELECT @ErrMsg =
-                 CASE @Language 
-				   WHEN 'E' THEN 'Min Bet must be greater than or equal to Min Bet limit.'
-				   ELSE [dbo].[f_Get_MsgNamebyMsgID](10030, @Language)
-                 END + ' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
-             , @ErrCode = 107
-		RETURN
-    END
+    IF NOT(@MinBet=0 AND @MaxBet=0 AND @MaxPerMatch=0)
+    BEGIN
+		IF (@MinMinBet > 0 AND @MinBet < @MinMinBet)
+		BEGIN
+			SELECT @ErrMsg =
+					 CASE @Language 
+					   WHEN 'E' THEN 'Min Bet must be greater than or equal to Min Bet limit.'
+					   ELSE [dbo].[f_Get_MsgNamebyMsgID](10030, @Language)
+					 END + ' (' + CONVERT(VARCHAR(20), @MinMinBet) + ').'
+				 , @ErrCode = 107
+			RETURN
+		END
 
 
-	IF (@MaxMaxBet > 0 AND @MaxBet > 0 AND @MaxBet > @MaxMaxBet)
-	BEGIN
-		SELECT @ErrMsg = @UserName + ': ' + CASE @Language
-				WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10007, @Language)
-				END + ' (' + CONVERT(VARCHAR(20), @MaxMaxBet) + ').'
-			, @ErrCode = 104
-		RETURN
-	END
+		IF (@MaxMaxBet > 0 AND @MaxBet > @MaxMaxBet)
+		BEGIN
+			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
+					WHEN 'E' THEN 'Max bet must be equal to or less than Agent max bet'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](10007, @Language)
+					END + ' (' + CONVERT(VARCHAR(20), @MaxMaxBet) + ').'
+				, @ErrCode = 104
+			RETURN
+		END
 
-	IF (@MaxMaxPerMatch > 0 AND @MaxPerMatch > 0 AND @MaxPerMatch > @MaxMaxPerMatch)
-	BEGIN
-		SELECT @ErrMsg = @UserName + ': ' + CASE @Language
-				WHEN 'E' THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match'
-				ELSE [dbo].[f_Get_MsgNamebyMsgID](10008, @Language)
-				END + ' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatch) + ').'
-			, @ErrCode = 105
-		RETURN
+		IF (@MaxMaxPerMatch > 0 AND @MaxPerMatch > @MaxMaxPerMatch)
+		BEGIN
+			SELECT @ErrMsg = @UserName + ': ' + CASE @Language
+					WHEN 'E' THEN 'Max Per Match must be equal to or less than Master Agent Max Per Match'
+					ELSE [dbo].[f_Get_MsgNamebyMsgID](10008, @Language)
+					END + ' (' + CONVERT(VARCHAR(20), @MaxMaxPerMatch) + ').'
+				, @ErrCode = 105
+			RETURN
+		END
 	END
 
 	SELECT @Old_MinBet = cg.MinBet, @Old_MaxBet = cg.MaxBet, @Old_MaxPerGame = cg.MaxPerGameType
