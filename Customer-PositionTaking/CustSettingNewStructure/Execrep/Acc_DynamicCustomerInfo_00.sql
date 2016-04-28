@@ -1,7 +1,11 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_DynamicCustomerInfo_00]    Script Date: 4/28/2016 2:57:37 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+/****** Object:  Stored Procedure dbo.Acc_DynamicCustomerInfo_00    Script Date: 4/15/2016 4:37:30 PM ******/
 ALTER PROCEDURE [dbo].[Acc_DynamicCustomerInfo_00] 
 	@CustID				INT
 	, @SuperID			INT
@@ -143,9 +147,10 @@ BEGIN
 						
 				INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced)
 				SELECT	@CustID
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (1, CONVERT(VARCHAR(MAX),@xmlStrSync)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrSync)))
+
 						
 			END	ELSE IF @RoleID IN (3,2,1)
 			BEGIN
