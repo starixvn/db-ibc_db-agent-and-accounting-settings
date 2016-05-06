@@ -261,6 +261,9 @@ BEGIN
 									THEN 0
 								ELSE 1 
 						END AS BIT) AS HideAllBet,
+				CAST(CASE	WHEN	@IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapIsHidden, @bitmapOrder_AllBet), 1)=0
+						THEN 0 ELSE 1
+						END AS BIT) AS HideAllBetUpline,
 				ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
 				ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBetUpline,
 				CASE	WHEN EXISTS	(	SELECT	1
@@ -278,7 +281,10 @@ BEGIN
 				CAST(CASE WHEN @IsHidden_Cricket = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_Cricket),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCricket,
 				-- For VoidBridge
 				ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_VoidBridge), 1) AS DisableVoidBridge,
-				CAST(CASE WHEN @IsHidden_VoidBridge = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_VoidBridge), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideVoidBridge,
+				CAST(CASE WHEN @IsHidden_VoidBridge = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_VoidBridge), 1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideVoidBridge,				
+				CAST(CASE	WHEN	@IsHidden_VoidBridge = 0 AND ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapIsHidden, @bitmapOrder_VoidBridge), 1)=0
+				THEN 0 ELSE 1
+				END AS BIT) AS HideVoidBridgeUpline,
 				ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_VoidBridge), 0) AS SyncedVoidBridge,
 				ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_VoidBridge), 0) AS SyncedVoidBridgeUpline,
 
@@ -418,11 +424,13 @@ BEGIN
 			ctm.HideCockFighting,
 			ctm.DisableAllBet,
 			ctm.HideAllBet,
+			ctm.HideAllBetUpline,
 			ctm.SyncedAllBet,
 			ctm.SyncedAllBetUpline,
 			ctm.SyncedAllBetDownline,
 			ctm.DisableVoidBridge,
 			ctm.HideVoidBridge,
+			ctm.HideVoidBridgeUpline,
 			ctm.SyncedVoidBridge,
 			ctm.SyncedVoidBridgeUpline,
 			ctm.SyncedVoidBridgeDownline,
@@ -447,7 +455,6 @@ BEGIN
 	
 	
 END
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelBySAg] TO [bodbAdminNet] AS [dbo]
 GO
