@@ -11,6 +11,7 @@ AS
     
   Revisions:  
 	- 20151224@Patrick: Support RnG Casino
+	- 20160506@Billy:	Hotfix - Get wrong Global Setting LossLimit - [Redmine: #55947]
 
   Parameters Explanation:    
  */
@@ -37,9 +38,10 @@ BEGIN
 
 	IF @BetType = 2101 --RnG Casino
 	BEGIN
-		SELECT @MinLossLimit = MinLossLimit
-		FROM dbo.LossLimit_GlobalSetting WITH(NOLOCK)
-		WHERE ExchangeId = @CurrencyId
+		SELECT	@MinLossLimit = MinLossLimit
+		FROM	dbo.LossLimit_GlobalSetting WITH (NOLOCK)
+		WHERE	ExchangeId = @CurrencyId
+			AND	ProductId = 6
 	END
 
 	SELECT CustId
