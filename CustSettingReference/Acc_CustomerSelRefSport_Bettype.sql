@@ -13,6 +13,7 @@ AS
 		- 20150606@Kathy: Change link server DBTXN.CustDB to DBCust.CustDB [Redmine:#36216]
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
 		- 20160201@Percy: Support new Cricket [Redmine: #50027]
+		- 20160516@Dominic: Support Fast Market [Redmine: #56763]
 
 	Param's Explanation: 
 		@CustID (Login account): =NULL: Admin ; =NOT NULL: SMA 
@@ -31,6 +32,19 @@ BEGIN
 			,@IsMyanmarOdds BIT = 0
 			,@recommend INT = 0
 			,@isIMBC BIT = 0
+
+	SELECT *
+	INTO #Sport_Bettype_Reference 
+	FROM
+	(
+		SELECT [Bettype],[Sporttype],[isLicensee],[BettypeRef] ,[SporttypeRef] ,[isActive] ,[Site] 
+		FROM [dbo].[Sport_Bettype_Reference]
+		UNION ALL
+		SELECT DISTINCT [Bettype],[Sporttype],[isLicensee],[BetTypeRefPT] [BettypeRef] ,[SportTypeRefPT] [SporttypeRef] ,[isActive] ,[Site]
+		FROM [dbo].[Sport_Bettype_Reference_Setting]
+		WHERE ([Sporttype] <> [SportTypeRefPT] OR [Bettype] <> [BetTypeRefPT])
+		AND Bettype BETWEEN 221 AND 224 --Fast Market
+	) tmp
 
 	IF @RoleID = 1 AND ISNULL(@CustID, 0) <> 0
 		IF (SELECT [Site] FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
@@ -75,7 +89,7 @@ BEGIN
 		SET @IsMyanmarOdds = 1
 		
 	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
-	FROM	dbo.Sport_Bettype_Reference WITH (NOLOCK)
+	FROM	#Sport_Bettype_Reference WITH (NOLOCK)
 	WHERE	Sporttype NOT IN (
 				 CASE WHEN @DisableHRFixedOdds = 1 THEN 154 ELSE 0 END				--HR Fixed Odds
 				,CASE WHEN @DisableNumber = 1 THEN 161 ELSE 0 END					--Number Game
@@ -87,7 +101,7 @@ BEGIN
 			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
 	UNION ALL
 	SELECT	Sporttype, Bettype, SporttypeRef, BettypeRef,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
-	FROM Sport_Bettype_Reference
+	FROM #Sport_Bettype_Reference
 	WHERE   Sporttype IN (27, 50)
 			AND [Site] IN (
 				 CASE WHEN ISNULL(@CustID, 0) = 0 THEN 'IMBC' END -- ALL
