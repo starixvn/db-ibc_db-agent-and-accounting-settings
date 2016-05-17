@@ -13,7 +13,7 @@ AS
 	Task: Update synchronize status on a product 
     
 	Revisions:
-
+			- 20160425@Winnie: Fix bug #56577 [NAP] Log IsSyncedDownline is not changed
 	Parameters Explanation:  
 	
  */
@@ -82,14 +82,14 @@ BEGIN
 			,	CASE WHEN @downlines = 0	
 						THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),0)
 						ELSE ISNULL	((
-									SELECT	TOP 1 1
+									SELECT	TOP 1 0
 									FROM		dbo.custInfo ci WITH (NOLOCK)
 									INNER JOIN	dbo.CustProductStatus cps_temp 
 											ON	ci.custid = cps_temp.CustID
 									WHERE	srecommend = @CustID
-										AND	roleid = 3
-										AND	dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 1
-								), 0)
+										--AND	roleid = 3
+										AND	dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+								), 1)
 				END AS IsSyncedDownline
 		FROM		#NewSyncStatTbl tmp
 		INNER JOIN	ProductStatusProfile PSP WITH (NOLOCK) 
@@ -115,12 +115,12 @@ BEGIN
 			,	CASE 	
 					WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),0)
 					ELSE ISNULL((
-							SELECT TOP 1 1
+							SELECT TOP 1 0
 							FROM dbo.custInfo ci WITH (NOLOCK)
 								INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-							WHERE mrecommend = @CustID	AND roleid = 2
-								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 1
-							), 0)
+							WHERE mrecommend = @CustID	--AND roleid = 2
+								AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+							), 1)
 								
 				 END AS IsSyncedDownline
 		
@@ -146,12 +146,12 @@ BEGIN
 			, CASE 	
 						WHEN @downlines = 0	THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapHasSynced, PSP.bitmapOrder),0)
 						ELSE ISNULL((
-								SELECT TOP 1 1
+								SELECT TOP 1 0
 								FROM dbo.custInfo ci WITH (NOLOCK)
 									INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
-								WHERE recommend = @CustID	AND roleid = 1
-									AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 1
-								), 0)
+								WHERE recommend = @CustID	--AND roleid = 1
+									AND dbo.f_GetProductStatus(cps_temp.bitmapHasSynced, PSP.bitmapOrder) = 0
+								), 1)
 								
 				 END AS IsSyncedDownline
 		
@@ -206,7 +206,7 @@ BEGIN
 	--call execrept to update downline
 	IF @RoleID <> 1 
 	BEGIN
-		EXECUTE	dbo.[Acc_DynamicCustomerInfo_03] 
+				EXECUTE	dbo.[Acc_DynamicCustomerInfo_03] 
 					@CustID			= @CustID
 				,	@IsSynced       = @IsSynced
 				,	@RoleID			= @RoleID
@@ -432,6 +432,7 @@ BEGIN
 	DROP TABLE #NewSyncStatTbl
 	DROP TABLE #OldSyncStatTbl
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_SyncStatusUpd] TO [bodbadminNet]

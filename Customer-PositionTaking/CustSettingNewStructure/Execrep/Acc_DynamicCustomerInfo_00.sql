@@ -1,7 +1,11 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_DynamicCustomerInfo_00]    Script Date: 4/28/2016 2:57:37 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+/****** Object:  Stored Procedure dbo.Acc_DynamicCustomerInfo_00    Script Date: 4/15/2016 4:37:30 PM ******/
 ALTER PROCEDURE [dbo].[Acc_DynamicCustomerInfo_00] 
 	@CustID				INT
 	, @SuperID			INT
@@ -27,6 +31,7 @@ AS
 		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 		- 20160309@Dominic: Support controling default product status by site and by currency - [Redmine: #53604]
+		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 
 	*/
 BEGIN
@@ -35,11 +40,9 @@ BEGIN
 	if (dbo.f_CheckRepTable('CustProductStatus') = 1
 		AND dbo.f_CheckRepTable('ProductSettingDetail') = 1 
 		AND dbo.f_CheckRepTable('ProductStatusProfile') = 1
-		--AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
+		AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
 	)
 	BEGIN
-		IF (SELECT COUNT(1) FROM sys.objects WHERE NAME IN ('ProductStatusSiteCurrency')AND type = 'U') <> 1
-			RETURN
 		/********************************************* Product Status: SettingType = 4 ************************************/
 		--Get sporttype/Bettype for this setting type	
 		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
@@ -144,9 +147,10 @@ BEGIN
 						
 				INSERT INTO [dbo].[CustProductStatus]([CustID],bitmapIsDisabled,bitmapIsHidden,bitmapHasSynced)
 				SELECT	@CustID
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
-						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0, CONVERT(VARCHAR(MAX),@xmlStrSync)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrHidden)))
+						, (select bitmap from dbo.f_GenerateProductStatus_multiple (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, CONVERT(VARCHAR(MAX),@xmlStrSync)))
+
 						
 			END	ELSE IF @RoleID IN (3,2,1)
 			BEGIN
@@ -1177,8 +1181,12 @@ BEGIN
 
 		
 		/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
+		/*************************** Group Stake Level Member Single Selection : SettingType = 8 ***************************/
 		SELECT * INTO #SportBettypeFilter7
 		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,7)
+		INSERT INTO #SportBettypeFilter7
+		SELECT * 
+		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,8)
 		
 		BEGIN TRY
 			IF	@RoleID = 4
@@ -1227,9 +1235,7 @@ BEGIN
 					) AS ss
 					INNER JOIN	dbo.StakeLevel AS sl WITH(NOLOCK)
 							ON	ss.val = sl.StakeLevelID
-					WHERE	sl.MinStake <> 0
-						AND	sl.MaxStake <> 0
-					ORDER BY	sl.MaxStake, sl.MinStake
+					ORDER BY	sl.MaxStake, sl.MinStake, sl.GameGroupID
 				) sr
 				WHERE	csla.CustID = @AgentID
 			END

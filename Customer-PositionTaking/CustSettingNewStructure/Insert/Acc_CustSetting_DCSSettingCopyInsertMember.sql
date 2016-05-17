@@ -19,6 +19,7 @@ AS
 		- 20160115@Dominic: Do not update setting when there is no data Redmine: #50937
 		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #50082]
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
+		- 20160407@Winnie: Group stake level setting - [Redmine: #55532]
 	*/
 BEGIN
 	SET NOCOUNT ON
@@ -346,7 +347,8 @@ BEGIN
 	END
 	
 	/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
-	IF EXISTS (SELECT TOP(1) 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7))
+	/*************************** Group Stake Level Member Single Selection : SettingType = 8 ***************************/
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7) UNION ALL SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 8))
 	BEGIN
 		DECLARE	@NewStakeLevelTbl TABLE (
 					SportType		SMALLINT
