@@ -341,6 +341,9 @@ BEGIN
 		-- For VoidBridge
 		ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_VoidBridge),1) AS DisableVoidBridge,
 		CAST(CASE WHEN @IsHidden_VoidBridge = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_VoidBridge),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideVoidBridge,
+		CAST(CASE	WHEN	@IsHidden_VoidBridge = 0 AND ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapIsHidden, @bitmapOrder_VoidBridge), 1)=0
+				THEN 0 ELSE 1
+				END AS BIT) AS HideVoidBridgeUpline,
 		ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_VoidBridge), 0) AS SyncedVoidBridge,
 		ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_VoidBridge), 0) AS SyncedVoidBridgeUpline,
 		1 AS SyncedVoidBridgeDownline,
@@ -348,11 +351,14 @@ BEGIN
 		-- For AllBet
 		ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
 		CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
-							AND	sbhsc.IsHidden = 0
+							--AND	sbhsc.IsHidden = 0
 							AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
 							THEN 0
 						ELSE 1 
 				END AS BIT) AS HideAllBet,
+		CAST(CASE	WHEN	@IsHidden_AllBet = 0 AND ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapIsHidden, @bitmapOrder_AllBet), 1)=0
+				THEN 0 ELSE 1
+				END AS BIT) AS HideAllBetUpline,
 		ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
 		ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBetUpline,
 		1 AS SyncedAllBetDownline,
@@ -370,7 +376,7 @@ BEGIN
 		LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid
 
 		-- Check isHidden AllBet
-		OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(c.custid, @AllBet) AS sbhsc
+		--OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(c.custid, @AllBet) AS sbhsc
 		
 		-- Upline Status
 		INNER JOIN	dbo.CustProductStatus AS cpsUpline WITH (NOLOCK)
