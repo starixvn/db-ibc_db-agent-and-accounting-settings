@@ -31,7 +31,7 @@ AS
     
     
 	Revisions:
-	
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]			            
 	Parameters Explanation
 	
 */ 
@@ -57,6 +57,14 @@ BEGIN
 
 	IF (@roleid = 0)   
 		RETURN  
+	
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103
+		RETURN
+	END
 	
 	--Check disable user  
 	EXEC Acc_CustomerSelCheckEnable   

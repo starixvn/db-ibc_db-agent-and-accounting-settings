@@ -29,6 +29,7 @@ AS
         Revisions:
 			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST)
 			- 20151007@Elodie: Remove code to check old and new value
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
         Parameters Explanation:
     */
 BEGIN
@@ -86,9 +87,20 @@ BEGIN
     SELECT	@username			= username 
 			,@srecommend		= srecommend
 			,@recommend			= recommend
+			,@roleid = roleid
     FROM	dbo.CustInfo WITH(NOLOCK)
     WHERE	custid = @custid
 
+	
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+	
+	
     ----check if not change value
     --IF @db_v255spositiontaking_1701 = @v255spositiontaking_1701
     --    AND @db_v255mpositiontaking_1701 = @v255mpositiontaking_1701

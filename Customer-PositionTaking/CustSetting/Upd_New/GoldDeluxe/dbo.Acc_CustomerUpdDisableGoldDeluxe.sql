@@ -19,7 +19,7 @@
 		Revisions:
 			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST)
 			- 20150821@Elodie: Exclude WON currency for GoldDeluxe [Redmine: #41785]
-
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 		Parameter's Explanation:
 	*/
 BEGIN
@@ -49,6 +49,15 @@ BEGIN
 			@Currency = currency		
 	FROM custInfo WITH(NOLOCK)
 	WHERE custid = @custid
+	
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
 	
 	IF (@RoleID NOT IN (1, 2, 3, 4))
 	BEGIN

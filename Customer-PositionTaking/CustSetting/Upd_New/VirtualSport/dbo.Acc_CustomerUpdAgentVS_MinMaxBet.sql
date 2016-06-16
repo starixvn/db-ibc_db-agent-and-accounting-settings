@@ -27,7 +27,7 @@ Revisions:
 	- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)		
 	- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]				
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB)
-
+	- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -59,10 +59,20 @@ END
 Declare 
 	@MinMinBet money, @MaxMaxBet money,	@MaxMaxPerMatch money	
 declare @UserName varchar(30), @mrecommend int
+
+DECLARE @roleid TINYINT
 		
-Select @UserName = username, @mrecommend = mrecommend
+Select @UserName = username, @mrecommend = mrecommend, @roleid = roleid
 from customer with (NOLOCK)
 where CustID = @CustID and roleid = 2
+
+-- Only direct upline have update permission
+IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+BEGIN
+	SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+		   @ErrCode = 103	
+	RETURN
+END
 
 if (@UserName = NULL) return
 

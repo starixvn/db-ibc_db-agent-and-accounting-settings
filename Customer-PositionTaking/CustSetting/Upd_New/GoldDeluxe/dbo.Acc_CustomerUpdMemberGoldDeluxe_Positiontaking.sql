@@ -18,6 +18,8 @@ AS
 		Revisions:
 			- 20151007@Elodie: Remove code to check old and new value
 			- 20151016@Helen: Data Type Error - [Redmine - 45677] 
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
+			
 		Parameters Explanation:
 	*/
 BEGIN
@@ -54,16 +56,26 @@ BEGIN
 	
 		@auto_v255mpositiontaking_1701			SMALLMONEY,--um2
 		@isauto_v255mpositiontaking_1701		BIT--im2
+	
+	DECLARE @roleid TINYINT	
 
 	SELECT 	
 		@Recommend = recommend,
 		@MRecommend = mrecommend,
 		@SRecommend = srecommend,	
 		@UserName = username
+		, @roleid = roleid
 	FROM 
 		custinfo WITH (NOLOCK)
 	WHERE CustID = @CustID
 
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
 	--s1,u1,i1,m1,old_a1,im1,um1
 	SELECT @v255spositiontaking_1701 = spositiontaking,
 		@v255mpositiontaking_1701	 = mpositiontaking,

@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno    Script Date: 8/21/2014 2:58:11 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno]
     @custid INT,-- superid    
     @sporttype INT = 202,
     @bettype INT,
@@ -30,9 +30,10 @@ AS
 /*
     Created: 20140225@Elodie
     Task : Update Keno's Super PT 
-    DB: DBTXN/CustDB
+    DB: DBCUST/CustDB
+    
     Revisions:
-                
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]			            
     Param's Explanation:
     • @ErrCode is:
             -101 update success commission
@@ -54,7 +55,15 @@ BEGIN
         @roleid = @roleid OUTPUT
     IF (@roleid = 0) RETURN
     ---------------------------
-
+	
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103
+		RETURN
+	END
+	
     --Check disable user
     EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0
