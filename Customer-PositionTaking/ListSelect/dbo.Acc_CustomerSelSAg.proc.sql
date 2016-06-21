@@ -14,7 +14,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@PageSize int=50,
 	@PageIndex int=1,
 	@TotalPages int=0 OUTPUT,
-	@TotalItems int=0 OUTPUT
+	@TotalItems int=0 OUTPUT,
+	@Userid		INT=NULL
 AS
 BEGIN
 /*
@@ -55,6 +56,7 @@ Revisions:
 	- 20160114@Helen: Cricket - [Redmine: #50027]
 	- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 	- 20160407@Winnie: VoidBridge - [Redmine: #55259 ]
+	- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
 	
 Pattern Explanation:
 Search keyword: '%keyword%'
@@ -83,6 +85,9 @@ B: 'B%'
 	SELECT @PageIndex = @PageIndex - 1, @RowStart = @PageSize * @PageIndex + 1, @RowEnd = @RowStart + @PageSize - 1 
 	Declare @tbDummySuper table (custid int primary key)
 	Declare @tbCurrency table (exchangeId int primary key)
+	DECLARE @SearchQuery varchar(1024)
+	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
+	DECLARE @tmpUserid VARCHAR(50)
 
 	 -- For DCS Product
     DECLARE	@bitmapOrder_MuayThai		INT
@@ -139,6 +144,14 @@ B: 'B%'
 	
 	IF(@System = 'ACCOUNTING')
 	BEGIN
+	SELECT @tmpUserid=CAST(@Userid AS VARCHAR(50))
+	SELECT @SearchQuery = 'SELECT * 
+	FROM OPENQUERY(DBPOLICY, 
+	''SELECT siteid , site,SpecialGroup FROM bodb02.dbo.f_GetDeniedSiteByUser( ''''' + @tmpUserid + ''''')'')'
+
+	INSERT INTO  @tmp (siteid , site,SpecialGroup)
+	EXECUTE(@SearchQuery)
+	
 		IF @TotalPages = 0
 		BEGIN
 			SELECT @TotalItems = count(t.custid),@TotalPages=@TotalItems/@PageSize + case when @TotalItems%@PageSize > 0 then 1 else 0 end  
@@ -147,6 +160,7 @@ B: 'B%'
 				Select m.custid
 				FROM 
 					Custinfo as m with (NOLOCK)
+					INNER JOIN Customer a WITH(NOLOCK) ON m.custid=a.custid
 					INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 				WHERE m.currency = case when @Currency is null then m.currency else @Currency end											
 					and m.closed = case when @closed is null then m.closed else @closed end
@@ -154,6 +168,7 @@ B: 'B%'
 					and m.roleid=4 and m.custid>100 and m.username like @Keyword and m.username like @FirstChar		
 					and m.custid NOT IN(SELECT custid from f_DepSuper_1 ('all'))	
 					and m.DoubleCommLosing = case when @DoubleCommLosing is null then m.DoubleCommLosing else @DoubleCommLosing end
+					AND (@Userid IS NULL OR (@Userid IS NOT NULL AND a.site NOT IN (SELECT site FROM @tmp )))
 			) t
 		END
 
@@ -284,6 +299,7 @@ B: 'B%'
 			and csuper.isinternal = case when @IsInternal is null then csuper.isinternal else @IsInternal end
 			and m.roleid=4 and m.custid>100 and m.username like @Keyword and m.username like @FirstChar
 			and m.custid NOT IN(SELECT custid from f_DepSuper_1 ('all'))
+			AND (@Userid IS NULL OR (@Userid IS NOT NULL AND m.site NOT IN (SELECT site FROM @tmp )))
 		group by
 			ci.enabled, 
 			ci.closed, 
