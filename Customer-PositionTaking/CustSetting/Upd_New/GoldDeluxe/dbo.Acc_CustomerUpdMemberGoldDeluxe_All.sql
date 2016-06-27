@@ -1,11 +1,4 @@
-﻿USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]    Script Date: 05/12/2015 13:22:47 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
+﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
 	@custid		INT,
 	@recommend	INT,
 	@v255apositiontaking_1701	SMALLMONEY,
@@ -28,7 +21,7 @@ AS
 	DB: DBTXN/CustDB
 		
 	Revisions:
-
+		- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID)
 	Parameters Explanation:
 */
 BEGIN
@@ -39,7 +32,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelonging 
 		@SessionCustID = @Userid, 
 		@Custid = @custid,
 		@roleid = @roleid OUTPUT
@@ -47,7 +40,7 @@ BEGIN
 	---------------------------
 
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
+	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
 	BEGIN
 		select @ErrCode = @ErrCode + cast(@ErrCode_cur as varchar(300)) + char(7), 
@@ -85,8 +78,6 @@ BEGIN
 
 	END
 END
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All] TO [bodbAdminNet] AS [dbo]
 GO
