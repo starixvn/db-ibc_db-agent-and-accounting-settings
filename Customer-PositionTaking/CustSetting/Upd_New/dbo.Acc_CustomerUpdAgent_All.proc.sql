@@ -482,7 +482,7 @@ Param's Explanation:
 	IF @UpdateMultiple = 0
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''	
-		EXEC dbo.Acc_CustomerUpdUserInfo
+				EXEC dbo.Acc_CustomerUpdUserInfo
 					@CustID = @CustID,
 					@firstname = @firstname,
 					@lastname = @lastname,
@@ -504,6 +504,7 @@ Param's Explanation:
 			
 		END
 		ELSE
+
 		BEGIN
 			Select @ErrCode = @ErrCode + '-101'+char(7), @ErrMsg = @ErrMsg + char(7)
 		END
@@ -695,7 +696,7 @@ Param's Explanation:
 		@UpdateMinMaxBetv161 = 1    
 	BEGIN
 		Select @ErrCode_Cur = 0, @ErrMsg_Cur = ''
-		EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet_xtest
+				EXEC dbo.Acc_CustomerUpdAgent_MinMaxBet
 			@custid = @custid,
 			@minbet = @minbet,
 			@maxbet = @maxbet,
@@ -880,6 +881,7 @@ Param's Explanation:
 			@v2mpositiontaking_20_old smallmoney,
 
 			@v3mpositiontaking_1_old smallmoney,
+
 			@v3mpositiontaking_2_old smallmoney,
 			@v3mpositiontaking_3_old smallmoney,
 			@v3mpositiontaking_20_old smallmoney,
