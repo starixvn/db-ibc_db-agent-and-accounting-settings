@@ -34,12 +34,12 @@ EXECUTE(@SearchQuery)
 
 IF(@System = 'ACCOUNTING')
 BEGIN
-
+	
 	Select c.custid, c.username, c.currency as exchangeid, c.[site] AS siteName
 	from customer as c with (NOLOCK) 
 	where c.roleid=4 and c.custid>100  
 	and c.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
-	AND @Userid IS NULL OR (@Userid IS NOT NULL AND site NOT IN (SELECT site FROM @tmp ))
+	AND (@Userid IS NULL OR (@Userid IS NOT NULL AND site NOT IN (SELECT site FROM @tmp )))
 	order by c.username   
 END
 ELSE
