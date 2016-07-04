@@ -16,7 +16,7 @@ AS
 
 	Revisions:
 		- 20160404@Billy: Integrate Group Stake Level Setting for DCS - [Redmine: #54994]
-
+		- 20160704@Winnie: Fix bug copy member settting type =7 & =8
 	Param's Explanation:
 		@StakeLevel:
 		<ROOT>
@@ -44,7 +44,7 @@ BEGIN
 	DECLARE	@ProductID					TINYINT
 		,	@ProductName				VARCHAR(50)
 		,	@SettingLevel				TINYINT
-		,	@SettingType				SMALLINT;
+		--,	@SettingType				SMALLINT;
 		
 	DECLARE @AgentID					INT
 		,	@MasterID					INT
@@ -530,8 +530,7 @@ BEGIN
 
 	-- Select ProductID and SettingLevel
 	SELECT	@ProductID    = iq.ProductID
-		,	@SettingLevel = iq.SettingLevel
-		,	@SettingType = iq.SettingType
+		,	@SettingLevel = iq.SettingLevel		
 	FROM (	SELECT TOP(1) 
 					psd.ProductID
 				,	psd.SettingLevel
@@ -551,7 +550,14 @@ BEGIN
 	WHERE	p.ProductID = @ProductID;
 
 	-- Update log value
-	IF	@SettingType = 7
+	IF	EXISTS (SELECT TOP 1 1
+			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	#tmpStake AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				AND psd.SettingType=7 )
 	BEGIN
 		UPDATE #StakeLevelList_Excluded
 		SET	StakeLevelList_old = REPLACE(StakeLevelList_old, ',', ';');
@@ -569,6 +575,7 @@ BEGIN
 							FROM		dbo.strSplit(slle.StakeLevelList_old, ';') AS ss
 							INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
+							WHERE sl.GameGroupID=0
 						) sl;
 
 			IF	@@ROWCOUNT = 0
@@ -585,6 +592,7 @@ BEGIN
 							FROM		dbo.strSplit(ts.StakeLevelList, ';') AS ss
 							INNER JOIN	dbo.StakeLevel AS sl WITH (NOLOCK)
 									ON	ss.val = CAST(sl.StakeLevelID AS NVARCHAR(10))
+							WHERE sl.GameGroupID=0
 						) sl;
 
 			IF	@@ROWCOUNT = 0
@@ -597,7 +605,14 @@ BEGIN
 		UPDATE #tmpStake
 		SET StakeLevelList = REPLACE(StakeLevelList, ';', ',');
 	END;
-	ELSE IF	@SettingType = 8
+	IF	EXISTS (SELECT TOP 1 1
+			FROM		ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	#tmpStake AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				AND psd.SettingType=8 )
 	BEGIN
 		WHILE 0 = 0
 		BEGIN
