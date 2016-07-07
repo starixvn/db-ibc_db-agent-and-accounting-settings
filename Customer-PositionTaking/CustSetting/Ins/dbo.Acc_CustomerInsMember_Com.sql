@@ -409,6 +409,7 @@ Revisions:
 	- 20160222@Dominic: Log initial status is blank [Redmine: #52657]
 	- 20160315@Winnie: Hotfix 51457 write wrong log info
 	- 20160627@Winnie: Out right PT [Redmine #59438]
+	- 20160707@Winnie: #48948 Hide_special_sites_from_unautorized_users
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -417,6 +418,25 @@ Param's Explanation:
 • @ErrMsg: Error description.
 */
 	SET NOCOUNT ON
+	
+	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
+	DECLARE @tmpUserid VARCHAR(50)
+	
+	DECLARE @SearchQuery varchar(1024)
+	SELECT @tmpUserid=CAST(@creator AS VARCHAR(50))
+	SELECT @SearchQuery = 'SELECT * 
+	FROM OPENQUERY(DBPOLICY, 
+	''SELECT siteid , site,SpecialGroup FROM bodb02.dbo.f_GetDeniedSiteByUser( ''''' + @tmpUserid + ''''')'')'
+
+	INSERT INTO  @tmp (siteid , site,SpecialGroup)
+	EXECUTE(@SearchQuery)	
+	
+	IF (@site IN (SELECT site FROM @tmp ))
+	BEGIN
+		SELECT @ErrCode = 103, @ErrMsg ='You don''t have permission to access'
+		RETURN
+	END
+	
 	----- Elodie @ 01 JUN 2015 -------------------
 		DECLARE @tmp_GameType TABLE (GameTypeID INT, GameTypeName NVARCHAR(50), IsDisabled BIT, IBCBettypeID INT)
 
