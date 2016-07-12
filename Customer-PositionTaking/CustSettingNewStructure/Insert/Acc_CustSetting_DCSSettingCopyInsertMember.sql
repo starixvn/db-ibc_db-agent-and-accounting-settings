@@ -466,7 +466,7 @@ BEGIN
 	END
 	
 	/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
-	/*************************** Group Stake Level Member Single Selection : SettingType = 8 ***************************/
+	
 	IF EXISTS (SELECT TOP 1 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7))
 	BEGIN
 		DECLARE @ProductID7 INT
@@ -501,7 +501,7 @@ BEGIN
 											,	nslt.StakeLevelList		AS '@StakeLevelList'
 										FROM	@NewStakeLevelTbl AS nslt
 										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID7 
+										WHERE psd.ProductID=@ProductID7 AND SettingType=7
 										FOR XML PATH('StakeLevel')
 									,	ROOT('ROOT')
 									,	TYPE
@@ -509,7 +509,7 @@ BEGIN
 	
 		SELECT	@xmlStr = CONVERT(VARCHAR(MAX), @xmlStakeLevel)
 
-		EXEC	dbo.Acc_CustSetting_StakeLevelUpd
+		EXEC	dbo.Acc_CustSetting_StakeLevelUpd 
 					@CustID		= @CustID
 				,	@StakeLevel	= @xmlStr
 				,	@SubAccID	= @SubAccID
@@ -520,7 +520,7 @@ BEGIN
 		DELETE FROM	#TempStakeLevel WHERE ProductID=@ProductID7			
 	END
 	END
-	
+	/****************************** Stake Level Member Single Selection : SettingType = 8 ******************************/
 	IF EXISTS (SELECT TOP 1 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 8))
 	BEGIN
 		DECLARE @ProductID8 INT
@@ -556,7 +556,7 @@ BEGIN
 											,	nslt.StakeLevelList		AS '@StakeLevelList'
 										FROM	@NewStakeLevelTbl8 AS nslt
 										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID8 
+										WHERE psd.ProductID=@ProductID8 AND SettingType=8
 										FOR XML PATH('StakeLevel')
 									,	ROOT('ROOT')
 									,	TYPE
@@ -578,6 +578,7 @@ BEGIN
 		END
 	END
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_DCSSettingCopyInsertMember] TO [bodbDownlineNet]
