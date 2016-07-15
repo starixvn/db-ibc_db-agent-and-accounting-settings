@@ -93,14 +93,16 @@ BEGIN
 		
 		INSERT INTO #TempPT(ProductID)	
 		SELECT 
+				DISTINCT
 				psd.ProductID				
 		FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 		INNER JOIN	@NewPTTble AS ts
 				ON	ts.SportType = psd.SportType
 				AND	ts.BetType = psd.BetType
-		WHERE	psd.ProductID IS NOT NULL
+		WHERE	psd.SettingType =1
+			AND psd.ProductID IS NOT NULL
 			AND	psd.SettingLevel IS NOT NULL
-			AND psd.SettingType =1
+			
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempPT)
 		BEGIN
 		SELECT TOP 1 @ProductID1=ProductID FROM #TempPT
@@ -112,8 +114,8 @@ BEGIN
 								, nslt.IsLive		AS '@IsLive'
 								, AgentPT		AS '@AgentPT'
 							FROM @NewPTTble nslt
-							INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID1
+							INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType AND nslt.IsLive=psd.IsLive
+										WHERE psd.SettingType=1 AND psd.ProductID=@ProductID1
 							FOR XML PATH('PT')
 								, TYPE
 							)
@@ -121,7 +123,7 @@ BEGIN
 							, TYPE
 						)
 	
-		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlPT)
+		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlPT)	
 		
 		IF EXISTS (SELECT TOP 1 1 FROM @NewPTTble)
 		BEGIN
@@ -134,6 +136,7 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
+		
 		DELETE FROM	#TempPT WHERE ProductID=@ProductID1
 		END
 	END
@@ -162,14 +165,16 @@ BEGIN
 		
 		INSERT INTO #TempBetlimit(ProductID)	
 		SELECT 
+				DISTINCT
 				psd.ProductID				
 		FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 		INNER JOIN	@NewBetLimitTbl AS ts
 				ON	ts.SportType = psd.SportType
 				AND	ts.BetType = psd.BetType
-		WHERE	psd.ProductID IS NOT NULL
+		WHERE	psd.SettingType =2
+			AND psd.ProductID IS NOT NULL
 			AND	psd.SettingLevel IS NOT NULL
-			AND psd.SettingType =2
+			
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempBetlimit)
 		BEGIN
 		SELECT TOP 1 @ProductID2=ProductID FROM #TempBetlimit		
@@ -180,8 +185,8 @@ BEGIN
 										, MaxBet		AS '@MaxBet'
 										, MaxPerMatch	AS '@MaxPerMatch'
 									FROM @NewBetLimitTbl nslt
-									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID2
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType
+										WHERE psd.SettingType=2 AND psd.ProductID=@ProductID2
 									FOR XML PATH('BetLimit')
 										, TYPE
 									)
@@ -226,14 +231,16 @@ BEGIN
 		
 		INSERT INTO #TempComm(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewDiscountTbl AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE	psd.SettingType =3
+				AND psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =3
+			
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempComm)
 		BEGIN
 		SELECT TOP 1 @ProductID3=ProductID FROM #TempComm		
@@ -243,7 +250,7 @@ BEGIN
 										, Discount AS '@Discount'
 									FROM @NewDiscountTbl nslt
 									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID3
+										WHERE psd.SettingType =3 AND psd.ProductID=@ProductID3
 									FOR XML PATH('Discount')
 										, TYPE
 									)
@@ -289,14 +296,16 @@ BEGIN
 		
 		INSERT INTO #TempChargeComm(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewChargeCommTbl AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE	psd.SettingType =5
+				AND psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =5
+				
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempChargeComm)
 		BEGIN
 		SELECT TOP 1 @ProductID5=ProductID FROM #TempChargeComm		
@@ -306,7 +315,7 @@ BEGIN
 										, Discount AS '@Discount'
 									FROM @NewChargeCommTbl nslt
 									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID5
+										WHERE psd.SettingType =5 AND psd.ProductID=@ProductID5
 									FOR XML PATH('Discount')
 										, TYPE
 									)
@@ -355,14 +364,16 @@ BEGIN
 
 		INSERT INTO #TempStatus(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewDisableStatTbl AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE psd.SettingType =4
+				AND	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =4
+				
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempStatus)
 		BEGIN
 		SELECT TOP 1 @ProductID4=ProductID FROM #TempStatus		
@@ -373,7 +384,7 @@ BEGIN
 									, nslt.IsDisabledDownline AS '@IsDisabledDownline'
 								FROM @NewDisableStatTbl nslt								
 									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID4
+										WHERE psd.SettingType =4 AND psd.ProductID=@ProductID4
 								FOR XML PATH('ProductStatus')
 									, TYPE
 								)
@@ -422,14 +433,16 @@ BEGIN
 		
 		INSERT INTO #TempWLLimit(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewWinLossLimitTbl AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE	psd.SettingType =6
+				AND psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =6
+				
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempWLLimit)
 		BEGIN
 		SELECT TOP 1 @ProductID6=ProductID FROM #TempWLLimit
@@ -441,7 +454,7 @@ BEGIN
 										, nslt.IsAutoReset	AS '@IsAutoReset'
 									FROM @NewWinLossLimitTbl nslt
 									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID6
+										WHERE psd.SettingType =6 AND psd.ProductID=@ProductID6
 									FOR XML PATH('Limit')
 										, TYPE
 									)
@@ -484,14 +497,16 @@ BEGIN
 		
 		INSERT INTO #TempStakeLevel(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewStakeLevelTbl AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE	psd.SettingType =7
+				AND psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =7
+				
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempStakeLevel)
 		BEGIN
 		SELECT TOP 1 @ProductID7=ProductID FROM #TempStakeLevel
@@ -501,7 +516,7 @@ BEGIN
 											,	nslt.StakeLevelList		AS '@StakeLevelList'
 										FROM	@NewStakeLevelTbl AS nslt
 										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID7 AND SettingType=7
+										WHERE SettingType=7 AND  psd.ProductID=@ProductID7 
 										FOR XML PATH('StakeLevel')
 									,	ROOT('ROOT')
 									,	TYPE
@@ -539,14 +554,16 @@ BEGIN
 		
 		INSERT INTO #TempStakeLevel8(ProductID)	
 			SELECT 
+					DISTINCT
 					psd.ProductID				
 			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	@NewStakeLevelTbl8 AS ts
 					ON	ts.SportType = psd.SportType
 					AND	ts.BetType = psd.BetType
-			WHERE	psd.ProductID IS NOT NULL
+			WHERE	psd.SettingType =8
+				AND psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType =8
+				
 		WHILE (EXISTS (SELECT TOP 1 1 FROM #TempStakeLevel8))
 		BEGIN
 		SELECT TOP 1 @ProductID8=ProductID FROM #TempStakeLevel8
@@ -556,7 +573,7 @@ BEGIN
 											,	nslt.StakeLevelList		AS '@StakeLevelList'
 										FROM	@NewStakeLevelTbl8 AS nslt
 										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.ProductID=@ProductID8 AND SettingType=8
+										WHERE SettingType=8 AND psd.ProductID=@ProductID8 
 										FOR XML PATH('StakeLevel')
 									,	ROOT('ROOT')
 									,	TYPE
