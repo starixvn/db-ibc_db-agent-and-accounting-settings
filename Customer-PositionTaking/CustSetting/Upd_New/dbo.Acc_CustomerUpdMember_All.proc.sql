@@ -157,7 +157,15 @@
 	@v161alivepositiontaking_89 smallmoney = 0,
 	@v161alivepositiontaking_90 smallmoney = 0,
 
-
+	-- Outright PT for sports
+	
+	@v2apositiontaking_10 SMALLMONEY, 
+	@v3apositiontaking_10 SMALLMONEY, 
+	@v5apositiontaking_10 SMALLMONEY, 
+	@v8apositiontaking_10 SMALLMONEY, 
+	@v10apositiontaking_10 SMALLMONEY, 
+	@v11apositiontaking_10 SMALLMONEY, 
+	@v99apositiontaking_10 SMALLMONEY, 
 
 	@UpdatePositiontaking BIT = 1,   
 	@UpdatePositiontakingv2 BIT = 1,  
@@ -216,6 +224,7 @@ Revisions:
  - 20150904@Helen: commission setting for MO [Redmine #41470]
  - 20160104@Helen: Disallow SMA changes password or updates account status of members - [Redmine:#49967]  
  - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
+ - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -631,7 +640,16 @@ BEGIN
 	  @v161alivepositiontaking_86_old SMALLMONEY,  
 	  @v161alivepositiontaking_87_old SMALLMONEY,  
 	  @v161alivepositiontaking_89_old SMALLMONEY, 
-	  @v161alivepositiontaking_90_old SMALLMONEY
+	  @v161alivepositiontaking_90_old SMALLMONEY,
+	  -- Outright PT sports
+	  @v2apositiontaking_10_old SMALLMONEY,
+	  @v3apositiontaking_10_old SMALLMONEY,
+	  @v5apositiontaking_10_old SMALLMONEY,
+	  @v8apositiontaking_10_old SMALLMONEY,
+	  @v10apositiontaking_10_old SMALLMONEY,
+	  @v11apositiontaking_10_old SMALLMONEY,
+	  @v99apositiontaking_10_old SMALLMONEY
+	  
 	    
 	    
 	 --Get old_PT a2  
@@ -646,6 +664,15 @@ BEGIN
 	 select @apositiontaking_6_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=6 and sporttype=1  
 	 select @apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=1  
 	 select @apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=1  
+	 -- Outright PT for sports
+	 select @v2apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=2  
+	 select @v3apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=3  
+	 select @v5apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=5  
+	 select @v8apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=8  
+	 select @v10apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=10  
+	 select @v11apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=11 
+	 select @v99apositiontaking_10_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=99  
+	 
 	 select @apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=1  
 	  
 	 select @v2apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=2  
@@ -653,7 +680,7 @@ BEGIN
 	 select @v2apositiontaking_3_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=2  
 	 select @v2apositiontaking_7_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=7 and sporttype=2  
 	 select @v2apositiontaking_8_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=8 and sporttype=2  
-	 --select @v2apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=2  
+	 --select @v2apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=2
 	 select @v2apositiontaking_20_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=20 and sporttype=2  
 	  
 	 select @v3apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=3  
@@ -755,11 +782,20 @@ BEGIN
 	   @v161alivepositiontaking_86 <> @v161alivepositiontaking_86_old or  
 	   @v161alivepositiontaking_87 <> @v161alivepositiontaking_87_old or  
 	   @v161alivepositiontaking_89 <> @v161alivepositiontaking_89_old or  
-	   @v161alivepositiontaking_90 <> @v161alivepositiontaking_90_old   
+	   @v161alivepositiontaking_90 <> @v161alivepositiontaking_90_old or  
+	   -- Outright PT for sports
+	   @v2apositiontaking_10 <> @v2apositiontaking_10_old or  
+	   @v3apositiontaking_10 <> @v3apositiontaking_10_old or  
+	   @v5apositiontaking_10 <> @v5apositiontaking_10_old or  
+	   @v8apositiontaking_10 <> @v8apositiontaking_10_old or  
+	   @v10apositiontaking_10 <> @v10apositiontaking_10_old or  
+	   @v11apositiontaking_10 <> @v11apositiontaking_10_old or  
+	   @v99apositiontaking_10 <> @v99apositiontaking_10_old 
+	   
 	     
 
 	 BEGIN  
-					EXEC dbo.Acc_CustomerUpdMember_PositionTaking   
+		EXEC dbo.Acc_CustomerUpdMember_PositionTaking   
 	   @custid = @custid,  
 	   @apositiontaking_1 = @apositiontaking_1,  
 	   @apositiontaking_2 = @apositiontaking_2,  
@@ -819,6 +855,15 @@ BEGIN
 	   @v161alivepositiontaking_87 = @v161alivepositiontaking_87,  
 	   @v161alivepositiontaking_89 = @v161alivepositiontaking_89,  
 	   @v161alivepositiontaking_90 = @v161alivepositiontaking_90,  
+	    
+	    -- Outright PT for sports
+	   @v2apositiontaking_10 = @v2apositiontaking_10,  
+	   @v3apositiontaking_10 = @v3apositiontaking_10,  
+	   @v5apositiontaking_10 = @v5apositiontaking_10,  
+	   @v8apositiontaking_10 = @v8apositiontaking_10,  
+	   @v10apositiontaking_10 = @v10apositiontaking_10,  
+	   @v11apositiontaking_10 = @v11apositiontaking_10,  
+	   @v99apositiontaking_10 = @v99apositiontaking_10,  
 	     
 	   @UpdateMultiple = @UpdateMultiple,  
 	   @UpdatePositiontaking = @UpdatePositiontaking,  

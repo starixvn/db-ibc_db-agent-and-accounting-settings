@@ -177,7 +177,32 @@
 	@v99apositiontaking_20 SMALLMONEY = 0,
 	
 	@v154apositiontaking_20 SMALLMONEY = 0,
+	-- Outright PT for sports
 	
+	@v2spositiontaking_10 SMALLMONEY  = 0,
+	@v3spositiontaking_10 SMALLMONEY  = 0,
+	@v5spositiontaking_10 SMALLMONEY  = 0,
+	@v8spositiontaking_10 SMALLMONEY  = 0,
+	@v10spositiontaking_10 SMALLMONEY  = 0,
+	@v11spositiontaking_10 SMALLMONEY  = 0,
+	@v99spositiontaking_10 SMALLMONEY  = 0,
+	
+	@v2mpositiontaking_10 SMALLMONEY  = 0,
+	@v3mpositiontaking_10 SMALLMONEY  = 0,
+	@v5mpositiontaking_10 SMALLMONEY  = 0,
+	@v8mpositiontaking_10 SMALLMONEY  = 0,
+	@v10mpositiontaking_10 SMALLMONEY  = 0,
+	@v11mpositiontaking_10 SMALLMONEY  = 0,
+	@v99mpositiontaking_10 SMALLMONEY  = 0,
+	
+	@v2apositiontaking_10 SMALLMONEY  = 0,
+	@v3apositiontaking_10 SMALLMONEY  = 0,
+	@v5apositiontaking_10 SMALLMONEY  = 0,
+	@v8apositiontaking_10 SMALLMONEY  = 0,
+	@v10apositiontaking_10 SMALLMONEY  = 0,
+	@v11apositiontaking_10 SMALLMONEY  = 0,
+	@v99apositiontaking_10 SMALLMONEY  = 0,
+		
 	@UpdateMultiple BIT = 0,
 	@UpdatePositiontaking BIT = 1,
 	@UpdatePositiontakingv2 BIT = 1,
@@ -209,7 +234,7 @@ AS
 		  - 20150610@Daniel: 
 		   + Improve medthod check table existing in subscribers	
 		   + Separate custDB to new server DBCUST      			
-
+		  - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 		Parameter's Explanation:
 	*/ 
 BEGIN
@@ -293,13 +318,21 @@ SET NOCOUNT ON
 											THEN cs.spositiontaking 
 									ELSE CASE cs.sporttype 	
 											WHEN 1 THEN case cs.bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 WHEN 9999 THEN @spositiontaking_9999 ELSE 0 END
-											WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20  ELSE 0 END
-											WHEN 3 THEN case cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
-											WHEN 5 THEN case cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999 ELSE 0 END
-											WHEN 8 THEN case cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
-											WHEN 10 THEN case cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 ELSE 0 END
-											WHEN 11 THEN case cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 ELSE 0 END
-											WHEN 99 THEN case cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 9 THEN @v99spositiontaking_9 WHEN 20 THEN @v99spositiontaking_20 ELSE 0 END
+											
+											WHEN 2 THEN case cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20  WHEN 10 THEN @v2spositiontaking_10 ELSE 0 END
+											
+											WHEN 3 THEN case cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20  WHEN 10 THEN @v3spositiontaking_10 ELSE 0 END
+											
+											WHEN 5 THEN case cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999 WHEN 10 THEN @v5spositiontaking_10  ELSE 0 END
+											
+											WHEN 8 THEN case cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 WHEN 10 THEN @v8spositiontaking_10  ELSE 0 END
+											
+											WHEN 10 THEN case cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20  WHEN 10 THEN @v10spositiontaking_10 ELSE 0 END
+											
+											WHEN 11 THEN case cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20  WHEN 10 THEN @v11spositiontaking_10  ELSE 0 END
+											
+											WHEN 99 THEN case cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 9 THEN @v99spositiontaking_9 WHEN 20 THEN @v99spositiontaking_20  WHEN 10 THEN @v99spositiontaking_10  ELSE 0 END
+											
 											WHEN 154 THEN CASE cs.bettype WHEN 20 THEN @v154spositiontaking_20 ELSE 0 END
 											ELSE cs.spositiontaking END
 									END
@@ -417,15 +450,23 @@ SET NOCOUNT ON
 								cs.mpositiontaking		
 						ELSE CASE cs.sporttype
 				 			WHEN 1 THEN CASE cs.bettype WHEN 1 THEN @mpositiontaking_1 WHEN 2 THEN @mpositiontaking_2 WHEN 3 THEN @mpositiontaking_3 WHEN 4 THEN @mpositiontaking_4 WHEN 5 THEN @mpositiontaking_5 WHEN 6 THEN @mpositiontaking_6 WHEN 7 THEN @mpositiontaking_7 WHEN 8 THEN @mpositiontaking_8 WHEN 9 THEN @mpositiontaking_9 WHEN 10 THEN @mpositiontaking_10 WHEN 9999 THEN @mpositiontaking_9999 ELSE 0 END
-							WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 /*WHEN 9 THEN @v2mpositiontaking_9*/ WHEN 20 THEN @v2mpositiontaking_20 ELSE 0 END
-							WHEN 3 THEN CASE cs.bettype WHEN 1 THEN @v3mpositiontaking_1 WHEN 2 THEN @v3mpositiontaking_2 WHEN 3 THEN @v3mpositiontaking_3 WHEN 20 THEN @v3mpositiontaking_20 ELSE 0 END
-							WHEN 5 THEN CASE cs.bettype WHEN 1 THEN @v5mpositiontaking_1 WHEN 2 THEN @v5mpositiontaking_2 WHEN 3 THEN @v5mpositiontaking_3 WHEN 20 THEN @v5mpositiontaking_20 WHEN 9999 THEN @v5mpositiontaking_9999 ELSE 0 END
-							WHEN 8 THEN CASE cs.bettype WHEN 1 THEN @v8mpositiontaking_1 WHEN 3 THEN @v8mpositiontaking_3 WHEN 20 THEN @v8mpositiontaking_20 ELSE 0 END
-							WHEN 10 THEN CASE cs.bettype WHEN 1 THEN @v10mpositiontaking_1 WHEN 2 THEN @v10mpositiontaking_2 WHEN 3 THEN @v10mpositiontaking_3 WHEN 20 THEN @v10mpositiontaking_20 ELSE 0 END
-							WHEN 11 THEN CASE cs.bettype WHEN 1 THEN @v11mpositiontaking_1 WHEN 20 THEN @v11mpositiontaking_20 ELSE 0 END
-							WHEN 99 THEN CASE cs.bettype WHEN 1 THEN @v99mpositiontaking_1 WHEN 2 THEN @v99mpositiontaking_2 WHEN 3 THEN @v99mpositiontaking_3 WHEN 20 THEN @v99mpositiontaking_20 WHEN 9 THEN @v99mpositiontaking_9 ELSE 0 END
+				 			
+							WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 /*WHEN 9 THEN @v2mpositiontaking_9*/ WHEN 20 THEN @v2mpositiontaking_20 WHEN 10 THEN @v2mpositiontaking_10  ELSE 0 END
+							
+							WHEN 3 THEN CASE cs.bettype WHEN 1 THEN @v3mpositiontaking_1 WHEN 2 THEN @v3mpositiontaking_2 WHEN 3 THEN @v3mpositiontaking_3 WHEN 20 THEN @v3mpositiontaking_20 WHEN 10 THEN @v3mpositiontaking_10 ELSE 0 END
+							
+							WHEN 5 THEN CASE cs.bettype WHEN 1 THEN @v5mpositiontaking_1 WHEN 2 THEN @v5mpositiontaking_2 WHEN 3 THEN @v5mpositiontaking_3 WHEN 20 THEN @v5mpositiontaking_20 WHEN 9999 THEN @v5mpositiontaking_9999 WHEN 10 THEN @v5mpositiontaking_10 ELSE 0 END
+							
+							WHEN 8 THEN CASE cs.bettype WHEN 1 THEN @v8mpositiontaking_1 WHEN 3 THEN @v8mpositiontaking_3 WHEN 20 THEN @v8mpositiontaking_20 WHEN 10 THEN @v8mpositiontaking_10 ELSE 0 END
+							
+							WHEN 10 THEN CASE cs.bettype WHEN 1 THEN @v10mpositiontaking_1 WHEN 2 THEN @v10mpositiontaking_2 WHEN 3 THEN @v10mpositiontaking_3 WHEN 20 THEN @v10mpositiontaking_20 WHEN 10 THEN @v10mpositiontaking_10 ELSE 0 END
+							
+							WHEN 11 THEN CASE cs.bettype WHEN 1 THEN @v11mpositiontaking_1 WHEN 20 THEN @v11mpositiontaking_20 WHEN 10 THEN @v11mpositiontaking_10  ELSE 0 END
+							
+							WHEN 99 THEN CASE cs.bettype WHEN 1 THEN @v99mpositiontaking_1 WHEN 2 THEN @v99mpositiontaking_2 WHEN 3 THEN @v99mpositiontaking_3 WHEN 20 THEN @v99mpositiontaking_20 WHEN 9 THEN @v99mpositiontaking_9 WHEN 10 THEN @v99mpositiontaking_10 ELSE 0 END
 
 							WHEN 154 THEN CASE cs.bettype WHEN 20 THEN @v154mpositiontaking_20 ELSE 0 END 
+							
 							ELSE cs.mpositiontaking END
 						END,
 			spositiontaking =  
@@ -443,14 +484,25 @@ SET NOCOUNT ON
 								THEN			
 									cs.spositiontaking
 							ELSE CASE cs.sporttype 
-								WHEN 1 THEN CASE cs.bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 WHEN 9999 THEN @spositiontaking_9999 ELSE 0 END
-								WHEN 2 THEN CASE cs.bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20 ELSE 0 END
-								WHEN 3 THEN CASE cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
-								WHEN 5 THEN CASE cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999 ELSE 0 END
-								WHEN 8 THEN CASE cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
-								WHEN 10 THEN CASE cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 ELSE 0 END
-								WHEN 11 THEN CASE cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 ELSE 0 END
-								WHEN 99 THEN CASE cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 20 THEN @v99spositiontaking_20 WHEN 9 THEN @v99spositiontaking_9 ELSE 0 END
+								WHEN 1 THEN 
+										CASE cs.bettype 
+												WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 WHEN 9999 THEN @spositiontaking_9999 ELSE 0 END
+								WHEN 2 THEN 
+										CASE cs.bettype 
+												WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 /*WHEN 9 THEN @v2spositiontaking_9*/ WHEN 20 THEN @v2spositiontaking_20 WHEN 10 THEN @v2spositiontaking_10 ELSE 0 END
+												
+								WHEN 3 THEN 
+										CASE cs.bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20  WHEN 10 THEN @v3spositiontaking_10  ELSE 0 END
+								WHEN 5 THEN 
+										CASE cs.bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999  WHEN 10 THEN @v5spositiontaking_10  ELSE 0 END
+								WHEN 8 THEN 
+										CASE cs.bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20  WHEN 10 THEN @v8spositiontaking_10  ELSE 0 END
+								WHEN 10 THEN 
+										CASE cs.bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20  WHEN 10 THEN @v10spositiontaking_10  ELSE 0 END
+								WHEN 11 THEN 
+										CASE cs.bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20  WHEN 10 THEN @v11spositiontaking_10  ELSE 0 END
+								WHEN 99 THEN 
+										CASE cs.bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 20 THEN @v99spositiontaking_20 WHEN 9 THEN @v99spositiontaking_9  WHEN 10 THEN @v99spositiontaking_10  ELSE 0 END
 
 								WHEN 154 then CASE cs.bettype WHEN 20 then @v154spositiontaking_20 ELSE 0 END 
 								ELSE cs.spositiontaking END
@@ -771,38 +823,38 @@ SET NOCOUNT ON
 		UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
 		SET
 			apositiontaking = CASE WHEN (@UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0)  OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND bettype<>9 AND @UpdatePositiontakingv99 = 0) OR (sporttype=99 AND bettype=9 AND @UpdatePositiontakingv99MP = 0) OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN apositiontaking ELSE CASE sporttype WHEN 1 THEN CASE bettype WHEN 1 THEN @apositiontaking_1 WHEN 2 THEN @apositiontaking_2 WHEN 3 THEN @apositiontaking_3 WHEN 4 THEN @apositiontaking_4 WHEN 5 THEN @apositiontaking_5 WHEN 6 THEN @apositiontaking_6 WHEN 7 THEN @apositiontaking_7 WHEN 8 THEN @apositiontaking_8 WHEN 9 THEN @apositiontaking_9 WHEN 10 THEN @apositiontaking_10 WHEN 9999 THEN @apositiontaking_9999 ELSE 0 END
-							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2apositiontaking_1 WHEN 2 THEN @v2apositiontaking_2 WHEN 3 THEN @v2apositiontaking_3 WHEN 7 THEN @v2apositiontaking_7 WHEN 8 THEN @v2apositiontaking_8 WHEN 20 THEN @v2apositiontaking_20 ELSE 0 END
-							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3apositiontaking_1 WHEN 2 THEN @v3apositiontaking_2 WHEN 3 THEN @v3apositiontaking_3 WHEN 20 THEN @v3apositiontaking_20 ELSE 0 END
-							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5apositiontaking_1 WHEN 2 THEN @v5apositiontaking_2 WHEN 3 THEN @v5apositiontaking_3 WHEN 20 THEN @v5apositiontaking_20 WHEN 9999 THEN @v5apositiontaking_9999 ELSE 0 END
-							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8apositiontaking_1 WHEN 3 THEN @v8apositiontaking_3 WHEN 20 THEN @v8apositiontaking_20 ELSE 0 END
-							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10apositiontaking_1 WHEN 2 THEN @v10apositiontaking_2 WHEN 3 THEN @v10apositiontaking_3 WHEN 20 THEN @v10apositiontaking_20 ELSE 0 END
-							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11apositiontaking_1 WHEN 20 THEN @v11apositiontaking_20 ELSE 0 END
-							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99apositiontaking_1 WHEN 2 THEN @v99apositiontaking_2 WHEN 3 THEN @v99apositiontaking_3 WHEN 9 THEN @v99apositiontaking_9 WHEN 20 THEN @v99apositiontaking_20 ELSE 0 END
+							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2apositiontaking_1 WHEN 2 THEN @v2apositiontaking_2 WHEN 3 THEN @v2apositiontaking_3 WHEN 7 THEN @v2apositiontaking_7 WHEN 8 THEN @v2apositiontaking_8 WHEN 20 THEN @v2apositiontaking_20 WHEN 10 THEN @v2apositiontaking_10 ELSE 0 END
+							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3apositiontaking_1 WHEN 2 THEN @v3apositiontaking_2 WHEN 3 THEN @v3apositiontaking_3 WHEN 20 THEN @v3apositiontaking_20  WHEN 10 THEN @v3apositiontaking_10 ELSE 0 END
+							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5apositiontaking_1 WHEN 2 THEN @v5apositiontaking_2 WHEN 3 THEN @v5apositiontaking_3 WHEN 20 THEN @v5apositiontaking_20 WHEN 9999 THEN @v5apositiontaking_9999  WHEN 10 THEN @v5apositiontaking_10  ELSE 0 END
+							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8apositiontaking_1 WHEN 3 THEN @v8apositiontaking_3 WHEN 20 THEN @v8apositiontaking_20  WHEN 10 THEN @v8apositiontaking_10  ELSE 0 END
+							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10apositiontaking_1 WHEN 2 THEN @v10apositiontaking_2 WHEN 3 THEN @v10apositiontaking_3 WHEN 20 THEN @v10apositiontaking_20  WHEN 10 THEN @v10apositiontaking_10   ELSE 0 END
+							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11apositiontaking_1 WHEN 20 THEN @v11apositiontaking_20  WHEN 10 THEN @v11apositiontaking_10  ELSE 0 END
+							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99apositiontaking_1 WHEN 2 THEN @v99apositiontaking_2 WHEN 3 THEN @v99apositiontaking_3 WHEN 9 THEN @v99apositiontaking_9 WHEN 20 THEN @v99apositiontaking_20  WHEN 10 THEN @v99apositiontaking_10  ELSE 0 END
 							WHEN 154 THEN CASE bettype WHEN 20 THEN @v154apositiontaking_20 ELSE 0 END					
 							ELSE apositiontaking END END,
 			alivepositiontaking = CASE WHEN (@UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0)  OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND @UpdatePositiontakingv99 = 0) OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN alivepositiontaking ELSE CASE sporttype 	WHEN 1 THEN CASE bettype WHEN 1 THEN @alivepositiontaking_1 WHEN 3 THEN @alivepositiontaking_3 WHEN 7 THEN @alivepositiontaking_7 WHEN 8 THEN @alivepositiontaking_8 ELSE alivepositiontaking END ELSE alivepositiontaking END END,
 			
 			--Auto Master PT
 			mpositiontaking = CASE WHEN (@UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0)  OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND bettype<>9 AND @UpdatePositiontakingv99 = 0) OR (sporttype=99 AND bettype=9 AND @UpdatePositiontakingv99MP = 0) OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN mpositiontaking ELSE CASE sporttype WHEN 1 THEN CASE bettype WHEN 1 THEN @mpositiontaking_1 WHEN 2 THEN @mpositiontaking_2 WHEN 3 THEN @mpositiontaking_3 WHEN 4 THEN @mpositiontaking_4 WHEN 5 THEN @mpositiontaking_5 WHEN 6 THEN @mpositiontaking_6 WHEN 7 THEN @mpositiontaking_7 WHEN 8 THEN @mpositiontaking_8 WHEN 9 THEN @mpositiontaking_9 WHEN 10 THEN @mpositiontaking_10 WHEN 9999 THEN @mpositiontaking_9999 ELSE 0 END
-							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 WHEN 20 THEN @v2mpositiontaking_20 ELSE 0 END
-							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3mpositiontaking_1 WHEN 2 THEN @v3mpositiontaking_2 WHEN 3 THEN @v3mpositiontaking_3 WHEN 20 THEN @v3mpositiontaking_20 ELSE 0 END
-							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5mpositiontaking_1 WHEN 2 THEN @v5mpositiontaking_2 WHEN 3 THEN @v5mpositiontaking_3 WHEN 20 THEN @v5mpositiontaking_20 WHEN 9999 THEN @v5mpositiontaking_9999 ELSE 0 END
-							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8mpositiontaking_1 WHEN 3 THEN @v8mpositiontaking_3 WHEN 20 THEN @v8mpositiontaking_20 ELSE 0 END
-							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10mpositiontaking_1 WHEN 2 THEN @v10mpositiontaking_2 WHEN 3 THEN @v10mpositiontaking_3 WHEN 20 THEN @v10mpositiontaking_20 ELSE 0 END
-							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11mpositiontaking_1 WHEN 20 THEN @v11mpositiontaking_20 ELSE 0 END
-							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99mpositiontaking_1 WHEN 2 THEN @v99mpositiontaking_2 WHEN 3 THEN @v99mpositiontaking_3 WHEN 9 THEN @v99mpositiontaking_9 WHEN 20 THEN @v99mpositiontaking_20 ELSE 0 END
+							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2mpositiontaking_1 WHEN 2 THEN @v2mpositiontaking_2 WHEN 3 THEN @v2mpositiontaking_3 WHEN 7 THEN @v2mpositiontaking_7 WHEN 8 THEN @v2mpositiontaking_8 WHEN 20 THEN @v2mpositiontaking_20  WHEN 10 THEN @v2mpositiontaking_10  ELSE 0 END
+							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3mpositiontaking_1 WHEN 2 THEN @v3mpositiontaking_2 WHEN 3 THEN @v3mpositiontaking_3 WHEN 20 THEN @v3mpositiontaking_20  WHEN 10 THEN @v3mpositiontaking_10  ELSE 0 END
+							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5mpositiontaking_1 WHEN 2 THEN @v5mpositiontaking_2 WHEN 3 THEN @v5mpositiontaking_3 WHEN 20 THEN @v5mpositiontaking_20 WHEN 9999 THEN @v5mpositiontaking_9999  WHEN 10 THEN @v5mpositiontaking_10  ELSE 0 END
+							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8mpositiontaking_1 WHEN 3 THEN @v8mpositiontaking_3 WHEN 20 THEN @v8mpositiontaking_20  WHEN 10 THEN @v8mpositiontaking_10  ELSE 0 END
+							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10mpositiontaking_1 WHEN 2 THEN @v10mpositiontaking_2 WHEN 3 THEN @v10mpositiontaking_3 WHEN 20 THEN @v10mpositiontaking_20  WHEN 10 THEN @v10mpositiontaking_10  ELSE 0 END
+							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11mpositiontaking_1 WHEN 20 THEN @v11mpositiontaking_20  WHEN 10 THEN @v11mpositiontaking_10  ELSE 0 END
+							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99mpositiontaking_1 WHEN 2 THEN @v99mpositiontaking_2 WHEN 3 THEN @v99mpositiontaking_3 WHEN 9 THEN @v99mpositiontaking_9 WHEN 20 THEN @v99mpositiontaking_20  WHEN 10 THEN @v99mpositiontaking_10  ELSE 0 END
 							WHEN 154 THEN CASE bettype WHEN 20 THEN @v154mpositiontaking_20 ELSE 0 END																	
 							ELSE mpositiontaking END END,
 			mlivepositiontaking = CASE WHEN ( @UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0) OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND @UpdatePositiontakingv99 = 0)OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN mlivepositiontaking ELSE CASE sporttype 	WHEN 1 THEN CASE bettype WHEN 1 THEN @mlivepositiontaking_1 WHEN 3 THEN @mlivepositiontaking_3 WHEN 7 THEN @mlivepositiontaking_7 WHEN 8 THEN @mlivepositiontaking_8 ELSE mlivepositiontaking END ELSE mlivepositiontaking END END,
 			
 			spositiontaking = CASE WHEN (@UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0)  OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND bettype<>9  AND  @UpdatePositiontakingv99 = 0) OR (sporttype=99 AND bettype=9  AND  @UpdatePositiontakingv99MP = 0) OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN spositiontaking ELSE CASE sporttype WHEN 1 THEN CASE bettype WHEN 1 THEN @spositiontaking_1 WHEN 2 THEN @spositiontaking_2 WHEN 3 THEN @spositiontaking_3 WHEN 4 THEN @spositiontaking_4 WHEN 5 THEN @spositiontaking_5 WHEN 6 THEN @spositiontaking_6 WHEN 7 THEN @spositiontaking_7 WHEN 8 THEN @spositiontaking_8 WHEN 9 THEN @spositiontaking_9 WHEN 10 THEN @spositiontaking_10 WHEN 9999 THEN @spositiontaking_9999 ELSE 0 END
-							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 WHEN 20 THEN @v2spositiontaking_20 ELSE 0 END
-							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 ELSE 0 END
-							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999 ELSE 0 END
-							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 ELSE 0 END
-							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 ELSE 0 END
-							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 ELSE 0 END
-							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 9 THEN @v99spositiontaking_9  WHEN 20 THEN @v99spositiontaking_20 ELSE 0 END
+							WHEN 2 THEN CASE bettype WHEN 1 THEN @v2spositiontaking_1 WHEN 2 THEN @v2spositiontaking_2 WHEN 3 THEN @v2spositiontaking_3 WHEN 7 THEN @v2spositiontaking_7 WHEN 8 THEN @v2spositiontaking_8 WHEN 20 THEN @v2spositiontaking_20 WHEN 10 THEN @v2spositiontaking_10  ELSE 0 END
+							WHEN 3 THEN CASE bettype WHEN 1 THEN @v3spositiontaking_1 WHEN 2 THEN @v3spositiontaking_2 WHEN 3 THEN @v3spositiontaking_3 WHEN 20 THEN @v3spositiontaking_20 WHEN 10 THEN @v3spositiontaking_10  ELSE  0 END
+							WHEN 5 THEN CASE bettype WHEN 1 THEN @v5spositiontaking_1 WHEN 2 THEN @v5spositiontaking_2 WHEN 3 THEN @v5spositiontaking_3 WHEN 20 THEN @v5spositiontaking_20 WHEN 9999 THEN @v5spositiontaking_9999 WHEN 10 THEN @v5spositiontaking_10  ELSE 0 END
+							WHEN 8 THEN CASE bettype WHEN 1 THEN @v8spositiontaking_1 WHEN 3 THEN @v8spositiontaking_3 WHEN 20 THEN @v8spositiontaking_20 WHEN 10 THEN @v8spositiontaking_10  ELSE 0 END
+							WHEN 10 THEN CASE bettype WHEN 1 THEN @v10spositiontaking_1 WHEN 2 THEN @v10spositiontaking_2 WHEN 3 THEN @v10spositiontaking_3 WHEN 20 THEN @v10spositiontaking_20 WHEN 10 THEN @v10spositiontaking_10  ELSE 0 END
+							WHEN 11 THEN CASE bettype WHEN 1 THEN @v11spositiontaking_1 WHEN 20 THEN @v11spositiontaking_20 WHEN 10 THEN @v11spositiontaking_10  ELSE 0 END
+							WHEN 99 THEN CASE bettype WHEN 1 THEN @v99spositiontaking_1 WHEN 2 THEN @v99spositiontaking_2 WHEN 3 THEN @v99spositiontaking_3 WHEN 9 THEN @v99spositiontaking_9  WHEN 20 THEN @v99spositiontaking_20 WHEN 10 THEN @v99spositiontaking_10  ELSE 0 END
 							WHEN 154 THEN CASE bettype WHEN 20 THEN @v154spositiontaking_20 ELSE 0 END									
 							ELSE spositiontaking END END,
 			slivepositiontaking = CASE WHEN ( @UpdateMultiple = 1 AND ((sporttype=1 AND @UpdatePositiontaking = 0) OR (sporttype=2 AND @UpdatePositiontakingv2 = 0) OR (sporttype=3 AND @UpdatePositiontakingv3 = 0) OR (sporttype=5 AND @UpdatePositiontakingv5 = 0) OR (sporttype=8 AND @UpdatePositiontakingv8 = 0) OR (sporttype=10 AND @UpdatePositiontakingv10 = 0) OR (sporttype=11 AND @UpdatePositiontakingv11 = 0) OR (sporttype=99 AND @UpdatePositiontakingv99 = 0) OR (sporttype=154  AND @UpdatePositiontakingv154 = 0))) THEN slivepositiontaking ELSE CASE sporttype 	WHEN 1 THEN CASE bettype WHEN 1 THEN @slivepositiontaking_1 WHEN 3 THEN @slivepositiontaking_3 WHEN 7 THEN @slivepositiontaking_7 WHEN 8 THEN @slivepositiontaking_8 ELSE slivepositiontaking END ELSE slivepositiontaking END END
