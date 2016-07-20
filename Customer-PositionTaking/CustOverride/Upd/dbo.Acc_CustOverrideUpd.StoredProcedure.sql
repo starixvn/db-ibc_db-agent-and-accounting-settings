@@ -148,6 +148,23 @@ ALTER PROCEDURE [dbo].[Acc_CustOverrideUpd]
     @maxv161livepositiontaking_90 smallmoney = 0,
     
     
+    -- Outright PT for sports
+    @minv2positiontaking_10 smallmoney = 0,
+    @minv3positiontaking_10 smallmoney = 0,
+    @minv5positiontaking_10 smallmoney = 0,
+    @minv8positiontaking_10 smallmoney = 0,
+    @minv10positiontaking_10 smallmoney = 0,
+    @minv11positiontaking_10 smallmoney = 0,
+    @minv99positiontaking_10 smallmoney = 0,
+    
+	@maxv2positiontaking_10 smallmoney = 0,
+	@maxv3positiontaking_10 smallmoney = 0,
+	@maxv5positiontaking_10 smallmoney = 0,
+	@maxv8positiontaking_10 smallmoney = 0,
+	@maxv10positiontaking_10 smallmoney = 0,
+	@maxv11positiontaking_10 smallmoney = 0,
+	@maxv99positiontaking_10 smallmoney = 0,
+    
     @CheckPermission bit = 1,
     @UpdateMinPos bit = 1,
     @UpdateMaxPos bit = 1,
@@ -196,6 +213,7 @@ Revisions:
     - 20140729@Logan:   1.Exclude disabled agents while updating SM's setting [Redmine: #19631]
                         2.Code aligning on modified parts
 	- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                        
+	- 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 
 Param's Explanation:
 • @ErrCode:
@@ -391,7 +409,26 @@ Declare     @old_minpositiontaking_1 smallmoney,
     @old_maxv161livepositiontaking_86 smallmoney,
     @old_maxv161livepositiontaking_87 smallmoney,
     @old_maxv161livepositiontaking_89 smallmoney,
-    @old_maxv161livepositiontaking_90 smallmoney
+    @old_maxv161livepositiontaking_90 smallmoney,
+    
+    @old_minv2positiontaking_10 smallmoney,
+    @old_minv3positiontaking_10 smallmoney,
+    @old_minv5positiontaking_10 smallmoney,
+    @old_minv8positiontaking_10 smallmoney,
+    @old_minv10positiontaking_10 smallmoney,
+    @old_minv11positiontaking_10 smallmoney,
+    @old_minv99positiontaking_10 smallmoney,
+    
+	@old_maxv2positiontaking_10 smallmoney,
+	@old_maxv3positiontaking_10 smallmoney,
+	@old_maxv5positiontaking_10 smallmoney,
+	@old_maxv8positiontaking_10 smallmoney,
+	@old_maxv10positiontaking_10 smallmoney,
+	@old_maxv11positiontaking_10 smallmoney,
+	@old_maxv99positiontaking_10 smallmoney
+	
+	
+
     
 --Get Old data
     select @old_minpositiontaking_1 = minpositiontaking, @old_maxpositiontaking_1 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 1
@@ -404,6 +441,17 @@ Declare     @old_minpositiontaking_1 smallmoney,
     select @old_minpositiontaking_8 = minpositiontaking, @old_maxpositiontaking_8 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 8
     select @old_minpositiontaking_9 = minpositiontaking, @old_maxpositiontaking_9 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 9
     select @old_minpositiontaking_10 = minpositiontaking, @old_maxpositiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 10
+    
+    -- Outright PT for sports
+    select @old_minv2positiontaking_10 = minpositiontaking, @old_maxv2positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 2 and bettype = 10
+    select @old_minv3positiontaking_10 = minpositiontaking, @old_maxv3positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 3 and bettype = 10
+    select @old_minv5positiontaking_10 = minpositiontaking, @old_maxv5positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 5 and bettype = 10
+    select @old_minv8positiontaking_10 = minpositiontaking, @old_maxv8positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 8 and bettype = 10
+    select @old_minv10positiontaking_10 = minpositiontaking, @old_maxv10positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 10 and bettype = 10
+    select @old_minv11positiontaking_10 = minpositiontaking, @old_maxv11positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 11 and bettype = 10
+    select @old_minv99positiontaking_10 = minpositiontaking, @old_maxv99positiontaking_10 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 99 and bettype = 10
+    
+    
     select @old_minpositiontaking_9999 = minpositiontaking, @old_maxpositiontaking_9999 = maxpositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 9999
     
     select @old_minlivepositiontaking_1 = minlivepositiontaking, @old_maxlivepositiontaking_1 = maxlivepositiontaking from custoverride with (NOLOCK) where custid = @custid and sporttype = 1 and bettype = 1
@@ -478,6 +526,16 @@ IF (@UpdateMinPos = 0 or
             @minpositiontaking_8 = @old_minpositiontaking_8 and
             @minpositiontaking_9 = @old_minpositiontaking_9 and
             @minpositiontaking_10 = @old_minpositiontaking_10 and
+            
+            -- outright PT for sports
+            @minv2positiontaking_10 = @old_minv2positiontaking_10 and
+            @minv3positiontaking_10 = @old_minv3positiontaking_10 and
+            @minv5positiontaking_10 = @old_minv5positiontaking_10 and
+            @minv8positiontaking_10 = @old_minv8positiontaking_10 and
+            @minv10positiontaking_10 = @old_minv10positiontaking_10 and
+            @minv11positiontaking_10 = @old_minv11positiontaking_10 and
+            @minv99positiontaking_10 = @old_minv99positiontaking_10 and
+            
             @minpositiontaking_9999 = @old_minpositiontaking_9999 and
             @minlivepositiontaking_1 = @old_minlivepositiontaking_1 and
             @minlivepositiontaking_3 = @old_minlivepositiontaking_3 and
@@ -550,6 +608,17 @@ IF (@UpdateMinPos = 0 or
             @maxpositiontaking_8 = @old_maxpositiontaking_8 and
             @maxpositiontaking_9 = @old_maxpositiontaking_9 and
             @maxpositiontaking_10 = @old_maxpositiontaking_10 and
+            
+            -- outright PT for sports
+            @maxv2positiontaking_10 = @old_maxv2positiontaking_10 and
+            @maxv3positiontaking_10 = @old_maxv3positiontaking_10 and
+            @maxv5positiontaking_10 = @old_maxv5positiontaking_10 and
+            @maxv8positiontaking_10 = @old_maxv8positiontaking_10 and
+            @maxv10positiontaking_10 = @old_maxv10positiontaking_10 and
+            @maxv11positiontaking_10 = @old_maxv11positiontaking_10 and
+            @maxv99positiontaking_10 = @old_maxv99positiontaking_10 and
+            
+            
             @maxpositiontaking_9999 = @old_maxpositiontaking_9999 and
             @maxlivepositiontaking_1 = @old_maxlivepositiontaking_1 and
             @maxlivepositiontaking_3 = @old_maxlivepositiontaking_3 and
@@ -628,6 +697,15 @@ BEGIN
             @minpositiontaking_8 = @old_minpositiontaking_8,
             @minpositiontaking_9 = @old_minpositiontaking_9,
             @minpositiontaking_10 = @old_minpositiontaking_10,
+            -- Outright PT for sports
+            @minv2positiontaking_10 = @old_minv2positiontaking_10,
+            @minv3positiontaking_10 = @old_minv3positiontaking_10,
+            @minv5positiontaking_10 = @old_minv5positiontaking_10,
+            @minv8positiontaking_10 = @old_minv8positiontaking_10,
+            @minv10positiontaking_10 = @old_minv10positiontaking_10,
+            @minv11positiontaking_10 = @old_minv11positiontaking_10,
+            @minv99positiontaking_10 = @old_minv99positiontaking_10,
+            
             @minpositiontaking_9999 = @old_minpositiontaking_9999,
             @minlivepositiontaking_1 = @old_minlivepositiontaking_1,
             @minlivepositiontaking_3 = @old_minlivepositiontaking_3,
@@ -699,6 +777,15 @@ IF @UpdateMaxPos = 0
             @maxpositiontaking_8 = @old_maxpositiontaking_8,
             @maxpositiontaking_9 = @old_maxpositiontaking_9,
             @maxpositiontaking_10 = @old_maxpositiontaking_10,
+            -- Outright PT for sports
+            @maxv2positiontaking_10 = @old_maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @old_maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @old_maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @old_maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @old_maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @old_maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @old_maxv99positiontaking_10,
+            
             @maxpositiontaking_9999 = @old_maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @old_maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @old_maxlivepositiontaking_3,
@@ -770,6 +857,17 @@ EXEC dbo.Acc_CustOverrideUpd_CheckParam
             @minpositiontaking_8 = @minpositiontaking_8,
             @minpositiontaking_9 = @minpositiontaking_9,
             @minpositiontaking_10 = @minpositiontaking_10,
+            
+            -- outright PT for sports
+            @minv2positiontaking_10 = @minv2positiontaking_10,
+            @minv3positiontaking_10 = @minv3positiontaking_10,
+            @minv5positiontaking_10 = @minv5positiontaking_10,
+            @minv8positiontaking_10 = @minv8positiontaking_10,
+            @minv10positiontaking_10 = @minv10positiontaking_10,
+            @minv11positiontaking_10 = @minv11positiontaking_10,
+            @minv99positiontaking_10 = @minv99positiontaking_10,
+            
+            
             @minpositiontaking_9999 = @minpositiontaking_9999,
             @minlivepositiontaking_1 = @minlivepositiontaking_1,
             @minlivepositiontaking_3 = @minlivepositiontaking_3,
@@ -833,6 +931,15 @@ EXEC dbo.Acc_CustOverrideUpd_CheckParam
             @maxpositiontaking_8 = @maxpositiontaking_8,
             @maxpositiontaking_9 = @maxpositiontaking_9,
             @maxpositiontaking_10 = @maxpositiontaking_10,
+            -- Outright PT for sports
+            @maxv2positiontaking_10 = @maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @maxv99positiontaking_10,
+                        
             @maxpositiontaking_9999 = @maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @maxlivepositiontaking_3,
@@ -921,6 +1028,16 @@ BEGIN
                 union all select     @custid as custid,  1 as sporttype, 8 as bettype, @minpositiontaking_8 as minpositiontaking,  @minlivepositiontaking_8 as minlivepositiontaking
                 union all select     @custid as custid,  1 as sporttype, 9 as bettype, @minpositiontaking_9 as minpositiontaking,  0 as minlivepositiontaking
                 union all select     @custid as custid,  1 as sporttype, 10 as bettype, @minpositiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                
+                -- Outright PT for sports 
+                union all select     @custid as custid,  2 as sporttype, 10 as bettype, @minv2positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  3 as sporttype, 10 as bettype, @minv3positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  5 as sporttype, 10 as bettype, @minv5positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  8 as sporttype, 10 as bettype, @minv8positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  10 as sporttype, 10 as bettype, @minv10positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  11 as sporttype, 10 as bettype, @minv11positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                union all select     @custid as custid,  99 as sporttype, 10 as bettype, @minv99positiontaking_10 as minpositiontaking,  0 as minlivepositiontaking
+                
                 union all select     @custid as custid,  1 as sporttype, 9999 as bettype, @minpositiontaking_9999 as minpositiontaking,  0 as minlivepositiontaking
                 
                 union all select     @custid as custid,  2 as sporttype, 1 as bettype, @minv2positiontaking_1 as minpositiontaking,  0 as minlivepositiontaking
@@ -983,9 +1100,6 @@ BEGIN
     
 END
 
-
-
-
 if @UpdateMaxPos = 1
 BEGIN
 
@@ -1002,6 +1116,15 @@ BEGIN
                 union all select     @custid as custid,  1 as sporttype, 8 as bettype, @maxpositiontaking_8 as maxpositiontaking,  @maxlivepositiontaking_8 as maxlivepositiontaking
                 union all select     @custid as custid,  1 as sporttype, 9 as bettype, @maxpositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
                 union all select     @custid as custid,  1 as sporttype, 10 as bettype, @maxpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                -- Outright PT for sport
+                union all select     @custid as custid,  2 as sporttype, 10 as bettype, @maxv2positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  3 as sporttype, 10 as bettype, @maxv3positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  5 as sporttype, 10 as bettype, @maxv5positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  8 as sporttype, 10 as bettype, @maxv8positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  10 as sporttype, 10 as bettype, @maxv10positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  11 as sporttype, 10 as bettype, @maxv11positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     @custid as custid,  99 as sporttype, 10 as bettype, @maxv99positiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                
                 union all select     @custid as custid,  1 as sporttype, 9999 as bettype, @maxpositiontaking_9999 as maxpositiontaking,  0 as maxlivepositiontaking
                 
                 union all select     @custid as custid,  2 as sporttype, 1 as bettype, @maxv2positiontaking_1 as maxpositiontaking,  0 as maxlivepositiontaking
@@ -1113,6 +1236,15 @@ BEGIN
     'minpt_8="'+ coalesce(cast(@minpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'minpt_9="'+ coalesce(cast(@minpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'minpt_10="'+ coalesce(cast(@minpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    --outright PT for sports
+    'minv2pt_10="'+ coalesce(cast(@minv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv3pt_10="'+ coalesce(cast(@minv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv5pt_10="'+ coalesce(cast(@minv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv8pt_10="'+ coalesce(cast(@minv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv10pt_10="'+ coalesce(cast(@minv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv11pt_10="'+ coalesce(cast(@minv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv99pt_10="'+ coalesce(cast(@minv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'minpt_9999="'+ coalesce(cast(@minpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'minlivept_1="'+ coalesce(cast(@minlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'minlivept_3="'+ coalesce(cast(@minlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1128,6 +1260,16 @@ BEGIN
     'maxpt_8="'+ coalesce(cast(@maxpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'maxpt_9="'+ coalesce(cast(@maxpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'maxpt_10="'+ coalesce(cast(@maxpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    -- Outright PT for sports
+    'maxv2pt_10="'+ coalesce(cast(@maxv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv3pt_10="'+ coalesce(cast(@maxv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv5pt_10="'+ coalesce(cast(@maxv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv8pt_10="'+ coalesce(cast(@maxv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv10pt_10="'+ coalesce(cast(@maxv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv11pt_10="'+ coalesce(cast(@maxv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv99pt_10="'+ coalesce(cast(@maxv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'maxpt_9999="'+ coalesce(cast(@maxpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'maxlivept_1="'+ coalesce(cast(@maxlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'maxlivept_3="'+ coalesce(cast(@maxlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1250,6 +1392,17 @@ BEGIN
     'minpt_8="'+ coalesce(cast(@old_minpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'minpt_9="'+ coalesce(cast(@old_minpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'minpt_10="'+ coalesce(cast(@old_minpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    -- Outrgiht PT
+    'minv2pt_10="'+ coalesce(cast(@old_minv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv3pt_10="'+ coalesce(cast(@old_minv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv5pt_10="'+ coalesce(cast(@old_minv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv8pt_10="'+ coalesce(cast(@old_minv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv10pt_10="'+ coalesce(cast(@old_minv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv11pt_10="'+ coalesce(cast(@old_minv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'minv99pt_10="'+ coalesce(cast(@old_minv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    
     'minpt_9999="'+ coalesce(cast(@old_minpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'minlivept_1="'+ coalesce(cast(@old_minlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'minlivept_3="'+ coalesce(cast(@old_minlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1265,6 +1418,16 @@ BEGIN
     'maxpt_8="'+ coalesce(cast(@old_maxpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'maxpt_9="'+ coalesce(cast(@old_maxpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'maxpt_10="'+ coalesce(cast(@old_maxpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    -- Outright PT for sports
+    'maxv2pt_10="'+ coalesce(cast(@old_maxv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv3pt_10="'+ coalesce(cast(@old_maxv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv5pt_10="'+ coalesce(cast(@old_maxv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv8pt_10="'+ coalesce(cast(@old_maxv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv10pt_10="'+ coalesce(cast(@old_maxv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv11pt_10="'+ coalesce(cast(@old_maxv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'maxv99pt_10="'+ coalesce(cast(@old_maxv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'maxpt_9999="'+ coalesce(cast(@old_maxpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'maxlivept_1="'+ coalesce(cast(@old_maxlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'maxlivept_3="'+ coalesce(cast(@old_maxlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1399,6 +1562,16 @@ BEGIN
                             'minpt_8="'+ coalesce(cast(@minpositiontaking_8 as varchar(50)),space(1)) + '" ' +
                             'minpt_9="'+ coalesce(cast(@minpositiontaking_9 as varchar(50)),space(1)) + '" ' +
                             'minpt_10="'+ coalesce(cast(@minpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
+                            -- Outright PT for sports
+                            'minv2pt_10="'+ coalesce(cast(@minv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv3pt_10="'+ coalesce(cast(@minv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv5pt_10="'+ coalesce(cast(@minv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv8pt_10="'+ coalesce(cast(@minv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv10pt_10="'+ coalesce(cast(@minv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv11pt_10="'+ coalesce(cast(@minv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv99pt_10="'+ coalesce(cast(@minv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
                             'minpt_9999="'+ coalesce(cast(@minpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
                             'minlivept_1="'+ coalesce(cast(@minlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
                             'minlivept_3="'+ coalesce(cast(@minlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1414,6 +1587,15 @@ BEGIN
                             'maxpt_8="'+ coalesce(cast(@maxpositiontaking_8 as varchar(50)),space(1)) + '" ' +
                             'maxpt_9="'+ coalesce(cast(@maxpositiontaking_9 as varchar(50)),space(1)) + '" ' +
                             'maxpt_10="'+ coalesce(cast(@maxpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            -- Outright PT for sports
+                            'maxv2pt_10="'+ coalesce(cast(@maxv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv3pt_10="'+ coalesce(cast(@maxv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv5pt_10="'+ coalesce(cast(@maxv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv8pt_10="'+ coalesce(cast(@maxv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv10pt_10="'+ coalesce(cast(@maxv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv11pt_10="'+ coalesce(cast(@maxv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv99pt_10="'+ coalesce(cast(@maxv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
                             'maxpt_9999="'+ coalesce(cast(@maxpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
                             'maxlivept_1="'+ coalesce(cast(@maxlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
                             'maxlivept_3="'+ coalesce(cast(@maxlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1538,6 +1720,16 @@ BEGIN
                             'minpt_8="'+ coalesce(cast(@old_minpositiontaking_8 as varchar(50)),space(1)) + '" ' +
                             'minpt_9="'+ coalesce(cast(@old_minpositiontaking_9 as varchar(50)),space(1)) + '" ' +
                             'minpt_10="'+ coalesce(cast(@old_minpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
+                            -- Outright PT for sports
+                            'minv2pt_10="'+ coalesce(cast(@old_minv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv3pt_10="'+ coalesce(cast(@old_minv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv5pt_10="'+ coalesce(cast(@old_minv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv8pt_10="'+ coalesce(cast(@old_minv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv10pt_10="'+ coalesce(cast(@old_minv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv11pt_10="'+ coalesce(cast(@old_minv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'minv99pt_10="'+ coalesce(cast(@old_minv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
                             'minpt_9999="'+ coalesce(cast(@old_minpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
                             'minlivept_1="'+ coalesce(cast(@old_minlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
                             'minlivept_3="'+ coalesce(cast(@old_minlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -1553,6 +1745,15 @@ BEGIN
                             'maxpt_8="'+ coalesce(cast(@old_maxpositiontaking_8 as varchar(50)),space(1)) + '" ' +
                             'maxpt_9="'+ coalesce(cast(@old_maxpositiontaking_9 as varchar(50)),space(1)) + '" ' +
                             'maxpt_10="'+ coalesce(cast(@old_maxpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            -- Ouright PT for sports
+                            'maxv2pt_10="'+ coalesce(cast(@old_maxv2positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv3pt_10="'+ coalesce(cast(@old_maxv3positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv5pt_10="'+ coalesce(cast(@old_maxv5positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv8pt_10="'+ coalesce(cast(@old_maxv8positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv10pt_10="'+ coalesce(cast(@old_maxv10positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv11pt_10="'+ coalesce(cast(@old_maxv11positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            'maxv99pt_10="'+ coalesce(cast(@old_maxv99positiontaking_10 as varchar(50)),space(1)) + '" ' +
+                            
                             'maxpt_9999="'+ coalesce(cast(@old_maxpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
                             'maxlivept_1="'+ coalesce(cast(@old_maxlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
                             'maxlivept_3="'+ coalesce(cast(@old_maxlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +

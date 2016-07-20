@@ -220,7 +220,32 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_PositionTaking]
     @v161alivepositiontaking_87 smallmoney = 0.7,
     @v161alivepositiontaking_89 smallmoney = 0.7,
     @v161alivepositiontaking_90 smallmoney = 0.7,
-    
+    -- Provide Outright PT for Sports
+    @v2spositiontaking_10 smallmoney,
+	@v3spositiontaking_10 smallmoney,
+	@v5spositiontaking_10 smallmoney,
+	@v8spositiontaking_10 smallmoney,
+	@v10spositiontaking_10 smallmoney,
+	@v11spositiontaking_10 smallmoney,
+	@v99spositiontaking_10 smallmoney,
+	
+	@v2mpositiontaking_10 smallmoney = 0.7,
+	@v3mpositiontaking_10 smallmoney = 0.7,
+	@v5mpositiontaking_10 smallmoney = 0.7,
+	@v8mpositiontaking_10 smallmoney = 0.7,
+	@v10mpositiontaking_10 smallmoney = 0.7,
+	@v11mpositiontaking_10 smallmoney = 0.7,
+	@v99mpositiontaking_10 smallmoney = 0.7,
+	
+	@v2apositiontaking_10 smallmoney = 0.7,
+	@v3apositiontaking_10 smallmoney = 0.7,
+	@v5apositiontaking_10 smallmoney = 0.7,
+	@v8apositiontaking_10 smallmoney = 0.7,
+	@v10apositiontaking_10 smallmoney = 0.7,
+	@v11apositiontaking_10 smallmoney = 0.7,
+	@v99apositiontaking_10 smallmoney = 0.7,
+	
+	
     @UserID int = 0,    
     @Language varchar(2) = 'E',
     @IP varchar(15)='',
@@ -257,6 +282,7 @@ Revisions:
     - 20140729@Logan: 1.Exclude disabled agents, members while updating SM's setting [Redmine: #19631]
                       2.Code aligning on modified parts
     - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, temp sport, bettype table) [Redmine:#36216]
+    - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
     
 Param's Explanation:
 • @ErrCode:
@@ -860,8 +886,74 @@ BEGIN
         or @v161mlivepositiontaking_87 < @v161alivepositiontaking_87
         or @v161mlivepositiontaking_89 < @v161alivepositiontaking_89
         or @v161mlivepositiontaking_90 < @v161alivepositiontaking_90
+        -- Outright PT for sports
+        or @v2spositiontaking_10 <0
+        or @v3spositiontaking_10 <0
+        or @v5spositiontaking_10 <0
+        or @v8spositiontaking_10 <0
+        or @v10spositiontaking_10 <0
+        or @v11spositiontaking_10 <0
+        or @v99spositiontaking_10 <0
         
-        
+		or @v2mpositiontaking_10 <0
+		or @v3mpositiontaking_10 <0
+		or @v5mpositiontaking_10 <0
+		or @v8mpositiontaking_10 <0
+		or @v10mpositiontaking_10 <0
+		or @v11mpositiontaking_10 <0
+		or @v99mpositiontaking_10 <0
+		
+		or @v2apositiontaking_10 <0
+		or @v3apositiontaking_10 <0
+		or @v5apositiontaking_10 <0
+		or @v8apositiontaking_10 <0
+		or @v10apositiontaking_10 <0
+		or @v11apositiontaking_10 <0
+		or @v99apositiontaking_10 <0
+		
+
+		or @v2spositiontaking_10 >0.9
+		or @v3spositiontaking_10 >0.9
+		or @v5spositiontaking_10 >0.9
+		or @v8spositiontaking_10 >0.9
+		or @v10spositiontaking_10 >0.9
+		or @v11spositiontaking_10 >0.9
+		or @v99spositiontaking_10 >0.9
+		
+		
+		or @v2mpositiontaking_10 >0.9
+		or @v3mpositiontaking_10 >0.9
+		or @v5mpositiontaking_10 >0.9
+		or @v8mpositiontaking_10 >0.9
+		or @v10mpositiontaking_10 >0.9
+		or @v11mpositiontaking_10 >0.9
+		or @v99mpositiontaking_10 >0.9
+		
+		or @v2apositiontaking_10 >0.9
+		or @v3apositiontaking_10 >0.9
+		or @v5apositiontaking_10 >0.9
+		or @v8apositiontaking_10 >0.9
+		or @v10apositiontaking_10 >0.9
+		or @v11apositiontaking_10 >0.9
+		or @v99apositiontaking_10 >0.9
+
+		or @v2spositiontaking_10  <  @v2mpositiontaking_10 
+		or @v3spositiontaking_10  <  @v3mpositiontaking_10 
+		or @v5spositiontaking_10  <  @v5mpositiontaking_10 
+		or @v8spositiontaking_10  <  @v8mpositiontaking_10 
+		or @v10spositiontaking_10  <  @v10mpositiontaking_10 
+		or @v11spositiontaking_10  <  @v11mpositiontaking_10 
+		or @v99spositiontaking_10  <  @v99mpositiontaking_10 
+		
+		or @v2mpositiontaking_10  <  @v2apositiontaking_10 
+		or @v3mpositiontaking_10  <  @v3apositiontaking_10 
+		or @v5mpositiontaking_10  <  @v5apositiontaking_10 
+		or @v8mpositiontaking_10  <  @v8apositiontaking_10 
+		or @v10mpositiontaking_10  <  @v10apositiontaking_10 
+		or @v11mpositiontaking_10  <  @v11apositiontaking_10 
+		or @v99mpositiontaking_10  <  @v99apositiontaking_10 
+
+
     BEGIN
         
         Select @ErrMsg =     case @Language 
@@ -1075,7 +1167,33 @@ BEGIN
         @Old_v161alivepositiontaking_86 smallmoney,
         @Old_v161alivepositiontaking_87 smallmoney,
         @Old_v161alivepositiontaking_89 smallmoney,
-        @Old_v161alivepositiontaking_90 smallmoney
+        @Old_v161alivepositiontaking_90 smallmoney,
+        
+        -- For Outright PT for sports
+        
+		@Old_v2spositiontaking_10 smallmoney,
+		@Old_v3spositiontaking_10 smallmoney,
+		@Old_v5spositiontaking_10 smallmoney,
+		@Old_v8spositiontaking_10 smallmoney,
+		@Old_v10spositiontaking_10 smallmoney,
+		@Old_v11spositiontaking_10 smallmoney,
+		@Old_v99spositiontaking_10 smallmoney,
+		
+		@Old_v2mpositiontaking_10 smallmoney,
+		@Old_v3mpositiontaking_10 smallmoney,
+		@Old_v5mpositiontaking_10 smallmoney,
+		@Old_v8mpositiontaking_10 smallmoney,
+		@Old_v10mpositiontaking_10 smallmoney,
+		@Old_v11mpositiontaking_10 smallmoney,
+		@Old_v99mpositiontaking_10 smallmoney,
+		
+		@Old_v2apositiontaking_10 smallmoney,
+		@Old_v3apositiontaking_10 smallmoney,
+		@Old_v5apositiontaking_10 smallmoney,
+		@Old_v8apositiontaking_10 smallmoney,
+		@Old_v10apositiontaking_10 smallmoney,
+		@Old_v11apositiontaking_10 smallmoney,
+		@Old_v99apositiontaking_10 smallmoney
         
     select @Old_spositiontaking_1= spositiontaking, @Old_mpositiontaking_1= mpositiontaking, @Old_apositiontaking_1= apositiontaking,
         @Old_slivepositiontaking_1= slivepositiontaking, @Old_mlivepositiontaking_1= mlivepositiontaking, @Old_alivepositiontaking_1= alivepositiontaking
@@ -1099,6 +1217,16 @@ BEGIN
     select @Old_spositiontaking_6= spositiontaking, @Old_mpositiontaking_6= mpositiontaking, @Old_apositiontaking_6= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=6 and sporttype=1
     select @Old_spositiontaking_9= spositiontaking, @Old_mpositiontaking_9= mpositiontaking, @Old_apositiontaking_9= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=9 and sporttype=1
     select @Old_spositiontaking_10= spositiontaking, @Old_mpositiontaking_10= mpositiontaking, @Old_apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=1
+    -- provide outright PT for Sports
+    select @Old_v2spositiontaking_10= spositiontaking, @Old_v2mpositiontaking_10= mpositiontaking, @Old_v2apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=2
+    select @Old_v3spositiontaking_10= spositiontaking, @Old_v3mpositiontaking_10= mpositiontaking, @Old_v3apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=3
+    select @Old_v5spositiontaking_10= spositiontaking, @Old_v5mpositiontaking_10= mpositiontaking, @Old_v5apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=5
+    select @Old_v8spositiontaking_10= spositiontaking, @Old_v8mpositiontaking_10= mpositiontaking, @Old_v8apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=8
+    select @Old_v10spositiontaking_10= spositiontaking, @Old_v10mpositiontaking_10= mpositiontaking, @Old_v10apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=10
+    select @Old_v11spositiontaking_10= spositiontaking, @Old_v11mpositiontaking_10= mpositiontaking, @Old_v11apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=11
+    select @Old_v99spositiontaking_10= spositiontaking, @Old_v99mpositiontaking_10= mpositiontaking, @Old_v99apositiontaking_10= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=10 and sporttype=99
+    
+    
     select @Old_spositiontaking_9999= spositiontaking, @Old_mpositiontaking_9999= mpositiontaking, @Old_apositiontaking_9999= apositiontaking from custsetting with (nolock) where custid=@custid and bettype=9999 and sporttype=1
 
 
@@ -1166,6 +1294,15 @@ BEGIN
             union all     select 6 as bettype, 1 as sporttype, @spositiontaking_6 as spositiontaking, 0 as slivepositiontaking
             union all     select 9 as bettype, 1 as sporttype, @spositiontaking_9 as spositiontaking, 0 as slivepositiontaking
             union all     select 10 as bettype, 1 as sporttype, @spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            -- Outright PT for sports
+            union all     select 10 as bettype, 2 as sporttype, @v2spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 3 as sporttype, @v3spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 5 as sporttype, @v5spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 8 as sporttype, @v8spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 10 as sporttype, @v10spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 11 as sporttype, @v11spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            union all     select 10 as bettype, 99 as sporttype, @v99spositiontaking_10 as spositiontaking, 0 as slivepositiontaking
+            
             union all     select 9999 as bettype, 1 as sporttype, @spositiontaking_9999 as spositiontaking, 0 as slivepositiontaking
             
             union all     select 1 as bettype, 2 as sporttype, @v2spositiontaking_1 as spositiontaking, 0 as slivepositiontaking
@@ -1276,6 +1413,16 @@ BEGIN
                 union all select     1 as sporttype, 8 as bettype, @spositiontaking_8 as maxpositiontaking,  @slivepositiontaking_8 as maxlivepositiontaking
                 union all select     1 as sporttype, 9 as bettype, @spositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
                 union all select     1 as sporttype, 10 as bettype, @spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                
+                -- Outright PT for Sports
+                union all select     2 as sporttype, 10 as bettype, @v2spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     3 as sporttype, 10 as bettype, @v3spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     5 as sporttype, 10 as bettype, @v5spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     8 as sporttype, 10 as bettype, @v8spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     10 as sporttype, 10 as bettype, @v10spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     11 as sporttype, 10 as bettype, @v11spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     99 as sporttype, 10 as bettype, @v99spositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                
                 union all select     1 as sporttype, 9999 as bettype, @spositiontaking_9999 as maxpositiontaking,  0 as maxlivepositiontaking
 
                 union all select     2 as sporttype, 1 as bettype, @v2spositiontaking_1 as maxpositiontaking,  0 as maxlivepositiontaking
@@ -1428,7 +1575,38 @@ INNER JOIN (SELECT 1 AS sporttype--1
                  , 10 AS bettype
                  , @spositiontaking_10 AS maxpositiontaking
                  , 0 AS maxlivepositiontaking
-
+  -- Outright PT for Reports
+  UNION ALL SELECT 2 AS sporttype
+                 , 10 AS bettype
+                 , @v2spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+  UNION ALL SELECT 3 AS sporttype
+                 , 10 AS bettype
+                 , @v3spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+  UNION ALL SELECT 5 AS sporttype
+                 , 10 AS bettype
+                 , @v5spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+  UNION ALL SELECT 8 AS sporttype
+                 , 10 AS bettype
+                 , @v8spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+                 
+  UNION ALL SELECT 10 AS sporttype
+                 , 10 AS bettype
+                 , @v10spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+  UNION ALL SELECT 11 AS sporttype
+                 , 10 AS bettype
+                 , @v11spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+  UNION ALL SELECT 99 AS sporttype
+                 , 10 AS bettype
+                 , @v99spositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+                 
+                                                                                                                 
   UNION all SELECT 1 AS sporttype
                  , 9999 AS bettype
                  , @spositiontaking_9999 AS maxpositiontaking
@@ -1713,6 +1891,17 @@ INNER JOIN (SELECT 161 AS sporttype
                 union all select     1 as sporttype, 8 as bettype, @mpositiontaking_8 as maxpositiontaking,  @mlivepositiontaking_8 as maxlivepositiontaking
                 union all select     1 as sporttype, 9 as bettype, @mpositiontaking_9 as maxpositiontaking,  0 as maxlivepositiontaking
                 union all select     1 as sporttype, 10 as bettype, @mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                
+                -- Outright PT for sports
+                union all select     2 as sporttype, 10 as bettype, @v2mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     3 as sporttype, 10 as bettype, @v3mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     5 as sporttype, 10 as bettype, @v5mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     8 as sporttype, 10 as bettype, @v8mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     10 as sporttype, 10 as bettype, @v10mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     11 as sporttype, 10 as bettype, @v11mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                union all select     99 as sporttype, 10 as bettype, @v99mpositiontaking_10 as maxpositiontaking,  0 as maxlivepositiontaking
+                
+                
                 union all select     1 as sporttype, 9999 as bettype, @mpositiontaking_9999 as maxpositiontaking,  0 as maxlivepositiontaking
 
                 union all select     2 as sporttype, 1 as bettype, @v2mpositiontaking_1 as maxpositiontaking,  0 as maxlivepositiontaking
@@ -1860,7 +2049,42 @@ INNER JOIN (SELECT 1 AS sporttype--1
                  , 10 AS bettype
                  , @mpositiontaking_10 AS maxpositiontaking
                  , 0 AS maxlivepositiontaking
+   --  Outright PT for sports
+   UNION ALL SELECT 2 AS sporttype
+                 , 10 AS bettype
+                 , @v2mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+   UNION ALL SELECT 3 AS sporttype
+                 , 10 AS bettype
+                 , @v3mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
 
+   UNION ALL SELECT 5 AS sporttype
+                 , 10 AS bettype
+                 , @v5mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+   UNION ALL SELECT 8 AS sporttype
+                 , 10 AS bettype
+                 , @v8mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+   UNION ALL SELECT 10 AS sporttype
+                 , 10 AS bettype
+                 , @v10mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+   UNION ALL SELECT 11 AS sporttype
+                 , 10 AS bettype
+                 , @v11mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+   UNION ALL SELECT 99 AS sporttype
+                 , 10 AS bettype
+                 , @v99mpositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+                 	
   UNION ALL SELECT 1 AS sporttype
                  , 9999 AS bettype
                  , @mpositiontaking_9999 AS maxpositiontaking
@@ -2162,6 +2386,42 @@ INNER JOIN (SELECT 161 AS sporttype
                      , 10 as bettype
                      , @apositiontaking_10 as maxpositiontaking
                      , 0 as maxlivepositiontaking
+	  -- Outright PT for sports
+	  union all select 2 as sporttype
+                     , 10 as bettype
+                     , @v2apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+                     		
+	  union all select 3 as sporttype
+                     , 10 as bettype
+                     , @v3apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
+	  union all select 5 as sporttype
+                     , 10 as bettype
+                     , @v5apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
+	  union all select 8 as sporttype
+                     , 10 as bettype
+                     , @v8apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
+	  union all select 10 as sporttype
+                     , 10 as bettype
+                     , @v10apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
+	  union all select 11 as sporttype
+                     , 10 as bettype
+                     , @v11apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
+	  union all select 99 as sporttype
+                     , 10 as bettype
+                     , @v99apositiontaking_10 as maxpositiontaking
+                     , 0 as maxlivepositiontaking
+
 
       union all select 1 as sporttype
                      , 9999 as bettype
@@ -2466,6 +2726,43 @@ INNER JOIN (SELECT 1 AS sporttype
                  , @apositiontaking_10 AS maxpositiontaking
                  , 0 AS maxlivepositiontaking
 
+  -- Outright PT for sports
+  UNION ALL SELECT 2 AS sporttype
+                 , 10 AS bettype
+                 , @v2apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+                 
+  UNION ALL SELECT 3 AS sporttype
+                 , 10 AS bettype
+                 , @v3apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+  UNION ALL SELECT 5 AS sporttype
+                 , 10 AS bettype
+                 , @v5apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+  UNION ALL SELECT 8 AS sporttype
+                 , 10 AS bettype
+                 , @v8apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+  UNION ALL SELECT 10 AS sporttype
+                 , 10 AS bettype
+                 , @v10apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+  UNION ALL SELECT 11 AS sporttype
+                 , 10 AS bettype
+                 , @v11apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+  UNION ALL SELECT 99 AS sporttype
+                 , 10 AS bettype
+                 , @v99apositiontaking_10 AS maxpositiontaking
+                 , 0 AS maxlivepositiontaking
+
+                 
   UNION ALL SELECT 1 AS sporttype
                  , 9999 AS bettype
                  , @apositiontaking_9999 AS maxpositiontaking
@@ -2717,38 +3014,66 @@ INNER JOIN (SELECT 161 AS sporttype
 
     update custsetting with (ROWLOCK, UPDLOCK)
     set
-        spositiontaking = case sporttype     when 1 then case bettype when 1 then @spositiontaking_1 when 2 then @spositiontaking_2 when 3 then @spositiontaking_3 when 4 then @spositiontaking_4 when 5 then @spositiontaking_5 when 6 then @spositiontaking_6 when 7 then @spositiontaking_7 when 8 then @spositiontaking_8 when 9 then @spositiontaking_9  when 10 then @spositiontaking_10 when 9999 then @spositiontaking_9999 else 0 end
-                        when 2 then case bettype when 1 then @v2spositiontaking_1 when 2 then @v2spositiontaking_2 when 3 then @v2spositiontaking_3 when 7 then @v2spositiontaking_7 when 8 then @v2spositiontaking_8 when 20 then @v2spositiontaking_20 else 0 end
-                        when 3 then case bettype when 1 then @v3spositiontaking_1 when 2 then @v3spositiontaking_2 when 3 then @v3spositiontaking_3 when 20 then @v3spositiontaking_20 else 0 end
-                        when 5 then case bettype when 1 then @v5spositiontaking_1 when 2 then @v5spositiontaking_2 when 3 then @v5spositiontaking_3 when 20 then @v5spositiontaking_20 when 9999 then @v5spositiontaking_9999 else 0 end
-                        when 8 then case bettype when 1 then @v8spositiontaking_1 when 3 then @v8spositiontaking_3 when 20 then @v8spositiontaking_20 else 0 end
-                        when 10 then case bettype when 1 then @v10spositiontaking_1 when 2 then @v10spositiontaking_2 when 3 then @v10spositiontaking_3 when 20 then @v10spositiontaking_20 else 0 end
-                        when 11 then case bettype when 1 then @v11spositiontaking_1 when 20 then @v11spositiontaking_20 else 0 end
-                        when 99 then case bettype when 1 then @v99spositiontaking_1 when 2 then @v99spositiontaking_2 when 3 then @v99spositiontaking_3 when 9 then @v99spositiontaking_9  when 20 then @v99spositiontaking_20 else 0 end
+        spositiontaking = case sporttype     
+						when 1 then case bettype when 1 then @spositiontaking_1 when 2 then @spositiontaking_2 when 3 then @spositiontaking_3 when 4 then @spositiontaking_4 when 5 then @spositiontaking_5 when 6 then @spositiontaking_6 when 7 then @spositiontaking_7 when 8 then @spositiontaking_8 when 9 then @spositiontaking_9  when 10 then @spositiontaking_10 when 9999 then @spositiontaking_9999 else 0 end
+                        
+                        when 2 then case bettype when 1 then @v2spositiontaking_1 when 2 then @v2spositiontaking_2 when 3 then @v2spositiontaking_3 when 7 then @v2spositiontaking_7 when 8 then @v2spositiontaking_8 when 20 then @v2spositiontaking_20 when 10 then @v2spositiontaking_10 else 0 end
+                        
+                        when 3 then case bettype when 1 then @v3spositiontaking_1 when 2 then @v3spositiontaking_2 when 3 then @v3spositiontaking_3 when 20 then @v3spositiontaking_20 when 10 then @v3spositiontaking_10 else 0 end
+                        
+                        when 5 then case bettype when 1 then @v5spositiontaking_1 when 2 then @v5spositiontaking_2 when 3 then @v5spositiontaking_3 when 20 then @v5spositiontaking_20 when 9999 then @v5spositiontaking_9999  when 10 then @v5spositiontaking_10 else 0 end
+                        
+                        when 8 then case bettype when 1 then @v8spositiontaking_1 when 3 then @v8spositiontaking_3 when 20 then @v8spositiontaking_20 when 10 then @v8spositiontaking_10 else 0 end
+                        
+                        when 10 then case bettype when 1 then @v10spositiontaking_1 when 2 then @v10spositiontaking_2 when 3 then @v10spositiontaking_3 when 20 then @v10spositiontaking_20 when 10 then @v10spositiontaking_10 else 0 end
+                        
+                        when 11 then case bettype when 1 then @v11spositiontaking_1 when 20 then @v11spositiontaking_20 when 10 then @v11spositiontaking_10 else 0 end
+                        
+                        when 99 then case bettype when 1 then @v99spositiontaking_1 when 2 then @v99spositiontaking_2 when 3 then @v99spositiontaking_3 when 9 then @v99spositiontaking_9  when 20 then @v99spositiontaking_20 when 10 then @v99spositiontaking_10 else 0 end
+                        
                         when 154 then case bettype when 20 then @v154spositiontaking_20 else 0 end
                         else spositiontaking end,
+        
         slivepositiontaking = case sporttype     when 1 then case bettype when 1 then @slivepositiontaking_1 when 3 then @slivepositiontaking_3 when 7 then @slivepositiontaking_7 when 8 then @slivepositiontaking_8 else slivepositiontaking end else slivepositiontaking end,
         
-        mpositiontaking = case sporttype     when 1 then case bettype when 1 then @mpositiontaking_1 when 2 then @mpositiontaking_2 when 3 then @mpositiontaking_3 when 4 then @mpositiontaking_4 when 5 then @mpositiontaking_5 when 6 then @mpositiontaking_6 when 7 then @mpositiontaking_7 when 8 then @mpositiontaking_8 when 9 then @mpositiontaking_9  when 10 then @mpositiontaking_10 when 9999 then @mpositiontaking_9999 else 0 end
-                        when 2 then case bettype when 1 then @v2mpositiontaking_1 when 2 then @v2mpositiontaking_2 when 3 then @v2mpositiontaking_3 when 7 then @v2mpositiontaking_7 when 8 then @v2mpositiontaking_8 when 20 then @v2mpositiontaking_20 else 0 end
-                        when 3 then case bettype when 1 then @v3mpositiontaking_1 when 2 then @v3mpositiontaking_2 when 3 then @v3mpositiontaking_3 when 20 then @v3mpositiontaking_20 else 0 end
-                        when 5 then case bettype when 1 then @v5mpositiontaking_1 when 2 then @v5mpositiontaking_2 when 3 then @v5mpositiontaking_3 when 20 then @v5mpositiontaking_20 when 9999 then @v5mpositiontaking_9999 else 0 end
-                        when 8 then case bettype when 1 then @v8mpositiontaking_1 when 3 then @v8mpositiontaking_3 when 20 then @v8mpositiontaking_20 else 0 end
-                        when 10 then case bettype when 1 then @v10mpositiontaking_1 when 2 then @v10mpositiontaking_2 when 3 then @v10mpositiontaking_3 when 20 then @v10mpositiontaking_20 else 0 end
-                        when 11 then case bettype when 1 then @v11mpositiontaking_1 when 20 then @v11mpositiontaking_20 else 0 end
-                        when 99 then case bettype when 1 then @v99mpositiontaking_1 when 2 then @v99mpositiontaking_2 when 3 then @v99mpositiontaking_3 when 9 then @v99mpositiontaking_9 when 20 then @v99mpositiontaking_20 else 0 end
+        mpositiontaking = case sporttype     
+						when 1 then case bettype when 1 then @mpositiontaking_1 when 2 then @mpositiontaking_2 when 3 then @mpositiontaking_3 when 4 then @mpositiontaking_4 when 5 then @mpositiontaking_5 when 6 then @mpositiontaking_6 when 7 then @mpositiontaking_7 when 8 then @mpositiontaking_8 when 9 then @mpositiontaking_9  when 10 then @mpositiontaking_10 when 9999 then @mpositiontaking_9999 else 0 end
+						
+                        when 2 then case bettype when 1 then @v2mpositiontaking_1 when 2 then @v2mpositiontaking_2 when 3 then @v2mpositiontaking_3 when 7 then @v2mpositiontaking_7 when 8 then @v2mpositiontaking_8 when 20 then @v2mpositiontaking_20 when 10 then @v2mpositiontaking_10 else 0 end
+                        
+                        when 3 then case bettype when 1 then @v3mpositiontaking_1 when 2 then @v3mpositiontaking_2 when 3 then @v3mpositiontaking_3 when 20 then @v3mpositiontaking_20 when 10 then @v3mpositiontaking_10 else 0 end
+                        
+                        when 5 then case bettype when 1 then @v5mpositiontaking_1 when 2 then @v5mpositiontaking_2 when 3 then @v5mpositiontaking_3 when 20 then @v5mpositiontaking_20 when 9999 then @v5mpositiontaking_9999 when 10 then @v5mpositiontaking_10 else 0 end
+                        
+                        when 8 then case bettype when 1 then @v8mpositiontaking_1 when 3 then @v8mpositiontaking_3 when 20 then @v8mpositiontaking_20 when 10 then @v8mpositiontaking_10 else 0 end
+                        
+                        when 10 then case bettype when 1 then @v10mpositiontaking_1 when 2 then @v10mpositiontaking_2 when 3 then @v10mpositiontaking_3 when 20 then @v10mpositiontaking_20 when 10 then @v10mpositiontaking_10  else 0 end
+                        
+                        when 11 then case bettype when 1 then @v11mpositiontaking_1 when 20 then @v11mpositiontaking_20 when 10 then @v11mpositiontaking_10 else 0 end
+                        
+                        when 99 then case bettype when 1 then @v99mpositiontaking_1 when 2 then @v99mpositiontaking_2 when 3 then @v99mpositiontaking_3 when 9 then @v99mpositiontaking_9 when 20 then @v99mpositiontaking_20 when 10 then @v99mpositiontaking_10 else 0 end
+                        
                         when 154 then case bettype when 20 then @v154mpositiontaking_20 else 0 end
                         else mpositiontaking end,
         
         mlivepositiontaking = case sporttype     when 1 then case bettype when 1 then @mlivepositiontaking_1 when 3 then @mlivepositiontaking_3 when 7 then @mlivepositiontaking_7 when 8 then @mlivepositiontaking_8 else mlivepositiontaking end else mlivepositiontaking end,
-        apositiontaking = case sporttype     when 1 then case bettype when 1 then @apositiontaking_1 when 2 then @apositiontaking_2 when 3 then @apositiontaking_3 when 4 then @apositiontaking_4 when 5 then @apositiontaking_5 when 6 then @apositiontaking_6 when 7 then @apositiontaking_7 when 8 then @apositiontaking_8 when 9 then @apositiontaking_9  when 10 then @apositiontaking_10 when 9999 then @apositiontaking_9999 else 0 end
-                        when 2 then case bettype when 1 then @v2apositiontaking_1 when 2 then @v2apositiontaking_2 when 3 then @v2apositiontaking_3 when 7 then @v2apositiontaking_7 when 8 then @v2apositiontaking_8 when 20 then @v2apositiontaking_20 else 0 end
-                        when 3 then case bettype when 1 then @v3apositiontaking_1 when 2 then @v3apositiontaking_2 when 3 then @v3apositiontaking_3 when 20 then @v3apositiontaking_20 else 0 end
-                        when 5 then case bettype when 1 then @v5apositiontaking_1 when 2 then @v5apositiontaking_2 when 3 then @v5apositiontaking_3 when 20 then @v5apositiontaking_20 when 9999 then @v5apositiontaking_9999 else 0 end
-                        when 8 then case bettype when 1 then @v8apositiontaking_1 when 3 then @v8apositiontaking_3 when 20 then @v8apositiontaking_20 else 0 end
-                        when 10 then case bettype when 1 then @v10apositiontaking_1 when 2 then @v10apositiontaking_2 when 3 then @v10apositiontaking_3 when 20 then @v10apositiontaking_20 else 0 end
-                        when 11 then case bettype when 1 then @v11apositiontaking_1 when 20 then @v11apositiontaking_20 else 0 end
-                        when 99 then case bettype when 1 then @v99apositiontaking_1 when 2 then @v99apositiontaking_2 when 3 then @v99apositiontaking_3 when 9 then @v99apositiontaking_9 when 20 then @v99apositiontaking_20 else 0 end
+        apositiontaking = case sporttype     
+						
+						when 1 then case bettype when 1 then @apositiontaking_1 when 2 then @apositiontaking_2 when 3 then @apositiontaking_3 when 4 then @apositiontaking_4 when 5 then @apositiontaking_5 when 6 then @apositiontaking_6 when 7 then @apositiontaking_7 when 8 then @apositiontaking_8 when 9 then @apositiontaking_9  when 10 then @apositiontaking_10 when 9999 then @apositiontaking_9999 else 0 end
+                        
+                        when 2 then case bettype when 1 then @v2apositiontaking_1 when 2 then @v2apositiontaking_2 when 3 then @v2apositiontaking_3 when 7 then @v2apositiontaking_7 when 8 then @v2apositiontaking_8 when 20 then @v2apositiontaking_20  when 10 then @v2apositiontaking_10 else 0 end
+                        
+                        when 3 then case bettype when 1 then @v3apositiontaking_1 when 2 then @v3apositiontaking_2 when 3 then @v3apositiontaking_3 when 20 then @v3apositiontaking_20  when 10 then @v3apositiontaking_10 else 0 end
+                        
+                        when 5 then case bettype when 1 then @v5apositiontaking_1 when 2 then @v5apositiontaking_2 when 3 then @v5apositiontaking_3 when 20 then @v5apositiontaking_20 when 9999 then @v5apositiontaking_9999  when 10 then @v5apositiontaking_10 else 0 end
+                        
+                        when 8 then case bettype when 1 then @v8apositiontaking_1 when 3 then @v8apositiontaking_3 when 20 then @v8apositiontaking_20  when 10 then @v8apositiontaking_10 else 0 end
+                        
+                        when 10 then case bettype when 1 then @v10apositiontaking_1 when 2 then @v10apositiontaking_2 when 3 then @v10apositiontaking_3 when 20 then @v10apositiontaking_20  when 10 then @v10apositiontaking_10 else 0 end
+                        
+                        when 11 then case bettype when 1 then @v11apositiontaking_1 when 20 then @v11apositiontaking_20  when 10 then @v11apositiontaking_10 else 0 end
+                        
+                        when 99 then case bettype when 1 then @v99apositiontaking_1 when 2 then @v99apositiontaking_2 when 3 then @v99apositiontaking_3 when 9 then @v99apositiontaking_9 when 20 then @v99apositiontaking_20  when 10 then @v99apositiontaking_10 else 0 end
                         when 154 then case bettype when 20 then @v154apositiontaking_20 else 0 end
                         else apositiontaking end,
         
@@ -2948,6 +3273,23 @@ INNER JOIN (SELECT 161 AS sporttype
             @maxv161livepositiontaking_89 = @v161slivepositiontaking_89,
             @maxv161livepositiontaking_90 = @v161slivepositiontaking_90,
             
+            -- Outright PT for sports
+            @minv2positiontaking_10 = 0,
+            @minv3positiontaking_10 = 0,
+            @minv5positiontaking_10 = 0,
+            @minv8positiontaking_10 = 0,
+            @minv10positiontaking_10 = 0,
+            @minv11positiontaking_10 = 0,
+            @minv99positiontaking_10 = 0,
+            
+			@maxv2positiontaking_10 = @v2spositiontaking_10,
+			@maxv3positiontaking_10 = @v3spositiontaking_10,
+			@maxv5positiontaking_10 = @v5spositiontaking_10,
+			@maxv8positiontaking_10 = @v8spositiontaking_10,
+			@maxv10positiontaking_10 = @v10spositiontaking_10,
+			@maxv11positiontaking_10 = @v11spositiontaking_10,
+			@maxv99positiontaking_10 = @v99spositiontaking_10,
+			
             @CheckPermission = 0,
             @UpdateMinPos = 0,
             @UpdateMaxPos = 1,
@@ -2989,7 +3331,17 @@ INNER JOIN (SELECT 161 AS sporttype
     'spt_7="'+ coalesce(cast(@spositiontaking_7 as varchar(50)),space(1)) + '" ' +
     'spt_8="'+ coalesce(cast(@spositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'spt_9="'+ coalesce(cast(@spositiontaking_9 as varchar(50)),space(1)) + '" ' +
+    
     'spt_10="'+ coalesce(cast(@spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    -- Outright PT for sports
+    'v2spt_10="'+ coalesce(cast(@v2spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3spt_10="'+ coalesce(cast(@v3spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5spt_10="'+ coalesce(cast(@v5spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8spt_10="'+ coalesce(cast(@v8spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10spt_10="'+ coalesce(cast(@v10spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11spt_10="'+ coalesce(cast(@v11spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99spt_10="'+ coalesce(cast(@v99spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'spt_9999="'+ coalesce(cast(@spositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'slivept_1="'+ coalesce(cast(@slivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'slivept_3="'+ coalesce(cast(@slivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3057,6 +3409,16 @@ INNER JOIN (SELECT 161 AS sporttype
     'mpt_8="'+ coalesce(cast(@mpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'mpt_9="'+ coalesce(cast(@mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'mpt_10="'+ coalesce(cast(@mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    -- Outright PT for sports
+    'v2mpt_10="'+ coalesce(cast(@v2mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3mpt_10="'+ coalesce(cast(@v3mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5mpt_10="'+ coalesce(cast(@v5mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8mpt_10="'+ coalesce(cast(@v8mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10mpt_10="'+ coalesce(cast(@v10mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11mpt_10="'+ coalesce(cast(@v11mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99mpt_10="'+ coalesce(cast(@v99mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    
     'mpt_9999="'+ coalesce(cast(@mpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'mlivept_1="'+ coalesce(cast(@mlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'mlivept_3="'+ coalesce(cast(@mlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3124,6 +3486,15 @@ INNER JOIN (SELECT 161 AS sporttype
     'apt_8="'+ coalesce(cast(@apositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'apt_9="'+ coalesce(cast(@apositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'apt_10="'+ coalesce(cast(@apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    -- Outright PT for sports
+    'v2apt_10="'+ coalesce(cast(@v2apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3apt_10="'+ coalesce(cast(@v3apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5apt_10="'+ coalesce(cast(@v5apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8apt_10="'+ coalesce(cast(@v8apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10apt_10="'+ coalesce(cast(@v10apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11apt_10="'+ coalesce(cast(@v11apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99apt_10="'+ coalesce(cast(@v99apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'apt_9999="'+ coalesce(cast(@apositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'alivept_1="'+ coalesce(cast(@alivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'alivept_3="'+ coalesce(cast(@alivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3198,6 +3569,16 @@ INNER JOIN (SELECT 161 AS sporttype
     'spt_8="'+ coalesce(cast(@Old_spositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'spt_9="'+ coalesce(cast(@Old_spositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'spt_10="'+ coalesce(cast(@Old_spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    -- Outright PT for sports
+    'v2spt_10="'+ coalesce(cast(@Old_v2spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3spt_10="'+ coalesce(cast(@Old_v3spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5spt_10="'+ coalesce(cast(@Old_v5spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8spt_10="'+ coalesce(cast(@Old_v8spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10spt_10="'+ coalesce(cast(@Old_v10spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11spt_10="'+ coalesce(cast(@Old_v11spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99spt_10="'+ coalesce(cast(@Old_v99spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'spt_9999="'+ coalesce(cast(@Old_spositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'slivept_1="'+ coalesce(cast(@Old_slivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'slivept_3="'+ coalesce(cast(@Old_slivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3266,6 +3647,15 @@ INNER JOIN (SELECT 161 AS sporttype
     'mpt_8="'+ coalesce(cast(@Old_mpositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'mpt_9="'+ coalesce(cast(@Old_mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'mpt_10="'+ coalesce(cast(@Old_mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    -- Outright PT for sports
+    'v2mpt_10="'+ coalesce(cast(@Old_v2mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3mpt_10="'+ coalesce(cast(@Old_v3mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5mpt_10="'+ coalesce(cast(@Old_v5mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8mpt_10="'+ coalesce(cast(@Old_v8mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10mpt_10="'+ coalesce(cast(@Old_v10mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11mpt_10="'+ coalesce(cast(@Old_v11mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99mpt_10="'+ coalesce(cast(@Old_v99mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'mpt_9999="'+ coalesce(cast(@Old_mpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'mlivept_1="'+ coalesce(cast(@Old_mlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'mlivept_3="'+ coalesce(cast(@Old_mlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3334,6 +3724,16 @@ INNER JOIN (SELECT 161 AS sporttype
     'apt_8="'+ coalesce(cast(@Old_apositiontaking_8 as varchar(50)),space(1)) + '" ' +
     'apt_9="'+ coalesce(cast(@Old_apositiontaking_9 as varchar(50)),space(1)) + '" ' +
     'apt_10="'+ coalesce(cast(@Old_apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
+    -- Outright PT for sports
+    'v2apt_10="'+ coalesce(cast(@Old_v2apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v3apt_10="'+ coalesce(cast(@Old_v3apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v5apt_10="'+ coalesce(cast(@Old_v5apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v8apt_10="'+ coalesce(cast(@Old_v8apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v10apt_10="'+ coalesce(cast(@Old_v10apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v11apt_10="'+ coalesce(cast(@Old_v11apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    'v99apt_10="'+ coalesce(cast(@Old_v99apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+    
     'apt_9999="'+ coalesce(cast(@Old_apositiontaking_9999 as varchar(50)),space(1)) + '" ' +
     'alivept_1="'+ coalesce(cast(@Old_alivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
     'alivept_3="'+ coalesce(cast(@Old_alivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3422,6 +3822,15 @@ INNER JOIN (SELECT 161 AS sporttype
         'spt_8="'+ coalesce(cast(@spositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'spt_9="'+ coalesce(cast(@spositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'spt_10="'+ coalesce(cast(@spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        -- Outright PT for sports
+        'v2spt_10="'+ coalesce(cast(@v2spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3spt_10="'+ coalesce(cast(@v3spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5spt_10="'+ coalesce(cast(@v5spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8spt_10="'+ coalesce(cast(@v8spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10spt_10="'+ coalesce(cast(@v10spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11spt_10="'+ coalesce(cast(@v11spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99spt_10="'+ coalesce(cast(@v99spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
         'spt_9999="'+ coalesce(cast(@spositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'slivept_1="'+ coalesce(cast(@slivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'slivept_3="'+ coalesce(cast(@slivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3489,6 +3898,16 @@ INNER JOIN (SELECT 161 AS sporttype
         'mpt_8="'+ coalesce(cast(@mpositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'mpt_9="'+ coalesce(cast(@mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'mpt_10="'+ coalesce(cast(@mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
+        -- Outright PT for sports
+        'v2mpt_10="'+ coalesce(cast(@v2mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3mpt_10="'+ coalesce(cast(@v3mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5mpt_10="'+ coalesce(cast(@v5mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8mpt_10="'+ coalesce(cast(@v8mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10mpt_10="'+ coalesce(cast(@v10mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11mpt_10="'+ coalesce(cast(@v11mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99mpt_10="'+ coalesce(cast(@v99mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
         'mpt_9999="'+ coalesce(cast(@mpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'mlivept_1="'+ coalesce(cast(@mlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'mlivept_3="'+ coalesce(cast(@mlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3556,6 +3975,15 @@ INNER JOIN (SELECT 161 AS sporttype
         'apt_8="'+ coalesce(cast(@apositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'apt_9="'+ coalesce(cast(@apositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'apt_10="'+ coalesce(cast(@apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        -- Outright PT for sports
+        'v2apt_10="'+ coalesce(cast(@v2apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3apt_10="'+ coalesce(cast(@v3apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5apt_10="'+ coalesce(cast(@v5apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8apt_10="'+ coalesce(cast(@v8apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10apt_10="'+ coalesce(cast(@v10apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11apt_10="'+ coalesce(cast(@v11apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99apt_10="'+ coalesce(cast(@v99apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
         'apt_9999="'+ coalesce(cast(@apositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'alivept_1="'+ coalesce(cast(@alivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'alivept_3="'+ coalesce(cast(@alivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3630,6 +4058,16 @@ INNER JOIN (SELECT 161 AS sporttype
         'spt_8="'+ coalesce(cast(@Old_spositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'spt_9="'+ coalesce(cast(@Old_spositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'spt_10="'+ coalesce(cast(@Old_spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        -- Outright PT for sports
+        'v2spt_10="'+ coalesce(cast(@Old_v2spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3spt_10="'+ coalesce(cast(@Old_v3spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5spt_10="'+ coalesce(cast(@Old_v5spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8spt_10="'+ coalesce(cast(@Old_v8spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10spt_10="'+ coalesce(cast(@Old_v10spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11spt_10="'+ coalesce(cast(@Old_v11spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99spt_10="'+ coalesce(cast(@Old_v99spositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
+        
         'spt_9999="'+ coalesce(cast(@Old_spositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'slivept_1="'+ coalesce(cast(@Old_slivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'slivept_3="'+ coalesce(cast(@Old_slivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3698,6 +4136,16 @@ INNER JOIN (SELECT 161 AS sporttype
         'mpt_8="'+ coalesce(cast(@Old_mpositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'mpt_9="'+ coalesce(cast(@Old_mpositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'mpt_10="'+ coalesce(cast(@Old_mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
+        -- Outright PT for sports
+        'v2mpt_10="'+ coalesce(cast(@Old_v2mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3mpt_10="'+ coalesce(cast(@Old_v3mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5mpt_10="'+ coalesce(cast(@Old_v5mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8mpt_10="'+ coalesce(cast(@Old_v8mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10mpt_10="'+ coalesce(cast(@Old_v10mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11mpt_10="'+ coalesce(cast(@Old_v11mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99mpt_10="'+ coalesce(cast(@Old_v99mpositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
         'mpt_9999="'+ coalesce(cast(@Old_mpositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'mlivept_1="'+ coalesce(cast(@Old_mlivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'mlivept_3="'+ coalesce(cast(@Old_mlivepositiontaking_3 as varchar(50)),space(1)) + '" ' +
@@ -3766,6 +4214,16 @@ INNER JOIN (SELECT 161 AS sporttype
         'apt_8="'+ coalesce(cast(@Old_apositiontaking_8 as varchar(50)),space(1)) + '" ' +
         'apt_9="'+ coalesce(cast(@Old_apositiontaking_9 as varchar(50)),space(1)) + '" ' +
         'apt_10="'+ coalesce(cast(@Old_apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        -- Outright PT for sports
+        
+        'v2apt_10="'+ coalesce(cast(@Old_v2apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v3apt_10="'+ coalesce(cast(@Old_v3apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v5apt_10="'+ coalesce(cast(@Old_v5apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v8apt_10="'+ coalesce(cast(@Old_v8apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v10apt_10="'+ coalesce(cast(@Old_v10apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v11apt_10="'+ coalesce(cast(@Old_v11apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        'v99apt_10="'+ coalesce(cast(@Old_v99apositiontaking_10 as varchar(50)),space(1)) + '" ' +
+        
         'apt_9999="'+ coalesce(cast(@Old_apositiontaking_9999 as varchar(50)),space(1)) + '" ' +
         'alivept_1="'+ coalesce(cast(@Old_alivepositiontaking_1 as varchar(50)),space(1)) + '" ' +
         'alivept_3="'+ coalesce(cast(@Old_alivepositiontaking_3 as varchar(50)),space(1)) + '" ' +

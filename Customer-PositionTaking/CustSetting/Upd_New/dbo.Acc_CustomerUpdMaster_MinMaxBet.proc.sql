@@ -96,6 +96,7 @@ Revisions:
 	- 20130218@Dan: Write more log on DBTXN server in case of DBLOG server failure
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20150714@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
+	- 20160712@Helen: Mixed Sports Parlay Min & Max Bet log is always written using OtherSports Min & Max Bet value when user update Bet Limit of other sports [Redmine: 60571]
 	
 Param's Explanation:
 • @ErrCode:
@@ -1276,11 +1277,11 @@ SELECT @minbet = MAX(CASE WHEN sporttype = 1 THEN
 	
 	@minbetv99mp = MAX(CASE WHEN sporttype = 99 AND bettype = 9 THEN 
 									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99mp = 0 
-											THEN minbet ELSE @minbetv99 END) 
+											THEN minbet ELSE @minbetv99mp END) 
 							ELSE 0 END),
 	@maxbetv99mp = MAX(CASE WHEN sporttype = 99 AND bettype = 9 THEN 
 									(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBetv99mp = 0 
-											THEN maxbet ELSE @maxbetv99 END) 
+											THEN maxbet ELSE @maxbetv99mp END) 
 							ELSE 0 END),
 	
 	@minbetv154 = MAX(CASE WHEN sporttype = 154 THEN 

@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd_CheckParam_MAg    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd_CheckParam_MAg    Script Date: 8/21/2014 2:58:04 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam_MAg]
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam_MAg]
     @custid int,
     @minpositiontaking_1 smallmoney,
     @minpositiontaking_2 smallmoney,
@@ -142,6 +142,22 @@ CREATE PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam_MAg]
     @maxv161livepositiontaking_89 smallmoney,
     @maxv161livepositiontaking_90 smallmoney,
     
+    -- Outright PT for Sports
+	@maxv2positiontaking_10 smallmoney = 0,
+	@maxv3positiontaking_10 smallmoney = 0,
+	@maxv5positiontaking_10 smallmoney = 0,
+	@maxv8positiontaking_10 smallmoney = 0,
+	@maxv10positiontaking_10 smallmoney = 0,
+	@maxv11positiontaking_10 smallmoney = 0,
+	@maxv99positiontaking_10 smallmoney = 0,
+	
+	@minv2positiontaking_10 smallmoney = 0,
+	@minv3positiontaking_10 smallmoney = 0,
+	@minv5positiontaking_10 smallmoney = 0,
+	@minv8positiontaking_10 smallmoney = 0,
+	@minv10positiontaking_10 smallmoney = 0,
+	@minv11positiontaking_10 smallmoney = 0,
+	@minv99positiontaking_10 smallmoney = 0,
     
     @UpdateMinPos bit = 1,
     @UpdateMaxPos bit = 1,
@@ -174,6 +190,7 @@ Revisions:
     - 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
     - 20140725@Logan: 1. Exclude disabled agents while updating master's setting
                       2. Code aligning
+    - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]                  
 
 Param's Explanation:
 • @ErrCode:
@@ -243,6 +260,36 @@ inner join (select 1 as sporttype --1
                  , @maxpositiontaking_10 as maxpositiontaking
                  , 0 as maxlivepositiontaking
 
+	  -- Outright PT for Sports
+	union all select 2 as sporttype
+					 , 10 as bettype
+					 , @maxv2positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 3 as sporttype
+					 , 10 as bettype
+					 , @maxv3positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 5 as sporttype
+					 , 10 as bettype
+					 , @maxv5positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 8 as sporttype
+					 , 10 as bettype
+					 , @maxv8positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 10 as sporttype
+					 , 10 as bettype
+					 , @maxv10positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 11 as sporttype
+					 , 10 as bettype
+					 , @maxv11positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	union all select 99 as sporttype
+					 , 10 as bettype
+					 , @maxv99positiontaking_10 as maxpositiontaking
+					 , 0 as maxlivepositiontaking
+	                                                                                                                     
   union all select 1 as sporttype
                  , 9999 as bettype
                  , @maxpositiontaking_9999 as maxpositiontaking
@@ -671,6 +718,43 @@ inner join (select 1 as sporttype
                  , @minpositiontaking_10 as minpositiontaking
                  , 0 as minlivepositiontaking
 
+-- Outright PT for sports
+	union all select 2 as sporttype
+					 , 10 as bettype
+					 , @minv2positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 	
+	union all select 3 as sporttype
+					 , 10 as bettype
+					 , @minv3positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+	union all select 5 as sporttype
+					 , 10 as bettype
+					 , @minv5positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+	union all select 8 as sporttype
+					 , 10 as bettype
+					 , @minv8positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+	union all select 10 as sporttype
+					 , 10 as bettype
+					 , @minv10positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+	union all select 11 as sporttype
+					 , 10 as bettype
+					 , @minv11positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+	union all select 99 as sporttype
+					 , 10 as bettype
+					 , @minv99positiontaking_10 as minpositiontaking
+					 , 0 as minlivepositiontaking
+	                 
+                                                                                                      
   union all select 1 as sporttype
                  , 9999 as bettype
                  , @minpositiontaking_9999 as minpositiontaking

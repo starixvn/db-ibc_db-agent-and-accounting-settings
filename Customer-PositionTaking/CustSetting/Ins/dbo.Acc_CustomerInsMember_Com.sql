@@ -92,6 +92,13 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@spositiontaking_8 SMALLMONEY,
 	@spositiontaking_9 SMALLMONEY,
 	@spositiontaking_10 SMALLMONEY,
+	@v2spositiontaking_10 SMALLMONEY,
+	@v3spositiontaking_10 SMALLMONEY,
+	@v5spositiontaking_10 SMALLMONEY,
+	@v8spositiontaking_10 SMALLMONEY,
+	@v10spositiontaking_10 SMALLMONEY,
+	@v11spositiontaking_10 SMALLMONEY,
+	@v99spositiontaking_10 SMALLMONEY,
 	@spositiontaking_9999 SMALLMONEY = 0,
 	
 	@slivepositiontaking_1 SMALLMONEY,
@@ -161,6 +168,13 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@mpositiontaking_8 SMALLMONEY,
 	@mpositiontaking_9 SMALLMONEY,
 	@mpositiontaking_10 SMALLMONEY,
+	@v2mpositiontaking_10 SMALLMONEY,
+	@v3mpositiontaking_10 SMALLMONEY,
+	@v5mpositiontaking_10 SMALLMONEY,
+	@v8mpositiontaking_10 SMALLMONEY,
+	@v10mpositiontaking_10 SMALLMONEY,
+	@v11mpositiontaking_10 SMALLMONEY,
+	@v99mpositiontaking_10 SMALLMONEY,
 	@mpositiontaking_9999 SMALLMONEY =0,
 	
 	@mlivepositiontaking_1 SMALLMONEY,
@@ -230,6 +244,13 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@apositiontaking_8 SMALLMONEY,
 	@apositiontaking_9 SMALLMONEY,
 	@apositiontaking_10 SMALLMONEY,
+	@v2apositiontaking_10 SMALLMONEY,
+	@v3apositiontaking_10 SMALLMONEY,
+	@v5apositiontaking_10 SMALLMONEY,
+	@v8apositiontaking_10 SMALLMONEY,
+	@v10apositiontaking_10 SMALLMONEY,
+	@v11apositiontaking_10 SMALLMONEY,
+	@v99apositiontaking_10 SMALLMONEY,
 	@apositiontaking_9999 SMALLMONEY = 0,
 	
 	@alivepositiontaking_1 SMALLMONEY,
@@ -387,6 +408,7 @@ Revisions:
 	- 20160215@Dominic: Cricket is not showed in log for MBC customers [Redmine: #52158]
 	- 20160222@Dominic: Log initial status is blank [Redmine: #52657]
 	- 20160315@Winnie: Hotfix 51457 write wrong log info
+	- 20160627@Winnie: Out right PT [Redmine #59438]
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -482,6 +504,13 @@ Param's Explanation:
 				@spositiontaking_8 = @spositiontaking_8,
 				@spositiontaking_9 = @spositiontaking_9,
 				@spositiontaking_10 = @spositiontaking_10,
+				@v99spositiontaking_10 = @v99spositiontaking_10,
+				@v2spositiontaking_10 = @v2spositiontaking_10,
+				@v3spositiontaking_10 = @v3spositiontaking_10,
+				@v5spositiontaking_10 = @v5spositiontaking_10,
+				@v8spositiontaking_10 = @v8spositiontaking_10,
+				@v10spositiontaking_10 = @v10spositiontaking_10,
+				@v11spositiontaking_10 = @v11spositiontaking_10,
 				@spositiontaking_9999 = @spositiontaking_9999,
 				@slivepositiontaking_1 = @slivepositiontaking_1,
 				@slivepositiontaking_3 = @slivepositiontaking_3,
@@ -545,6 +574,13 @@ Param's Explanation:
 				@mpositiontaking_8 = @mpositiontaking_8,
 				@mpositiontaking_9 = @mpositiontaking_9,
 				@mpositiontaking_10 = @mpositiontaking_10,
+				@v2mpositiontaking_10 = @v2mpositiontaking_10,
+				@v3mpositiontaking_10 = @v3mpositiontaking_10,
+				@v5mpositiontaking_10 = @v5mpositiontaking_10,
+				@v8mpositiontaking_10 = @v8mpositiontaking_10,
+				@v10mpositiontaking_10 = @v10mpositiontaking_10,
+				@v11mpositiontaking_10 = @v11mpositiontaking_10,
+				@v99mpositiontaking_10 = @v99mpositiontaking_10,
 				@mpositiontaking_9999 = @mpositiontaking_9999,
 				@mlivepositiontaking_1 = @mlivepositiontaking_1,
 				@mlivepositiontaking_3 = @mlivepositiontaking_3,
@@ -608,6 +644,13 @@ Param's Explanation:
 				@apositiontaking_8 = @apositiontaking_8,
 				@apositiontaking_9 = @apositiontaking_9,
 				@apositiontaking_10 = @apositiontaking_10,
+				@v2apositiontaking_10 = @v2apositiontaking_10,
+				@v3apositiontaking_10 = @v3apositiontaking_10,
+				@v5apositiontaking_10 = @v5apositiontaking_10,
+				@v8apositiontaking_10 = @v8apositiontaking_10,
+				@v10apositiontaking_10 = @v10apositiontaking_10,
+				@v11apositiontaking_10 = @v11apositiontaking_10,
+				@v99apositiontaking_10 = @v99apositiontaking_10,
 				@apositiontaking_9999 = @apositiontaking_9999,
 				@alivepositiontaking_1 = @alivepositiontaking_1,
 				@alivepositiontaking_3 = @alivepositiontaking_3,
@@ -841,6 +884,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		@spositiontaking_8 = @spositiontaking_8,
 		@spositiontaking_9 = @spositiontaking_9,
 		@spositiontaking_10 = @spositiontaking_10,
+		@v2spositiontaking_10 = @v2spositiontaking_10,
+		@v3spositiontaking_10 = @v3spositiontaking_10,
+		@v5spositiontaking_10 = @v5spositiontaking_10,
+		@v8spositiontaking_10 = @v8spositiontaking_10,
+		@v10spositiontaking_10 = @v10spositiontaking_10,
+		@v11spositiontaking_10 = @v11spositiontaking_10,
+		@v99spositiontaking_10 = @v99spositiontaking_10,
 		@spositiontaking_9999 = @spositiontaking_9999,
 		
 		@slivepositiontaking_1 = @slivepositiontaking_1,
@@ -910,6 +960,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		@mpositiontaking_8 = @mpositiontaking_8,
 		@mpositiontaking_9 = @mpositiontaking_9,
 		@mpositiontaking_10 = @mpositiontaking_10,
+		@v2mpositiontaking_10 = @v2mpositiontaking_10,
+		@v3mpositiontaking_10 = @v3mpositiontaking_10,
+		@v5mpositiontaking_10 = @v5mpositiontaking_10,
+		@v8mpositiontaking_10 = @v8mpositiontaking_10,
+		@v10mpositiontaking_10 = @v10mpositiontaking_10,
+		@v11mpositiontaking_10 = @v11mpositiontaking_10,
+		@v99mpositiontaking_10 = @v99mpositiontaking_10,
 		@mpositiontaking_9999 = @mpositiontaking_9999,
 		
 		@mlivepositiontaking_1 = @mlivepositiontaking_1,
@@ -979,6 +1036,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		@apositiontaking_8 = @apositiontaking_8,
 		@apositiontaking_9 = @apositiontaking_9,
 		@apositiontaking_10 = @apositiontaking_10,
+		@v2apositiontaking_10 = @v2apositiontaking_10,
+		@v3apositiontaking_10 = @v3apositiontaking_10,
+		@v5apositiontaking_10 = @v5apositiontaking_10,
+		@v8apositiontaking_10 = @v8apositiontaking_10,
+		@v10apositiontaking_10 = @v10apositiontaking_10,
+		@v11apositiontaking_10 = @v11apositiontaking_10,
+		@v99apositiontaking_10 = @v99apositiontaking_10,
 		@apositiontaking_9999 = @apositiontaking_9999,
 		
 		@alivepositiontaking_1 = @alivepositiontaking_1,
@@ -1823,6 +1887,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 	'spt_8="'+ COALESCE(CAST(@spositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'spt_9="'+ COALESCE(CAST(@spositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'spt_10="'+ COALESCE(CAST(@spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v2spt_10="'+ COALESCE(CAST(@v2spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v3spt_10="'+ COALESCE(CAST(@v3spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v5spt_10="'+ COALESCE(CAST(@v5spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v8spt_10="'+ COALESCE(CAST(@v8spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v10spt_10="'+ COALESCE(CAST(@v10spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v11spt_10="'+ COALESCE(CAST(@v11spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v99spt_10="'+ COALESCE(CAST(@v99spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'spt_9999="'+ COALESCE(CAST(@spositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'slivept_1="'+ COALESCE(CAST(@slivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'slivept_3="'+ COALESCE(CAST(@slivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1890,6 +1961,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 	'mpt_8="'+ COALESCE(CAST(@mpositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'mpt_9="'+ COALESCE(CAST(@mpositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'mpt_10="'+ COALESCE(CAST(@mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v2mpt_10="'+ COALESCE(CAST(@v2mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v3mpt_10="'+ COALESCE(CAST(@v3mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v5mpt_10="'+ COALESCE(CAST(@v5mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v8mpt_10="'+ COALESCE(CAST(@v8mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v10mpt_10="'+ COALESCE(CAST(@v10mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v11mpt_10="'+ COALESCE(CAST(@v11mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'v99mpt_10="'+ COALESCE(CAST(@v99mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'mpt_9999="'+ COALESCE(CAST(@mpositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'mlivept_1="'+ COALESCE(CAST(@mlivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'mlivept_3="'+ COALESCE(CAST(@mlivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1957,6 +2035,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 	'apt_8="'+ COALESCE(CAST(@apositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'apt_9="'+ COALESCE(CAST(@apositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'apt_10="'+ COALESCE(CAST(@apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v2apt_10="'+ COALESCE(CAST(@v2apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v3apt_10="'+ COALESCE(CAST(@v3apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v5apt_10="'+ COALESCE(CAST(@v5apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v8apt_10="'+ COALESCE(CAST(@v8apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v10apt_10="'+ COALESCE(CAST(@v10apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v11apt_10="'+ COALESCE(CAST(@v11apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+	'v99apt_10="'+ COALESCE(CAST(@v99apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
 	'apt_9999="'+ COALESCE(CAST(@apositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'alivept_1="'+ COALESCE(CAST(@alivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'alivept_3="'+ COALESCE(CAST(@alivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2033,6 +2118,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		'spt_8="'+ COALESCE(CAST(@spositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'spt_9="'+ COALESCE(CAST(@spositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'spt_10="'+ COALESCE(CAST(@spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v2spt_10="'+ COALESCE(CAST(@v2spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v3spt_10="'+ COALESCE(CAST(@v3spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v5spt_10="'+ COALESCE(CAST(@v5spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v8spt_10="'+ COALESCE(CAST(@v8spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v10spt_10="'+ COALESCE(CAST(@v10spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v11spt_10="'+ COALESCE(CAST(@v11spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v99spt_10="'+ COALESCE(CAST(@v99spositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'spt_9999="'+ COALESCE(CAST(@spositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'slivept_1="'+ COALESCE(CAST(@slivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'slivept_3="'+ COALESCE(CAST(@slivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2100,6 +2192,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		'mpt_8="'+ COALESCE(CAST(@mpositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'mpt_9="'+ COALESCE(CAST(@mpositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'mpt_10="'+ COALESCE(CAST(@mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v2mpt_10="'+ COALESCE(CAST(@v2mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v3mpt_10="'+ COALESCE(CAST(@v3mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v5mpt_10="'+ COALESCE(CAST(@v5mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v8mpt_10="'+ COALESCE(CAST(@v8mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v10mpt_10="'+ COALESCE(CAST(@v10mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v11mpt_10="'+ COALESCE(CAST(@v11mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'v99mpt_10="'+ COALESCE(CAST(@v99mpositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'mpt_9999="'+ COALESCE(CAST(@mpositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'mlivept_1="'+ COALESCE(CAST(@mlivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'mlivept_3="'+ COALESCE(CAST(@mlivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -2167,6 +2266,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		'apt_8="'+ COALESCE(CAST(@apositiontaking_8 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'apt_9="'+ COALESCE(CAST(@apositiontaking_9 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'apt_10="'+ COALESCE(CAST(@apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v2apt_10="'+ COALESCE(CAST(@v2apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v3apt_10="'+ COALESCE(CAST(@v3apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v5apt_10="'+ COALESCE(CAST(@v5apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v8apt_10="'+ COALESCE(CAST(@v8apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v10apt_10="'+ COALESCE(CAST(@v10apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v11apt_10="'+ COALESCE(CAST(@v11apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
+		'v99apt_10="'+ COALESCE(CAST(@v99apositiontaking_10 AS VARCHAR(50)),SPACE(1)) + '" ' + 
 		'apt_9999="'+ COALESCE(CAST(@apositiontaking_9999 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'alivept_1="'+ COALESCE(CAST(@alivepositiontaking_1 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'alivept_3="'+ COALESCE(CAST(@alivepositiontaking_3 AS VARCHAR(50)),SPACE(1)) + '" ' +

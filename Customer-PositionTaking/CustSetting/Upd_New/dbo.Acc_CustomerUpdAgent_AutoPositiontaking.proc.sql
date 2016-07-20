@@ -162,6 +162,24 @@
 	@isauto_v161mlivepositiontaking_89 bit = 0,
 	@isauto_v161mlivepositiontaking_90 bit = 0,
 	
+	-- Outright PT for sports
+	@auto_v2mpositiontaking_10 smallmoney = 0,
+	@auto_v3mpositiontaking_10 smallmoney = 0,
+	@auto_v5mpositiontaking_10 smallmoney = 0,
+	@auto_v8mpositiontaking_10 smallmoney = 0,
+	@auto_v10mpositiontaking_10 smallmoney = 0,
+	@auto_v11mpositiontaking_10 smallmoney = 0,
+	@auto_v99mpositiontaking_10 smallmoney = 0,
+	
+	@isauto_v2mpositiontaking_10 bit = 0,
+	@isauto_v3mpositiontaking_10 bit = 0,
+	@isauto_v5mpositiontaking_10 bit = 0,
+	@isauto_v8mpositiontaking_10 bit = 0,
+	@isauto_v10mpositiontaking_10 bit = 0,
+	@isauto_v11mpositiontaking_10 bit = 0,
+	@isauto_v99mpositiontaking_10 bit = 0,
+	
+	
 	@ErrCode int = 0 OUTPUT,
 	@ErrMsg nvarchar(4000) = '' OUTPUT
 AS
@@ -197,6 +215,7 @@ Revisions:
 	- 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
 	- 20131030@Johnson: Apply execrep when update downlines					
 	- 20140627@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+	- 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 Param's Explanation:
 • @ErrCode:
     = 0: update successfully.
@@ -427,7 +446,25 @@ Declare
 	@old_isauto_v161mlivepositiontaking_86 bit,
 	@old_isauto_v161mlivepositiontaking_87 bit,
 	@old_isauto_v161mlivepositiontaking_89 bit,
-	@old_isauto_v161mlivepositiontaking_90 bit
+	@old_isauto_v161mlivepositiontaking_90 bit,
+	
+	-- Outright PT for sports
+	
+	@old_auto_v2mpositiontaking_10 smallmoney,
+	@old_auto_v3mpositiontaking_10 smallmoney,
+	@old_auto_v5mpositiontaking_10 smallmoney,
+	@old_auto_v8mpositiontaking_10 smallmoney,
+	@old_auto_v10mpositiontaking_10 smallmoney,
+	@old_auto_v11mpositiontaking_10 smallmoney,
+	@old_auto_v99mpositiontaking_10 smallmoney,
+	
+	@old_isauto_v2mpositiontaking_10 bit,
+	@old_isauto_v3mpositiontaking_10 bit,
+	@old_isauto_v5mpositiontaking_10 bit,
+	@old_isauto_v8mpositiontaking_10 bit,
+	@old_isauto_v10mpositiontaking_10 bit,
+	@old_isauto_v11mpositiontaking_10 bit,
+	@old_isauto_v99mpositiontaking_10 bit
 
 --------------------------------------------------------
 --Get old Auto PT from Agent
@@ -441,6 +478,16 @@ select 	@old_auto_mpositiontaking_7	=	autompositiontaking		,	@old_isauto_mpositi
 select 	@old_auto_mpositiontaking_8	=	autompositiontaking		,	@old_isauto_mpositiontaking_8	=	isautompositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	8
 select 	@old_auto_mpositiontaking_9	=	autompositiontaking		,	@old_isauto_mpositiontaking_9	=	isautompositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	9
 select 	@old_auto_mpositiontaking_10	=	autompositiontaking		,	@old_isauto_mpositiontaking_10	=	isautompositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	10
+
+-- Outright PT for sports
+select 	@old_auto_v2mpositiontaking_10 = autompositiontaking, @old_isauto_v2mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =2 	and bettype=	10
+select 	@old_auto_v3mpositiontaking_10 = autompositiontaking, @old_isauto_v3mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =3 	and bettype=	10
+select 	@old_auto_v5mpositiontaking_10 = autompositiontaking, @old_isauto_v5mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =5 	and bettype=	10
+select 	@old_auto_v8mpositiontaking_10 = autompositiontaking, @old_isauto_v8mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =8 	and bettype=	10
+select 	@old_auto_v10mpositiontaking_10 = autompositiontaking, @old_isauto_v10mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =10 	and bettype=	10
+select 	@old_auto_v11mpositiontaking_10 = autompositiontaking, @old_isauto_v11mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =11 	and bettype=	10
+select 	@old_auto_v99mpositiontaking_10 = autompositiontaking, @old_isauto_v99mpositiontaking_10 = isautompositiontaking	from custsetting with (nolock) where custid = @recommend and sporttype =99 	and bettype=	10
+
 select 	@old_auto_mpositiontaking_9999	=	autompositiontaking		,	@old_isauto_mpositiontaking_9999	=	isautompositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	9999
 select 	@old_auto_mlivepositiontaking_1	=	autolivempositiontaking		,	@old_isauto_mlivepositiontaking_1	=	isautolivempositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	1
 select 	@old_auto_mlivepositiontaking_3	=	autolivempositiontaking		,	@old_isauto_mlivepositiontaking_3	=	isautolivempositiontaking		from custsetting with (nolock) where custid = @recommend and sporttype =	1	and bettype=	3
@@ -518,6 +565,7 @@ BEGIN
 				union all 	select 8 as bettype, @auto_mpositiontaking_8 as autopositiontaking, @auto_mlivepositiontaking_8 	as autolivepositiontaking, @isauto_mpositiontaking_8 as isautopositiontaking, @isauto_mlivepositiontaking_8	as isautolivepositiontaking			
 				union all 	select 9 as bettype, @auto_mpositiontaking_9 as autopositiontaking, 0				as autolivepositiontaking, @isauto_mpositiontaking_9 as isautopositiontaking, 0				as isautolivepositiontaking
 				union all 	select 10 as bettype, @auto_mpositiontaking_10 as autopositiontaking, 0				as autolivepositiontaking, @isauto_mpositiontaking_10 as isautopositiontaking, 0				as isautolivepositiontaking
+				
 				union all 	select 9999 as bettype, @auto_mpositiontaking_9999 as autopositiontaking, 0				as autolivepositiontaking, @isauto_mpositiontaking_9999 as isautopositiontaking, 0				as isautolivepositiontaking
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=1
@@ -548,6 +596,8 @@ BEGIN
 --				union all 	select 9 as bettype, @auto_v2mpositiontaking_9 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2mpositiontaking_9 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v2mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
 			
+				union all 	select 10 as bettype, @auto_v2mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v2mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
+				
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=2
 	if @@Error <> 0
@@ -574,6 +624,8 @@ BEGIN
 				union all 	select 2 as bettype, @auto_v3mpositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3mpositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 3 as bettype, @auto_v3mpositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3mpositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v3mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v3mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v3mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
+				
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=3
 	if @@Error <> 0
@@ -601,6 +653,7 @@ BEGIN
 				union all 	select 3 as bettype, @auto_v5mpositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5mpositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v5mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 9999 as bettype, @auto_v5mpositiontaking_9999 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5mpositiontaking_9999 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v5mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v5mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=5
 	if @@Error <> 0
@@ -626,6 +679,7 @@ BEGIN
 							select 1 as bettype, @auto_v8mpositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8mpositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 3 as bettype, @auto_v8mpositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8mpositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v8mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v8mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v8mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=8
 	if @@Error <> 0
@@ -652,6 +706,8 @@ BEGIN
 				union all 	select 2 as bettype, @auto_v10mpositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10mpositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 3 as bettype, @auto_v10mpositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10mpositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v10mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v10mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v10mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
+				
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=10
 	if @@Error <> 0
@@ -676,6 +732,7 @@ BEGIN
 			(
 							select 1 as bettype, @auto_v11mpositiontaking_1 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v11mpositiontaking_1 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v11mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v11mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v11mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v11mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=11
 	if @@Error <> 0
@@ -702,6 +759,8 @@ BEGIN
 				union all 	select 2 as bettype, @auto_v99mpositiontaking_2 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99mpositiontaking_2 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 3 as bettype, @auto_v99mpositiontaking_3 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99mpositiontaking_3 as isautopositiontaking, 0	as isautolivepositiontaking
 				union all 	select 20 as bettype, @auto_v99mpositiontaking_20 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99mpositiontaking_20 as isautopositiontaking, 0	as isautolivepositiontaking
+				union all 	select 10 as bettype, @auto_v99mpositiontaking_10 as autopositiontaking, 0	as autolivepositiontaking, @isauto_v99mpositiontaking_10 as isautopositiontaking, 0	as isautolivepositiontaking
+				
 			) as b on b.bettype = custsetting.bettype
 	where custsetting.custid = @recommend and custsetting.sporttype=99
 	if @@Error <> 0
@@ -1044,8 +1103,40 @@ EXEC dbo.Acc_CustSetting_05
 	@updatepositiontakingv154 = @updatepositiontakingv154,
 
 	@updateallmembers = @updateallmembers,	
-	@newmpositiontaking = @newmpositiontaking
-
+	@newmpositiontaking = @newmpositiontaking,
+	
+	-- Outright PT for sports
+	@isauto_v2mpositiontaking_10 = @isauto_v2mpositiontaking_10, 
+	@isauto_v3mpositiontaking_10 = @isauto_v3mpositiontaking_10, 
+	@isauto_v5mpositiontaking_10 = @isauto_v5mpositiontaking_10, 
+	@isauto_v8mpositiontaking_10 = @isauto_v8mpositiontaking_10, 
+	@isauto_v10mpositiontaking_10 = @isauto_v10mpositiontaking_10, 
+	@isauto_v11mpositiontaking_10 = @isauto_v11mpositiontaking_10, 
+	@isauto_v99mpositiontaking_10 = @isauto_v99mpositiontaking_10, 
+	
+	@old_isauto_v2mpositiontaking_10 = @old_isauto_v2mpositiontaking_10, 
+	@old_isauto_v3mpositiontaking_10 = @old_isauto_v3mpositiontaking_10, 
+	@old_isauto_v5mpositiontaking_10 = @old_isauto_v5mpositiontaking_10, 
+	@old_isauto_v8mpositiontaking_10 = @old_isauto_v8mpositiontaking_10, 
+	@old_isauto_v10mpositiontaking_10 = @old_isauto_v10mpositiontaking_10, 
+	@old_isauto_v11mpositiontaking_10 = @old_isauto_v11mpositiontaking_10, 
+	@old_isauto_v99mpositiontaking_10 = @old_isauto_v99mpositiontaking_10, 
+	
+	@auto_v2mpositiontaking_10 = @auto_v2mpositiontaking_10,
+	@auto_v3mpositiontaking_10 = @auto_v3mpositiontaking_10,
+	@auto_v5mpositiontaking_10 = @auto_v5mpositiontaking_10,
+	@auto_v8mpositiontaking_10 = @auto_v8mpositiontaking_10,
+	@auto_v10mpositiontaking_10 = @auto_v10mpositiontaking_10,
+	@auto_v11mpositiontaking_10 = @auto_v11mpositiontaking_10,
+	@auto_v99mpositiontaking_10 = @auto_v99mpositiontaking_10,
+	
+	@old_auto_v2mpositiontaking_10 = @old_auto_v2mpositiontaking_10,
+	@old_auto_v3mpositiontaking_10 = @old_auto_v3mpositiontaking_10,
+	@old_auto_v5mpositiontaking_10 = @old_auto_v5mpositiontaking_10,
+	@old_auto_v8mpositiontaking_10 = @old_auto_v8mpositiontaking_10,
+	@old_auto_v10mpositiontaking_10 = @old_auto_v10mpositiontaking_10,
+	@old_auto_v11mpositiontaking_10 = @old_auto_v11mpositiontaking_10,
+	@old_auto_v99mpositiontaking_10 = @old_auto_v99mpositiontaking_10
 
 
 EXEC dbo.Acc_CustSetting3rd_05	

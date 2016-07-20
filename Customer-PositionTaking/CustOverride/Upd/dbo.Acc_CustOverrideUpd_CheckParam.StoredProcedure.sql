@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd_CheckParam    Script Date: 8/21/2014 3:12:18 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustOverrideUpd_CheckParam    Script Date: 8/21/2014 2:58:04 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam]
+ALTER PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam]
     @custid int,
     @minpositiontaking_1 smallmoney,
     @minpositiontaking_2 smallmoney,
@@ -145,7 +145,24 @@ CREATE PROCEDURE [dbo].[Acc_CustOverrideUpd_CheckParam]
     @maxv161livepositiontaking_89 smallmoney,
     @maxv161livepositiontaking_90 smallmoney,
     
+    -- Outright PT for sports
     
+    @minv2positiontaking_10 smallmoney = 0,
+    @minv3positiontaking_10 smallmoney = 0,
+    @minv5positiontaking_10 smallmoney = 0,
+    @minv8positiontaking_10 smallmoney = 0,
+    @minv10positiontaking_10 smallmoney = 0,
+    @minv11positiontaking_10 smallmoney = 0,
+    @minv99positiontaking_10 smallmoney = 0,
+
+	@maxv2positiontaking_10 smallmoney = 0,
+    @maxv3positiontaking_10 smallmoney = 0,
+    @maxv5positiontaking_10 smallmoney = 0,
+    @maxv8positiontaking_10 smallmoney = 0,
+    @maxv10positiontaking_10 smallmoney = 0,
+    @maxv11positiontaking_10 smallmoney = 0,
+    @maxv99positiontaking_10 smallmoney = 0,
+                        
     @UpdateMinPos bit = 1,
     @UpdateMaxPos bit = 1,
     @roleid int, 
@@ -171,6 +188,7 @@ Revisions:
                         - add more bettype for nubmer game Warrior,  Next combo and Number Group
     - 20131011@Elodie: Add HR Fixed Odds [Redmine:#6505]
     - 20140618@Johnson: Add bettype Others for soccer & tennis [Redmine: #16903]
+    - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 Param's Explanation:
 • @ErrCode:
     = 0: check parameters successfully.
@@ -194,6 +212,16 @@ EXEC dbo.Acc_CustOverrideUpd_CheckParam_V
             @minpositiontaking_8 = @minpositiontaking_8,
             @minpositiontaking_9 = @minpositiontaking_9,
             @minpositiontaking_10 = @minpositiontaking_10,
+            
+            -- Outright PT for sports
+            @minv2positiontaking_10 = @minv2positiontaking_10,
+            @minv3positiontaking_10 = @minv3positiontaking_10,
+            @minv5positiontaking_10 = @minv5positiontaking_10,
+            @minv8positiontaking_10 = @minv8positiontaking_10,
+            @minv10positiontaking_10 = @minv10positiontaking_10,
+            @minv11positiontaking_10 = @minv11positiontaking_10,
+            @minv99positiontaking_10 = @minv99positiontaking_10,
+            
             @minpositiontaking_9999 = @minpositiontaking_9999,
             @minlivepositiontaking_1 = @minlivepositiontaking_1,
             @minlivepositiontaking_3 = @minlivepositiontaking_3,
@@ -257,6 +285,16 @@ EXEC dbo.Acc_CustOverrideUpd_CheckParam_V
             @maxpositiontaking_8 = @maxpositiontaking_8,
             @maxpositiontaking_9 = @maxpositiontaking_9,
             @maxpositiontaking_10 = @maxpositiontaking_10,
+            
+            -- Outright PT for sports
+            @maxv2positiontaking_10 = @maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @maxv99positiontaking_10,
+            
             @maxpositiontaking_9999 = @maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @maxlivepositiontaking_3,
@@ -339,6 +377,17 @@ BEGIN
             @minpositiontaking_8 = @minpositiontaking_8,
             @minpositiontaking_9 = @minpositiontaking_9,
             @minpositiontaking_10 = @minpositiontaking_10,
+            
+            -- Outright PT for sports
+            @minv2positiontaking_10 = @minv2positiontaking_10,
+            @minv3positiontaking_10 = @minv3positiontaking_10,
+            @minv5positiontaking_10 = @minv5positiontaking_10,
+            @minv8positiontaking_10 = @minv8positiontaking_10,
+            @minv10positiontaking_10 = @minv10positiontaking_10,
+            @minv11positiontaking_10 = @minv11positiontaking_10,
+            @minv99positiontaking_10 = @minv99positiontaking_10,
+            
+            
             @minpositiontaking_9999 = @minpositiontaking_9999,
             @minlivepositiontaking_1 = @minlivepositiontaking_1,
             @minlivepositiontaking_3 = @minlivepositiontaking_3,
@@ -402,6 +451,16 @@ BEGIN
             @maxpositiontaking_8 = @maxpositiontaking_8,
             @maxpositiontaking_9 = @maxpositiontaking_9,
             @maxpositiontaking_10 = @maxpositiontaking_10,
+            
+            -- Outright PT
+            @maxv2positiontaking_10 = @maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @maxv99positiontaking_10,
+            
             @maxpositiontaking_9999 = @maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @maxlivepositiontaking_3,
@@ -484,6 +543,16 @@ BEGIN
             @minpositiontaking_8 = @minpositiontaking_8,
             @minpositiontaking_9 = @minpositiontaking_9,
             @minpositiontaking_10 = @minpositiontaking_10,
+            
+            -- Outright PT for sports
+            @minv2positiontaking_10 = @minv2positiontaking_10,
+            @minv3positiontaking_10 = @minv3positiontaking_10,
+            @minv5positiontaking_10 = @minv5positiontaking_10,
+            @minv8positiontaking_10 = @minv8positiontaking_10,
+            @minv10positiontaking_10 = @minv10positiontaking_10,
+            @minv11positiontaking_10 = @minv11positiontaking_10,
+            @minv99positiontaking_10 = @minv99positiontaking_10,
+            
             @minpositiontaking_9999 = @minpositiontaking_9999,
             @minlivepositiontaking_1 = @minlivepositiontaking_1,
             @minlivepositiontaking_3 = @minlivepositiontaking_3,
@@ -547,6 +616,16 @@ BEGIN
             @maxpositiontaking_8 = @maxpositiontaking_8,
             @maxpositiontaking_9 = @maxpositiontaking_9,
             @maxpositiontaking_10 = @maxpositiontaking_10,
+            
+            -- Outright PT for sports
+            @maxv2positiontaking_10 = @maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @maxv99positiontaking_10,
+            
             @maxpositiontaking_9999 = @maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @maxlivepositiontaking_3,
@@ -629,6 +708,16 @@ BEGIN
             @minpositiontaking_8 = @minpositiontaking_8,
             @minpositiontaking_9 = @minpositiontaking_9,
             @minpositiontaking_10 = @minpositiontaking_10,
+            
+            -- Outright PT for sports
+            @minv2positiontaking_10 = @minv2positiontaking_10,
+            @minv3positiontaking_10 = @minv3positiontaking_10,
+            @minv5positiontaking_10 = @minv5positiontaking_10,
+            @minv8positiontaking_10 = @minv8positiontaking_10,
+            @minv10positiontaking_10 = @minv10positiontaking_10,
+            @minv11positiontaking_10 = @minv11positiontaking_10,
+            @minv99positiontaking_10 = @minv99positiontaking_10,
+            
             @minpositiontaking_9999 = @minpositiontaking_9999,
             @minlivepositiontaking_1 = @minlivepositiontaking_1,
             @minlivepositiontaking_3 = @minlivepositiontaking_3,
@@ -693,6 +782,16 @@ BEGIN
             @maxpositiontaking_8 = @maxpositiontaking_8,
             @maxpositiontaking_9 = @maxpositiontaking_9,
             @maxpositiontaking_10 = @maxpositiontaking_10,            
+            
+            -- Outright PT for sports
+            @maxv2positiontaking_10 = @maxv2positiontaking_10,
+            @maxv3positiontaking_10 = @maxv3positiontaking_10,
+            @maxv5positiontaking_10 = @maxv5positiontaking_10,
+            @maxv8positiontaking_10 = @maxv8positiontaking_10,
+            @maxv10positiontaking_10 = @maxv10positiontaking_10,
+            @maxv11positiontaking_10 = @maxv11positiontaking_10,
+            @maxv99positiontaking_10 = @maxv99positiontaking_10,
+            
             @maxpositiontaking_9999 = @maxpositiontaking_9999,
             @maxlivepositiontaking_1 = @maxlivepositiontaking_1,
             @maxlivepositiontaking_3 = @maxlivepositiontaking_3,

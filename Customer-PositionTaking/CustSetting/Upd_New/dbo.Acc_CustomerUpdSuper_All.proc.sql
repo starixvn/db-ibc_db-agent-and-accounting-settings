@@ -291,6 +291,31 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuper_All]
     @discountHRFixedOdds DECIMAL(9,8)=0,
 	@discountMyanmarOdds DECIMAL(9,8)=0,
 	
+	-- Provide Outright PT for Sports
+	@v2spositiontaking_10 smallmoney,
+	@v3spositiontaking_10 smallmoney,
+	@v5spositiontaking_10 smallmoney,
+	@v8spositiontaking_10 smallmoney,
+	@v10spositiontaking_10 smallmoney,
+	@v11spositiontaking_10 smallmoney,
+	@v99spositiontaking_10 smallmoney,
+	
+	@v2mpositiontaking_10 smallmoney = 0.7,
+	@v3mpositiontaking_10 smallmoney = 0.7,
+	@v5mpositiontaking_10 smallmoney = 0.7,
+	@v8mpositiontaking_10 smallmoney = 0.7,
+	@v10mpositiontaking_10 smallmoney = 0.7,
+	@v11mpositiontaking_10 smallmoney = 0.7,
+	@v99mpositiontaking_10 smallmoney = 0.7,
+	
+	@v2apositiontaking_10 smallmoney = 0.7,
+	@v3apositiontaking_10 smallmoney = 0.7,
+	@v5apositiontaking_10 smallmoney = 0.7,
+	@v8apositiontaking_10 smallmoney = 0.7,
+	@v10apositiontaking_10 smallmoney = 0.7,
+	@v11apositiontaking_10 smallmoney = 0.7,
+	@v99apositiontaking_10 smallmoney = 0.7,
+	
     @IP varchar(15)='',
     @UserID int = 0,    
     @Username varchar(30) = '' OUTPUT,
@@ -326,6 +351,7 @@ Revisions:
     - 20150609@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]Param's Explanation:
     - 20150904@Helen: commission setting for MO [Redmine #41470]
     - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
+    - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
 • @ErrCode:
     = 0: Update successfully.
     > 0: Specific Error.
@@ -788,9 +814,33 @@ Revisions:
 		@v161alivepositiontaking_86_old smallmoney,
 		@v161alivepositiontaking_87_old smallmoney,
 		@v161alivepositiontaking_89_old smallmoney,
-		@v161alivepositiontaking_90_old smallmoney
+		@v161alivepositiontaking_90_old smallmoney,
 	    
+	    -- Outright PT for sports
+	    @v2spositiontaking_10_old smallmoney,
+	    @v3spositiontaking_10_old smallmoney,
+	    @v5spositiontaking_10_old smallmoney,
+	    @v8spositiontaking_10_old smallmoney,
+	    @v10spositiontaking_10_old smallmoney,
+	    @v11spositiontaking_10_old smallmoney,
+	    @v99spositiontaking_10_old smallmoney,
 	    
+		@v2mpositiontaking_10_old smallmoney,
+		@v3mpositiontaking_10_old smallmoney,
+		@v5mpositiontaking_10_old smallmoney,
+		@v8mpositiontaking_10_old smallmoney,
+		@v10mpositiontaking_10_old smallmoney,
+		@v11mpositiontaking_10_old smallmoney,
+		@v99mpositiontaking_10_old smallmoney,
+		
+		@v2apositiontaking_10_old smallmoney,
+		@v3apositiontaking_10_old smallmoney,
+		@v5apositiontaking_10_old smallmoney,
+		@v8apositiontaking_10_old smallmoney,
+		@v10apositiontaking_10_old smallmoney,
+		@v11apositiontaking_10_old smallmoney,
+		@v99apositiontaking_10_old smallmoney
+		
 	--Get old PT
 	select @spositiontaking_1_old = spositiontaking, @slivepositiontaking_1_old = slivepositiontaking, @mpositiontaking_1_old = mpositiontaking, @mlivepositiontaking_1_old = mlivepositiontaking, @apositiontaking_1_old = apositiontaking, @alivepositiontaking_1_old = alivepositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=1
 	select @spositiontaking_3_old = spositiontaking, @slivepositiontaking_3_old = slivepositiontaking, @mpositiontaking_3_old = mpositiontaking, @mlivepositiontaking_3_old = mlivepositiontaking, @apositiontaking_3_old = apositiontaking, @alivepositiontaking_3_old = alivepositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=3 and sporttype=1
@@ -802,7 +852,18 @@ Revisions:
 	select @spositiontaking_5_old = spositiontaking, @mpositiontaking_5_old = mpositiontaking, @apositiontaking_5_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=5 and sporttype=1
 	select @spositiontaking_6_old = spositiontaking, @mpositiontaking_6_old = mpositiontaking, @apositiontaking_6_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=6 and sporttype=1
 	select @spositiontaking_9_old = spositiontaking, @mpositiontaking_9_old = mpositiontaking, @apositiontaking_9_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9 and sporttype=1
+	
 	select @spositiontaking_10_old = spositiontaking, @mpositiontaking_10_old = mpositiontaking, @apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=1
+	-- Outright PT
+	select @v2spositiontaking_10_old = spositiontaking, @v2mpositiontaking_10_old = mpositiontaking, @v2apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=2
+	select @v3spositiontaking_10_old = spositiontaking, @v3mpositiontaking_10_old = mpositiontaking, @v3apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=3
+	select @v5spositiontaking_10_old = spositiontaking, @v5mpositiontaking_10_old = mpositiontaking, @v5apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=5
+	select @v8spositiontaking_10_old = spositiontaking, @v8mpositiontaking_10_old = mpositiontaking, @v8apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=8
+	select @v10spositiontaking_10_old = spositiontaking, @v10mpositiontaking_10_old = mpositiontaking, @v10apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=10
+	select @v11spositiontaking_10_old = spositiontaking, @v11mpositiontaking_10_old = mpositiontaking, @v11apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=11
+	select @v99spositiontaking_10_old = spositiontaking, @v99mpositiontaking_10_old = mpositiontaking, @v99apositiontaking_10_old = apositiontaking  from custsetting with (NOLOCK) where custid = @custid and bettype=10 and sporttype=99
+	
+	
 	select @spositiontaking_9999_old = spositiontaking, @mpositiontaking_9999_old = mpositiontaking, @apositiontaking_9999_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=9999 and sporttype=1
 
 	select @v2spositiontaking_1_old = spositiontaking, @v2mpositiontaking_1_old = mpositiontaking, @v2apositiontaking_1_old = apositiontaking from custsetting with (NOLOCK) where custid = @custid and bettype=1 and sporttype=2
@@ -1040,7 +1101,32 @@ Revisions:
 		@v161alivepositiontaking_86 <> @v161alivepositiontaking_86_old or
 		@v161alivepositiontaking_87 <> @v161alivepositiontaking_87_old or
 		@v161alivepositiontaking_89 <> @v161alivepositiontaking_89_old or
-		@v161alivepositiontaking_90 <> @v161alivepositiontaking_90_old 
+		@v161alivepositiontaking_90 <> @v161alivepositiontaking_90_old or
+		-- Outright PT for Sports
+		@v2spositiontaking_10 <> @v2spositiontaking_10_old or
+		@v3spositiontaking_10 <> @v3spositiontaking_10_old or
+		@v5spositiontaking_10 <> @v5spositiontaking_10_old or
+		@v8spositiontaking_10 <> @v8spositiontaking_10_old or
+		@v10spositiontaking_10 <> @v10spositiontaking_10_old or
+		@v11spositiontaking_10 <> @v11spositiontaking_10_old or
+		@v99spositiontaking_10 <> @v99spositiontaking_10_old or
+		
+		@v2mpositiontaking_10 <> @v2mpositiontaking_10_old or
+		@v3mpositiontaking_10 <> @v3mpositiontaking_10_old or
+		@v5mpositiontaking_10 <> @v5mpositiontaking_10_old or
+		@v8mpositiontaking_10 <> @v8mpositiontaking_10_old or
+		@v10mpositiontaking_10 <> @v10mpositiontaking_10_old or
+		@v11mpositiontaking_10 <> @v11mpositiontaking_10_old or
+		@v99mpositiontaking_10 <> @v99mpositiontaking_10_old or
+		
+		@v2apositiontaking_10 <> @v2apositiontaking_10_old or
+		@v3apositiontaking_10 <> @v3apositiontaking_10_old or
+		@v5apositiontaking_10 <> @v5apositiontaking_10_old or
+		@v8apositiontaking_10 <> @v8apositiontaking_10_old or
+		@v10apositiontaking_10 <> @v10apositiontaking_10_old or
+		@v11apositiontaking_10 <> @v11apositiontaking_10_old or
+		@v99apositiontaking_10 <> @v99apositiontaking_10_old 
+		
 	    
 	    
 	BEGIN
@@ -1229,6 +1315,31 @@ Revisions:
 			@v161alivepositiontaking_89 = @v161alivepositiontaking_89,
 			@v161alivepositiontaking_90 = @v161alivepositiontaking_90,
 	        
+			-- Outright PT for sports	        
+			@v2spositiontaking_10 = @v2spositiontaking_10,
+			@v3spositiontaking_10 = @v3spositiontaking_10,
+			@v5spositiontaking_10 = @v5spositiontaking_10,
+			@v8spositiontaking_10 = @v8spositiontaking_10,
+			@v10spositiontaking_10 = @v10spositiontaking_10,
+			@v11spositiontaking_10 = @v11spositiontaking_10,
+			@v99spositiontaking_10 = @v99spositiontaking_10,
+			
+			@v2mpositiontaking_10 = @v2mpositiontaking_10,
+			@v3mpositiontaking_10 = @v3mpositiontaking_10,
+			@v5mpositiontaking_10 = @v5mpositiontaking_10,
+			@v8mpositiontaking_10 = @v8mpositiontaking_10,
+			@v10mpositiontaking_10 = @v10mpositiontaking_10,
+			@v11mpositiontaking_10 = @v11mpositiontaking_10,
+			@v99mpositiontaking_10 = @v99mpositiontaking_10,
+			
+			@v2apositiontaking_10 = @v2apositiontaking_10,
+			@v3apositiontaking_10 = @v3apositiontaking_10,
+			@v5apositiontaking_10 = @v5apositiontaking_10,
+			@v8apositiontaking_10 = @v8apositiontaking_10,
+			@v10apositiontaking_10 = @v10apositiontaking_10,
+			@v11apositiontaking_10 = @v11apositiontaking_10,
+			@v99apositiontaking_10 = @v99apositiontaking_10,
+			
 			@UserID = @UserID,
 			@Language = @Language,
 			@IP = @IP,
