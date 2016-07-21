@@ -39,6 +39,7 @@ AS
 	    - 20151222@Johnson: Add more customers not give commission [Redmine: #49494]		
 	    - 20160125@Helen: Add more customers not give commission [Redmine: #51057]		
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]		
+		- 20160621@Winnie: Add more customers not give commission [Redmine: #58999]		
     Param's Explanation: 
 
     */
@@ -121,6 +122,18 @@ BEGIN
 	--20160608@Elodie: hardcode for SUNRM and 922HK
 	UNION SELECT	14962417	,	1	--	SUNRM
 	UNION SELECT	22121306	,	1	--	922HK
+	
+	--20160621@Winnie: add more customers into list
+	UNION SELECT	7236578		,	1	--	316RMB
+	UNION SELECT	22210997	,	1	--	8888HK
+	UNION SELECT	18142826	,	1	--	MAX321
+	UNION SELECT	22212192	,	1	--	885HK
+	UNION SELECT	22296183	,	1	--	228HK 
+	UNION SELECT	22296348	,	1	--	EURO3 
+	UNION SELECT	14960005	,	1	--	230RMB
+	UNION SELECT	13886194	,	1	--	007RIC 
+	UNION SELECT	22497394	,	1	--	8888AHK 
+	UNION SELECT	22682195	,	1	--	10AHK
 
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
