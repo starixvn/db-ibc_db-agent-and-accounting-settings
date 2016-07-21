@@ -66,7 +66,7 @@ BEGIN
 	SELECT @v255playerdiscount_1701 = CASE WHEN @v255playerdiscount_1701 > @v255discount_1701 THEN @v255discount_1701 ELSE @v255playerdiscount_1701 END
 
 	-- Apply exec rep
-	EXEC dbo.Acc_CustSetting3rd_06_xtest
+	EXEC dbo.Acc_CustSetting3rd_06
 			@CustId				= @custid,
 			@RoleId				= @roleid,
 			@discount			= @v255playerdiscount_1701,	
