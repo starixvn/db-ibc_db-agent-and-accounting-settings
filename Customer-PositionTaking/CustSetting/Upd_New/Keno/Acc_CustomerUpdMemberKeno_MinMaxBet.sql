@@ -23,6 +23,7 @@ AS
         - 20141104@Logan:    Add constraint Member MinBet >= Global MinBet [Redmine: #25005]
 		- 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 		- 20160413@Dominic: HotFix - Alpha - Update Keno setting - No error alert when update minbet=0 and minbet <upline minbet [Redmine: #55596]				
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 	Param's Explanation:
 	* @ErrCode:
 		= 0: Transaction recorded successfully.
@@ -52,6 +53,17 @@ BEGIN
 
 	SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend, @recommend = recommend, @currency = currency
 	FROM dbo.customer WITH (NOLOCK) WHERE CustID = @CustID AND roleid = 1
+
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,1,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+
+
 
 	IF (@UserName IS NULL) RETURN
 

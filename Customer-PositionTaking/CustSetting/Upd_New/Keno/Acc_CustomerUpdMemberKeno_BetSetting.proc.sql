@@ -23,10 +23,10 @@ AS
 	Created: Bobby
 	Date: 20140319
 	Task: Admin/Agent update setting keno on member
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 		
 	Revisions:
-		
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]		
 	Parameters Explanation:
 		+@Disable: Status of bettype (0: enable,1: disable, NULL:nothing)
 		+@IsUpdateMinMaxBet: check to update min/max (0:nothing, 1:update)
@@ -53,6 +53,16 @@ BEGIN
 		,@roleid = @roleid OUTPUT
 
 	IF (@roleid = 0) RETURN
+
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+
 
 	---------------------------
 	--Check disable user

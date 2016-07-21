@@ -7,7 +7,7 @@ GO
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterKeno_Commission    Script Date: 8/21/2014 3:12:19 PM ******/
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdMasterKeno_Commission    Script Date: 8/21/2014 2:58:11 PM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Commission] 
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterKeno_Commission] 
 (
     @CustId INT --Master
     , @Discount DECIMAL(9,8) = 0 --adiscount
@@ -28,7 +28,7 @@ AS
     DB: DBTXN/CustDB
     
     Revisions:
-
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]		
     Parameters Explanation:
 */
 BEGIN
@@ -44,6 +44,15 @@ BEGIN
     SELECT @UserName = username, @srecommend = srecommend, @roleid = roleid
     FROM dbo.customer WITH (NOLOCK)
     WHERE CustID = @CustID
+	
+	         
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
 
     SELECT @Old_adiscount = adiscount
     FROM dbo.CustSettingGame WITH (NOLOCK)

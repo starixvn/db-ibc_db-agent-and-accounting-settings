@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
+﻿USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]    Script Date: 05/12/2015 13:22:47 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All]
 	@custid		INT,
 	@recommend	INT,
 	@v255apositiontaking_1701	SMALLMONEY,
@@ -41,15 +48,6 @@ BEGIN
 		IF (@roleid = 0) RETURN
 	---------------------------
 
-		            
-	-- Only direct upline have update permission
-	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
-	BEGIN
-		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
-			   @ErrCode = 103	
-		RETURN
-	END
-	
 	--Check disable user
 	EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0
@@ -60,9 +58,17 @@ BEGIN
 	END
 	--end
 
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate_xtest(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+	
 	IF @v255UpdateCommission_1701 = 1
 	BEGIN
-		EXEC Acc_CustomerUpdMemberGoldDeluxe_Commission @custid = @custid, @v255playerdiscount_1701 = @v255playerdiscount_1701, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+								EXEC Acc_CustomerUpdMemberGoldDeluxe_Commission @custid = @custid, @v255playerdiscount_1701 = @v255playerdiscount_1701, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur > 0
 		BEGIN
@@ -76,7 +82,7 @@ BEGIN
 
 	IF @v255UpdatePositiontaking_1701 = 1
 	BEGIN
-		EXEC Acc_CustomerUpdMemberGoldDeluxe_Positiontaking @custid = @custid, @v255apositiontaking_1701 = @v255apositiontaking_1701, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
+								EXEC Acc_CustomerUpdMemberGoldDeluxe_Positiontaking @custid = @custid, @v255apositiontaking_1701 = @v255apositiontaking_1701, @SubAccID = @SubAccID, @IP = @IP, @UserID = @UserID, @Language = @Language, @ErrCode = @ErrCode_Cur OUTPUT, @ErrMsg = @ErrMsg_Cur OUTPUT
 	
 		IF @ErrCode_Cur > 0 
 		BEGIN
@@ -89,8 +95,6 @@ BEGIN
 
 	END
 END
-
-
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMemberGoldDeluxe_All] TO [bodbAdminNet] AS [dbo]
 GO

@@ -28,12 +28,13 @@ AS
 /*
     Created: 20140326@Patrick
     Task: Super/Admin edit positiontaking on master
-    DB: DBTXN/CustDB
+    DB: DBCUST/CustDB
         
     Revisions:
         - 20140729@Logan: 1.Exclude disabled agents, members while updating master setting [Redmine: #19631]
                           2.Code aligning on modified parts
 		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
 
     Parameters Explanation:
         @ErrCode is 0 update successful
@@ -70,8 +71,18 @@ BEGIN
      WHERE custid = @custid AND bettype = @BetType AND sporttype = @SportType
 
     SELECT @username = username , @srecommend = srecommend
-      FROM dbo.CustInfo WITH(NOLOCK)
+			, @roleid = roleid
+     FROM dbo.CustInfo WITH(NOLOCK)
      WHERE custid = @custid
+
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
 
     --check if not change value
     IF(@Old_SPositionTaking = @s3

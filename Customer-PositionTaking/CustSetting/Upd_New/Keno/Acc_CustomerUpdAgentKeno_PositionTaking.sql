@@ -28,10 +28,11 @@ AS
 /*
 	Created: 20140320@Patrick
 	Task: Master update agent's Keno PT setting
-	DB: DBTXN/CustDB
+	DB: DBCust/CustDB
 	
 	Revisions:
 		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, Use temp table for sports, bettype table)
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
 	Parameters Explanation:
 		@ErrCode: 0 is successful
 */
@@ -76,10 +77,21 @@ BEGIN
 
 	IF	@ErrCode <> 0 
 		RETURN 
-		
+	
+	DECLARE @roleid TINYINT
 	SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend
+		,@roleid = roleid
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE CustID = @CustID
+	
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+
 	
 	DECLARE @Old_APositionTaking SMALLMONEY, @Old_MPositionTaking SMALLMONEY
 		, @Old_Auto_MPositionTaking SMALLMONEY,	@Old_IsAuto_MPositionTaking BIT

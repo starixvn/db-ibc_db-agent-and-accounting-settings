@@ -10,7 +10,7 @@ GO
 
 
 /****** Object:  Stored Procedure dbo.Acc_CustomerUpdSuperKeno_Commission_xtest    Script Date: 6/19/2014 10:30:06 AM ******/
-CREATE PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission]
+ALTER PROCEDURE [dbo].[Acc_CustomerUpdSuperKeno_Commission]
     @CustID INT,
     @Sporttype INT = 202,
     @Bettype INT,
@@ -30,7 +30,7 @@ AS
     DB: DBTXN/CustDB
 
     Revisions:
-
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
     Parameters Explanation:        
 */
 BEGIN
@@ -63,7 +63,14 @@ BEGIN
                          END,
                @ErrCode = 103
     END
-    
+    -- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,4,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103
+		RETURN
+	END
+	
     -- Apply exec rep
         EXEC Acc_CustSetting3rd_06
         @CustId = @CustID,
