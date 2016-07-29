@@ -17,11 +17,12 @@ AS
 /*  
  Created: 20140225@Elodie  
  Task : Update super's minbet, maxbet, max per match for Keno  
- DB: DBTXN/CustDB  
+ DB: DBCUST/CustDB  
   
  Revisions:  
     - 20141027@Logan:   Add currency when selecting Min Bet Global [Redmine: #25040]
     - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)   
+    - 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
  Param's Explanation:  
  * @ErrCode:  
   = 0: Update successfully.  
@@ -42,7 +43,7 @@ BEGIN
 		INSERT INTO @tmp_GameType (GameTypeID, GameTypeName, IsDisabled, IBCBettypeID)
 		SELECT GameTypeID, GameTypeName, IsDisabled, IBCBettypeID FROM DBTXN.bodb02.dbo.GameType WITH (NOLOCK)
 	END CATCH
------ /David @ 09 JUN 2015 -------------------
+	----- /David @ 09 JUN 2015 -------------------
 
     DECLARE @startRun   DATETIME
           , @endRun     DATETIME
@@ -58,6 +59,16 @@ BEGIN
       FROM dbo.custInfo WITH(NOLOCK)
      WHERE custid = @CustID
        AND roleid = 4
+
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,4,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+
 
     IF @MinBet < 0  
         OR @MaxBet < 0  

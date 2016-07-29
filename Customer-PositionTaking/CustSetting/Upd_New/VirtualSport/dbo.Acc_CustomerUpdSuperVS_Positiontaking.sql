@@ -32,7 +32,7 @@ AS
 /*
     Created: 20120802@Dan
     Task : Update VS's Super PT 
-    DB: DBTXN/bodb02
+    DB: DBCUST/bodb02
 
     Revisions:
         - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
@@ -43,6 +43,7 @@ AS
         - 20140725@Logan: 1. Exclude disabled accounts while updating SM's seting [Redmine: #19631]
                           2. Code aligning for modified parts
 		- 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB, temp sport, bettype table) [Redmine:#36216]                          
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 
     Param's Explanation:
     • @ErrCode:
@@ -90,6 +91,16 @@ END
     
 Declare @username varchar(40)
 select @username = username from custinfo with (NOLOCK) where custid = @custid
+
+            
+-- Only direct upline have update permission
+IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,4,@userid))
+BEGIN
+	SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+		   @ErrCode = 103	
+	RETURN
+END
+
 
 DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
 DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))

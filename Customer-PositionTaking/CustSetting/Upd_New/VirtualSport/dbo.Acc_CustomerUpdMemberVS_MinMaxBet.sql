@@ -39,6 +39,7 @@ AS
 			- 20131121@Elodie: Add Virtual greyhounds(182), Virtual Motor Racing(184)						
 			- 20140402@Kathy: Add Virtual Speedway (183), Virtual Virtual Cycling (185)	[Redmine:#14142]	
 			- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID) [Redmine:#36216]										
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
 		Parameter's Explanation:
 	*/
 SET NOCOUNT ON 
@@ -71,7 +72,15 @@ SET NOCOUNT ON
 		@roleid = @roleid OUTPUT
 		IF (@roleid = 0) RETURN
 	---------------------------
-	
+
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+		
 	--Check disable user
 	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
 	IF @ErrCode_Cur > 0

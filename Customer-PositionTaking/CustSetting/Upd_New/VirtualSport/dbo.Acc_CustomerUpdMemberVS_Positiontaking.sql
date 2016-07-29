@@ -33,6 +33,7 @@ AS
 			- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)			
 			- 20131113@Johnson: Use execrept Acc_CustSetting3rd_00 to correct after update pt on member 
 			- 20150606@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID, temp sport, bettype table) [Redmine:#36216]
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	
 		Parameter's Explanation:	
 	*/
 SET NOCOUNT ON 
@@ -104,7 +105,13 @@ SET NOCOUNT ON
 	
 	---------------------------
 	
-	
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
 
 	--Check disable user
 	EXEC dbo.Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output

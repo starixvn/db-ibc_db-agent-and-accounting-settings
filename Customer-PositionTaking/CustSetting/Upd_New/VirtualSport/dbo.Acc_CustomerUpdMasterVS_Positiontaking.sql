@@ -39,7 +39,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
         Created: Johnson
         Date: 2012-08-14
         Task: Update setting virtual sports for master
-        DB: DBTXN/CustDB
+        DB: DBCUST/CustDB
         
         Revisons:
             - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
@@ -52,7 +52,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMasterVS_Positiontaking]
                               2.Code aligning            
 			- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB, Use temp table for sports, bettype table, 
 																Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
-
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
+			
         Parameter's Explanation:
     */
 SET NOCOUNT ON 
@@ -83,6 +84,7 @@ SET NOCOUNT ON
     from custinfo with (NOLOCK) 
     where CustID = @CustID
 
+	
 	----- Elodie @ 01 JUN 2015 -------------------
 	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
 	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
@@ -115,6 +117,14 @@ SET NOCOUNT ON
         IF (@roleid = 0) RETURN
     ---------------------------
 
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+	
     --Check disable user
     EXEC Acc_CustomerSelCheckEnable @custid = @custid, @ErrCode=@ErrCode_Cur output,@ErrMsg=@ErrMsg_Cur output
     IF @ErrCode_Cur > 0

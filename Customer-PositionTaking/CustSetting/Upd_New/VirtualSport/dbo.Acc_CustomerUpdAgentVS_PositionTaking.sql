@@ -41,6 +41,7 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (call sport, bettype by link database)						
 	- 20131203@Johnson: Pass param @sporttype, @bettype when call sp Acc_CustSetting3rd_07 for agent			
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB, Use temp table for sports, bettype table)
+	- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 Param's Explanation:        
 • @ErrCode:        
     = 0: Update successfully.        
@@ -78,7 +79,8 @@ DECLARE @duration INT
 	END CATCH
 ----- /Elodie @ 01 JUN 2015 -------------------
         
-DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)        
+DECLARE @ErrCode_Cur INT, @ErrMsg_Cur NVARCHAR(4000)  
+DECLARE @roleid TINYINT      
 SELECT @ErrCode_Cur = 0, @ErrMsg_Cur = '', @ErrCode = '', @ErrMsg = ''        
         
 SET @startRun = GETDATE()        
@@ -113,9 +115,18 @@ BEGIN
  return        
 END         
         
-SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend         
+SELECT @UserName = username, @mrecommend = mrecommend, @srecommend = srecommend  
+		, @roleid = roleid
 FROM custinfo with (NOLOCK)         
 WHERE CustID = @CustID        
+
+-- Only direct upline have update permission
+IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+BEGIN
+	SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+		   @ErrCode = 103	
+	RETURN
+END
         
 DECLARE @old_a2 SMALLMONEY,        
   @old_m2 SMALLMONEY,          

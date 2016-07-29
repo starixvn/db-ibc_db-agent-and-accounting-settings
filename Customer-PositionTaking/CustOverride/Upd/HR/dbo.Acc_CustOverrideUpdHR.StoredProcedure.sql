@@ -77,6 +77,7 @@ Revisions:
     - 20131029@Lukas: apply execRep
     - 20131112@Johnson: change to use execrep Acc_CustSetting3rd_04 instead of Acc_CustSetting3rd_00 for updating min pt on super
     - 20150610@Kathy: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable, Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB) [Redmine:#36216]                        
+    - 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
     
 Param's Explanation:
 • @ErrCode:
@@ -104,7 +105,13 @@ select @maxpos = 0.5 --Max posistion for finance = 0.5
 declare @IsValid bit, @totalDownlines int 
 declare @ErrAcc varchar(4000)
 
-
+-- Only direct upline have update permission
+IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+BEGIN
+	SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+		   @ErrCode = 103	
+	RETURN
+END
 --Check Allowed downlines    
 EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @roleid=@roleid,
@@ -116,6 +123,7 @@ EXEC dbo.Acc_CustomerSelCheckAllowedDownlines    @custid=@custid,
             @ErrCode=@ErrCode output
 IF    @ErrCode <> 0 
     RETURN 
+
 
 --Check Old_minmax <> New_minmax
 Declare      

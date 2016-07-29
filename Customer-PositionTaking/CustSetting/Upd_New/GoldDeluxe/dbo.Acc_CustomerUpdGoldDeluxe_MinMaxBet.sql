@@ -18,6 +18,7 @@ AS
 			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckEnable to DBCUST, Change Age_CustomerSelCheckBelonging to Age_CustomerSelCheckBelongingByCustID, call bettype by link server)
 			- 20151001@Johnson: check limit downlines before updating 
 			- 20151120@Helen: Improve the performance of the setting [Redmine: 45056] 
+			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 		Parameter's Explanation:
 			* @StakeLevel = <ROOT>
 								<Row ID="1701" Stake="1,2,3,4"/>
@@ -76,9 +77,17 @@ BEGIN
 		@Custid = @custid,		
 		@roleid = @roleid OUTPUT
 		if (@roleid = 0) return
-	---- Checking total downlines before UPDATEs 
 	
-    EXEC Acc_CustomerSelCheckAllowedDownlines    
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+	
+	---- Checking total downlines before UPDATEs 
+	EXEC Acc_CustomerSelCheckAllowedDownlines    
 		@custid		= @custid,
         @roleid		= @roleid,
         @isExecRep	= 1,

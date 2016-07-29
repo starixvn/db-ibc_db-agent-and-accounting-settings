@@ -24,6 +24,7 @@ Revisions:
 	- 20131108@Elodie: Splitting bodb02 into CustDB (Turn to use Acc_ExecRep_Cust_04)	
 	- 20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB)
+	- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
 
 Param's Explanation:
 • @custid: customer id.   
@@ -56,6 +57,14 @@ BEGIN
 	return
 END
 
+-- Only direct upline have update permission
+IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+BEGIN
+	SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+		   @ErrCode = 103	
+	RETURN
+END
+	
 if @Old_Disable = @Disable RETURN--and @IsUpdDownline = 0
 
 if @Disable = 0 -- check status upline

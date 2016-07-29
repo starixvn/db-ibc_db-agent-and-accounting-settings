@@ -16,14 +16,15 @@ AS
 	Created: Elodie
 	Date: 20140225
 	Task: Update Keno status for customer
-	DB: DBTXN/CustDB
+	DB: DBCUST/CustDB
 	Original: 
 	Revisions:
 		20140227@Bobby: Implement upd disabled keno gaming for credit customers
 		20140320@Bobby: Implement tracking values & cheking HasDownline
 		20141125@Jamie: Use Acc_CustomerInfo_Execrep_04 instead of Acc_ExecRep_Cust_04 [Redmine:#26497]
 		- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckAllowedDownlines, Acc_CustomerSelCheckEnable to DBCUST.CustDB, Change Age_CustomerSelCheckBelonging -> Age_CustomerSelCheckBelongingByCustID)
-
+		- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]
+		
 	Param's Explanation:
 		• @custid: customer id.   
 		• @Disable: status of HideKeno
@@ -62,6 +63,16 @@ BEGIN
 	FROM dbo.CustInfo WITH (NOLOCK)
 	WHERE CustID = @CustID
 
+	            
+	-- Only direct upline have update permission
+	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
+	BEGIN
+		SELECT @ErrMsg = 'You don''t have permission to perform this action.',
+			   @ErrCode = 103	
+		RETURN
+	END
+
+	
 	SELECT	@HasDownline = 1 
 	FROM dbo.CustInfo WITH (NOLOCK)
 	WHERE (@RoleID = 4 AND srecommend = @CustID and roleid = 3)
