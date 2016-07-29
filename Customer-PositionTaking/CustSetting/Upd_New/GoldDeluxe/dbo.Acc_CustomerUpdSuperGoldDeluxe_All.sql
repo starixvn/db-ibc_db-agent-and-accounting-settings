@@ -47,7 +47,7 @@ BEGIN
 
 	---------------------------
 	-- ***Check Downline Belonging***
-	EXEC DBAGE.bodb02.dbo.Age_CustomerSelCheckBelonging 
+	EXEC Age_CustomerSelCheckBelonging 
 		@SessionCustID	= @Userid, 
 		@Custid			= @custid,
 		@roleid			= @roleid	OUTPUT
@@ -65,7 +65,7 @@ BEGIN
 	END
 	
 	--Check disable user
-	EXEC DBAGE.bodb02.dbo.Acc_CustomerSelCheckEnable 
+	EXEC Acc_CustomerSelCheckEnable 
 		@custid		= @custid
 		,@ErrCode	= @ErrCode_Cur	OUTPUT
 		,@ErrMsg	= @ErrMsg_Cur	OUTPUT

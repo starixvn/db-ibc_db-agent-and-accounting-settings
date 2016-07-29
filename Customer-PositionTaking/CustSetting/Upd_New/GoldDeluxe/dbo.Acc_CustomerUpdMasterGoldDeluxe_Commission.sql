@@ -23,10 +23,12 @@ AS
         Task: Update commission on master
         
         Revisions:
+			- 20150610@Elodie: Migrate custDB to new server DBCust (Move Acc_CustomerSelCheckAllowedDownlines to DBCUST.CustDB)
 			- 20160613@Helen: Security Prevention Step 1 - Cross level update -  [Redmine:55377]	  
         Parameters Explanation:
     */
 BEGIN
+	
 	SET NOCOUNT ON
 
 	DECLARE @startRun	DATETIME
@@ -50,7 +52,7 @@ BEGIN
 	FROM	CustSettingGame WITH(NOLOCK)
 	WHERE	custid = @custid 
 			AND sporttype	= 255 
-			AND bettype		= 1101
+			AND bettype		= 1701
 
 	IF @v255discount_1701 = @db_v255discount_1701
 		RETURN 
@@ -75,7 +77,6 @@ BEGIN
 	FROM	dbo.CustInfo WITH(NOLOCK)
 	WHERE	custid = @custid
 
-	            
 	-- Only direct upline have update permission
 	IF NOT EXISTS (SELECT 1 FROM dbo.f_AGE_IsCrossLevelUpdate(@custid,@roleid,@userid))
 	BEGIN
