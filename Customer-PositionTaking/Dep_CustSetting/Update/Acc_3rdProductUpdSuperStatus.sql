@@ -20,6 +20,7 @@ AS
 		- 20150807@Winnie: Change way create bettrade member
 		- 20151026@Jim: support feature #44780
 		- 20151105@Patrick: Support RnG Game & rename field named DisableMicroGame to DisableMicroGameLC
+		- 20160803@Winnie: #61777 BetTrade new commercial term
 
 	Param's Explanation:
 */
@@ -371,8 +372,8 @@ BEGIN
 				RETURN
 			END
 
-			INSERT INTO [dbo].[BetTradeComm] ([Agentid], [IsBA], [BetTradeComm], [Licenseecomm])
-			SELECT a.recommend, 0, 0.04, 0.03
+			INSERT INTO [dbo].[BetTradeComm] ([Agentid], [IsBA], [BetTradeComm], [Licenseecomm],HouseDeductionRate,HousePT)
+			SELECT a.recommend, 0, 0.03, 0.03,0.015,0.5
 			FROM #tempBettrade a
 			WHERE NOT EXISTS (
 					SELECT TOP 1 1
@@ -411,8 +412,8 @@ BEGIN
 				RETURN
 			END
 
-			INSERT INTO [dbo].[BetTradeComm] ([Agentid], [IsBA], [BetTradeComm], [Licenseecomm])
-			SELECT a.recommend, 1, 0.04, 0
+			INSERT INTO [dbo].[BetTradeComm] ([Agentid], [IsBA], [BetTradeComm], [Licenseecomm],HouseDeductionRate,HousePT)
+			SELECT a.recommend, 1, 0.03, 0,0.015,0.5
 			FROM #tempBettrade a
 			WHERE NOT EXISTS (
 					SELECT TOP 1 1
