@@ -20,15 +20,19 @@ AS
 		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #50082]
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 		- 20160407@Winnie: Group stake level setting - [Redmine: #55532]
+		- 20160711@Winnie: fix bug #60611 [NAP - Copy New Member: a single log is written for both Allbet and Macau Games when copying]
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLossLimit XML, @xmlStakeLevel XML
+	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLossLimit XML, @xmlStakeLevel XML,@xmlStakeLevel8 XML
 	DECLARE @xmlStr VARCHAR(MAX)
-	SELECT @ErrCode = 0
+	SELECT @ErrCode = 0		
+	
 	/********************************************* Position Taking: SettingType = 1 ***********************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1))
 	BEGIN
+		DECLARE @ProductID1 INT
+		CREATE TABLE #TempPT (ProductID INT)
 		DECLARE @NewPTTble TABLE (
 				  SportType			SMALLINT
 				, BetType			SMALLINT
@@ -86,14 +90,32 @@ BEGIN
 						INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,1) fil ON fil.SportType = mcs.SportType AND fil.BetType = mcs.BetType AND fil.IsLive = mcs.IsLive
 					WHERE mcs.AgentID = @AgentID AND acs.custid = @AgentID		
 		END
-	
+		
+		INSERT INTO #TempPT(ProductID)	
+		SELECT 
+				DISTINCT
+				psd.ProductID				
+		FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+		INNER JOIN	@NewPTTble AS ts
+				ON	ts.SportType = psd.SportType
+				AND	ts.BetType = psd.BetType
+		WHERE	psd.SettingType =1
+			AND psd.ProductID IS NOT NULL
+			AND	psd.SettingLevel IS NOT NULL
+			
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempPT)
+		BEGIN
+		SELECT TOP 1 @ProductID1=ProductID FROM #TempPT
+		
 		SET @xmlPT = ( SELECT
 							(
-							SELECT SportType	AS '@SportType'
-								, BetType		AS '@BetType'
-								, IsLive		AS '@IsLive'
+							SELECT nslt.SportType	AS '@SportType'
+								, nslt.BetType		AS '@BetType'
+								, nslt.IsLive		AS '@IsLive'
 								, AgentPT		AS '@AgentPT'
-							FROM @NewPTTble
+							FROM @NewPTTble nslt
+							INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType AND nslt.IsLive=psd.IsLive
+										WHERE psd.SettingType=1 AND psd.ProductID=@ProductID1
 							FOR XML PATH('PT')
 								, TYPE
 							)
@@ -101,7 +123,7 @@ BEGIN
 							, TYPE
 						)
 	
-		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlPT)
+		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlPT)	
 		
 		IF EXISTS (SELECT TOP 1 1 FROM @NewPTTble)
 		BEGIN
@@ -114,10 +136,15 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
+		
+		DELETE FROM	#TempPT WHERE ProductID=@ProductID1
+		END
 	END
 	/********************************************* Bet Limit : SettingType = 2 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,2))
 	BEGIN
+		DECLARE @ProductID2 INT
+		CREATE TABLE #TempBetlimit (ProductID INT)
 		DECLARE @NewBetLimitTbl TABLE (
 			SportType			SMALLINT
 			, BetType			SMALLINT
@@ -135,14 +162,31 @@ BEGIN
 		FROM dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
 			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,2) fil ON fil.SportType = bl.SportType AND fil.BetType = bl.BetType		
 		WHERE bl.custid = @ExistingCustID
-
+		
+		INSERT INTO #TempBetlimit(ProductID)	
+		SELECT 
+				DISTINCT
+				psd.ProductID				
+		FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+		INNER JOIN	@NewBetLimitTbl AS ts
+				ON	ts.SportType = psd.SportType
+				AND	ts.BetType = psd.BetType
+		WHERE	psd.SettingType =2
+			AND psd.ProductID IS NOT NULL
+			AND	psd.SettingLevel IS NOT NULL
+			
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempBetlimit)
+		BEGIN
+		SELECT TOP 1 @ProductID2=ProductID FROM #TempBetlimit		
 		SET @xmlBetLimit = (SELECT (
-									SELECT SportType	AS '@SportType'
-										, BetType		AS '@BetType'
+									SELECT nslt.SportType	AS '@SportType'
+										, nslt.BetType		AS '@BetType'
 										, MinBet		AS '@MinBet'
 										, MaxBet		AS '@MaxBet'
 										, MaxPerMatch	AS '@MaxPerMatch'
-									FROM @NewBetLimitTbl
+									FROM @NewBetLimitTbl nslt
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType
+										WHERE psd.SettingType=2 AND psd.ProductID=@ProductID2
 									FOR XML PATH('BetLimit')
 										, TYPE
 									)
@@ -163,10 +207,14 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
+		DELETE FROM	#TempBetlimit WHERE ProductID=@ProductID2
+		END
 	END
 	/********************************************* Commision : SettingType = 3 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,3))
 	BEGIN
+		DECLARE @ProductID3 INT
+		CREATE TABLE #TempComm (ProductID INT)
 		DECLARE @NewDiscountTbl TABLE (
 					SportType	SMALLINT
 				,	BetType		SMALLINT
@@ -180,12 +228,29 @@ BEGIN
 		FROM dbo.CustDiscount3rd_Member dc WITH(NOLOCK)
 			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,3) fil ON fil.SportType = dc.SportType AND fil.BetType = dc.BetType
 		WHERE dc.CustID	= @ExistingCustID
-
+		
+		INSERT INTO #TempComm(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewDiscountTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =3
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+			
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempComm)
+		BEGIN
+		SELECT TOP 1 @ProductID3=ProductID FROM #TempComm		
 		SET @xmlDiscount = ( SELECT (
-									SELECT SportType AS '@SportType'
-										, BetType AS '@BetType'
+									SELECT nslt.SportType AS '@SportType'
+										, nslt.BetType AS '@BetType'
 										, Discount AS '@Discount'
-									FROM @NewDiscountTbl
+									FROM @NewDiscountTbl nslt
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE psd.SettingType =3 AND psd.ProductID=@ProductID3
 									FOR XML PATH('Discount')
 										, TYPE
 									)
@@ -206,8 +271,13 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
+		DELETE FROM	#TempComm WHERE ProductID=@ProductID3
+		END
 	END
 	/*********************************************Charge Commision : SettingType = 5 ****************************************/
+	DECLARE @ProductID5 INT
+	CREATE TABLE #TempChargeComm (ProductID INT)
+	
 	DECLARE @NewChargeCommTbl TABLE (
 					SportType	SMALLINT
 				,	BetType		SMALLINT
@@ -223,12 +293,29 @@ BEGIN
 		FROM dbo.CustDiscount3rd_Member dc WITH(NOLOCK)
 			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,5) fil ON fil.SportType = dc.SportType AND fil.BetType = dc.BetType
 		WHERE dc.CustID	= @ExistingCustID
-
+		
+		INSERT INTO #TempChargeComm(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewChargeCommTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =5
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempChargeComm)
+		BEGIN
+		SELECT TOP 1 @ProductID5=ProductID FROM #TempChargeComm		
 		SET @xmlDiscount = ( SELECT (
-									SELECT SportType AS '@SportType'
-										, BetType AS '@BetType'
+									SELECT nslt.SportType AS '@SportType'
+										, nslt.BetType AS '@BetType'
 										, Discount AS '@Discount'
-									FROM @NewChargeCommTbl
+									FROM @NewChargeCommTbl nslt
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE psd.SettingType =5 AND psd.ProductID=@ProductID5
 									FOR XML PATH('Discount')
 										, TYPE
 									)
@@ -250,10 +337,14 @@ BEGIN
 				, @ErrCode = @ErrCode OUTPUT
 				, @ErrMsg = @ErrMsg OUTPUT
 		END
+		DELETE FROM	#TempChargeComm WHERE ProductID=@ProductID5
+		END
 	END
 	/********************************************* Product Status: SettingType = 4 ************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4))
 	BEGIN
+		DECLARE @ProductID4 INT
+		CREATE TABLE #TempStatus (ProductID INT)
 		DECLARE @NewDisableStatTbl TABLE(
 			SportType				SMALLINT
 			, BetType				SMALLINT
@@ -271,12 +362,29 @@ BEGIN
 			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,4) fil ON fil.SportType = PSP.SportType AND fil.BetType = PSP.BetType 
 		WHERE stt.CustID = @ExistingCustID
 
+		INSERT INTO #TempStatus(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewDisableStatTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE psd.SettingType =4
+				AND	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempStatus)
+		BEGIN
+		SELECT TOP 1 @ProductID4=ProductID FROM #TempStatus		
 		SET @xmlStatus = (SELECT (
-								SELECT SportType	AS '@SportType'
-									, BetType		AS '@BetType'
-									, IsDisabled	AS '@IsDisabled'
-									, IsDisabledDownline AS '@IsDisabledDownline'
-								FROM @NewDisableStatTbl
+								SELECT nslt.SportType	AS '@SportType'
+									, nslt.BetType		AS '@BetType'
+									, nslt.IsDisabled	AS '@IsDisabled'
+									, nslt.IsDisabledDownline AS '@IsDisabledDownline'
+								FROM @NewDisableStatTbl nslt								
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE psd.SettingType =4 AND psd.ProductID=@ProductID4
 								FOR XML PATH('ProductStatus')
 									, TYPE
 								)
@@ -295,13 +403,17 @@ BEGIN
 				, @IP = @IP
 				, @UserID = @UserID
 				, @ErrCode = @ErrCode OUTPUT
-				, @ErrMsg = @ErrMsg OUTPUT	
+				, @ErrMsg = @ErrMsg OUTPUT			
+		END
+		DELETE FROM	#TempStatus WHERE ProductID=@ProductID4
 		END
 	END
 
 	/********************************************* SMA Win Loss Limit : SettingType = 6 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,6))
 	BEGIN
+		DECLARE @ProductID6 INT
+		CREATE TABLE #TempWLLimit (ProductID INT)
 		DECLARE @NewWinLossLimitTbl TABLE (
 			SportType			SMALLINT
 			, BetType			INT
@@ -318,14 +430,31 @@ BEGIN
 			, wl.IsAutoReset
 		FROM dbo.CustWinLossLimit_Member wl WITH (NOLOCK)		
 		WHERE wl.custid = @ExistingCustID
-
+		
+		INSERT INTO #TempWLLimit(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewWinLossLimitTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =6
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempWLLimit)
+		BEGIN
+		SELECT TOP 1 @ProductID6=ProductID FROM #TempWLLimit
 		SET @xmlWinLossLimit = (SELECT (
-									SELECT SportType	AS '@SportType'
-										, BetType		AS '@BetType'
-										, MaxWinLimit	AS '@MaxWinLimit'
-										, MaxLossLimit	AS '@MaxLossLimit'
-										, IsAutoReset	AS '@IsAutoReset'
-									FROM @NewWinLossLimitTbl
+									SELECT nslt.SportType	AS '@SportType'
+										, nslt.BetType		AS '@BetType'
+										, nslt.MaxWinLimit	AS '@MaxWinLimit'
+										, nslt.MaxLossLimit	AS '@MaxLossLimit'
+										, nslt.IsAutoReset	AS '@IsAutoReset'
+									FROM @NewWinLossLimitTbl nslt
+									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE psd.SettingType =6 AND psd.ProductID=@ProductID6
 									FOR XML PATH('Limit')
 										, TYPE
 									)
@@ -344,29 +473,50 @@ BEGIN
 			, @UserID = @UserID
 			, @ErrCode = @ErrCode OUTPUT
 			, @ErrMsg = @ErrMsg OUTPUT
+		DELETE FROM	#TempWLLimit WHERE ProductID=@ProductID6
+		END
+			
 	END
 	
 	/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
-	/*************************** Group Stake Level Member Single Selection : SettingType = 8 ***************************/
-	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7) UNION ALL SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 8))
+	
+	IF EXISTS (SELECT TOP 1 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 7))
 	BEGIN
+		DECLARE @ProductID7 INT
+		CREATE TABLE #TempStakeLevel (ProductID INT)
 		DECLARE	@NewStakeLevelTbl TABLE (
 					SportType		SMALLINT
 				,	BetType			SMALLINT
 				,	StakeLevelList	VARCHAR(200)
 				)
-
 		INSERT INTO @NewStakeLevelTbl
 			(	SportType     , BetType     , StakeLevelList)
 		SELECT	cslm.SportType, cslm.BetType, cslm.StakeLevelList
 		FROM	dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)		
 		WHERE	cslm.CustID = @ExistingCustID
-
+		
+		INSERT INTO #TempStakeLevel(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewStakeLevelTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =7
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempStakeLevel)
+		BEGIN
+		SELECT TOP 1 @ProductID7=ProductID FROM #TempStakeLevel
 		SELECT	@xmlStakeLevel =	(
 										SELECT	nslt.SportType			AS '@SportType'
 											,	nslt.BetType			AS '@BetType'
 											,	nslt.StakeLevelList		AS '@StakeLevelList'
 										FROM	@NewStakeLevelTbl AS nslt
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE SettingType=7 AND  psd.ProductID=@ProductID7 
 										FOR XML PATH('StakeLevel')
 									,	ROOT('ROOT')
 									,	TYPE
@@ -381,11 +531,75 @@ BEGIN
 				,	@UserID		= @UserID
 				,	@IP			= @IP
 				,	@ErrCode	= @ErrCode		OUTPUT
-				,	@ErrMsg		= @ErrMsg		OUTPUT
+				,	@ErrMsg		= @ErrMsg		OUTPUT	
+		DELETE FROM	#TempStakeLevel WHERE ProductID=@ProductID7			
+	END
+	END
+	/****************************** Stake Level Member Single Selection : SettingType = 8 ******************************/
+	IF EXISTS (SELECT TOP 1 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL, 8))
+	BEGIN
+		DECLARE @ProductID8 INT
+		CREATE TABLE #TempStakeLevel8 (	ProductID INT) 	
+				
+		DECLARE	@NewStakeLevelTbl8 TABLE (
+					SportType		SMALLINT
+				,	BetType			SMALLINT
+				,	StakeLevelList	VARCHAR(200)
+				)
+		INSERT INTO @NewStakeLevelTbl8
+			(	SportType     , BetType     , StakeLevelList)
+		SELECT	cslm.SportType, cslm.BetType, cslm.StakeLevelList
+		FROM	dbo.CustStakeLevel_Member AS cslm WITH(NOLOCK)		
+		WHERE	cslm.CustID = @ExistingCustID
+		
+		INSERT INTO #TempStakeLevel8(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewStakeLevelTbl8 AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =8
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE (EXISTS (SELECT TOP 1 1 FROM #TempStakeLevel8))
+		BEGIN
+		SELECT TOP 1 @ProductID8=ProductID FROM #TempStakeLevel8
+		SELECT	@xmlStakeLevel8 =	(
+										SELECT	nslt.SportType			AS '@SportType'
+											,	nslt.BetType			AS '@BetType'
+											,	nslt.StakeLevelList		AS '@StakeLevelList'
+										FROM	@NewStakeLevelTbl8 AS nslt
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+										WHERE SettingType=8 AND psd.ProductID=@ProductID8 
+										FOR XML PATH('StakeLevel')
+									,	ROOT('ROOT')
+									,	TYPE
+									)
+	
+		SELECT	@xmlStr = CONVERT(VARCHAR(MAX), @xmlStakeLevel8)
+
+		EXEC	dbo.Acc_CustSetting_StakeLevelUpd
+					@CustID		= @CustID
+				,	@StakeLevel	= @xmlStr
+				,	@SubAccID	= @SubAccID
+				,	@UserID		= @UserID
+				,	@IP			= @IP
+				,	@ErrCode	= @ErrCode		OUTPUT
+				,	@ErrMsg		= @ErrMsg		OUTPUT	
+				
+		DELETE FROM	#TempStakeLevel8 WHERE ProductID=@ProductID8
+	
+		END
 	END
 END
 
+
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustSetting_DCSSettingCopyInsertMember] TO [bodbDownlineNet]
+GO
+GRANT EXECUTE ON [dbo].[Acc_CustSetting_DCSSettingCopyInsertMember] TO [bodbAdminNet]
 GO
 GRANT VIEW DEFINITION ON [dbo].[Acc_CustSetting_DCSSettingCopyInsertMember] TO [vnteam]
