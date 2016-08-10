@@ -48,6 +48,7 @@ BEGIN
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 		- 20160407@Winnie: VoidBridge - [Redmine: #55259 ]
 		- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
+		- 20160810@Winnie: #61733 add more bettype VIP Barcarat setting
 		
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -98,6 +99,7 @@ BEGIN
 		,	@bitmapOrder_CockFighting	INT
 		,	@bitmapOrder_Cricket		INT
 		,	@bitmapOrder_AllBet			INT
+		,	@bitmapOrder_AllBetVIP		INT
 		,	@bitmapOrder_VoidBridge		INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
@@ -110,6 +112,12 @@ BEGIN
 									WHERE	psp.Sporttype = 211
 										AND	psp.Bettype = 2401
 								)
+	SET	@bitmapOrder_AllBetVIP =	(
+									SELECT	psp.bitmapOrder
+									FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
+									WHERE	psp.Sporttype = 211
+										AND	psp.Bettype = 2402
+								)    
     
     DECLARE	@IsHidden_MuayThai			INT = 1
 		,	@IsHidden_CockFighting		INT = 1
@@ -206,7 +214,8 @@ BEGIN
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_CockFighting),1) AS DisableCockFighting,
 			CAST(CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideCockFighting,
 			-- For AllBet
-			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBet)) AS DisableAllBet,
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBetVIP)) AS DisableAllBetVIP,
 			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
 								--AND	MAX(sbhsc.IsHidden) = 0
 								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
