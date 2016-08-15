@@ -256,7 +256,7 @@ BEGIN
 				-- For AllBet
 				ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
 				CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
-									AND	sbhsc.IsHidden = 0
+									--AND	sbhsc.IsHidden = 0
 									AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
 									THEN 0
 								ELSE 1 
@@ -307,7 +307,7 @@ BEGIN
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
 
 			-- Check isHidden AllBet
-			OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(c.custid, @AllBet) AS sbhsc
+			--OUTER APPLY	dbo.f_CustSetting_SportBetTypeHiddenBySiteCurrency(c.custid, @AllBet) AS sbhsc
 		
 			-- Upline Status
 			INNER JOIN	dbo.CustProductStatus AS cpsUpline WITH (NOLOCK)
