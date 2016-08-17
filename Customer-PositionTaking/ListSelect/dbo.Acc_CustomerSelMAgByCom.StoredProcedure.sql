@@ -8,7 +8,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelMAgByCom]
 	@PageSize int=50,
 	@PageIndex int=1,
 	@TotalPages int=0 OUTPUT,
-	@TotalItems int=0 OUTPUT
+	@TotalItems int=0 OUTPUT,
+	@Userid		INT=NULL
 AS
 BEGIN
 /*
@@ -46,6 +47,7 @@ BEGIN
 		- 20160114@Helen: Cricket - [Redmine: #50027]
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 		- 20160407@Winnie: VoidBridge - [Redmine: #55259 ]
+		- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
 		
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -144,7 +146,15 @@ BEGIN
 		SET @IsHidden_VoidBridge = 0
 	END
 	
-	
+	DECLARE @SearchQuery varchar(1024)
+	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
+	DECLARE @tmpUserid VARCHAR(50)
+	SELECT @tmpUserid=CAST(@Userid AS VARCHAR(50))
+	SELECT @SearchQuery = 'SELECT * 
+	FROM OPENQUERY(DBPOLICY, 
+	''SELECT siteid , site,SpecialGroup FROM bodb02.dbo.f_GetDeniedSiteByUser( ''''' + @tmpUserid + ''''')'')'
+	INSERT INTO  @tmp (siteid , site,SpecialGroup)
+	EXECUTE(@SearchQuery)
 	Select * From 
 	(
 		SELECT 		
@@ -278,6 +288,7 @@ BEGIN
 			AND cm.isinternal = case when @IsInternal is null then cm.isinternal else @IsInternal end
 			and m.username like @Keyword and m.username like @FirstChar		
 			and ci.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
+			AND (@Userid IS NULL OR (@Userid IS NOT NULL AND m.site NOT IN (SELECT site FROM @tmp )))
 		group by
 			ci.enabled, 
 			ci.closed,

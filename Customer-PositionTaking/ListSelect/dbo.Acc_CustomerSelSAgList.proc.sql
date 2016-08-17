@@ -1,5 +1,6 @@
 ﻿ALTER PROCEDURE [dbo].[Acc_CustomerSelSAgList]   
 	@System varchar(50) = 'ACCOUNTING'
+	,@Userid INT=NULL
 AS  
 
 /*
@@ -15,18 +16,30 @@ AS
 		-20120525@Dom: exclude licensee customer for accounting site
 		-20130121@Dan: call to bodb_AGE for Acc_CustGroup
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
-
+		- 20160630@Winnie: #48948 Hide_special_sites_from_unautorized_users
 		
 */
 
 SET NOCOUNT ON  
+DECLARE @SearchQuery varchar(1024)
+DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
+DECLARE @tmpUserid VARCHAR(50)
+SELECT @tmpUserid=CAST(@Userid AS VARCHAR(50))
+SELECT @SearchQuery = 'SELECT * 
+FROM OPENQUERY(DBPOLICY, 
+''SELECT siteid , site,SpecialGroup FROM bodb02.dbo.f_GetDeniedSiteByUser( ''''' + @tmpUserid + ''''')'')'
+
+INSERT INTO  @tmp (siteid , site,SpecialGroup)
+EXECUTE(@SearchQuery)
+
 IF(@System = 'ACCOUNTING')
 BEGIN
-
+	
 	Select c.custid, c.username, c.currency as exchangeid, c.[site] AS siteName
 	from customer as c with (NOLOCK) 
 	where c.roleid=4 and c.custid>100  
 	and c.srecommend NOT IN(SELECT custid from f_DepSuper_1 ('all'))
+	AND (@Userid IS NULL OR (@Userid IS NOT NULL AND site NOT IN (SELECT site FROM @tmp )))
 	order by c.username   
 END
 ELSE

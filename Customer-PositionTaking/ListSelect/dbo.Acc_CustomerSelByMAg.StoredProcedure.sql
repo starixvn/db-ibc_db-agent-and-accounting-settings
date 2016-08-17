@@ -9,7 +9,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerSelByMAg]
 	@PageSize int = 20000,
 	@PageIndex int = 1,
 	@TotalPages int = 1 output,
-	@TotalItems int=0 output
+	@TotalItems int=0 output,
+	@Userid		INT=NULL
 AS
 /*
 	Created by: []
@@ -49,6 +50,7 @@ AS
 		- 20160114@Helen: Cricket - [Redmine: #50027]
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 		- 20160407@Winnie: VoidBridge - Redmine's Ids: #55258
+		- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
 	Explanation's Param:
 		- @DoubleCommLosing:
 			0: Not Allowed double comm
@@ -235,6 +237,17 @@ BEGIN
 	END
     
 	-- get data for filtered customers	
+	DECLARE @SearchQuery varchar(1024)
+	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
+	DECLARE @tmpUserid VARCHAR(50)
+	SELECT @tmpUserid=CAST(@Userid AS VARCHAR(50))
+	SELECT @SearchQuery = 'SELECT * 
+	FROM OPENQUERY(DBPOLICY, 
+	''SELECT siteid , site,SpecialGroup FROM bodb02.dbo.f_GetDeniedSiteByUser( ''''' + @tmpUserid + ''''')'')'
+
+	INSERT INTO  @tmp (siteid , site,SpecialGroup)
+	EXECUTE(@SearchQuery)
+	
 	;WITH customers AS
 	(
 		SELECT	c.custid, ci.currency, ci.roleid, autosuspend, reject, closed, MatchLimit, VirtualMultiplier, Enabled, DisableHorseRacing,
@@ -309,7 +322,7 @@ BEGIN
 													ELSE c.srecommend
 											END
 		   
-		WHERE c.custid IN (SELECT custid FROM #customer)
+		WHERE c.custid IN (SELECT custid FROM #customer) AND (@Userid IS NULL OR (@Userid IS NOT NULL AND c.site NOT IN (SELECT site FROM @tmp )))
 	),
 	custsetting3rd AS
 	(
