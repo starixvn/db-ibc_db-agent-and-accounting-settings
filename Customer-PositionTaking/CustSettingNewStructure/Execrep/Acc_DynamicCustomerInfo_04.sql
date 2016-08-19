@@ -154,10 +154,16 @@ BEGIN
 						FOR XML PATH('r')
 							, TYPE
 						)
-				FOR XML PATH('ROOT')
+				FOR XML PATH('root')
 					, TYPE
 				)
-	
+		DECLARE @BitmapOrder TINYINT
+
+		--Get 1 bettype as representation to check Synced
+		SELECT TOP 1 @BitmapOrder = psp.bitmapOrder
+		FROM ProductStatusProfile psp WITH (NOLOCK)
+			INNER JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
+
 		IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 		BEGIN
 			SET @xmlStrHidden = (
@@ -170,7 +176,7 @@ BEGIN
 						FOR XML PATH('r')
 							, TYPE
 						)
-				FOR XML PATH('ROOT')
+				FOR XML PATH('root')
 					, TYPE
 				)
 		END	
@@ -182,7 +188,8 @@ BEGIN
 			FROM  CustProductStatus T
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.srecommend = @custid AND CI.roleid IN (1,2,3)
-		
+				AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
+
 			IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 			BEGIN
 				UPDATE T 
@@ -190,7 +197,7 @@ BEGIN
 				FROM CustProductStatus T 
 					INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 				WHERE CI.srecommend = @custid AND CI.roleid IN (1,2,3)
-			
+					AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
 			END
 		
 		END
@@ -201,6 +208,7 @@ BEGIN
 			FROM  CustProductStatus T
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.mrecommend = @custid AND CI.roleid IN (1,2)
+				AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
 		
 			IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 			BEGIN
@@ -209,7 +217,7 @@ BEGIN
 				FROM CustProductStatus T 
 					INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 				WHERE CI.mrecommend = @custid AND CI.roleid IN (1,2)
-			
+					AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
 			END
 		END
 		ELSE IF @RoleID=2
@@ -219,7 +227,8 @@ BEGIN
 			FROM  CustProductStatus T
 				INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 			WHERE CI.recommend = @custid AND CI.roleid = 1
-		
+				AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
+
 			IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 			BEGIN
 				UPDATE T 
@@ -227,6 +236,7 @@ BEGIN
 				FROM CustProductStatus T 
 					INNER JOIN custInfo CI WITH (NOLOCK) ON T.CustID = CI.custid	
 				WHERE CI.recommend = @custid AND CI.roleid = 1
+					AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapHasSynced, @BitmapOrder)) = 1
 			END
 		END
 	END
