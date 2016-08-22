@@ -48,8 +48,9 @@ BEGIN
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 		- 20160407@Winnie: VoidBridge - [Redmine: #55259 ]
 		- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
+		- 20160801@Elodie: NG2 Product - [Redmine: #60809]
 		- 20160810@Winnie: #61733 add more bettype VIP Barcarat setting
-		
+
 	Pattern Explanation:
 	Search keyword: '%keyword%'
 	First char
@@ -101,11 +102,14 @@ BEGIN
 		,	@bitmapOrder_AllBet			INT
 		,	@bitmapOrder_AllBetVIP		INT
 		,	@bitmapOrder_VoidBridge		INT
+		,	@bitmapOrder_NG2			INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
     SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
 	SET @bitmapOrder_VoidBridge = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 212 AND Bettype = 4001)
+	SET @bitmapOrder_NG2 = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 213 AND Bettype = 2501)
+
 	SET	@bitmapOrder_AllBet =	(
 									SELECT	psp.bitmapOrder
 									FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
@@ -124,12 +128,14 @@ BEGIN
 		,	@IsHidden_Cricket			INT = 1
 		,	@IsHidden_AllBet			INT = 1
 		,	@IsHidden_VoidBridge		INT = 1
+		,	@IsHidden_NG2				INT = 1
     
     DECLARE	@SportBook2					INT = 16
 		,	@CockFighting				INT = 19
 		,	@Cricket					INT = 20
 		,	@AllBet						INT = 21
 		,	@VoidBridge					INT = 22
+		,	@NG2						INT = 23
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -153,7 +159,11 @@ BEGIN
 	BEGIN
 		SET @IsHidden_VoidBridge = 0
 	END
-	
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@NG2,11))
+	BEGIN
+		SET @IsHidden_NG2 = 0
+	END
+
 	DECLARE @SearchQuery varchar(1024)
 	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
 	DECLARE @tmpUserid VARCHAR(50)
@@ -257,6 +267,21 @@ BEGIN
 						THEN 0
 					ELSE 1
 			END AS SyncedVoidBridgeDownline,
+
+			-- For NG2
+			(SELECT ISNULL(value,1) FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_NG2)) AS DisableNG2,
+			CAST(CASE WHEN @IsHidden_NG2 = 0 AND (SELECT ISNULL(value,1) FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, @bitmapOrder_NG2)) = 0 THEN 0 ELSE 1 END AS BIT) AS HideNG2,			
+			CAST(CASE WHEN @IsHidden_NG2 = 0 AND (SELECT ISNULL(value,1) FROM dbo.f_CustSetting_ProductStatusSel(cpsUpline.bitmapIsHidden, @bitmapOrder_NG2)) = 0 THEN 0 ELSE 1 END AS BIT) AS HideNG2Upline,			
+			(SELECT ISNULL(value,0) FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapHasSynced, @bitmapOrder_NG2)) AS SyncedNG2,
+			(SELECT ISNULL(value,0) FROM dbo.f_CustSetting_ProductStatusSel(cpsUpline.bitmapHasSynced, @bitmapOrder_NG2)) AS SyncedNG2Upline,
+			CASE WHEN EXISTS	(	SELECT	TOP 1 1
+									FROM		dbo.CustProductStatus AS cpsDownline WITH (NOLOCK)
+									INNER JOIN	dbo.custInfo AS ciDownline WITH (NOLOCK) ON	ciDownline.custid = cpsDownline.CustID
+									WHERE	ciDownline.mrecommend = m.custid
+										AND	(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cpsDownline.bitmapHasSynced, @bitmapOrder_NG2)) = 0)
+						THEN 0
+					ELSE 1
+			END AS SyncedNG2Downline,
 
 			-- For Cricket
 			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,

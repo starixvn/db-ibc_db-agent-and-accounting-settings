@@ -1,11 +1,3 @@
-USE [CustDB]
-GO
-/****** Object:  StoredProcedure [dbo].[Acc_DynamicCustomerInfo_00]    Script Date: 4/28/2016 2:57:37 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/****** Object:  Stored Procedure dbo.Acc_DynamicCustomerInfo_00    Script Date: 4/15/2016 4:37:30 PM ******/
 ALTER PROCEDURE [dbo].[Acc_DynamicCustomerInfo_00] 
 	@CustID				INT
 	, @SuperID			INT
@@ -20,7 +12,6 @@ AS
 	Task : Insert Settings Into DCS Structure
 	DB:  DBCUST/CustDB
 	Original:
-
 	
 	Revision
 		- 20151215: Enhance proscess to create new customer #49344
@@ -28,11 +19,12 @@ AS
 		- 20151230@Helen: Add more conditions to detect dummy account -  #49344
 		- 20160104@Dominic: + Implementing Charge Commission Plugin - Redmine #49689
 							+ Insert iCricket data for IMBC only#49689
-		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #
+		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine # 
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 		- 20160309@Dominic: Support controling default product status by site and by currency - [Redmine: #53604]
 		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
-
+		- 20160801@Elodie: Implementing GameBetLimit Plugin, GameStatus Plugin - [Redmine #60809]
+							
 	*/
 BEGIN
 	SELECT @ErrCode = 0
@@ -43,6 +35,11 @@ BEGIN
 		AND dbo.f_CheckRepTable('ProductStatusSiteCurrency') = 1
 	)
 	BEGIN
+		DECLARE @_Site VARCHAR(10), @_SiteID INT, @_Currency TINYINT
+		DECLARE @xmlStrDisabled XML
+		DECLARE @xmlStrHidden XML
+		DECLARE @xmlStrSync XML
+
 		/********************************************* Product Status: SettingType = 4 ************************************/
 		--Get sporttype/Bettype for this setting type	
 		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
@@ -73,8 +70,6 @@ BEGIN
 		
 		IF @RoleID = 4
 		BEGIN
-			DECLARE @_Site VARCHAR(10), @_SiteID INT, @_Currency TINYINT
-			
 			SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
 			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
 			
@@ -102,11 +97,7 @@ BEGIN
 					--Get from default status values
 					--Sync: default status setting
 					--Hide: default status setting
-					--Enable/Disable: default status setting
-									
-					DECLARE @xmlStrDisabled XML
-					DECLARE @xmlStrHidden XML
-					DECLARE @xmlStrSync XML
+					--Enable/Disable: default status setting														
 				
 					SET @xmlStrDisabled = (
 							SELECT (
@@ -179,7 +170,96 @@ BEGIN
 			RETURN
 		END CATCH
 
+		/********************************************* Game Status: SettingType = 11 ************************************/
+		--Get sporttype/Bettype for this setting type	
+		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
+		INTO #SportBettypeFilter11
+		FROM dbo.ProductSettingDetail psd WITH(NOLOCK)  
+			INNER JOIN ProductStatusProfile pbs WITH (NOLOCK) ON pbs.SportType = psd.SportType	AND pbs.BetType = psd.BetType
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,11) t ON pbs.SportType = t.SportType	AND pbs.BetType = t.BetType AND psd.SettingType = t.SettingType
+		
+		IF EXISTS(SELECT TOP 1 1 FROM #SportBettypeFilter11)
+		BEGIN
+			IF @RoleID = 1
+				SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @AgentID 			
+			ELSE
+				SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID 			
+
+			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
+			
+			UPDATE main
+			SET main.IsDisabled = stt.IsDisabled, 
+				main.IsHidden = stt.IsHidden
+			FROM #SportBettypeFilter11 main
+				INNER JOIN dbo.ProductStatusSiteCurrency stt WITH(NOLOCK) ON main.SportType = stt.SportType AND main.Bettype = stt.Bettype
+			WHERE stt.Currency = @_Currency AND (stt.SiteID = @_SiteID OR stt.SiteID = 0)
+			
+			UPDATE main
+			SET main.IsDisabled = stt.IsDisabled, 
+				main.IsHidden = stt.IsHidden
+			FROM #SportBettypeFilter11 main
+				INNER JOIN dbo.ProductStatusSiteCurrency stt WITH(NOLOCK) ON main.SportType = stt.SportType AND main.Bettype = stt.Bettype
+			WHERE (stt.Currency = @_Currency OR stt.Currency = 0 ) AND stt.SiteID = @_SiteID
+		
+			BEGIN TRY				
+				--Get from default status values
+				--Sync: default status setting
+				--Hide: default status setting
+				--Enable/Disable: default status setting
+				SET @xmlStrDisabled = (
+						SELECT (
+								SELECT ft.bitmapOrder	AS '@b'
+									, ft.IsDisabled	AS '@s'
+								FROM #SportBettypeFilter11 ft 	
+								FOR XML PATH('r')
+									, TYPE
+								)
+						FOR XML PATH('root')
+							, TYPE
+						)
+						
+				SET @xmlStrHidden = (
+						SELECT (
+								SELECT ft.bitmapOrder	AS '@b'
+									, ft.IsHidden	AS '@s'
+								FROM #SportBettypeFilter11 ft 	
+								FOR XML PATH('r')
+									, TYPE
+								)
+						FOR XML PATH('root')
+							, TYPE
+						)
+						
+				SET @xmlStrSync = (
+					SELECT (
+							SELECT ft.bitmapOrder	AS '@b'
+								, ft.IsSync	AS '@s'
+							FROM #SportBettypeFilter11 ft 	
+							FOR XML PATH('r')
+								, TYPE
+							)
+					FOR XML PATH('root')
+						, TYPE
+					)
+				
+				UPDATE cs
+				SET bitmapIsDisabled = (select bitmap from dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled))),
+					bitmapIsHidden = (select bitmap from dbo.f_GenerateProductStatus_multiple (bitmapIsHidden, CONVERT(VARCHAR(MAX),@xmlStrHidden))),
+					bitmapHasSynced = (select bitmap from dbo.f_GenerateProductStatus_multiple (bitmapHasSynced, CONVERT(VARCHAR(MAX),@xmlStrSync)))									
+				FROM CustProductStatus cs WITH (ROWLOCK,UPDLOCK)
+				WHERE cs.CustID = @CustID     
+
+			END TRY
+			BEGIN CATCH
+				SELECT @ErrCode = 11
+
+				DELETE FROM CustProductStatus WHERE CustID = @CustID
+				RETURN
+			END CATCH
+		END
+
 		DROP TABLE #SportBettypeFilter4
+		DROP TABLE #SportBettypeFilter11
 	END
 
 	if(dbo.f_CheckRepTable('CustPTSetting3rd_Agent') = 1
