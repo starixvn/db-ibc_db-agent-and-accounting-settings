@@ -7,6 +7,8 @@ AS
 	Task: Select customer's Stake Level Settings in DCS
 	Database: DBCUST/CustDB
 	Original:
+	
+		- 20160812@Helen: NAP - Bet Limit - Stake level does not order by Max then Min Stake [Redmine: 62429]
 
 	Param's Explanation:
 */
@@ -31,7 +33,6 @@ BEGIN
 					,	StakeLevelID	INT
 					,	StakeLevelName	NVARCHAR(100)
 					,	isChecked		BIT
-					,	PRIMARY KEY CLUSTERED (SportType, BetType, StakeLevelID)
 					);
 
 	-- Stake Level Member Single Selection
@@ -61,10 +62,15 @@ BEGIN
 		FROM		dbo.StakeLevel AS sl WITH(NOLOCK)
 		INNER JOIN	#SportBetTypeFilter AS sbtf
 				ON	sbtf.BetType = sl.GameTypeID
-		WHERE	sl.ExchangeId = @Currency;
-	END;
+		WHERE	sl.ExchangeId = @Currency
+		
+		ORDER BY sl.GameTypeID, sl.MaxStake,sl.MinStake	
+		
+		
+	END
 	ELSE IF	@RoleID IN (3, 2, 1)
 	BEGIN
+	
 	    INSERT INTO	#CustStakeLevel
 			(	SportType     , BetType     , StakeLevelID   , StakeLevelName                  , isChecked)
 		SELECT	csla.SportType,	csla.BetType, sl.StakeLevelID, sl.MinLabel + N' - ' + sl.MaxLabel, 0
@@ -79,8 +85,11 @@ BEGIN
 		WHERE	csla.CustID =	CASE	WHEN @RoleID = 3 THEN @srecommend
 										WHEN @RoleID = 2 THEN @mrecommend
 										WHEN @RoleID = 1 THEN @recommend
-								END;
-	END;
+								END
+		ORDER BY sl.GameTypeID, sl.MaxStake,sl.MinStake	
+		
+									
+	END
 
 	-- Select checked stake levels
 	IF	@RoleID IN (4, 3, 2)

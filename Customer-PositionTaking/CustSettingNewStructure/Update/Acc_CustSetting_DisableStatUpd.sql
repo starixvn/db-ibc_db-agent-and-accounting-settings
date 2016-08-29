@@ -16,7 +16,7 @@ AS
 
 	Revisions:
 		- 20151104@Billy: Update log structure - [Redmine: #46788]
-
+		- 20160808@Helen: Product Status Issue for multiple bettypes [Redmine: 61875]
 	Param's Explanation:
 	• @IsDisabled
 		<ROOT>
@@ -325,20 +325,37 @@ BEGIN
 	END
 	
 	--call execrept to update downline
-	IF @RoleID <> 1 AND EXISTS (
-			SELECT TOP 1 1
-			FROM #NewDisableStatTbl
-			WHERE IsDisabled = 1
-				OR (
-						IsDisabled				= 0
-						AND IsDisabledDownline	= 0
+	DECLARE @IsDisabled_Downline XML
+	
+	SET @IsDisabled_Downline = (
+			SELECT (
+					SELECT 
+						SportType AS '@SportType'
+						,BetType AS '@BetType'
+						,IsDisabled AS '@IsDisabled'
+						,IsDisabledDownline AS '@IsDisabledDownline'
+					FROM #NewDisableStatTbl
+					WHERE IsDisabled = 1
+							OR (
+									IsDisabled				= 0
+									AND IsDisabledDownline	= 0
+								)
+					FOR XML PATH('ProductStatus')
+						, TYPE
 					)
+			FOR XML PATH('ROOT')
+				, TYPE
 			)
+	
+	DECLARE @IsDisabled_Downline_tmp VARCHAR(MAX)		
+	
+	SET @IsDisabled_Downline_tmp = CONVERT(VARCHAR(MAX),@IsDisabled_Downline)
+	
+	IF @RoleID <> 1 AND @IsDisabled_Downline_tmp <> '<ROOT/>'
 	BEGIN		
-		
 		EXEC dbo.[Acc_DynamicCustomerInfo_04] @CustID = @CustID
 						, @RoleID			= @RoleID
-						, @IsDisabled_XML	= @IsDisabled
+						, @IsDisabled_XML	= @IsDisabled_Downline_tmp
 	
 	END
 	
