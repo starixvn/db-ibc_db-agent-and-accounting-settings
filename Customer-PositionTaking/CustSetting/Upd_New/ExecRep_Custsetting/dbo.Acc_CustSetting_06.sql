@@ -40,6 +40,7 @@ AS
 	    - 20160125@Helen: Add more customers not give commission [Redmine: #51057]		
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]		
 		- 20160621@Winnie: Add more customers not give commission [Redmine: #58999]		
+		- 20160901@Winnie: Add more customer ALHKD not give commission [Redmine: #58999]		
     Param's Explanation: 
 
     */
@@ -134,6 +135,8 @@ BEGIN
 	UNION SELECT	13886194	,	1	--	007RIC 
 	UNION SELECT	22497394	,	1	--	8888AHK 
 	UNION SELECT	22682195	,	1	--	10AHK
+	--20160901@Winnie: add more customer ALHKD into list 
+	UNION SELECT	23305764	,	1	--	ALHKD
 
 	--UUS accounnts for testing
 	UNION SELECT	14180041	,	2	--	supertestUAT0101
