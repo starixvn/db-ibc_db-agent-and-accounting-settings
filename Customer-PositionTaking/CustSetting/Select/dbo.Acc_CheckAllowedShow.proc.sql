@@ -163,22 +163,31 @@ Revisions:
 		SELECT @IsHideNG2 = 0
 	ELSE
 		SELECT @IsHideNG2 = 1
-
-	SELECT	@AllowedNG2 =	CASE	WHEN @RoleID = 4 AND @IsHideNG2 = 0 THEN 1
-									WHEN (SELECT value FROM dbo.f_CustSetting_ProductStatusSel (cps.bitmapIsHidden, psp.bitmapOrder)) = 0
-										AND (SELECT valude FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapHasSynced, psp.bitmapOrder)) = 1
-										AND @IsHideNG2 = 0 THEN 1
+	IF @RoleID = 4
+		SELECT	@AllowedNG2 =	CASE	WHEN @IsHideNG2 = 0 AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) = 0 THEN 1
 										ELSE 0 END
-	FROM	dbo.CustProductStatus AS cps WITH (NOLOCK)
-	CROSS JOIN	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
-	INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK)
-			ON	psd.SportType = psp.Sporttype
-			AND	psd.BetType = psp.Bettype
-			AND	psd.SettingType = 11
-	WHERE	cps.CustID = @CustID
-		AND	psd.ProductID = @NG2
-
+		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
+			CROSS JOIN dbo.CustProductStatus AS cps WITH (NOLOCK)
+		WHERE	cps.CustID = @CustID
+			AND	psd.ProductID = @NG2
+	ELSE 
+		SELECT	@AllowedNG2 =	CASE	WHEN (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) = 0
+											AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(ups.bitmapHasSynced, psp.bitmapOrder)) = 1
+											AND @IsHideAllBet = 0 
+											THEN 1
+										ELSE 0 END
+		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
+			CROSS JOIN dbo.CustProductStatus AS cps WITH (NOLOCK)
+			CROSS JOIN dbo.CustProductStatus AS ups WITH (NOLOCK)	
+		WHERE	cps.CustID = @CustID
+			AND	psd.ProductID = @NG2
+			AND ups.CustID = CASE	WHEN @RoleID = 3 THEN @srecommend
+									WHEN @RoleID = 2 THEN @mrecommend
+									ELSE @recommend END
 END
+
 GO
 GRANT EXECUTE ON [dbo].Acc_CheckAllowedShow TO [bodbadminNet]
 GO

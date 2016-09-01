@@ -19,7 +19,7 @@ AS
 	Param's Explanation:
 	• @IsDisabled
 		<ROOT>
-				<GameStatus
+				<ProductStatus
 						SportType="1" 
 						BetType="1" 
 						IsDisabled="1"
@@ -129,7 +129,7 @@ BEGIN
 
 	INSERT INTO #NewDisableStatTbl
 	SELECT *
-	FROM OPENXML(@iDoc, '/ROOT/GameStatus', 1) WITH (
+	FROM OPENXML(@iDoc, '/ROOT/ProductStatus', 1) WITH (
 			SportType				SMALLINT
 			, BetType				SMALLINT
 			, IsDisabled			BIT
@@ -349,7 +349,7 @@ BEGIN
 					AND	psd.BetType = tmp.BetType
 			WHERE	psd.ProductID IS NOT NULL
 				AND	psd.SettingLevel IS NOT NULL
-				AND psd.SettingType = 4	-- Product Status
+				AND psd.SettingType = 11	-- Game Status
 		 ) iq
 
 	-- Select ProductName
@@ -371,7 +371,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #OldDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -392,7 +392,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #OldDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -413,7 +413,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #OldDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -435,7 +435,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #OldDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -459,7 +459,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #NewDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -480,7 +480,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #NewDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -501,7 +501,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #NewDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),
@@ -523,7 +523,7 @@ BEGIN
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #NewDisableStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_DisableGameStatusUpd'),

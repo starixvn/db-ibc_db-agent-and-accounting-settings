@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_AgentSettingSelect]   
 	@CustID			INT  
 	, @ProductID	TINYINT = NULL 
@@ -138,28 +132,28 @@ BEGIN
 			AND pdt.BetType = sbl.bettype  
 			AND sbl.custid = @SuperID  
 	END
-	--Discount Setting / Charge Comm
-	ELSE IF @SettingType IN (3,5)
-	BEGIN  
-		SELECT pdt.SportType  
-			, pdt.BetType  
-			, dc.Discount AS AgentDiscount  
-			, mdc.Discount AS MasterDiscount  
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)  
-			ON pdt.SportType = dc.sporttype  
-			AND pdt.BetType = dc.bettype  
-			AND dc.custid = @CustID  
-		INNER JOIN dbo.CustDiscount3rd_Agent mdc WITH (NOLOCK)  
-			ON pdt.SportType = mdc.sporttype  
-			AND pdt.BetType = mdc.bettype  
-			AND mdc.custid = @MasterID  
-	END
+	----Discount Setting / Charge Comm
+	--ELSE IF @SettingType IN (3,5)
+	--BEGIN  
+	--	SELECT pdt.SportType  
+	--		, pdt.BetType  
+	--		, dc.Discount AS AgentDiscount  
+	--		, mdc.Discount AS MasterDiscount  
+	--	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+	--	INNER JOIN #SportBettypeFilter ft 
+	--			ON pdt.SportType = ft.sporttype
+	--				AND pdt.BetType = ft.bettype
+	--				AND pdt.IsLive = ft.islive
+	--				AND pdt.SettingType = ft.SettingType
+	--	INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)  
+	--		ON pdt.SportType = dc.sporttype  
+	--		AND pdt.BetType = dc.bettype  
+	--		AND dc.custid = @CustID  
+	--	INNER JOIN dbo.CustDiscount3rd_Agent mdc WITH (NOLOCK)  
+	--		ON pdt.SportType = mdc.sporttype  
+	--		AND pdt.BetType = mdc.bettype  
+	--		AND mdc.custid = @MasterID  
+	--END
 	--Product Status  
 	ELSE IF @SettingType = 4
 	BEGIN  

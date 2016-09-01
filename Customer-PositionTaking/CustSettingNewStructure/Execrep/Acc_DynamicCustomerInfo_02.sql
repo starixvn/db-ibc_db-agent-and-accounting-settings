@@ -22,7 +22,7 @@ BEGIN
 
 	if dbo.f_CheckRepTable('CustProductStatus') = 1
 	BEGIN
-		/********************************************* Product Status: SettingType = 4 ************************************/
+		/********************************************* Product Status: SettingType = 4, Game Status: SettingType = 11 ************************************/
 		--Get sporttype/Bettype for this setting type
 		BEGIN TRY
 			IF EXISTS(SELECT 1 FROM [dbo].[CustProductStatus] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
@@ -90,7 +90,7 @@ BEGIN
 			RETURN
 		END CATCH
 	
-		/********************************************* Bet Limit : SettingType = 2 ****************************************/
+		/********************************************* Bet Limit : SettingType = 2, Bet Game Limit : SettingType = 9 ****************************************/
 		BEGIN TRY
 			IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustBetSetting3rd_Agent] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 			INSERT INTO [dbo].[CustBetSetting3rd_Agent]

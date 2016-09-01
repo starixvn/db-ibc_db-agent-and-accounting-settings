@@ -17,7 +17,7 @@ AS
 	Param's Explanation:
 	• @IsDisabled
 		<ROOT>
-				<GameStatus
+				<ProductStatus
 						SportType="1" 
 						BetType="1" 
 						IsDisabled="1"
@@ -53,7 +53,7 @@ BEGIN
 
 	INSERT INTO #NewDisableStatTbl
 	SELECT *
-	FROM OPENXML(@iDoc, '/ROOT/GameStatus', 1) WITH (
+	FROM OPENXML(@iDoc, '/ROOT/ProductStatus', 1) WITH (
 			SportType				SMALLINT
 			, BetType				SMALLINT
 			, IsDisabled			BIT

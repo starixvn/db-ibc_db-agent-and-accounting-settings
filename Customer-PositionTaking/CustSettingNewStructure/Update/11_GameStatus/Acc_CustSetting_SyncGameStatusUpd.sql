@@ -5,6 +5,9 @@ ALTER PROCEDURE	[dbo].[Acc_CustSetting_SyncGameStatusUpd]
 ,	@UserID			INT
 ,	@SubAccID		INT				= 0
 ,	@IP				VARCHAR(50)		= ''
+,	@ErrCode		INT				= 0		OUTPUT
+,	@ErrMsg			NVARCHAR(200)	= ''	OUTPUT
+
 AS
 /*  
 	Created: Elodie  
@@ -87,11 +90,14 @@ BEGIN
 			FOR XML PATH('root')
 				, TYPE
 			)
-	
-	UPDATE CustProductStatus
-		SET bitmapHasSynced = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapHasSynced, CONVERT(VARCHAR(MAX),@xmlStrSynced)))	
-	WHERE CustID = @CustID
-	
+	BEGIN TRY
+		UPDATE CustProductStatus
+			SET bitmapHasSynced = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapHasSynced, CONVERT(VARCHAR(MAX),@xmlStrSynced)))	
+		WHERE CustID = @CustID
+	END TRY
+	BEGIN CATCH
+		SELECT @ErrCode = 100, @ErrMsg = 'Update Sync Status Failed'
+	END CATCH
 	--START LOGGING		
 
 	-- Select ProductID and SettingLevel
@@ -124,7 +130,7 @@ BEGIN
 						SELECT	@ProductID			AS '@ProductID',
 								IsSynced			AS '@IsSynced'
 						FROM #OldSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -144,7 +150,7 @@ BEGIN
 						SELECT	SportType			AS '@SportType',
 								IsSynced			AS '@IsSynced'
 						FROM #OldSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -164,7 +170,7 @@ BEGIN
 						SELECT	BetType				AS '@BetType',
 								IsSynced			AS '@IsSynced'
 						FROM #OldSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -185,7 +191,7 @@ BEGIN
 								BetType				AS '@BetType',
 								IsSynced			AS '@IsSynced'
 						FROM #OldSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -208,7 +214,7 @@ BEGIN
 						SELECT	@ProductID			AS '@ProductID',
 								@IsSynced			AS '@IsSynced'
 						FROM #NewSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -228,7 +234,7 @@ BEGIN
 						SELECT	SportType			AS '@SportType',
 								@IsSynced			AS '@IsSynced'
 						FROM #NewSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -248,7 +254,7 @@ BEGIN
 						SELECT	BetType				AS '@BetType',
 								@IsSynced			AS '@IsSynced'
 						FROM #NewSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),
@@ -269,7 +275,7 @@ BEGIN
 								BetType				AS '@BetType',
 								@IsSynced			AS '@IsSynced'
 						FROM #NewSyncStatTbl
-						FOR XML PATH('GameStatus'),
+						FOR XML PATH('ProductStatus'),
 						TYPE
 					)
 			FOR XML PATH('Acc_CustSetting_SyncGameStatusUpd'),

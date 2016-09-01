@@ -138,7 +138,7 @@ BEGIN
 		
 		INSERT INTO #NewDisableStatTbl
 		SELECT *
-		FROM OPENXML (@iDoc, '/ROOT/GameStatus',1) 
+		FROM OPENXML (@iDoc, '/ROOT/ProductStatus',1) 
 		WITH(SportType smallint, BetType smallint, IsDisabled BIT,IsDisabledDownline BIT
 			)	
 		

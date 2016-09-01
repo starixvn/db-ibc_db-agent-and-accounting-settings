@@ -594,6 +594,144 @@ BEGIN
 	
 		END
 	END
+	/********************************************* Game Bet Limit : SettingType = 9 ****************************************/
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,9))
+	BEGIN
+		DECLARE @ProductID9 INT
+		CREATE TABLE #TempGameBetlimit (ProductID INT)
+		DECLARE @NewGameBetLimitTbl TABLE (
+			SportType			SMALLINT
+			, BetType			SMALLINT
+			, MinBet			MONEY
+			, MaxBet			MONEY
+			, MaxPerMatch		MONEY
+			)
+
+		INSERT INTO @NewGameBetLimitTbl
+		SELECT bl.SportType
+			, bl.BetType
+			, bl.MinBet
+			, bl.MaxBet
+			, bl.MaxPerMatch
+		FROM dbo.CustBetSetting3rd_Member bl WITH (NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,9) fil ON fil.SportType = bl.SportType AND fil.BetType = bl.BetType		
+		WHERE bl.custid = @ExistingCustID
+		
+		INSERT INTO #TempGameBetlimit(ProductID)	
+		SELECT 
+				DISTINCT
+				psd.ProductID				
+		FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+		INNER JOIN	@NewGameBetLimitTbl AS ts
+				ON	ts.SportType = psd.SportType
+				AND	ts.BetType = psd.BetType
+		WHERE	psd.SettingType = 9
+			AND psd.ProductID IS NOT NULL
+			AND	psd.SettingLevel IS NOT NULL
+			
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempGameBetlimit)
+		BEGIN
+			SELECT TOP 1 @ProductID9=ProductID FROM #TempGameBetlimit		
+			SET @xmlBetLimit = (SELECT (
+										SELECT nslt.SportType	AS '@SportType'
+											, nslt.BetType		AS '@BetType'
+											, MinBet			AS '@MinBet'
+											, MaxBet			AS '@MaxBet'
+											, MaxPerMatch		AS '@MaxPerMatch'
+										FROM @NewGameBetLimitTbl nslt
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType
+											WHERE psd.SettingType = 9 AND psd.ProductID = @ProductID9
+										FOR XML PATH('GameBetLimit')
+											, TYPE
+										)
+								FOR XML PATH('ROOT')
+									, TYPE
+								)
+	
+			SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlBetLimit)
+
+			IF EXISTS(SELECT TOP 1 1 FROM @NewGameBetLimitTbl)
+			BEGIN
+				EXEC Acc_CustSetting_GameBetLimitUpd
+					  @CustID = @CustID
+					, @GameBetLimit = @xmlStr
+					, @SubAccID = @SubAccID
+					, @IP = @IP
+					, @UserID = @UserID
+					, @ErrCode = @ErrCode OUTPUT
+					, @ErrMsg = @ErrMsg OUTPUT
+			END
+			DELETE FROM	#TempGameBetlimit WHERE ProductID=@ProductID9
+		END
+	END
+	/********************************************* Game Status: SettingType = 11 ************************************/
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,11))
+	BEGIN
+		DECLARE @ProductID11 INT
+		CREATE TABLE #TempGameStatus (ProductID INT)
+		DECLARE @NewDisableGameStatTbl TABLE(
+			SportType				SMALLINT
+			, BetType				SMALLINT
+			, IsDisabled			BIT
+			, IsDisabledDownline	BIT
+			)
+	
+		INSERT INTO @NewDisableGameStatTbl (SportType,BetType,IsDisabled,IsDisabledDownline)
+		SELECT psp.SportType
+			, psp.BetType		
+			, (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(stt.bitmapIsDisabled, PSP.bitmapOrder)) AS IsDisabled
+			, 0 AS IsDisabledDownline
+		FROM dbo.CustProductStatus stt WITH (NOLOCK) 
+			CROSS JOIN ProductStatusProfile PSP WITH (NOLOCK)
+			INNER JOIN dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,11) fil ON fil.SportType = PSP.SportType AND fil.BetType = PSP.BetType 
+		WHERE stt.CustID = @ExistingCustID
+
+		INSERT INTO #TempGameStatus(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewDisableGameStatTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE psd.SettingType = 11
+				AND	psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempGameStatus)
+		BEGIN
+			SELECT TOP 1 @ProductID11 = ProductID FROM #TempGameStatus		
+			SET @xmlStatus = (SELECT (
+									SELECT nslt.SportType	AS '@SportType'
+										, nslt.BetType		AS '@BetType'
+										, nslt.IsDisabled	AS '@IsDisabled'
+										, nslt.IsDisabledDownline AS '@IsDisabledDownline'
+									FROM @NewDisableGameStatTbl nslt								
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+											WHERE psd.SettingType = 11 AND psd.ProductID = @ProductID11
+									FOR XML PATH('GameStatus')
+										, TYPE
+									)
+							FOR XML PATH('ROOT')
+								, TYPE
+							)
+
+			SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlStatus)
+
+			IF EXISTS(SELECT TOP 1 1 FROM @NewDisableGameStatTbl)
+			BEGIN
+				EXEC Acc_CustSetting_DisableGameStatusUpd
+					  @CustID = @CustID
+					, @IsDisabled = @xmlStr
+					, @SubAccID = @SubAccID
+					, @IP = @IP
+					, @UserID = @UserID
+					, @ErrCode = @ErrCode OUTPUT
+					, @ErrMsg = @ErrMsg OUTPUT			
+			END
+			DELETE FROM	#TempGameStatus WHERE ProductID = @ProductID11
+		END
+	END
 END
 
 

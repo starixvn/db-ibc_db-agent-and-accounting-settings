@@ -81,24 +81,24 @@ BEGIN
 				AND pbs.BetType = bl.bettype
 				AND pbs.Currency = @Currency
 	END
-	--Discount Setting / Charge Comm
-	ELSE IF @SettingType IN (3,5)
-	BEGIN
-		SELECT pdt.SportType
-			, pdt.BetType
-			, dc.Discount AS SuperDiscount
-			, ISNULL(pdt.MaxDiscount, 0) AS DefaultMaxDiscount
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
-			ON pdt.SportType = dc.sporttype
-				AND pdt.BetType = dc.bettype
-				AND dc.custid = @CustID
-	END
+	----Discount Setting / Charge Comm
+	--ELSE IF @SettingType IN (3,5)
+	--BEGIN
+	--	SELECT pdt.SportType
+	--		, pdt.BetType
+	--		, dc.Discount AS SuperDiscount
+	--		, ISNULL(pdt.MaxDiscount, 0) AS DefaultMaxDiscount
+	--	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)
+	--	INNER JOIN #SportBettypeFilter ft 
+	--			ON pdt.SportType = ft.sporttype
+	--				AND pdt.BetType = ft.bettype
+	--				AND pdt.IsLive = ft.islive
+	--				AND pdt.SettingType = ft.SettingType
+	--	INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)
+	--		ON pdt.SportType = dc.sporttype
+	--			AND pdt.BetType = dc.bettype
+	--			AND dc.custid = @CustID
+	--END
 	--Product Status
 	ELSE IF @SettingType = 4
 	BEGIN
