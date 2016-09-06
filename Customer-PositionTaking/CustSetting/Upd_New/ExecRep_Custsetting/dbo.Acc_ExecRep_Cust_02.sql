@@ -11,6 +11,7 @@ ALTER PROCEDURE [dbo].[Acc_ExecRep_Cust_02]
 	@NGComm DECIMAL(9,8)=0,	
 	@RacingComm DECIMAL(9,8)=0,
 	@LCComm DECIMAL(9,8)=0,
+	@ParlayComm DECIMAL(9,8)=0,
 	@IsUpdateNG BIT = 0,
 	@IsUpdateRacing BIT = 0,
 	@IsUpdateLC BIT = 0
@@ -26,7 +27,7 @@ Revisions:
 	- 20150610@Daniel: 
 	    + Improve medthod check table existing in subscribers	
 	    + Separate custDB to new server DBCUST 	
-   
+	- 20160805@Jim: LRF - Offer different member commission for parlay tickets [RedmineID:#61897]
 Param's Explanation:
 • @ErrCode:
     = 0: Transaction recorded successfully.
@@ -67,6 +68,13 @@ UPDATE [dbo].Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
 SET playerdiscount = @SBComm 
 WHERE custid IN (SELECT CustID FROM @res)  
 	AND playerdiscount <> @SBComm  	
+	AND bettype NOT IN (9,29)
+
+UPDATE [dbo].Dep_CustSetting WITH (ROWLOCK, UPDLOCK)
+SET playerdiscount = @ParlayComm
+WHERE custid IN (SELECT CustID FROM @res)  
+	AND playerdiscount <>  @ParlayComm  	
+	AND bettype   IN (9,29)
 	
 IF (@IsUpdateNG=1) -- update Number Game
 BEGIN	
