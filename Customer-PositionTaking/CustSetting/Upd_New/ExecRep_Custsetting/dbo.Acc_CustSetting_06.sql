@@ -41,7 +41,7 @@ AS
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]		
 		- 20160621@Winnie: Add more customers not give commission [Redmine: #58999]		
 		- 20160901@Winnie: Add more customer ALHKD not give commission [Redmine: #58999]	
-		- 20160909@Winnie: Create the table AgentNoComm to save customers not give commission [Redmine: #63736]	
+		- 20160909@Winnie: Create the table CustNoComm to save customers not give commission [Redmine: #63736]	
     Param's Explanation: 
 
     */
