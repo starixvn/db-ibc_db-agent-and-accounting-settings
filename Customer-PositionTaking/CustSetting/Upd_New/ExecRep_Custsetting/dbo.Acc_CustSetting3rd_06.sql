@@ -61,7 +61,7 @@ AS
 		- 20151222@Johnson: Add more customers not give commission [Redmine: #49494]
 		- 20160125@Helen: Add more customers not give commission [Redmine: #51057]		
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]	\
-		- 20160909@Winnie: Create the table CustNoComm to save customers not give commission [Redmine: #63736]	
+		- 20160909@Winnie: Not apply CustNoComm for 3rd product [Redmine: #63736]	
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
