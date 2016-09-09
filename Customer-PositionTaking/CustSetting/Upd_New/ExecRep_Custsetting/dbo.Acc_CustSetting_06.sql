@@ -62,8 +62,8 @@ BEGIN
     DECLARE @tblCustList TABLE(custid INT, roleid INT)
 	
 	INSERT INTO @tblCustList(custid, roleid)
-	SELECT a.CustID,b.roleid FROM CustNoComm a(NOLOCK)
-	INNER JOIN custInfo b (NOLOCK) ON a.custid=b.CustID
+	SELECT a.CustID,b.roleid FROM CustNoComm a WITH (NOLOCK)
+	INNER JOIN custInfo b WITH(NOLOCK) ON a.custid=b.CustID
 	
 	--End customer list------------------------------------------
 	   
