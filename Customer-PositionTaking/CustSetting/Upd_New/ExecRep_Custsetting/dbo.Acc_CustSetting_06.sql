@@ -40,7 +40,8 @@ AS
 	    - 20160125@Helen: Add more customers not give commission [Redmine: #51057]		
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]		
 		- 20160621@Winnie: Add more customers not give commission [Redmine: #58999]		
-		- 20160901@Winnie: Add more customer ALHKD not give commission [Redmine: #58999]		
+		- 20160901@Winnie: Add more customer ALHKD not give commission [Redmine: #58999]	
+		- 20160909@Winnie: Create the table AgentNoComm to save customers not give commission [Redmine: #63736]	
     Param's Explanation: 
 
     */
@@ -52,96 +53,18 @@ BEGIN
 	   AND dbo.f_CheckRepTable('customer') = 1 
 	   AND dbo.f_CheckRepTable('CustCommRate') = 1 
 	   AND dbo.f_CheckRepTable('AgentCommRate') = 1 
+	   AND dbo.f_CheckRepTable('CustNoComm') = 1 
 	   )
    
      RETURN    
 	
-    --20141113@Johnson: hardcode customer list not give commission for downlines	   
+    --20190909@Winnie: customer list not give commission for downlines	   
     DECLARE @tblCustList TABLE(custid INT, roleid INT)
 	
 	INSERT INTO @tblCustList(custid, roleid)
-			 SELECT	52466		,	2	--	8RM
-	UNION SELECT	134456		,	2	--	XYZRM
-	UNION SELECT	11656507	,	2	--	J00101311101
-	UNION SELECT	11656514	,	2	--	J00101311102
-	UNION SELECT	11656525	,	2	--	J00101311150
-	UNION SELECT	11642591	,	2	--	XXCH60011100
-	UNION SELECT	3645795		,	2	--	999RMA01
-	UNION SELECT	3645796		,	2	--	999RMA02
-	UNION SELECT	3645798		,	2	--	999RMA50
-	UNION SELECT	4430389		,	2	--	C527A
-	UNION SELECT	4430395		,	2	--	C527B
-	UNION SELECT	6201735		,	2	--	6HK2501
-	UNION SELECT	15819264	,	2	--	HK000002
-	UNION SELECT	1098992		,	1	--	007P
-	UNION SELECT	2344		,	1	--	RICHK
-	UNION SELECT	753422		,	1	--	MOONSHK
-	UNION SELECT	12254453	,	1	--	6666AHK002
-	UNION SELECT	15976531	,	1	--	6666AHK005
-	UNION SELECT	12295775	,	1	--	10BA
-	UNION SELECT	1280		,	1	--	312RMB
-	UNION SELECT	1241353		,	1	--	315RMB
-	UNION SELECT	1981797		,	1	--	318RMB
-	UNION SELECT	4230489		,	1	--	319RMB
-	UNION SELECT	4396024		,	1	--	527RMB
-	UNION SELECT	11405172	,	1	--	556RMB
-	UNION SELECT	10409086	,	1	--	388RMB
-	UNION SELECT	8679169		,	1	--	585RMB
-	UNION SELECT	13885522	,	1	--	688HKK
+	SELECT a.CustID,b.roleid FROM CustNoComm a(NOLOCK)
+	INNER JOIN custInfo b (NOLOCK) ON a.custid=b.CustID
 	
-	--20150616@Johnson: add more customers into list
-	UNION SELECT 	1098992		,	1	-- 	007P
-	UNION SELECT 	12295775	,	1	-- 	10BA
-	UNION SELECT 	4706215		,	1	-- 	168rmb
-	UNION SELECT 	1686		,	1	-- 	239RMB
-	UNION SELECT 	1280		,	1	-- 	312rmb
-	UNION SELECT 	1241353		,	1	-- 	315RMB
-	UNION SELECT 	1981797		,	1	-- 	318RMB
-	UNION SELECT 	4230489		,	1	-- 	319RMB
-	UNION SELECT 	10409086	,	1	-- 	388rmb
-	UNION SELECT 	4396024		,	1	-- 	527RMB
-	UNION SELECT 	11405172	,	1	-- 	556RMB
-	UNION SELECT 	8679169		,	1	-- 	585RMB
-	UNION SELECT 	13885522	,	1	-- 	688HKK
-	UNION SELECT 	16698297	,	1	-- 	789RMB
-	UNION SELECT 	753422		,	1	-- 	MOONSHK
-	UNION SELECT 	1540595		,	1	-- 	08HK
-	UNION SELECT 	15976531	,	1	-- 	6666AHK005
-	UNION SELECT 	640041		,	1	-- 	M3000
-	
-	--20151111Helen: hardcode for 919RMB and VS3077HK
-	UNION SELECT	12163698	,	1	--	919RMB
-	UNION SELECT	19573984	,	1	--	VS3077HK
-	
-	--20151222Johnson: hardcode for 55HK and 169RMB
-	UNION SELECT	19980168	,	1	--	55HK
-	UNION SELECT	20044385	,	1	--	169RMB
-	
-	--20160125Helen: hardcode for C981RMB 
-	UNION SELECT	20617088	,	1	--	C981RMB
-	
-	--20160608@Elodie: hardcode for SUNRM and 922HK
-	UNION SELECT	14962417	,	1	--	SUNRM
-	UNION SELECT	22121306	,	1	--	922HK
-	
-	--20160621@Winnie: add more customers into list
-	UNION SELECT	7236578		,	1	--	316RMB
-	UNION SELECT	22210997	,	1	--	8888HK
-	UNION SELECT	18142826	,	1	--	MAX321
-	UNION SELECT	22212192	,	1	--	885HK
-	UNION SELECT	22296183	,	1	--	228HK 
-	UNION SELECT	22296348	,	1	--	EURO3 
-	UNION SELECT	14960005	,	1	--	230RMB
-	UNION SELECT	13886194	,	1	--	007RIC 
-	UNION SELECT	22497394	,	1	--	8888AHK 
-	UNION SELECT	22682195	,	1	--	10AHK
-	--20160901@Winnie: add more customer ALHKD into list 
-	UNION SELECT	23305764	,	1	--	ALHKD
-
-	--UUS accounnts for testing
-	UNION SELECT	14180041	,	2	--	supertestUAT0101
-	UNION SELECT	14228743	,	1	--	SUPERTEST20000000
-	UNION SELECT	14497432	,	1	--	SUPERTEST20000001
 	--End customer list------------------------------------------
 	   
     IF @RoleId = 4
