@@ -174,7 +174,7 @@ Revisions:
 	ELSE 
 		SELECT	@AllowedNG2 =	CASE	WHEN (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) = 0
 											AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(ups.bitmapHasSynced, psp.bitmapOrder)) = 1
-											AND @IsHideAllBet = 0 
+											AND @IsHideNG2 = 0 
 											THEN 1
 										ELSE 0 END
 		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)

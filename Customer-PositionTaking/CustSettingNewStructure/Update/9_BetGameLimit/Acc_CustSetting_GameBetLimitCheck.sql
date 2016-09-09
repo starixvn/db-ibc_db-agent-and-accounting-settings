@@ -57,7 +57,8 @@ BEGIN
 			, MaxBet		MONEY
 			, MaxPerNumber	MONEY
 		)
-	
+	DECLARE @BetGameUnlimit TABLE(SportType SMALLINT, BetType SMALLINT, IsAllowUnlimit BIT)
+
 	IF @GameBetLimit IS NULL
 		OR @GameBetLimit = ''
 		RETURN
@@ -89,6 +90,22 @@ BEGIN
 	FROM dbo.custInfo ci WITH(NOLOCK)
 	WHERE ci.custid=@CustID
 	
+	IF @RoleID BETWEEN 1 AND 3
+	BEGIN
+		INSERT INTO @BetGameUnlimit
+		SELECT cs.SportType,cs.BetType,
+				CASE WHEN cs.MinBet = 0 AND cs.MaxBet = 0 AND cs.MaxPerMatch = 0 THEN 1 ELSE 0 END AS IsAllowUnlimit
+		FROM dbo.CustBetSetting3rd_Agent cs WITH (NOLOCK)
+			INNER JOIN @NewBetLimitTbl s ON s.SportType = cs.SportType AND s.Bettype = cs.BetType
+		WHERE cs.custid = @SuperID 
+	END
+	ELSE
+	BEGIN
+		INSERT INTO @BetGameUnlimit
+		SELECT SportType, BetType, 0 AS IsAllowUnlimit
+		FROM @NewBetLimitTbl s
+	END
+
 	IF @RoleID = 3
 	BEGIN
 		--Get super 's bet limit
@@ -191,22 +208,18 @@ BEGIN
 		, ISNULL(ubl.MaxBet, 0)
 		, ISNULL(ubl.MaxPerNumber, 0)
 	FROM @NewBetLimitTbl tmp
-	LEFT JOIN @UplineLimitTbl ubl
-		ON tmp.SportType	= ubl.SportType
-			AND tmp.BetType = ubl.BetType
-	LEFT JOIN dbo.ProductBetSetting pb
-		ON pb.Sporttype = tmp.SportType
-			AND pb.Bettype = tmp.BetType
-			AND pb.Currency = @Currency
+		INNER JOIN @BetGameUnlimit s ON s.SportType = tmp.SportType AND s.Bettype = tmp.BetType
+		LEFT JOIN @UplineLimitTbl ubl ON tmp.SportType = ubl.SportType AND tmp.BetType = ubl.BetType
+		LEFT JOIN dbo.ProductBetSetting pb ON pb.Sporttype = tmp.SportType AND pb.Bettype = tmp.BetType AND pb.Currency = @Currency
 	WHERE	tmp.MinBet		< 0
 		OR tmp.MaxBet		< 0
 		OR tmp.MaxPerNumber	< 0
 		OR (
-				(tmp.MinBet <> 0 OR tmp.MaxBet <> 0 OR tmp.MaxPerNumber <> 0)
+				s.IsAllowUnlimit = 0
 				AND
-				(ISNULL(ubl.MinBet,0) <> 0 OR ISNULL(ubl.MaxBet,0) <> 0 OR ISNULL(ubl.MaxPerNumber,0) <> 0)
-				AND
-				(tmp.MinBet	< ISNULL(pb.MinBet,0) OR tmp.MaxBet	< ISNULL(pb.MaxBet,0) OR tmp.MaxPerNumber	< ISNULL(pb.MaxPerMatch,0))
+				((tmp.MinBet <> 0 AND tmp.MinBet < ISNULL(pb.MinBet,0))
+					OR (tmp.MaxBet <> 0 AND tmp.MaxBet	> ISNULL(pb.MaxBet,0))
+					OR (tmp.MaxPerNumber <> 0 AND tmp.MaxPerNumber > ISNULL(pb.MaxPerMatch,0)))
 			)
 		OR ((tmp.MinBet	<> 0 OR tmp.MaxBet <> 0) AND tmp.MinBet > tmp.MaxBet)
 		OR ((tmp.MaxBet	<> 0 OR tmp.MaxPerNumber <> 0) AND tmp.MaxBet > tmp.MaxPerNumber)
@@ -225,17 +238,18 @@ BEGIN
 	--Check all setting >=0
 	IF EXISTS(SELECT TOP 1 1 
 			FROM @ErrorSportTypeTbl tmp
-			LEFT JOIN @UplineLimitTbl ubl ON tmp.SportType	= ubl.SportType AND tmp.BetType = ubl.BetType
-			LEFT JOIN dbo.ProductBetSetting pb ON pb.Sporttype = tmp.SportType AND pb.Bettype = tmp.BetType AND pb.Currency = @Currency
+				INNER JOIN @BetGameUnlimit s ON s.SportType = tmp.SportType AND s.Bettype = tmp.BetType
+				LEFT JOIN @UplineLimitTbl ubl ON tmp.SportType	= ubl.SportType AND tmp.BetType = ubl.BetType
+				LEFT JOIN dbo.ProductBetSetting pb ON pb.Sporttype = tmp.SportType AND pb.Bettype = tmp.BetType AND pb.Currency = @Currency
 			WHERE	tmp.MinBet		< 0
 				OR tmp.MaxBet		< 0
 				OR tmp.MaxPerNumber	< 0
 				OR (
-						(tmp.MinBet <> 0 OR tmp.MaxBet <> 0 OR tmp.MaxPerNumber <> 0)
-						AND
-						(ubl.MinBet <> 0 OR ubl.MaxBet <> 0 OR ubl.MaxPerNumber <> 0)
-						AND
-						(tmp.MinBet	< ISNULL(pb.MinBet,0) OR tmp.MaxBet	< ISNULL(pb.MaxBet,0) OR tmp.MaxPerNumber	< ISNULL(pb.MaxPerMatch,0))
+					s.IsAllowUnlimit = 0 
+					AND
+					((tmp.MinBet <> 0 AND tmp.MinBet < ISNULL(pb.MinBet,0))
+						OR (tmp.MaxBet <> 0 AND tmp.MaxBet	> ISNULL(pb.MaxBet,0))
+						OR (tmp.MaxPerNumber <> 0 AND tmp.MaxPerNumber > ISNULL(pb.MaxPerMatch,0)))
 					))
 	BEGIN
 		SET @xml = (
@@ -245,18 +259,18 @@ BEGIN
 						SELECT tmp.SportType AS '@SportType'
 							, tmp.BetType AS '@BetType'
 						FROM @ErrorSportTypeTbl tmp
+							INNER JOIN @BetGameUnlimit s ON s.SportType = tmp.SportType AND s.Bettype = tmp.BetType
 							LEFT JOIN @UplineLimitTbl ubl ON tmp.SportType	= ubl.SportType AND tmp.BetType = ubl.BetType
 							LEFT JOIN dbo.ProductBetSetting pb ON pb.Sporttype = tmp.SportType AND pb.Bettype = tmp.BetType AND pb.Currency = @Currency
 						WHERE	tmp.MinBet		< 0
 							OR tmp.MaxBet		< 0
 							OR tmp.MaxPerNumber	< 0
 							OR (
-									(tmp.MinBet <> 0 OR tmp.MaxBet <> 0 OR tmp.MaxPerNumber <> 0)
+									s.IsAllowUnlimit = 0
 									AND
-									(ubl.MinBet <> 0 OR ubl.MaxBet <> 0 OR ubl.MaxPerNumber <> 0)
-									AND
-									(tmp.MinBet	< ISNULL(pb.MinBet,0) OR tmp.MaxBet	< ISNULL(pb.MaxBet,0) OR tmp.MaxPerNumber	< ISNULL(pb.MaxPerMatch,0))
-							
+									((tmp.MinBet <> 0 AND tmp.MinBet < ISNULL(pb.MinBet,0))
+										OR (tmp.MaxBet <> 0 AND tmp.MaxBet	> ISNULL(pb.MaxBet,0))
+										OR (tmp.MaxPerNumber <> 0 AND tmp.MaxPerNumber > ISNULL(pb.MaxPerMatch,0)))
 								)
 						FOR XML PATH('Row')
 							, TYPE

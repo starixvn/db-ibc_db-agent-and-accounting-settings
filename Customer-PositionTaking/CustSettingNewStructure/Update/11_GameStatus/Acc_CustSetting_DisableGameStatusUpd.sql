@@ -6,7 +6,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableGameStatusUpd]
 	, @IP				VARCHAR(50)		= ''
 	, @ErrCode			INT				= 0		OUTPUT
 	, @MsgType			INT				= 0		OUTPUT
-	, @ErrMsg			NVARCHAR(200)	= ''	OUTPUT
+	, @ErrMsg			NVARCHAR(MAX)	= ''	OUTPUT
 AS
 /*
 	Created: 20160801@Elodie

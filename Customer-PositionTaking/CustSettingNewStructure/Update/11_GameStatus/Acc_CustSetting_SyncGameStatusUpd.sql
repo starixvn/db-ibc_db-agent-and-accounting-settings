@@ -6,7 +6,7 @@ ALTER PROCEDURE	[dbo].[Acc_CustSetting_SyncGameStatusUpd]
 ,	@SubAccID		INT				= 0
 ,	@IP				VARCHAR(50)		= ''
 ,	@ErrCode		INT				= 0		OUTPUT
-,	@ErrMsg			NVARCHAR(200)	= ''	OUTPUT
+,	@ErrMsg			NVARCHAR(MAX)	= ''	OUTPUT
 
 AS
 /*  
