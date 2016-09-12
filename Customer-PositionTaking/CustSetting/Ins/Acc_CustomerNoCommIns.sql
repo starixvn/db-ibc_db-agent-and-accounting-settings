@@ -1,6 +1,6 @@
 USE CustDB
 GO
-CREATE PROCEDURE [dbo].[Acc_CustNoCommIns] 
+ALTER PROCEDURE [dbo].[Acc_CustomerNoCommIns] 
 	 @CustID			INT
 	, @Remark			VARCHAR(200)
 	, @UserID			INT=NULL
@@ -24,8 +24,7 @@ Param's Explanation:
  declare @endRun datetime
  declare @duration INT
  set @startRun = getdate()
- declare @Creator INT
- SELECT @Creator=@UserID
+
 
 INSERT INTO [CustDB].[dbo].[CustNoComm]
            ([CustID]
@@ -47,7 +46,7 @@ RETURN
 
     BEGIN TRY
 	    EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-		    @UserID = @Creator,
+		    @UserID = @UserID,
 		    @CustID = @CustID,
 		    @ActionID = 249,
 		    @TrackingValue = @LogSPData,
@@ -56,7 +55,7 @@ RETURN
     BEGIN CATCH	
 	    --Write PT log
 	    EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP
-		    @UserID = @Creator,
+		    @UserID = @CustID,
 		    @CustID = @CustID,
 		    @ActionID = 249,
 		    @TrackingValue = @LogSPData,
