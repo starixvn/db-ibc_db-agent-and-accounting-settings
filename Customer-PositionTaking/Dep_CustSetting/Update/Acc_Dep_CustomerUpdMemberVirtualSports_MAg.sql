@@ -43,9 +43,6 @@
 	@v186aPositionTaking SMALLMONEY,
 	@v186mPositionTaking SMALLMONEY,
 
-
-
-
 	@UserID INT = 0,	
 	@Language VARCHAR(2) = 'E',
 	@ErrCode INT = 0 OUTPUT,
@@ -63,6 +60,7 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20131014@Francis: Support updating new virtual sports with settings
 	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old agent
+	- 20160913@Elodie: Enhance performance
     
 Param's Explanation:
 • @ErrCode:
@@ -80,7 +78,7 @@ SET @startRun = getdate()
 DECLARE @ErrType VARCHAR(1000)
 DECLARE @ErrAcc nvarchar(4000)
 
-DECLARE @mrecommend INT,
+DECLARE @mrecommend INT, @srecommend INT,
 
 		@v180MinBet_Max MONEY,
 		@v180MaxBet_Min MONEY,
@@ -119,17 +117,26 @@ DECLARE @mrecommend INT,
 
 
 		
-SELECT @mrecommend = mrecommend FROM custInfo ci WITH (NOLOCK) WHERE ci.custid = @CustID
+SELECT @mrecommend = mrecommend, @srecommend = ci.srecommend FROM custInfo ci WITH (NOLOCK) WHERE ci.custid = @CustID
 
 
 ----Virtual Soccer
+--SELECT @v180MinBet_Max = MAX(cs3.minbet),
+--	@v180MaxBet_Min = MIN(cs3.maxbet),
+--	@v180MaxPerMatch_Max = MIN(ci.maxpermatch180),
+--	@v180aPositionTaking_Max = MAX(cs3.apositiontaking)
+--FROM custInfo ci WITH(NOLOCK)
+--	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
+--WHERE ci.custid = @mrecommend
+--	AND cs3.sporttype = 180
+
 SELECT @v180MinBet_Max = MAX(cs3.minbet),
-	@v180MaxBet_Min = MIN(cs3.maxbet),
-	@v180MaxPerMatch_Max = MIN(ci.maxpermatch180),
+	@v180MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v180MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch180 = 0 THEN NULL ELSE ci.maxpermatch180 END),
 	@v180aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 180
 
 IF @v180MinBet < 0 
@@ -240,13 +247,22 @@ begin
 END	
 
 ------Virtual Horse Racing
+--SELECT @v181MinBet_Max = MAX(cs3.minbet),
+--	@v181MaxBet_Min = MIN(cs3.maxbet),
+--	@v181MaxPerMatch_Max = MIN(ci.maxpermatch181),
+--	@v181aPositionTaking_Max = MAX(cs3.apositiontaking)
+--FROM custInfo ci WITH(NOLOCK)
+--	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
+--WHERE ci.custid = @mrecommend
+--	AND cs3.sporttype = 181
+
 SELECT @v181MinBet_Max = MAX(cs3.minbet),
-	@v181MaxBet_Min = MIN(cs3.maxbet),
-	@v181MaxPerMatch_Max = MIN(ci.maxpermatch181),
+	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v181MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch181 END),
 	@v181aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 181
 
 IF @v181MinBet < 0 
@@ -356,13 +372,22 @@ begin
 END	
 
 ----Virtual Greyhounds
+--SELECT @v182MinBet_Max = MAX(cs3.minbet),
+--	@v182MaxBet_Min = MIN(cs3.maxbet),
+--	@v182MaxPerMatch_Max = MIN(ci.maxpermatch182),
+--	@v182aPositionTaking_Max = MAX(cs3.apositiontaking)
+--FROM custInfo ci WITH(NOLOCK)
+--	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
+--WHERE ci.custid = @mrecommend
+--	AND cs3.sporttype = 182
+
 SELECT @v182MinBet_Max = MAX(cs3.minbet),
-	@v182MaxBet_Min = MIN(cs3.maxbet),
-	@v182MaxPerMatch_Max = MIN(ci.maxpermatch182),
+	@v182MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v182MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch182 = 0 THEN NULL ELSE ci.maxpermatch182 END),
 	@v182aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 182
 
 IF @v182MinBet < 0 
@@ -475,12 +500,12 @@ END
 
 ----Virtual Speedway
 SELECT @v183MinBet_Max = MAX(cs3.minbet),
-	@v183MaxBet_Min = MIN(cs3.maxbet),
-	@v183MaxPerMatch_Max = MIN(ci.maxpermatch183),
+	@v183MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v183MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch183 = 0 THEN NULL ELSE ci.maxpermatch183 END),
 	@v183aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 183
 
 IF @v183MinBet < 0 
@@ -593,12 +618,12 @@ END
 
 ----Virtual Motor Racing
 SELECT @v184MinBet_Max = MAX(cs3.minbet),
-	@v184MaxBet_Min = MIN(cs3.maxbet),
-	@v184MaxPerMatch_Max = MIN(ci.maxpermatch184),
+	@v184MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v184MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch184 = 0 THEN NULL ELSE ci.maxpermatch184 END),
 	@v184aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 184
 
 IF @v184MinBet < 0 
@@ -710,12 +735,12 @@ END
 
 ----Virtual Cycling
 SELECT @v185MinBet_Max = MAX(cs3.minbet),
-	@v185MaxBet_Min = MIN(cs3.maxbet),
-	@v185MaxPerMatch_Max = MIN(ci.maxpermatch185),
+	@v185MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v185MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch185 = 0 THEN NULL ELSE ci.maxpermatch185 END),
 	@v185aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 185
 
 IF @v185MinBet < 0 
@@ -830,12 +855,12 @@ END
 
 ------Virtual Tennis
 SELECT @v186MinBet_Max = MAX(cs3.minbet),
-	@v186MaxBet_Min = MIN(cs3.maxbet),
-	@v186MaxPerMatch_Max = MIN(ci.maxpermatch186),
+	@v186MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
+	@v186MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch186 = 0 THEN NULL ELSE ci.maxpermatch186 END),
 	@v186aPositionTaking_Max = MAX(cs3.apositiontaking)
 FROM custInfo ci WITH(NOLOCK)
-	INNER JOIN Dep_CustSetting3rd cs3 ON (ci.srecommend = cs3.custid OR ci.mrecommend = cs3.custid)
-WHERE ci.custid = @mrecommend
+	INNER JOIN Dep_CustSetting3rd cs3 ON ci.custid = cs3.custid
+WHERE ci.custid IN (@mrecommend, @srecommend)
 	AND cs3.sporttype = 186
 
 IF @v186MinBet < 0 
@@ -945,14 +970,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_MAg] TO [vnteam]

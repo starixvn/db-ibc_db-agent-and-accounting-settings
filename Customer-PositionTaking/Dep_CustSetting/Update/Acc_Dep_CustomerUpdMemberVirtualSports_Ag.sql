@@ -82,7 +82,7 @@ DECLARE @endRun DATETIME
 DECLARE @duration INT
 SET @startRun = getdate()
 
-DECLARE @recommend int,-- Super ID
+DECLARE @recommend int, @mrecommend int, @srecommend int,-- Super ID
 		@v180apositiontaking_max SMALLMONEY,
 		@v180MinBet_Max MONEY,
 		@v180MaxBet_Min MONEY,
@@ -111,22 +111,26 @@ DECLARE @recommend int,-- Super ID
 		@v186MinBet_Max MONEY,
 		@v186MaxBet_Min MONEY
 			
-SELECT @recommend = recommend 
+SELECT @recommend = recommend, @mrecommend = ci.mrecommend, @srecommend = ci.srecommend
 FROM custInfo ci WITH (NOLOCK) 
 WHERE ci.custid = @custid
-
-
 
 ------Virtual Soccer
 SELECT @v180apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WHERE cs3.custid = @recommend
 
+--SELECT @v180MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
+--	@v180MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
+--FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
+--INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
+--WHERE ci.custid = @custid
+--	AND cs3.sporttype = 180
+
 SELECT @v180MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v180MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON cs3.custid = ci.custid
+WHERE ci.custid IN (@recommend,@mrecommend,@srecommend)
 	AND cs3.sporttype = 180
-
 /*************************************
 * Validate 
 *************************************/
@@ -223,6 +227,12 @@ INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecomm
 WHERE ci.custid = @custid
 	AND cs3.sporttype = 181
 
+SELECT @v181MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
+	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
+FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
+	AND cs3.sporttype = 181
 /*************************************
 * Validate 
 *************************************/
@@ -314,8 +324,8 @@ SELECT @v182apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WH
 SELECT @v182MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v182MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
 	AND cs3.sporttype = 182
 
 /*************************************
@@ -409,8 +419,8 @@ SELECT @v183apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WH
 SELECT @v183MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v183MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
 	AND cs3.sporttype = 183
 
 /*************************************
@@ -505,8 +515,8 @@ SELECT @v184apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WH
 SELECT @v184MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v184MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
 	AND cs3.sporttype = 184
 
 /*************************************
@@ -600,8 +610,8 @@ SELECT @v185apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WH
 SELECT @v185MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v185MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
 	AND cs3.sporttype = 185
 
 /*************************************
@@ -698,8 +708,8 @@ SELECT @v186apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WH
 SELECT @v186MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v186MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
 FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
+INNER JOIN custInfo ci WITH (NOLOCK) ON ci.custid = cs3.custid
+WHERE ci.custid IN (@recommend, @mrecommend, @srecommend)
 	AND cs3.sporttype = 186
 
 /*************************************
@@ -786,15 +796,6 @@ begin
 					end	, @ErrCode = 103 
 	return
 END
-
-
-GO
-
-SET QUOTED_IDENTIFIER OFF 
-GO
-SET ANSI_NULLS ON 
-GO
-
 
 GO 
  GRANT VIEW DEFINITION ON [dbo].[Acc_Dep_CustomerUpdMemberVirtualSports_Ag] TO [vnteam]
