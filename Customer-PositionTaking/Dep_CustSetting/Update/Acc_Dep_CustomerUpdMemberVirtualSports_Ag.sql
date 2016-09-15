@@ -220,12 +220,12 @@ END
 ------Virtual Horse Racing
 SELECT @v181apositiontaking_max = apositiontaking FROM Dep_CustSetting3rd cs3 WHERE cs3.custid = @recommend
 
-SELECT @v181MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
-	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
-FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
-INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
-WHERE ci.custid = @custid
-	AND cs3.sporttype = 181
+--SELECT @v181MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
+--	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
+--FROM Dep_CustSetting3rd cs3 WITH (NOLOCK)
+--INNER JOIN custInfo ci WITH (NOLOCK) ON (ci.srecommend = ci.custid OR ci.mrecommend = ci.custid OR ci.recommend = cs3.custid) 
+--WHERE ci.custid = @custid
+--	AND cs3.sporttype = 181
 
 SELECT @v181MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END)
