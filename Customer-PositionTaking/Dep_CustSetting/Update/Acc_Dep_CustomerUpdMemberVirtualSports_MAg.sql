@@ -60,7 +60,7 @@ Revisions:
     - 20121128@Elodie: Get an error message from f_Get_MsgNameByMsgID function by language
 	- 20131014@Francis: Support updating new virtual sports with settings
 	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old agent
-	- 20160913@Elodie: Enhance performance
+	- 20160913@Elodie: Enhance performance [Redmine:#64064]
     
 Param's Explanation:
 • @ErrCode:

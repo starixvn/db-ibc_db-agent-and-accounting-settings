@@ -67,7 +67,7 @@ Revisions:
 	- 20131014@Francis: Support updating new virtual sports with settings
     - 20131211@Francis: Fix bug for updating position taking for Virtual Sports at Member level (only apostiontaking column will be affected)
 	- 20131231@Francis: Hotfix failing to update settings of new Virtual Sports for an old member
-
+	- 20160913@Elodie: Enhance performance [Redmine:#64064]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
