@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect]   
 	@CustID			INT  
 	, @ProductID	TINYINT  
@@ -17,6 +11,7 @@ AS
  
  Revision:
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
+	- 20160801@Elodie: Move commission part to Acc_CustSetting_DiscountSelect [Redmine: #60809]
   
  Param's Explanation:  
  • @CustID: Master's ID  

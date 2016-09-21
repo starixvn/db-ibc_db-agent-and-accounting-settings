@@ -13,7 +13,7 @@ AS
 
  Revision:
     - 20151021@Billy: Change parameter from (@ProductID, @UserName) to (@SportType, @BetType, @isLive, @UserName)
-	- 20160912@Elodie: Support view PT by product
+	- 20160912@Elodie: Support view PT by product - [Redmine: #60809]
 
  Param's Explanation:  
 

@@ -2,12 +2,15 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductStatusSelect]
 	@CustID	INT = NULL, @IsMultiple INT = 0
 AS  
 /*  
- Created: 20150702@Helen
- Task : Get Product Profile  
- DB:  DBCUST/custdb ; DBAGE/bodb02 ; DBACC/bodb02 
- Original:  
-  
- Param's Explanation:  
+	Created: 20150702@Helen
+	Task : Get Product Profile  
+	DB:  DBCUST/custdb ; DBAGE/bodb02 ; DBACC/bodb02 
+	Original:  
+ 
+	Revision: 
+		- 20160801@Elodie: Implementing GameStatus Setting - [Redmine: #60809]
+
+	Param's Explanation:  
    
  */  
  

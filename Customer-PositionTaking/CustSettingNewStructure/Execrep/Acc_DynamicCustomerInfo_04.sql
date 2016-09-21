@@ -9,6 +9,9 @@ AS
 	Task : Update customer/custinfo settings
 	DB: DBCust/CustDB
 
+	Revision: 
+		- 20160801@Elodie: Implement Game status (setting type = 11) - [Redmine: #60809]   
+
 */
 BEGIN
 	SET NOCOUNT ON 

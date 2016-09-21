@@ -13,7 +13,8 @@ AS
  
  Revision:
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
-  
+	- 20160801@Elodie: Move commission part to Acc_CustSetting_DiscountSelect [Redmine: #60809]
+
  Param's Explanation:  
  - @CustID: Member's ID  
  - @RoleID:  2-Agent select  
