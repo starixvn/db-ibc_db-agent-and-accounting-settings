@@ -117,7 +117,7 @@ DECLARE @mrecommend INT, @srecommend INT,
 
 
 		
-SELECT @mrecommend = mrecommend, @srecommend = ci.srecommend FROM custInfo ci WITH (NOLOCK) WHERE ci.custid = @CustID
+SELECT @mrecommend = ci.mrecommend, @srecommend = ci.srecommend FROM custInfo ci WITH (NOLOCK) WHERE ci.custid = @CustID
 
 
 ----Virtual Soccer
@@ -130,7 +130,7 @@ SELECT @mrecommend = mrecommend, @srecommend = ci.srecommend FROM custInfo ci WI
 --WHERE ci.custid = @mrecommend
 --	AND cs3.sporttype = 180
 
-SELECT @v180MinBet_Max = MAX(cs3.minbet),
+SELECT @v180MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v180MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v180MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch180 = 0 THEN NULL ELSE ci.maxpermatch180 END),
 	@v180aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -256,7 +256,7 @@ END
 --WHERE ci.custid = @mrecommend
 --	AND cs3.sporttype = 181
 
-SELECT @v181MinBet_Max = MAX(cs3.minbet),
+SELECT @v181MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v181MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v181MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch181 = 0 THEN NULL ELSE ci.maxpermatch181 END),
 	@v181aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -381,7 +381,7 @@ END
 --WHERE ci.custid = @mrecommend
 --	AND cs3.sporttype = 182
 
-SELECT @v182MinBet_Max = MAX(cs3.minbet),
+SELECT @v182MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v182MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v182MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch182 = 0 THEN NULL ELSE ci.maxpermatch182 END),
 	@v182aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -499,7 +499,7 @@ begin
 END	
 
 ----Virtual Speedway
-SELECT @v183MinBet_Max = MAX(cs3.minbet),
+SELECT @v183MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v183MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v183MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch183 = 0 THEN NULL ELSE ci.maxpermatch183 END),
 	@v183aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -617,7 +617,7 @@ begin
 END	
 
 ----Virtual Motor Racing
-SELECT @v184MinBet_Max = MAX(cs3.minbet),
+SELECT @v184MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v184MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v184MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch184 = 0 THEN NULL ELSE ci.maxpermatch184 END),
 	@v184aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -734,7 +734,7 @@ begin
 END	
 
 ----Virtual Cycling
-SELECT @v185MinBet_Max = MAX(cs3.minbet),
+SELECT @v185MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v185MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v185MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch185 = 0 THEN NULL ELSE ci.maxpermatch185 END),
 	@v185aPositionTaking_Max = MAX(cs3.apositiontaking)
@@ -854,7 +854,7 @@ END
 
 
 ------Virtual Tennis
-SELECT @v186MinBet_Max = MAX(cs3.minbet),
+SELECT @v186MinBet_Max = MAX(CASE WHEN cs3.minbet = 0 THEN NULL ELSE cs3.minbet END),
 	@v186MaxBet_Min = MIN(CASE WHEN cs3.maxbet = 0 THEN NULL ELSE cs3.maxbet END),
 	@v186MaxPerMatch_Max = MIN(CASE WHEN ci.maxpermatch186 = 0 THEN NULL ELSE ci.maxpermatch186 END),
 	@v186aPositionTaking_Max = MAX(cs3.apositiontaking)
