@@ -61,7 +61,7 @@ AS
 		- 20151222@Johnson: Add more customers not give commission [Redmine: #49494]
 		- 20160125@Helen: Add more customers not give commission [Redmine: #51057]		
 		- 20160608@Elodie: Add more customers not give commission [Redmine: #58999]	\
-
+		- 20160909@Winnie: Not apply CustNoComm for 3rd product [Redmine: #63736]	
     Param's Explanation: 
         @mode: 
                 - 'Numbergame': Number game
@@ -86,77 +86,7 @@ BEGIN
 	   	RETURN    
     
 
-    --20141113@Johnson: hardcode customer list not give commission for downlines	   
-    DECLARE @tblCustList TABLE(custid INT, roleid INT)
-	
-	INSERT INTO @tblCustList(custid, roleid)
-			 SELECT	52466		,	2	--	8RM
-	UNION SELECT	134456		,	2	--	XYZRM
-	UNION SELECT	11656507	,	2	--	J00101311101
-	UNION SELECT	11656514	,	2	--	J00101311102
-	UNION SELECT	11656525	,	2	--	J00101311150
-	UNION SELECT	11642591	,	2	--	XXCH60011100
-	UNION SELECT	3645795		,	2	--	999RMA01
-	UNION SELECT	3645796		,	2	--	999RMA02
-	UNION SELECT	3645798		,	2	--	999RMA50
-	UNION SELECT	4430389		,	2	--	C527A
-	UNION SELECT	4430395		,	2	--	C527B
-	UNION SELECT	6201735		,	2	--	6HK2501
-	UNION SELECT	15819264	,	2	--	HK000002
-	UNION SELECT	1098992		,	1	--	007P
-	UNION SELECT	2344		,	1	--	RICHK
-	UNION SELECT	753422		,	1	--	MOONSHK
-	UNION SELECT	12254453	,	1	--	6666AHK002
-	UNION SELECT	15976531	,	1	--	6666AHK005
-	UNION SELECT	12295775	,	1	--	10BA
-	UNION SELECT	1280		,	1	--	312RMB
-	UNION SELECT	1241353		,	1	--	315RMB
-	UNION SELECT	1981797		,	1	--	318RMB
-	UNION SELECT	4230489		,	1	--	319RMB
-	UNION SELECT	4396024		,	1	--	527RMB
-	UNION SELECT	11405172	,	1	--	556RMB
-	UNION SELECT	10409086	,	1	--	388RMB
-	UNION SELECT	8679169		,	1	--	585RMB
-	UNION SELECT	13885522	,	1	--	688HKK
-	
-	--20150616@Johnson: add more customers into list
-	UNION SELECT 	1098992		,	1	-- 	007P
-	UNION SELECT 	12295775	,	1	-- 	10BA
-	UNION SELECT 	4706215		,	1	-- 	168rmb
-	UNION SELECT 	1686		,	1	-- 	239RMB
-	UNION SELECT 	1280		,	1	-- 	312rmb
-	UNION SELECT 	1241353		,	1	-- 	315RMB
-	UNION SELECT 	1981797		,	1	-- 	318RMB
-	UNION SELECT 	4230489		,	1	-- 	319RMB
-	UNION SELECT 	10409086	,	1	-- 	388rmb
-	UNION SELECT 	4396024		,	1	-- 	527RMB
-	UNION SELECT 	11405172	,	1	-- 	556RMB
-	UNION SELECT 	8679169		,	1	-- 	585RMB
-	UNION SELECT 	13885522	,	1	-- 	688HKK
-	UNION SELECT 	16698297	,	1	-- 	789RMB
-	UNION SELECT 	753422		,	1	-- 	MOONSHK
-	UNION SELECT 	1540595		,	1	-- 	08HK
-	UNION SELECT 	15976531	,	1	-- 	6666AHK005
-	UNION SELECT 	640041		,	1	-- 	M3000
-	--20151111Helen: hardcode for 919RMB and VS3077HK
-	UNION SELECT	12163698	,	1	--	919RMB
-	UNION SELECT	19573984	,	1	--	VS3077HK
-	
-	--20151222Johnson: hardcode for 55HK and 169RMB
-	UNION SELECT	19980168	,	1	--	55HK
-	UNION SELECT	20044385	,	1	--	169RMB
-	
-	--20160125Helen: hardcode for C981RMB 
-	UNION SELECT	20617088	,	1	--	C981RMB
-
-	--20160608@Elodie: hardcode for SUNRM and 922HK
-	UNION SELECT	14962417	,	1	--	SUNRM
-	UNION SELECT	22121306	,	1	--	922HK
-
-	--UUS accounnts for testing
-	UNION SELECT	14180041	,	2	--	supertestUAT0101
-	UNION SELECT	14228743	,	1	--	SUPERTEST20000000
-	UNION SELECT	14497432	,	1	--	SUPERTEST20000001
+    
 	--End customer list------------------------------------------
 	
     IF @Mode = 'NumberGame'
@@ -174,8 +104,7 @@ BEGIN
               FROM custsetting3rd cs
         INNER JOIN custInfo c WITH(NOLOCK) ON cs.custid = c.custid    
              WHERE c.srecommend = @custid
-               AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-               AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                   
                AND c.roleid = 1
                AND c.Enabled = 1
                AND cs.sporttype = 161
@@ -268,9 +197,7 @@ BEGIN
                SET cs3.adiscount = @discountNumber
               FROM custsetting3rd cs3 
         INNER JOIN custinfo c WITH(NOLOCK) ON cs3.custid = c.custid
-             WHERE c.mrecommend = @custid
-               AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-               AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+             WHERE c.mrecommend = @custid             
                AND c.roleid = 1
                AND c.Enabled = 1
                AND cs3.sporttype = 161
@@ -306,17 +233,14 @@ BEGIN
             Update custsetting3rd with(rowlock,updlock) 
                SET discount = @discountNumber
              WHERE custid = @custid 
-                AND sporttype = 161
-                AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+                AND sporttype = 161             
 
             UPDATE cs3 WITH (ROWLOCK, UPDLOCK) 
                SET     cs3.discount = @discountNumber
               FROM custsetting3rd cs3 
             INNER JOIN customer c WITH(NOLOCK) 
                 ON cs3.custid = c.custid
-             WHERE c.recommend = @custid 
-                AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+             WHERE c.recommend = @custid                   
                 AND c.roleid = 1 
                 AND cs3.sporttype = 161
 
@@ -336,7 +260,7 @@ BEGIN
             SET
                 playerdiscount = @discountNumber
              WHERE custid = @custid AND Sporttype = 161
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+			
         END
     END
     IF @mode = 'HorseRacing'
@@ -437,9 +361,7 @@ BEGIN
                    SET cs.sdiscount = @v151discount_31
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid                    
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (31, 32)
@@ -476,9 +398,7 @@ BEGIN
                    SET cs.sdiscount = @v151discount_41
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid         
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (41, 42) 
@@ -514,9 +434,7 @@ BEGIN
                    SET cs.sdiscount = @v151discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid                       
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (51, 52) 
@@ -553,9 +471,7 @@ BEGIN
                    SET cs.sdiscount = @v152discount_41
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid                            
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (41, 42) 
@@ -592,9 +508,7 @@ BEGIN
                    SET cs.sdiscount = @v152discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid                            
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (51, 52) 
@@ -634,9 +548,7 @@ BEGIN
                    SET cs.sdiscount = @v153discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.srecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.srecommend = @custid                             
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (51, 52) 
@@ -740,9 +652,7 @@ BEGIN
                    SET adiscount = @v151discount_31
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.mrecommend = @custid     
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.mrecommend = @custid                             
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (31, 32) 
@@ -774,8 +684,7 @@ BEGIN
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
                  WHERE c.mrecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                          
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (41, 42) 
@@ -806,9 +715,7 @@ BEGIN
                    SET cs.adiscount = @v151discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.mrecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.mrecommend = @custid                         
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (51, 52) 
@@ -840,8 +747,7 @@ BEGIN
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
                  WHERE c.mrecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                           
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (41, 42) 
@@ -872,9 +778,7 @@ BEGIN
                    SET cs.adiscount = @v152discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.mrecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.mrecommend = @custid                          
                    AND c.roleid     = 1 
                    AND cs.bettype   IN (51, 52) 
                    AND cs.sporttype = 152
@@ -903,9 +807,7 @@ BEGIN
                    SET adiscount = @v153discount_51
                   FROM CustSetting3rd cs
             INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
-                 WHERE c.mrecommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 WHERE c.mrecommend = @custid                      
                    AND c.roleid     = 1
                    AND c.Enabled    = 1
                    AND cs.bettype   IN (51, 52)
@@ -975,7 +877,7 @@ BEGIN
                                     ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 151
-                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+                  
 
                 UPDATE cs
                        SET cs.discount = CASE 
@@ -986,8 +888,7 @@ BEGIN
               FROM CustSetting3rd cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
                  WHERE            c.recommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                      
                    AND c.roleid = 1 
                    AND sporttype = 151
             END
@@ -1003,7 +904,7 @@ BEGIN
                         ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 152
-                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+                   
 
                 --Update g2, a2 at Member level    
                 UPDATE cs
@@ -1014,8 +915,7 @@ BEGIN
               FROM CustSetting3rd cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
                  WHERE            c.recommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                      
                    AND c.roleid = 1 
                    AND sporttype = 152
             END
@@ -1030,7 +930,7 @@ BEGIN
                                     ELSE discount END
                  WHERE            custid=@custid 
                    AND sporttype = 153
-                   AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+                   
 
                 --Update g2, a2 at Member level
                 UPDATE cs
@@ -1042,8 +942,7 @@ BEGIN
               FROM CustSetting3rd cs WITH (ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
                  WHERE            c.recommend = @custid 
-                   AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                   AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                  
                    AND c.roleid = 1 
                    AND sporttype = 153
             END
@@ -1075,7 +974,7 @@ BEGIN
             ON c.custid = cs3.custid
              WHERE cs3.custid=@custid 
                 and sporttype in (151, 152, 153)                
-                AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+               
         END
     END
     
@@ -1124,8 +1023,7 @@ BEGIN
               FROM CustSettingGame cs
         INNER JOIN CustInfo ci WITH(NOLOCK) ON cs.custid = ci.custid
              WHERE ci.srecommend = @custid
-				AND ci.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-               AND ci.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)                              
+				                           
                AND ci.roleid = 1
                AND ci.Enabled = 1
                AND ci.SyncLiveCasino = 1 
@@ -1219,8 +1117,7 @@ BEGIN
                AND ci.Enabled = 1
                AND cs.sporttype = 162
                AND cs.bettype = 1101 
-               AND ci.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-               AND ci.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                   
                AND ci.SyncLiveCasino = 1
 
             --At member level, update discount = adiscount  if discount > adiscount
@@ -1264,7 +1161,7 @@ BEGIN
             UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
             SET    discount = @v162discount_1101
              WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+				
 
             --Update g2, a2 at Member level
             UPDATE cs
@@ -1272,8 +1169,7 @@ BEGIN
               FROM CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
                 INNER JOIN custinfo c WITH(NOLOCK) ON cs.custid = c.custid
              WHERE c.recommend = @custid 
-                AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                       
                 AND c.roleid = 1 AND c.SyncLiveCasino = 1
                 AND sporttype = 162
                 AND bettype = 1101
@@ -1305,22 +1201,10 @@ BEGIN
 				UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
 				SET    playerdiscount = @v162playerdiscount_1101
 				 WHERE custid=@custid AND sporttype = 162 AND bettype = 1101
-					AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+					        
 			END
 			ELSE
-			BEGIN
-				IF EXISTS(SELECT 1 FROM @tblCustList WHERE custid = @custid AND roleid = 1)
-					OR EXISTS(SELECT 1 
-								FROM custinfo WITH(NOLOCK) 
-								WHERE custid = @custid AND recommend IN (SELECT custid FROM @tblCustList WHERE roleid = 2)
-								)
-				BEGIN
-						SELECT @v162sdiscount_1101			= 0
-								,@v162adiscount_1101		= 0
-								,@v162discount_1101			= 0 
-								,@v162playerdiscount_1101	= 0
-					
-				END
+			BEGIN				
 												
 				UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
 				SET sdiscount		= @v162sdiscount_1101,
@@ -1446,8 +1330,7 @@ BEGIN
                AND ci.Enabled = 1
                AND cs.sporttype = @Sporttype
                AND cs.bettype = @Bettype 
-               AND ci.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-               AND ci.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+                 
                AND cs.adiscount <> @Discount
 
 			    
@@ -1483,16 +1366,14 @@ BEGIN
             UPDATE dbo.CustSettingGame WITH (ROWLOCK, UPDLOCK)
             SET    discount = @Discount
              WHERE custid = @custid AND bettype = @Bettype AND sporttype = @Sporttype AND discount <> @Discount
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-
+				
             --Update g2, a2 at Member level
             UPDATE cs
                    SET cs.discount = @Discount
               FROM dbo.CustSettingGame cs WITH(ROWLOCK, UPDLOCK)
                 INNER JOIN dbo.custinfo c WITH(NOLOCK) ON cs.custid = c.custid
              WHERE c.recommend = @custid 
-				AND c.recommend NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
-                AND c.custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+				
                 AND c.roleid = 1 AND bettype = @Bettype
                 AND sporttype = @Sporttype AND cs.discount <> @Discount
 
@@ -1512,7 +1393,7 @@ BEGIN
             UPDATE CustSettingGame WITH(ROWLOCK, UPDLOCK)
             SET    playerdiscount = @Discount
              WHERE custid=@custid AND sporttype = @Sporttype AND bettype = @Bettype
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =1)           
+				     
 			
 		END 
     END
@@ -1632,7 +1513,7 @@ BEGIN
             UPDATE dbo.AgentCommRate WITH (ROWLOCK, UPDLOCK)
             SET    CommRate = @Discount
              WHERE custid = @custid AND bettype = @Bettype AND sporttype = @Sporttype AND CommRate <> @Discount
-				AND custid NOT IN (SELECT custid FROM @tblCustList WHERE roleid =2)
+				
 			
 			-- Update table CustCommRate
 			IF EXISTS (SELECT 1 FROM CustInfo WITH (NOLOCK) WHERE recommend = @CustId AND roleid = 1)
