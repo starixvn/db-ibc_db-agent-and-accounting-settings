@@ -1,4 +1,11 @@
-﻿ALTER PROCEDURE  [dbo].[Acc_CustomerSelRefSport_Bettype]
+﻿USE [bodb02]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustomerSelRefSport_Bettype_xtest]    Script Date: 09/27/2016 08:52:56 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE  [dbo].[Acc_CustomerSelRefSport_Bettype]
 	 @CustID		INT = NULL
 	,@RoleID		INT = 0 
 	,@isShowAll		BIT = 1 
@@ -109,13 +116,17 @@ BEGIN
 			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
 	
 	UNION ALL 
-	SELECT DISTINCT Sporttype, Bettype, SporttypeRefPT, BettypeRefPT,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
-	FROM Sport_Bettype_Reference_Setting WITH(NOLOCK)
+	SELECT Sporttype, Bettype, SporttypeRefPT, BettypeRefPT,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
+	FROM Sport_Bettype_Reference_Setting b WITH(NOLOCK)
 	WHERE   bettype NOT IN(SELECT Bettype FROM #tempRef)
 			AND isLicensee = 0
 			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
+			AND (SportType<>SporttypeRefPT OR bettype <>BettypeRefPT)
+			AND NOT EXISTS (SELECT TOP 1 1 FROM Sport_Bettype_Reference a (NOLOCK) WHERE a.Sporttype=b.SportType AND a.Bettype=b.BetType)
+			AND (SportType<=99 OR b.SportType = 154)
 	ORDER BY Sporttype, Bettype, SporttypeRef, BettypeRef
 END
+
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerSelRefSport_Bettype] TO [bodbAdminNet] AS [dbo]
