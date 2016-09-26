@@ -13,6 +13,7 @@ AS
 		- 20150606@Kathy: Change link server DBTXN.CustDB to DBCust.CustDB [Redmine:#36216]
 		- 20150904@Helen: commission setting for MO [Redmine #41470]
 		- 20160201@Percy: Support new Cricket [Redmine: #50027]
+		- 20160923@Winnie: PH_AIO-_Phase_2 Hide parent(413,414,416) and using Sport_Bettype_Reference_Setting  [Redmine: #63076]
 
 	Param's Explanation: 
 		@CustID (Login account): =NULL: Admin ; =NOT NULL: SMA 
@@ -31,6 +32,14 @@ BEGIN
 			,@IsMyanmarOdds BIT = 0
 			,@recommend INT = 0
 			,@isIMBC BIT = 0
+	
+	CREATE TABLE #tempRef (Bettype INT,GroupTypeId INT)	
+	DECLARE @SearchQuery varchar(1024)
+	SELECT @SearchQuery = 'SELECT * 
+	FROM OPENQUERY(DBAGE, 
+	''SELECT Bettype , GroupTypeId FROM bodb02.dbo.f_GroupBettype( )'')'
+	INSERT INTO #tempRef
+	EXECUTE(@SearchQuery)
 
 	IF @RoleID = 1 AND ISNULL(@CustID, 0) <> 0
 		IF (SELECT [Site] FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
@@ -83,6 +92,7 @@ BEGIN
 				,CASE WHEN @IsMyanmarOdds = 0 AND Bettype IN (301,302,303,304) THEN 1 ELSE 0 END -- MyanmarOdds
 				,27, 50 -- Cricket
 			)
+			AND bettype NOT IN(SELECT Bettype FROM #tempRef)
 			AND isLicensee = 0 
 			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
 	UNION ALL
@@ -95,10 +105,16 @@ BEGIN
 				,CASE WHEN ISNULL(@CustID, 0) <> 0 AND @isIMBC = 1 THEN 'IMBC' END -- IMBC only
 				,CASE WHEN ISNULL(@CustID, 0) <> 0 AND @isIMBC = 0 THEN 'ALL'  END -- MBC  only
 			)
-			AND isLicensee = 0 
+			AND isLicensee = 0
+			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
+	
+	UNION ALL 
+	SELECT DISTINCT Sporttype, Bettype, SporttypeRefPT, BettypeRefPT,ISNULL(@IsMyanmarOdds,0) AS IsMyanmarOdds
+	FROM Sport_Bettype_Reference_Setting WITH(NOLOCK)
+	WHERE   bettype NOT IN(SELECT Bettype FROM #tempRef)
+			AND isLicensee = 0
 			AND isActive = CASE WHEN @isShowAll = 0 THEN 1 ELSE isActive END
 	ORDER BY Sporttype, Bettype, SporttypeRef, BettypeRef
-
 END
 
 GO
