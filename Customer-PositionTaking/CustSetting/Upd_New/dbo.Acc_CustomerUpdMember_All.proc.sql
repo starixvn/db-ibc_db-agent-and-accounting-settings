@@ -165,13 +165,13 @@
 
 	-- Outright PT for sports
 	
-	@v2apositiontaking_10 SMALLMONEY, 
-	@v3apositiontaking_10 SMALLMONEY, 
-	@v5apositiontaking_10 SMALLMONEY, 
-	@v8apositiontaking_10 SMALLMONEY, 
-	@v10apositiontaking_10 SMALLMONEY, 
-	@v11apositiontaking_10 SMALLMONEY, 
-	@v99apositiontaking_10 SMALLMONEY, 
+	@v2apositiontaking_10 SMALLMONEY=0, 
+	@v3apositiontaking_10 SMALLMONEY=0, 
+	@v5apositiontaking_10 SMALLMONEY=0, 
+	@v8apositiontaking_10 SMALLMONEY=0, 
+	@v10apositiontaking_10 SMALLMONEY=0, 
+	@v11apositiontaking_10 SMALLMONEY=0, 
+	@v99apositiontaking_10 SMALLMONEY=0, 
 
 	@UpdatePositiontaking BIT = 1,   
 	@UpdatePositiontakingv2 BIT = 1,  
@@ -233,6 +233,7 @@ Revisions:
  - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
  - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
  - 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
+ - 20160927@Winnie: HotFix Failed to update Number game settings - [Redmine: 63985]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
