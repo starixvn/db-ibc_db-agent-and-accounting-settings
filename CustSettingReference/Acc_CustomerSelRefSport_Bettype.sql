@@ -47,6 +47,7 @@ BEGIN
 	''SELECT Bettype , GroupTypeId FROM bodb02.dbo.f_GroupBettype( )'')'
 	INSERT INTO #tempRef
 	EXECUTE(@SearchQuery)
+	DELETE FROM #tempRef WHERE bettype=GroupTypeId
 
 	IF @RoleID = 1 AND ISNULL(@CustID, 0) <> 0
 		IF (SELECT [Site] FROM DBCUST.CustDB.dbo.Customer WITH (NOLOCK)
