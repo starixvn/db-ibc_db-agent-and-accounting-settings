@@ -52,7 +52,7 @@ BEGIN
 		- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 		- 20160406@Dominic: HotFix Alpha-Customer List, Page Navigation is not shown If Filter Status/Double Comm <> "All" - [Redmine: #55457]
 		- 20160407@Winnie: VoidBridge [Redmine's Ids: #55258]
-		
+		- 20160810@Winnie: #61733 add more bettype VIP Barcarat setting
 	Explanation's Param:
 		- @DoubleCommLosing:
 			0: Not Allowed double comm
@@ -87,6 +87,7 @@ BEGIN
 		,	@bitmapOrder_CockFighting	INT
 		,	@bitmapOrder_Cricket		INT
 		,	@bitmapOrder_AllBet			INT
+		,	@bitmapOrder_AllBetVIP		INT
 		,	@bitmapOrder_VoidBridge		INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
@@ -100,6 +101,12 @@ BEGIN
 										FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
 										WHERE	psp.Sporttype = 211
 											AND	psp.Bettype = 2401
+									)
+    SELECT	@bitmapOrder_AllBetVIP =	(
+										SELECT	psp.bitmapOrder
+										FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
+										WHERE	psp.Sporttype = 211
+											AND	psp.Bettype = 2402
 									)
     
     DECLARE	@IsHidden_MuayThai		INT = 1
@@ -349,7 +356,8 @@ BEGIN
 		1 AS SyncedVoidBridgeDownline,
 
 		-- For AllBet
-		ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
+		(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBet)) AS DisableAllBet,
+		(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBetVIP)) AS DisableAllBetVIP,
 		CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
 							--AND	sbhsc.IsHidden = 0
 							AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
