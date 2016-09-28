@@ -49,10 +49,18 @@ Revisions:
 		,	@NG2					INT = 23
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
-		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
-		
+		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END		
 	from custinfo with (nolock) where CustID=@CustID
 	
+	SELECT cs.CustID, cs.bitmapHasSynced, cs.bitmapIsHidden, cs.bitmapIsDisabled
+	INTO #CustProductStatus
+	FROM DBCUST.CustDB.dbo.CustProductStatus cs WITH (NOLOCK)
+	WHERE 1 = CASE	WHEN @RoleID = 4 AND cs.CustID = @CustID THEN 1
+					WHEN @RoleID = 3 AND cs.CustID IN (@CustID,@srecommend) THEN 1
+					WHEN @RoleID = 2 AND cs.CustID IN (@CustID,@mrecommend) THEN 1
+					WHEN @RoleID = 1 AND cs.CustID IN (@CustID,@recommend) THEN 1
+					ELSE 0 END
+
 	SET @IsHideCockfighting = (SELECT SettingStatus FROM ProductSettingDetail WITH (NOLOCK) WHERE ProductID = 19 AND SettingType = 4)
 	
 	SET @AllowedCockfighting = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
@@ -168,7 +176,7 @@ Revisions:
 										ELSE 0 END
 		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
 			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
-			CROSS JOIN dbo.CustProductStatus AS cps WITH (NOLOCK)
+			CROSS JOIN #CustProductStatus AS cps WITH (NOLOCK)
 		WHERE	cps.CustID = @CustID
 			AND	psd.ProductID = @NG2
 	ELSE 
@@ -179,8 +187,8 @@ Revisions:
 										ELSE 0 END
 		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
 			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
-			CROSS JOIN dbo.CustProductStatus AS cps WITH (NOLOCK)
-			CROSS JOIN dbo.CustProductStatus AS ups WITH (NOLOCK)	
+			CROSS JOIN #CustProductStatus AS cps WITH (NOLOCK)
+			CROSS JOIN #CustProductStatus AS ups WITH (NOLOCK)	
 		WHERE	cps.CustID = @CustID
 			AND	psd.ProductID = @NG2
 			AND ups.CustID = CASE	WHEN @RoleID = 3 THEN @srecommend
