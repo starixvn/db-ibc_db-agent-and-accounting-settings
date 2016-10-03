@@ -322,8 +322,8 @@ BEGIN
 				  ,ps.BetType
 				  ,IsLive
 			FROM [dbo].[ProductSettingDetail] ps WITH(NOLOCK)
-				INNER JOIN #OfferedProductList op WITH (NOLOCK) ON ps.ProductID = op.ProductID
-			WHERE op.IsHidden = 0
+				INNER JOIN (SELECT DISTINCT ProductID, IsHidden FROM #OfferedProductList WITH (NOLOCK)) op ON ps.ProductID = op.ProductID
+			WHERE op.IsHidden = 0 AND ps.SettingType NOT IN (4,11)
 		END
 
 		/********************************************* Position Taking: SettingType = 1 ***********************************/
