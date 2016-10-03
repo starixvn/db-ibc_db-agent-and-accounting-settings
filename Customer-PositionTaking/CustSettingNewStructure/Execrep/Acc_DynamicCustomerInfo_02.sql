@@ -189,8 +189,8 @@ BEGIN
 				,ps.BetType
 				,IsLive
 		FROM [dbo].[ProductSettingDetail] ps WITH(NOLOCK)
-			INNER JOIN #OfferedProductList op WITH (NOLOCK) ON ps.ProductID = op.ProductID
-		WHERE op.IsHidden = 0
+			INNER JOIN (SELECT DISTINCT ProductID, IsHidden FROM #OfferedProductList WITH (NOLOCK)) op ON ps.ProductID = op.ProductID
+		WHERE op.IsHidden = 0 AND ps.SettingType NOT IN (4,11)
 		/********************************************* Position Taking: SettingType = 1 ***********************************/
 		BEGIN TRY
 			IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustPTSetting3rd_Agent] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
@@ -224,7 +224,7 @@ BEGIN
 				   ,[MaxPT]
 				FROM [dbo].[CustPTSetting3rd_Agent] cs WITH(NOLOCK)
 					INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType AND ps.IsLive = cs.IsLive
-				WHERE CustID = @ExistingCustID
+				WHERE CustID = @ExistingCustID AND ps.SettingType = 1
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 1
@@ -252,7 +252,7 @@ BEGIN
 					   ,[MaxPerMatch]
 			FROM [dbo].[CustBetSetting3rd_Agent] cs WITH (NOLOCK)
 				INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType
-			WHERE CustID = @ExistingCustID
+			WHERE CustID = @ExistingCustID AND ps.SettingType IN (2,9)
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 2
@@ -263,7 +263,7 @@ BEGIN
 			RETURN
 		END CATCH
 	
-		/********************************************* Commision : SettingType = 3 ****************************************/
+		/********************************************* Commision : SettingType = 3, Charge comm: Setting Type = 5 ****************************************/
 		BEGIN TRY
 			IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustDiscount3rd_Agent] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 			INSERT INTO [dbo].[CustDiscount3rd_Agent]
@@ -277,7 +277,7 @@ BEGIN
 					   ,[Discount]
 			FROM [dbo].[CustDiscount3rd_Agent] cs WITH(NOLOCK)
 				INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType
-			WHERE CustID = @ExistingCustID
+			WHERE CustID = @ExistingCustID AND ps.SettingType IN (3,5)
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 3
@@ -307,7 +307,7 @@ BEGIN
 						,IsAutoReset
 			FROM [dbo].[CustWinLossLimit_Agent] cs WITH (NOLOCK)
 				INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType
-			WHERE CustID = @ExistingCustID
+			WHERE CustID = @ExistingCustID AND ps.SettingType = 6
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 6
@@ -321,7 +321,7 @@ BEGIN
 		END CATCH
 
 		
-		/****************************** Stake Level Member Single Selection : SettingType = 7 ******************************/
+		/****************************** Stake Level Member Single Selection : SettingType = 7, Group Stake Level = 8 ******************************/
 		BEGIN TRY
 			IF EXISTS(SELECT TOP 1 1 FROM dbo.CustStakeLevel_Agent AS csla WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 			INSERT INTO dbo.CustStakeLevel_Agent
@@ -335,7 +335,7 @@ BEGIN
 				,	cs.StakeLevelList
 			FROM dbo.CustStakeLevel_Agent AS cs
 				INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType
-			WHERE CustID = @ExistingCustID
+			WHERE CustID = @ExistingCustID AND ps.SettingType IN (7,8)
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 7
