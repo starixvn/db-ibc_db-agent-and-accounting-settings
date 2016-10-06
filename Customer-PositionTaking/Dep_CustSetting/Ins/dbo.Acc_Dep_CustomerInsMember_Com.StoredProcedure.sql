@@ -399,7 +399,7 @@ Revisions:
 	- 20150309@Johnson: Disable virtual rate as default [RedmineID: #31927]
     - 20150609@David: Separate CustDB to DBCUST server (Use temp table for sports, bettype, GameType table, call some SPs by link server)
 	- 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
-       
+    - 20160830@Winnie: #63151  Add ColossusBet Agent commRate
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -1393,6 +1393,32 @@ EXEC Acc_Dep_CustomerInsMemberVirtualSports_Com
 	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid
 	
 	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+ 	RETURN 
+ END  
+ -------Insert Dep_AgentCommRate for ColossusBets
+ INSERT INTO Dep_AgentCommRate
+           ([CustID]
+           ,[Sporttype]
+           ,[Bettype]
+           ,CommRate)
+SELECT @custid, 204, 18001, 0.1215
+UNION ALL
+SELECT @custid, 204, 18002, 0.45
+----------------------CHECK Error
+
+ IF @ErrCode <> 0 
+ BEGIN
+ 	
+ 	DELETE Dep_CustSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE Dep_CustSetting3rd WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE FROM Dep_CustSuper WITH(ROWLOCK) WHERE custId = @CustID
+	
+	DELETE P2PGameSetting WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE P2PGroupComm WITH (ROWLOCK) WHERE custId  =@custid
+	DELETE CustSettingGame WITH(ROWLOCK) WHERE custid = @custid
+	DELETE CustOverrideGame WITH(ROWLOCK) WHERE custid = @custid	
+	EXEC Acc_CustomerInsUserInfo_Rollback @CustID = @CustID
+	DELETE Dep_AgentCommRate WITH(ROWLOCK) WHERE custid = @custid
  	RETURN 
  END  
 ----------------------------END INSERT------------------------------------
