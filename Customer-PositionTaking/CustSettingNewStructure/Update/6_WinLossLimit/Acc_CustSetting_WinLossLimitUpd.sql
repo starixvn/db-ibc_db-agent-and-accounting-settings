@@ -14,7 +14,7 @@ AS
 	Task : Update Customer's Win Loss Limits
 	DB: DBCUST/CustDB
 	Original:
-
+	- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: #65472
 	Revisions:
 
 	Param's Explanation:
@@ -40,7 +40,7 @@ AS
 				/>
 		</ROOT>
 
-		9: LossLimit
+		12: LossLimit
 		<ROOT>
 				<Limit 
 						SportType="1" 
@@ -52,7 +52,7 @@ AS
 
 	- @SettingType: 6: WinLossLimit
 					8: WinLimit
-					9: LossLimit
+					12: LossLimit
 
 	*/
 BEGIN
@@ -178,7 +178,7 @@ BEGIN
 							)
 	END
 
-	IF @SettingType = 9
+	IF @SettingType = 12
 	BEGIN
 		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
 		SELECT SportType, BetType, 0 AS MaxWinLimit, MaxLossLimit, IsAutoReset
@@ -241,7 +241,7 @@ BEGIN
 			WHERE main.custid = @CustID
 				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 
-		IF @SettingType = 9
+		IF @SettingType = 12
 			--update new settings
 			UPDATE main
 			SET main.MaxLossLimit = tmp.MaxLossLimit
@@ -285,7 +285,7 @@ BEGIN
 			WHERE main.custid = @CustID
 				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 
-		IF @SettingType = 9
+		IF @SettingType = 12
 			--update new settings
 			UPDATE main
 			SET main.MaxLossLimit = tmp.MaxLossLimit
@@ -733,7 +733,7 @@ BEGIN
 		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	END
 
-	IF @SettingType = 9
+	IF @SettingType = 12
 	BEGIN
 			-- Log old data
 		IF @SettingLevel = 1			-- Product setting level

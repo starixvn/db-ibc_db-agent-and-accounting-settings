@@ -15,7 +15,7 @@ AS
 	Task : Check Customer's Win Loss Limits
 	DB: DBCUST/CustDB
 	Original:
-
+	- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: #65472
 	Param's Explanation:
 	- @Limit:
 		6: WinLossLimit
@@ -39,7 +39,7 @@ AS
 				/>
 		</ROOT>
 
-		9: LossLimit
+		12: LossLimit
 		<ROOT>
 				<Limit 
 						SportType="1" 
@@ -51,7 +51,7 @@ AS
 
 	- @SettingType: 6: WinLossLimit
 					8: WinLimit
-					9: LossLimit
+					12: LossLimit
 	*/
 BEGIN
 	SET NOCOUNT ON
@@ -116,7 +116,7 @@ BEGIN
 							)
 	END
 
-	IF @SettingType = 9
+	IF @SettingType = 12
 	BEGIN
 		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
 		SELECT SportType, BetType, 0 AS MaxWinLimit, MaxLossLimit, IsAutoReset
@@ -202,7 +202,7 @@ BEGIN
 		END
 	END
 
-	IF @SettingType = 6 OR @SettingType = 9
+	IF @SettingType = 6 OR @SettingType = 12
 	BEGIN
 		--Check Upline's loss limit >= Loss Limit
 		IF EXISTS(	SELECT TOP 1 1 

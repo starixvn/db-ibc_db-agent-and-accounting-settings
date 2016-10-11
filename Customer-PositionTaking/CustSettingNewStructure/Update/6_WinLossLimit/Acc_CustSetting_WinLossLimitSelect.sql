@@ -8,11 +8,11 @@ AS
 	Task : Get SMA WinLoss Limit setting values of a product
 	DB: DBCUST/CustDB
 	Original:
-
+		- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: 65472
 	Param's Explanation:
 		• @SettingType: 6: WinLossLimit
 						8: WinLimit
-						9: LossLimit
+						12: LossLimit
 	*/
 BEGIN
 	DECLARE	@Currency	TINYINT,
@@ -137,7 +137,7 @@ BEGIN
 				AND uwl.CustId = @AgentID
 	END
 	--Loss Limit Setting
-	ELSE IF @SettingType = 9
+	ELSE IF @SettingType = 12
 	BEGIN
 		IF @RoleID = 4
 			SELECT	wl.SportType,
