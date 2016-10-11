@@ -17,6 +17,7 @@ AS
 	Revisions:
 		- 20160404@Billy: Integrate Group Stake Level Setting for DCS - [Redmine: #54994]
 		- 20160704@Winnie: Fix bug copy member settting type =7 & =8
+		- 20161005@Elodie: Update LastUpdated field - [Redmine: #54994]
 	Param's Explanation:
 		@StakeLevel:
 		<ROOT>
@@ -188,6 +189,7 @@ BEGIN
 		-- Update current customer's stake level
 		UPDATE	cslm	WITH(ROWLOCK,UPDLOCK)
 		SET		cslm.StakeLevelList = ts.StakeLevelList
+				, cslm.LastUpdated = GETDATE()
 		FROM		dbo.CustStakeLevel_Member AS cslm
 		INNER JOIN	#tmpStake ts
 				ON	ts.BetType = cslm.BetType

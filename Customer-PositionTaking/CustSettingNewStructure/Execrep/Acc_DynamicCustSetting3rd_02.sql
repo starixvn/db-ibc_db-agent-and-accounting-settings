@@ -10,7 +10,7 @@ AS
 	Original:
 
 	Revisions:
-
+		- 20161005@Elodie: Update LastUpdated field - [Redmine: #54994]
 	Param's Explanation:
 		@StakeLevel:
 		<ROOT>
@@ -62,6 +62,7 @@ BEGIN
 
 	UPDATE cslm
 	SET	cslm.StakeLevelList = sl.StakeLevelList
+		, cslm.LastUpdated = GETDATE()
 	FROM		dbo.CustStakeLevel_Member AS cslm WITH(ROWLOCK,UPDLOCK)
 	INNER JOIN	#StakeLevel AS sl
 			ON	sl.CustID = cslm.CustID

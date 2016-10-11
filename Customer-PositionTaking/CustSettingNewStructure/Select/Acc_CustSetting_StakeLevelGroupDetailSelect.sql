@@ -1,4 +1,4 @@
-ALTER PROCEDURE	dbo.Acc_CustSetting_StakeLevelGroupDetailSelect
+ALTER PROCEDURE	[dbo].[Acc_CustSetting_StakeLevelGroupDetailSelect]
 					@CustID				INT
 				,	@SportType			SMALLINT
 				,	@ShowAll			BIT			= 0
@@ -10,6 +10,8 @@ AS
 	Database:	DBCUST/CustDB
 	Original:
 
+	Revision:
+		- 20161005@Elodie: Update LastUpdated field - [Redmine: #54994]
 	Param's Explanation:
 */
 BEGIN
@@ -67,8 +69,8 @@ BEGIN
 			ON	gg.GameGroupID = sl.GameGroupID
 	INNER JOIN	dbo.StakeLevelGroupDetail AS slgd WITH (NOLOCK)
 			ON	slgd.StakeLevelID = sl.StakeLevelID
-
-	SELECT	TOP(CASE WHEN @ShowAll = 1 THEN @TotalRows ELSE @TotalRows / @NoOfRows * 10 END) 
+	
+	SELECT	TOP(CASE WHEN @ShowAll = 1 THEN @TotalRows ELSE CASE WHEN @NoOfRows = 0 THEN 0 ELSE @TotalRows / @NoOfRows * 10 END END) 
 			gg.RefSportType							SportType
 		,	slgd.GameTypeID							BetType
 		,	gg.GameGroupID							StakeLevelGroupID
@@ -82,9 +84,8 @@ BEGIN
 			ON	slgd.StakeLevelID = sl.StakeLevelID
 	ORDER BY	SportType, BetType, StakeLevelGroupID
 
-END;
+END
 GO
-
 GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelGroupDetailSelect TO bodbAdminNet;
 GO
 GRANT EXECUTE ON dbo.Acc_CustSetting_StakeLevelGroupDetailSelect TO bodbDownlineNet;
