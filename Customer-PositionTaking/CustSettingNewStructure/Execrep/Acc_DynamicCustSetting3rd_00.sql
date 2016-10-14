@@ -10,7 +10,7 @@ AS
     DB: DBCust/CustDB
     
     Revisions:
-		-- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: #65472
+		-- 20161011@Winnie:  Integrate new product Fishing world RedmineID: #65472
     Param's Explanation:
             
 */
