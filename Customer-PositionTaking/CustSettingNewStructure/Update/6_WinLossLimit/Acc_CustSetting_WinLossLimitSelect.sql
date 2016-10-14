@@ -8,7 +8,9 @@ AS
 	Task : Get SMA WinLoss Limit setting values of a product
 	DB: DBCUST/CustDB
 	Original:
-		- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: 65472
+	Revisions:
+	- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
+	
 	Param's Explanation:
 		• @SettingType: 6: WinLossLimit
 						8: WinLimit

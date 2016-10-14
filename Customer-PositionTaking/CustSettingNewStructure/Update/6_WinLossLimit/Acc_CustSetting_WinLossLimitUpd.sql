@@ -13,10 +13,9 @@ AS
 	Created: 20160108@Elodie
 	Task : Update Customer's Win Loss Limits
 	DB: DBCUST/CustDB
-	Original:
-	- 20161011@Winnie:  Integrate new product "Catch Fish" RedmineID: #65472
+	Original:	
 	Revisions:
-
+			- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 	Param's Explanation:
 	- @Limit:
 		6: WinLossLimit

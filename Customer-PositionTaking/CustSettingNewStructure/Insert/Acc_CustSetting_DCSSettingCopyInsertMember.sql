@@ -22,6 +22,7 @@ AS
 		- 20160407@Winnie: Group stake level setting - [Redmine: #55532]
 		- 20160711@Winnie: fix bug #60611 [NAP - Copy New Member: a single log is written for both Allbet and Macau Games when copying]
 		- 20160801@Elodie: Implementing BetGameLimit Settings, GameStatus Setting - [Redmine: #60809]
+		20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 	*/
 BEGIN
 	SET NOCOUNT ON

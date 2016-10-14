@@ -24,7 +24,7 @@ AS
 		- 20160309@Dominic: Support controling default product status by site and by currency - [Redmine: #53604]
 		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 		- 20160801@Elodie: Implementing GameBetLimit Plugin, GameStatus Plugin - [Redmine #60809]
-		- 20161014@Winnie: Integrate new product "Catch Fish" RedmineID: #65472
+		- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 							
 	*/
 BEGIN
