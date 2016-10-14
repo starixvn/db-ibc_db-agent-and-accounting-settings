@@ -301,6 +301,7 @@ BEGIN
 		@CustId = @CustId
 		,@RoleId = @RoleId
 		,@Limit_XML = @Limit
+		,@SettingType=@SettingType
 	
 	--START LOGGING
 
