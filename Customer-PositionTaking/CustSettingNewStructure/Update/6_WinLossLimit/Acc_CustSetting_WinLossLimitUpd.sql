@@ -930,7 +930,29 @@ BEGIN
 	END
 	SELECT @endRun = GETDATE()
 		, @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
-
+	IF(@SettingType=12)
+	BEGIN
+	BEGIN TRY
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+						@UserID = @UserID
+						, @CustID			= @CustID
+						, @ActionID			= 851
+						, @TrackingValue	= @logSpData
+						, @TrackingValue2	= @logSpData_Old
+						, @duration			= @duration
+	END TRY
+	BEGIN CATCH
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+						@UserID = @UserID
+						, @CustID			= @CustID
+						, @ActionID			= 851
+						, @TrackingValue	= @logSpData
+						, @TrackingValue2	= @logSpData_Old
+						, @duration			= @duration
+	END CATCH
+	END
+	ELSE
+	BEGIN
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 						@UserID = @UserID
@@ -949,6 +971,7 @@ BEGIN
 						, @TrackingValue2	= @logSpData_Old
 						, @duration			= @duration
 	END CATCH
+	END
 END
 
 GO
