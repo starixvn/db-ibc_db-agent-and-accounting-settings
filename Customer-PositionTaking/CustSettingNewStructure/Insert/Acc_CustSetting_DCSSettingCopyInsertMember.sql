@@ -735,7 +735,7 @@ BEGIN
 		END
 	END
 	
-	/********************************************* SMA Win Loss Limit : SettingType = 12 ****************************************/
+	/********************************************* SMA Loss Limit : SettingType = 12 ****************************************/
 	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,12))
 	BEGIN
 		DECLARE @ProductID12 INT
@@ -769,34 +769,34 @@ BEGIN
 				
 		WHILE EXISTS(SELECT TOP 1 1 FROM #TempLLimit)
 		BEGIN
-		SELECT TOP 1 @ProductID12=ProductID FROM #TempLLimit
-		SET @xmlLossLimit = (SELECT (
-									SELECT nslt.SportType	AS '@SportType'
-										, nslt.BetType		AS '@BetType'										
-										, nslt.MaxLossLimit	AS '@MaxLossLimit'
-										, nslt.IsAutoReset	AS '@IsAutoReset'
-									FROM @NewLossLimitTbl nslt
-									INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
-										WHERE psd.SettingType =12 AND psd.ProductID=@ProductID12
-									FOR XML PATH('Limit')
-										, TYPE
-									)
-							FOR XML PATH('ROOT')
-								, TYPE
-							)
-	
-		SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlLossLimit)
+			SELECT TOP 1 @ProductID12=ProductID FROM #TempLLimit
+			SET @xmlLossLimit = (SELECT (
+										SELECT nslt.SportType	AS '@SportType'
+											, nslt.BetType		AS '@BetType'										
+											, nslt.MaxLossLimit	AS '@MaxLossLimit'
+											, nslt.IsAutoReset	AS '@IsAutoReset'
+										FROM @NewLossLimitTbl nslt
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+											WHERE psd.SettingType =12 AND psd.ProductID=@ProductID12
+										FOR XML PATH('Limit')
+											, TYPE
+										)
+								FOR XML PATH('ROOT')
+									, TYPE
+								)
+		
+			SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlLossLimit)
 
-		EXEC dbo.Acc_CustSetting_WinLossLimitUpd 
-			  @CustID = @CustID
-			, @Limit = @xmlStr
-			, @SettingType = 12
-			, @SubAccID = @SubAccID
-			, @IP = @IP
-			, @UserID = @UserID
-			, @ErrCode = @ErrCode OUTPUT
-			, @ErrMsg = @ErrMsg OUTPUT
-		DELETE FROM	#TempWLLimit WHERE ProductID=@ProductID12
+			EXEC dbo.Acc_CustSetting_WinLossLimitUpd 
+				  @CustID = @CustID
+				, @Limit = @xmlStr
+				, @SettingType = 12
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+			DELETE FROM	#TempWLLimit WHERE ProductID=@ProductID12
 		END
 			
 	END
