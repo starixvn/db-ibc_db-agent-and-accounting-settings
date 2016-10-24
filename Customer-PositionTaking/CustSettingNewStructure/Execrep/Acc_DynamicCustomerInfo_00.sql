@@ -1135,14 +1135,14 @@ BEGIN
 					   ,[IsAutoReset])
 					SELECT
 						@CustID
-						,s.SportType
-						,s.BetType
+						,ft.SportType
+						,ft.BetType
 						,0
 						,gs.DefaultLossLimit
 						,1
-					FROM #SportBettypeFilter6 s
-						INNER JOIN #ProductSettingDetail ps ON ps.BetType = s.Bettype AND ps.SportType = s.SportType
-						INNER JOIN LossLimit_GlobalSetting gs ON gs.ProductId = s.ProductID
+					FROM #SportBettypeFilter5 ft 
+						INNER JOIN #ProductSettingDetail fil ON ft.SettingType = fil.SettingType AND ft.SportType = fil.SportType AND ft.BetType = fil.BetType 
+						INNER JOIN LossLimit_GlobalSetting gs ON gs.ProductId = ft.ProductID
 						INNER JOIN CustInfo ci WITH (NOLOCK) ON gs.ExchangeId = ci.currency
 					WHERE ci.custid = @CustID
 				END
@@ -1254,7 +1254,7 @@ BEGIN
 					(	CustID , SportType    , BetType    , StakeLevelList)
 				SELECT	@CustID, sbf.SportType, sbf.Bettype, LEFT(sl.list, LEN(sl.list) - 1)
 				FROM	#SportBettypeFilter7 AS sbf
-					INNER JOIN #ProductSettingDetail ps ON ps.BetType = sbf.Bettype AND ps.SportType = sbf.SportType
+					INNER JOIN #ProductSettingDetail ps ON ps.BetType = sbf.Bettype AND ps.SportType = sbf.SportType AND ps.SettingType = sbf.SettingType
 					CROSS APPLY (
 						SELECT	CAST(sl.StakeLevelID AS VARCHAR) + ','
 						FROM		dbo.StakeLevel	AS sl WITH(NOLOCK)
