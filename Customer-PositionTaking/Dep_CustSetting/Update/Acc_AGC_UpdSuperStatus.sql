@@ -1,5 +1,5 @@
 /****** Object:  Stored Procedure dbo.Acc_AGC_UpdSuperStatus    Script Date: 8/28/2014 3:01:31 PM ******/  
-ALTER PROCEDURE dbo.Acc_AGC_UpdSuperStatus
+ALTER PROCEDURE [dbo].[Acc_AGC_UpdSuperStatus]  
  @CustID    INT,  
  @IsEnableAG   BIT,  
  @ApplyToMember  BIT    = 0,  
@@ -48,7 +48,9 @@ BEGIN
   INSERT INTO dbo.Dep_SuperSetting_AGCasino (CustID, CheckedGroup, DefaultGroup, IsEnabled)    
   SELECT  b.CustID, '', '', @IsEnableAG 
   FROM Customer b WITH(NOLOCK) 
-  WHERE b.srecommend = @CustID  AND NOT EXISTS(SELECT TOP 1 1 FROM  dbo.Dep_SuperSetting_AGCasino a WITH(NOLOCK) WHERE a.CustID=b.custid )
+  WHERE b.srecommend = @CustID  
+  AND roleid IN (2,3,4)
+  AND NOT EXISTS(SELECT TOP 1 1 FROM  dbo.Dep_SuperSetting_AGCasino a WITH(NOLOCK) WHERE a.CustID=b.custid )
  END  
   
  IF @IsEnableAG = 0  
@@ -114,6 +116,5 @@ BEGIN
     @duration = @duration  
    
 END
-
 GO
 GRANT EXECUTE ON [dbo].Acc_AGC_UpdSuperStatus TO [bodbAdminNet] AS [dbo]
