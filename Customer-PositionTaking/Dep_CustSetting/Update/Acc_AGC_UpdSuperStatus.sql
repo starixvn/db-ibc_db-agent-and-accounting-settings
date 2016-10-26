@@ -50,6 +50,7 @@ BEGIN
   FROM Customer b WITH(NOLOCK) 
   WHERE b.srecommend = @CustID  
   AND roleid IN (2,3,4)
+  AND b.Username NOT LIKE '%' + b.site + '%' + 'ACC%'
   AND NOT EXISTS(SELECT TOP 1 1 FROM  dbo.Dep_SuperSetting_AGCasino a WITH(NOLOCK) WHERE a.CustID=b.custid )
  END  
   
@@ -116,5 +117,6 @@ BEGIN
     @duration = @duration  
    
 END
+
 GO
 GRANT EXECUTE ON [dbo].Acc_AGC_UpdSuperStatus TO [bodbAdminNet] AS [dbo]
