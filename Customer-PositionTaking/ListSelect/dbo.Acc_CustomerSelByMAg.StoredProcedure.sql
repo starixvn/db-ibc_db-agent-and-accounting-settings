@@ -506,6 +506,13 @@ BEGIN
 			ctm.SyncedVoidBridge,
 			ctm.SyncedVoidBridgeUpline,
 			ctm.SyncedVoidBridgeDownline,
+			-- FishingWorld
+			ctm.DisableFishingWorld,
+			ctm.HideFishingWorld,
+			ctm.HideFishingWorldUpline,
+			ctm.SyncedFishingWorld,
+			ctm.SyncedFishingWorldUpline,
+			ctm.SyncedFishingWorldDownline,
 			
 			ctm.DisableNG2,
 			ctm.HideNG2,

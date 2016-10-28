@@ -498,6 +498,12 @@ BEGIN
 			ctm.HideNG2Upline,
 			ctm.SyncedNG2,
 			ctm.SyncedNG2Upline,
+			ctm.DisableFishingWorld,
+			ctm.HideFishingWorld,
+			ctm.HideFishingWorldUpline,
+			ctm.SyncedFishingWorld,
+			ctm.SyncedFishingWorldUpline,
+			ctm.SyncedFishingWorldDownline,
 
 			ISNULL(t.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(t.adiscountMyanmarOdds,0) AS discountMyanmarOdds,

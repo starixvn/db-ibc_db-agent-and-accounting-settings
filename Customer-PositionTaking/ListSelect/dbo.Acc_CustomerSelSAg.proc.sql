@@ -464,7 +464,8 @@ B: 'B%'
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_CockFighting),1) AS DisableCockFighting,
 			CASE WHEN @IsHidden_CockFighting = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_CockFighting),1) = 0 THEN 0 ELSE 1 END AS HideCockFighting,
 			-- For AllBet
-			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_AllBet), 1) AS DisableAllBet,
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBet)) AS DisableAllBet,
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_AllBetVIP)) AS DisableAllBetVIP,
 			CAST(	CASE	WHEN	@IsHidden_AllBet = 0 
 								--AND	MAX(sbhsc.IsHidden) = 0
 								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_AllBet), 1) = 0 
@@ -472,6 +473,14 @@ B: 'B%'
 							ELSE 1 
 					END AS BIT) AS HideAllBet,
 			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_AllBet), 0) AS SyncedAllBet,
+			-- FishingWorld
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_FishingWorld)) AS DisableFishingWorld,		
+			CAST(	CASE	WHEN	@IsHidden_FishingWorld = 0 							
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_FishingWorld), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideFishingWorld,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_FishingWorld), 0) AS SyncedFishingWorld,
 
 			ISNULL(csuper.IsMyanmarOdds,0) AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
