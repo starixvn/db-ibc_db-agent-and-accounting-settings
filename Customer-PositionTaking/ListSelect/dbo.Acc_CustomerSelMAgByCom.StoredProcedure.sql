@@ -51,6 +51,7 @@ BEGIN
 		- 20160801@Elodie: NG2 Product - [Redmine: #60809]
 		- 20160810@Winnie: #61733 add more bettype VIP Barcarat setting
 		- 20170120@Elodie: Don't offer Massac(1507), Malta(1509) anymore [#70693]
+		- 20161028@Winnie: Fishing world [Redmine's Ids: #65474]
 
 	Pattern Explanation:
 	Search keyword: '%keyword%'
@@ -104,12 +105,14 @@ BEGIN
 		,	@bitmapOrder_AllBetVIP		INT
 		,	@bitmapOrder_VoidBridge		INT
 		,	@bitmapOrder_NG2			INT
+		@bitmapOrder_FishingWorld	INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
     SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
 	SET @bitmapOrder_VoidBridge = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 212 AND Bettype = 4001)
 	SET @bitmapOrder_NG2 = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 213 AND Bettype = 2501)
+	SET @bitmapOrder_FishingWorld = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 219 AND Bettype = 1011)
 
 	SET	@bitmapOrder_AllBet =	(
 									SELECT	psp.bitmapOrder
@@ -130,6 +133,7 @@ BEGIN
 		,	@IsHidden_AllBet			INT = 1
 		,	@IsHidden_VoidBridge		INT = 1
 		,	@IsHidden_NG2				INT = 1
+		@IsHidden_FishingWorld		INT = 1
     
     DECLARE	@SportBook2					INT = 16
 		,	@CockFighting				INT = 19
@@ -137,6 +141,7 @@ BEGIN
 		,	@AllBet						INT = 21
 		,	@VoidBridge					INT = 22
 		,	@NG2						INT = 23
+		@FishingWorld				INT = 24
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -156,13 +161,17 @@ BEGIN
 		SET @IsHidden_Cricket = 0
 	END
 
-	 IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@VoidBridge,4))
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@VoidBridge,4))
 	BEGIN
 		SET @IsHidden_VoidBridge = 0
 	END
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@NG2,11))
 	BEGIN
 		SET @IsHidden_NG2 = 0
+	END
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@FishingWorld,4))
+	BEGIN
+		SET @IsHidden_FishingWorld = 0
 	END
 
 	DECLARE @SearchQuery varchar(1024)
@@ -247,6 +256,27 @@ BEGIN
 						THEN 0
 					ELSE 1
 			END AS SyncedAllBetDownline,
+			-- For FishingWorld
+			(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsDisabled, @bitmapOrder_FishingWorld)) AS DisableFishingWorld,
+			CAST(	CASE	WHEN	@IsHidden_FishingWorld = 0 							
+								AND	ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_FishingWorld), 1) = 0 
+								THEN 0
+							ELSE 1 
+					END AS BIT) AS HideFishingWorld,
+			CAST(CASE	WHEN	@IsHidden_FishingWorld = 0 AND ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapIsHidden, @bitmapOrder_FishingWorld), 1)=0
+			THEN 0 ELSE 1
+			END AS BIT) AS HideFishingWorldUpline,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_FishingWorld), 0) AS SyncedFishingWorld,
+			ISNULL(dbo.f_GetProductStatus(cpsUpline.bitmapHasSynced, @bitmapOrder_FishingWorld), 0) AS SyncedFishingWorldUpline,
+			CASE	WHEN EXISTS	(	SELECT	1
+									FROM		dbo.CustProductStatus AS cpsDownline WITH (NOLOCK)
+									INNER JOIN	dbo.custInfo AS ciDownline WITH (NOLOCK)
+											ON	ciDownline.custid = cpsDownline.CustID
+									WHERE	ciDownline.mrecommend = m.custid
+										AND	dbo.f_GetProductStatus(cpsDownline.bitmapHasSynced, @bitmapOrder_FishingWorld) = 0)
+						THEN 0
+					ELSE 1
+			END AS SyncedFishingWorldDownline,
 
 			CASE WHEN ac.CustId IS NOT NULL THEN 1 ELSE 0 END AS IsMyanmarOdds,
 			ISNULL(AC.CommRate,0) AS discountMyanmarOdds,
