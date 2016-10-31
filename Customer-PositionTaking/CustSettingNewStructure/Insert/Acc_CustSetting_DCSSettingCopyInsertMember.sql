@@ -638,7 +638,7 @@ BEGIN
 											, nslt.BetType		AS '@BetType'
 											, MinBet			AS '@MinBet'
 											, MaxBet			AS '@MaxBet'
-											, MaxPerMatch		AS '@MaxPerMatch'
+											, MaxPerMatch		AS '@MaxPerNumber'
 										FROM @NewGameBetLimitTbl nslt
 										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType
 											WHERE psd.SettingType = 9 AND psd.ProductID = @ProductID9
