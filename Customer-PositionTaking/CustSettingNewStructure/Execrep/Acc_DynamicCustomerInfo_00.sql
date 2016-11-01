@@ -1140,7 +1140,7 @@ BEGIN
 						,0
 						,gs.DefaultLossLimit
 						,1
-					FROM #SportBettypeFilter5 ft 
+					FROM #SportBettypeFilter6 ft 
 						INNER JOIN #ProductSettingDetail fil ON ft.SettingType = fil.SettingType AND ft.SportType = fil.SportType AND ft.BetType = fil.BetType 
 						INNER JOIN LossLimit_GlobalSetting gs ON gs.ProductId = ft.ProductID
 						INNER JOIN CustInfo ci WITH (NOLOCK) ON gs.ExchangeId = ci.currency
