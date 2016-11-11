@@ -478,7 +478,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName		AS '@ProductName',
 								IsDisabled			AS '@IsDisabled',
 								IsDisabledDownline	AS '@IsDisabledDownline'
 						FROM #NewDisableStatTbl
