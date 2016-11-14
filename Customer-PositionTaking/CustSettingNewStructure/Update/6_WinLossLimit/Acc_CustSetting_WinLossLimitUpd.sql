@@ -850,7 +850,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName					AS '@ProductName',
 								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxLossLimit AS VARCHAR(20))
 								END					AS '@MaxLossLimit',

@@ -24,6 +24,7 @@ AS
         Revisions:
             - 20151016@Billy: Fix log xml structure and naming
 			- 20151104@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
+			- 20161114@Winnie: Change log with productname for settting level=1
 
 		Parameter's Explanation:	
 		• @PT:
@@ -551,7 +552,7 @@ BEGIN
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
 				(
-					SELECT	@ProductID								AS '@ProductID',
+					SELECT	@ProductName					AS '@ProductName',
 							isLive									AS '@isLive',
 							CONVERT(DECIMAL(10,2), AgentPT	/100.0)	AS '@AgentPT'
 					FROM @OldPTTble
@@ -639,7 +640,7 @@ BEGIN
 				dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 				@IP								AS '@IP',
 				(
-					SELECT	@ProductID								AS '@ProductID',
+					SELECT	@ProductName							AS '@ProductName',
 							isLive									AS '@isLive',
 							CONVERT(DECIMAL(10,2), AgentPT	/100.0)	AS '@AgentPT'
 					FROM dbo.f_DCS_PT_XMLParse(@PT)
