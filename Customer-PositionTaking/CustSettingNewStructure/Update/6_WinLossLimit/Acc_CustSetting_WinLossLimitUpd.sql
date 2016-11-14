@@ -1,3 +1,11 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustSetting_WinLossLimitUpd]    Script Date: 11/14/2016 09:04:08 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustSetting_WinLossLimitUpd    Script Date: 10/31/2016 9:54:42 AM ******/
 ALTER PROCEDURE [dbo].[Acc_CustSetting_WinLossLimitUpd] 
 	  @CustID		INT
 	, @Limit		VARCHAR(MAX)
@@ -191,7 +199,7 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 
 	--Validate new bet settings
-	EXEC [dbo].[Acc_CustSetting_WinLossLimitCheck] 
+		EXEC [dbo].[Acc_CustSetting_WinLossLimitCheck] 
 		@CustID	= @CustID
 		, @RoleID		= @RoleID
 		, @AgentID		= @AgentID
@@ -296,7 +304,7 @@ BEGIN
 	END
 
 	
-	EXEC dbo.Acc_DynamicCustSetting3rd_00 
+		EXEC dbo.Acc_DynamicCustSetting3rd_00 
 		@CustId = @CustId
 		,@RoleId = @RoleId
 		,@Limit_XML = @Limit
@@ -332,7 +340,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName			AS '@ProductName',
 								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxWinLimit AS VARCHAR(20))
 								END					AS '@MaxWinLimit',
@@ -440,7 +448,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName			AS '@ProductName',
 								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxWinLimit AS VARCHAR(20))
 								END					AS '@MaxWinLimit',
@@ -551,7 +559,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName			AS '@ProductName',
 								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxWinLimit AS VARCHAR(20))
 								END					AS '@MaxWinLimit',
@@ -647,7 +655,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName			AS '@ProductName',
 								CASE	WHEN MaxWinLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxWinLimit AS VARCHAR(20))
 								END					AS '@MaxWinLimit',
@@ -746,7 +754,7 @@ BEGIN
 					dbo.f_GetSubUsername(@SubAccID) AS '@SubAccName',
 					@IP								AS '@IP',
 					(
-						SELECT	@ProductID			AS '@ProductID',
+						SELECT	@ProductName			AS '@ProductName',
 								CASE	WHEN MaxLossLimit = 0 THEN 'Unlimited'
 										ELSE CAST(MaxLossLimit AS VARCHAR(20))
 								END					AS '@MaxLossLimit',
