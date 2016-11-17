@@ -1,8 +1,3 @@
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustomerSelSAg]
 	@Currency int = NULL,
 	@Closed bit = NULL,
@@ -57,7 +52,8 @@ Revisions:
 	- 20160127@Billy: Member information for AllBet - [Redmine: #51591]
 	- 20160407@Winnie: VoidBridge - [Redmine: #55259 ]
 	- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
-	
+	- 20160801@Elodie: NG2 Product - [Redmine: #60809]
+
 Pattern Explanation:
 Search keyword: '%keyword%'
 First char
@@ -95,11 +91,14 @@ B: 'B%'
 		,	@bitmapOrder_Cricket		INT
 		,	@bitmapOrder_AllBet			INT
 		,	@bitmapOrder_VoidBridge		INT
+		,	@bitmapOrder_NG2			INT
     
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
     SET @bitmapOrder_Cricket = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 50 AND Bettype = 501)
 	SET @bitmapOrder_VoidBridge = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 212 AND Bettype = 4001)
+	SET @bitmapOrder_NG2 = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 213 AND Bettype = 2501)
+
 	SET	@bitmapOrder_AllBet =	(
 									SELECT	psp.bitmapOrder
 									FROM	dbo.ProductStatusProfile AS psp WITH(NOLOCK)
@@ -112,12 +111,14 @@ B: 'B%'
 		,	@IsHidden_Cricket			INT = 1
 		,	@IsHidden_AllBet			INT = 1
 		,	@IsHidden_VoidBridge		INT = 1
+		,	@IsHidden_NG2				INT = 1
     
     DECLARE	@SportBook2					INT = 16
 		,	@CockFighting				INT = 19
 		,	@Cricket					INT = 20
 		,	@AllBet						INT = 21
 		,	@VoidBridge					INT = 22
+		,	@NG2						INT = 23
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
@@ -141,7 +142,11 @@ B: 'B%'
 	BEGIN
 		SET @IsHidden_VoidBridge = 0
 	END
-	
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@NG2,11))
+	BEGIN
+		SET @IsHidden_NG2 = 0
+	END
+
 	IF(@System = 'ACCOUNTING')
 	BEGIN
 	SELECT @tmpUserid=CAST(@Userid AS VARCHAR(50))
@@ -255,6 +260,12 @@ B: 'B%'
 					ELSE 1
 			END AS SyncedVoidBridgeDownline,
 			
+			-- For NG2
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_NG2),1) AS DisableNG2,
+			CAST(CASE WHEN @IsHidden_NG2 = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_NG2),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideNG2,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_NG2), 0) AS SyncedNG2,
+			1 AS SyncedNG2Upline,
+
 			-- Cricket
 			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
 			ISNULL(cda.Discount,0) AS discountCricket,
@@ -442,6 +453,12 @@ B: 'B%'
 					ELSE 1
 			END AS SyncedVoidBridgeDownline,
 			
+			-- For NG2
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapIsDisabled, @bitmapOrder_NG2),1) AS DisableNG2,
+			CAST(CASE WHEN @IsHidden_NG2 = 0 AND ISNULL(dbo.f_GetProductStatus(cps.bitmapIsHidden, @bitmapOrder_NG2),1) = 0 THEN 0 ELSE 1 END AS BIT) AS HideNG2,
+			ISNULL(dbo.f_GetProductStatus(cps.bitmapHasSynced, @bitmapOrder_NG2), 0) AS SyncedNG2,
+			1 AS SyncedNG2Upline,
+			
 			-- Cricket
 			CASE WHEN m.[site] = 'IMBC' THEN 1 ELSE 0 END AS IsIMBC,
 			ISNULL(cda.Discount,0) AS discountCricket,
@@ -504,8 +521,7 @@ B: 'B%'
 			cps.bitmapHasSynced,
 			csuper.IsMyanmarOdds,
 			ac.CommRate,
-			m.[site],cda.Discount
-			
+			m.[site],cda.Discount			
 		) a
 		WHERE a.RowNumber BETWEEN @RowStart AND @RowEnd
 	END

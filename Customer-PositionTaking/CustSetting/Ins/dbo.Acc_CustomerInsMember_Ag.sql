@@ -5603,7 +5603,7 @@ BEGIN
 					FROM ProductSettingDetail psd WITH(NOLOCK)
 						INNER JOIN	ProductStatusProfile psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype
 																			AND	psd.BetType = psp.Bettype
-																			AND psd.SettingType = 4		-- Product Status
+																			AND psd.SettingType IN (4,11)		-- Product Status, Game Status
 						INNER JOIN CustProductStatus cps WITH(NOLOCK) ON cps.CustID = @CustID
 					WHERE @_Site = 'IMBC' OR psd.ProductID <> 20 --iCricket
 					GROUP BY psd.ProductID	
@@ -5615,19 +5615,13 @@ BEGIN
 	FROM (
 		SELECT	psp.Sporttype,
 				psp.Bettype,
-				cps.custIsDisable
+				(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapIsDisabled, psp.bitmapOrder)) AS custIsDisable
 		FROM		ProductSettingDetail AS psd WITH(NOLOCK)
-		INNER JOIN	ProductStatusProfile AS psp WITH(NOLOCK)
-				ON	psd.SportType = psp.Sporttype
-				AND	psd.BetType = psp.Bettype
-				AND psd.SettingType = 4		-- Product Status
-		CROSS APPLY	(
-			SELECT	dbo.f_GetProductStatus(bitmapIsDisabled, psp.bitmapOrder) AS custIsDisable
-			FROM CustProductStatus WITH(NOLOCK)
-			WHERE CustID = @custid
-		) cps
-		WHERE @_Site = 'IMBC' OR psd.ProductID <> 20 --iCricket
-	) iq
+			INNER JOIN	ProductStatusProfile AS psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype 
+			CROSS APPLY CustProductStatus WITH(NOLOCK)
+		WHERE CustID = @custid AND (@_Site = 'IMBC' OR psd.ProductID <> 20)--iCricket
+			AND psd.SettingType IN (4,11)-- Product Status, Game Status
+	)iq
 
     SELECT @LogSPData = '<Acc_CustomerInsMember_Ag custid="'+ COALESCE(CAST(@custid AS VARCHAR(50)), SPACE(1)) + '" ' +
     'closed="'+ COALESCE(CAST(@closed AS VARCHAR(50)), SPACE(1)) + '" ' +

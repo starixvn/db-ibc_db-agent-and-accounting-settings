@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_MasterSettingSelect]   
 	@CustID			INT  
 	, @ProductID	TINYINT  
@@ -17,6 +11,7 @@ AS
  
  Revision:
 	- 20160104@Dominic: Implementing Charge Commission Plugin Redmine #49689
+	- 20160801@Elodie: Move commission part to Acc_CustSetting_DiscountSelect [Redmine: #60809]
   
  Param's Explanation:  
  • @CustID: Master's ID  
@@ -104,28 +99,28 @@ BEGIN
 			AND pdt.BetType = sbl.bettype  
 			AND sbl.custid = @SuperID  
 	END 
-	--Discount Setting  / Charge Comm
-	ELSE IF @SettingType IN (3,5)
-	BEGIN 
-		SELECT pdt.SportType  
-			, pdt.BetType  
-			, dc.Discount AS MasterDiscount  
-			, sdc.Discount AS SuperDiscount  
-		FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
-		INNER JOIN #SportBettypeFilter ft 
-				ON pdt.SportType = ft.sporttype
-					AND pdt.BetType = ft.bettype
-					AND pdt.IsLive = ft.islive
-					AND pdt.SettingType = ft.SettingType
-		INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)  
-			ON pdt.SportType = dc.sporttype  
-			AND pdt.BetType = dc.bettype  
-			AND dc.custid = @CustID  
-		INNER JOIN dbo.CustDiscount3rd_Agent sdc WITH (NOLOCK)  
-			ON pdt.SportType = sdc.sporttype  
-			AND pdt.BetType = sdc.bettype  
-			AND sdc.custid = @SuperID  
-	END
+	----Discount Setting  / Charge Comm
+	--ELSE IF @SettingType IN (3,5)
+	--BEGIN 
+	--	SELECT pdt.SportType  
+	--		, pdt.BetType  
+	--		, dc.Discount AS MasterDiscount  
+	--		, sdc.Discount AS SuperDiscount  
+	--	FROM dbo.ProductSettingDetail pdt WITH (NOLOCK)  
+	--	INNER JOIN #SportBettypeFilter ft 
+	--			ON pdt.SportType = ft.sporttype
+	--				AND pdt.BetType = ft.bettype
+	--				AND pdt.IsLive = ft.islive
+	--				AND pdt.SettingType = ft.SettingType
+	--	INNER JOIN dbo.CustDiscount3rd_Agent dc WITH (NOLOCK)  
+	--		ON pdt.SportType = dc.sporttype  
+	--		AND pdt.BetType = dc.bettype  
+	--		AND dc.custid = @CustID  
+	--	INNER JOIN dbo.CustDiscount3rd_Agent sdc WITH (NOLOCK)  
+	--		ON pdt.SportType = sdc.sporttype  
+	--		AND pdt.BetType = sdc.bettype  
+	--		AND sdc.custid = @SuperID  
+	--END
 	--Product Status  
 	ELSE IF @SettingType = 4
 	BEGIN 

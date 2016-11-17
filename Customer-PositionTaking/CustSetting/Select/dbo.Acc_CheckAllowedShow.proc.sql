@@ -11,12 +11,13 @@ ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
 				,	@AllowedCricket			BIT = 0		OUTPUT
 				,	@AllowedAllBet			BIT = 0		OUTPUT
 				,	@AllowedVoidBridge		BIT = 0		OUTPUT
+				,	@AllowedNG2				BIT = 0		OUTPUT
 AS
 BEGIN
 /*
 Created by: 20090525@Simon
 Task: Check the showed types. (Finance / Horse Racing / Casino)
-DB: DBAGE.BODB02 
+DB: DBCUST/CustDB
 Revisions:
 	- 20090908@Shifu: Check Allow HR
 	- 20100930@Ethan: Check Allow BI
@@ -28,6 +29,8 @@ Revisions:
 	- 20160114@Helen: Cricket - [Redmine: #50027]
 	- 20160317@Billy: AllBet - [Redmine: #53718]
 	- 20160407@Winnie: VoidBridge - [Redmine: #55532]
+	- 20160801@Elodie: NG2 Product - [Redmine: #60809]
+	- 20161024@Elodie: Move to DBCUST/CustDB
 */
 
 	SET NOCOUNT ON
@@ -38,16 +41,27 @@ Revisions:
 		,	@IsHideCricket			INT
 		,	@IsHideAllBet			INT
 		,	@IsHideVoidBridge		INT
+		,	@IsHideNG2				INT
+
 	DECLARE	@Cricket				INT = 20
 		,	@AllBet					INT = 21
 		,	@VoidBridge				INT = 22
 		,	@bitOrderVB				INT
+		,	@NG2					INT = 23
 	
 	Select @mCurrencyID=Currency, @RoleID=RoleID, @srecommend=srecommend, @mrecommend=mrecommend, @recommend=recommend
-		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END
-		
+		, @AllowedColossusbets = CASE WHEN HideColossusBet = 0 THEN 1 ELSE 0 END		
 	from custinfo with (nolock) where CustID=@CustID
 	
+	--SELECT cs.CustID, cs.bitmapHasSynced, cs.bitmapIsHidden, cs.bitmapIsDisabled
+	--INTO #CustProductStatus
+	--FROM DBCUST.CustDB.dbo.CustProductStatus cs WITH (NOLOCK)
+	--WHERE 1 = CASE	WHEN @RoleID = 4 AND cs.CustID = @CustID THEN 1
+	--				WHEN @RoleID = 3 AND cs.CustID IN (@CustID,@srecommend) THEN 1
+	--				WHEN @RoleID = 2 AND cs.CustID IN (@CustID,@mrecommend) THEN 1
+	--				WHEN @RoleID = 1 AND cs.CustID IN (@CustID,@recommend) THEN 1
+	--				ELSE 0 END
+
 	SET @IsHideCockfighting = (SELECT SettingStatus FROM ProductSettingDetail WITH (NOLOCK) WHERE ProductID = 19 AND SettingType = 4)
 	
 	SET @AllowedCockfighting = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,2) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
@@ -61,7 +75,7 @@ Revisions:
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@VoidBridge,4))
 	BEGIN
 		SET @IsHideVoidBridge = 0
-	END
+	END	
 
 	SELECT TOP 1 @bitOrderVB=bitmapOrder FROM ProductStatusProfile(NOLOCK) WHERE Sporttype=212 AND Bettype=4001
 	SET @AllowedVoidBridge = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,@bitOrderVB) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 
@@ -153,8 +167,36 @@ Revisions:
 	WHERE	cps.CustID = @CustID
 		AND	psd.ProductID = @AllBet
 		
-
+	-- For NG2
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@NG2,11))
+		SELECT @IsHideNG2 = 0
+	ELSE
+		SELECT @IsHideNG2 = 1
+	IF @RoleID = 4
+		SELECT	@AllowedNG2 =	CASE	WHEN @IsHideNG2 = 0 AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) = 0 THEN 1
+										ELSE 0 END
+		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
+			CROSS JOIN CustProductStatus AS cps WITH (NOLOCK)
+		WHERE	cps.CustID = @CustID
+			AND	psd.ProductID = @NG2
+	ELSE 
+		SELECT	@AllowedNG2 =	CASE	WHEN (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(cps.bitmapIsHidden, psp.bitmapOrder)) = 0
+											AND (SELECT value FROM dbo.f_CustSetting_ProductStatusSel(ups.bitmapHasSynced, psp.bitmapOrder)) = 1
+											AND @IsHideNG2 = 0 
+											THEN 1
+										ELSE 0 END
+		FROM	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+			INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK) ON psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype AND psd.SettingType = 11
+			CROSS JOIN CustProductStatus AS cps WITH (NOLOCK)
+			CROSS JOIN CustProductStatus AS ups WITH (NOLOCK)	
+		WHERE	cps.CustID = @CustID
+			AND	psd.ProductID = @NG2
+			AND ups.CustID = CASE	WHEN @RoleID = 3 THEN @srecommend
+									WHEN @RoleID = 2 THEN @mrecommend
+									ELSE @recommend END
 END
+
 GO
 GRANT EXECUTE ON [dbo].Acc_CheckAllowedShow TO [bodbadminNet]
 GO
