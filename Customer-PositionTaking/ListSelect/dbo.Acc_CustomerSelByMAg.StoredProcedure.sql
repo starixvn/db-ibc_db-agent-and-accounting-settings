@@ -198,7 +198,7 @@ BEGIN
 		,	@bitmapOrder_AllBetVIP		INT
 		,	@bitmapOrder_VoidBridge		INT
 		,	@bitmapOrder_NG2			INT
-		@bitmapOrder_FishingWorld	INT
+		,	@bitmapOrder_FishingWorld	INT
 
     SET @bitmapOrder_MuayThai = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 44 AND Bettype = 3)
     SET @bitmapOrder_CockFighting = (SELECT bitmapOrder FROM ProductStatusProfile WITH (NOLOCK) WHERE Sporttype = 206 AND Bettype = 1003)
@@ -228,7 +228,7 @@ BEGIN
 		,	@IsHidden_AllBet			INT = 1
 		,	@IsHidden_VoidBridge		INT = 1
 		,	@IsHidden_NG2				INT = 1
-		@IsHidden_FishingWorld		INT = 1
+		,	@IsHidden_FishingWorld		INT = 1
 
     DECLARE	@SportBook2					INT = 16
 		,	@CockFighting				INT = 19
@@ -236,7 +236,7 @@ BEGIN
 		,	@AllBet						INT = 21
 		,	@VoidBridge					INT = 22
 		,	@NG2						INT = 23
-		@FishingWorld				INT = 24
+		,	@FishingWorld				INT = 24
     
 	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@SportBook2,4))
 	BEGIN
