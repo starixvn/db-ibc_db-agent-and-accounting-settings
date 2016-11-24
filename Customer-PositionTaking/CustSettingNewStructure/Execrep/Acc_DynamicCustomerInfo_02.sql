@@ -14,6 +14,7 @@ AS
 		- 20160108@Elodie: Implementing SMA WinLossLimit Plugin - [Redmine #50082]
 		- 20160125@Billy: Implementing Stake Level Settings - [Redmine: #51026]
 		- 20160801@Elodie: Implementing GameStatus Plugin - [Redmine #60809]
+		- 20161124@Winnie: Implementing Loss Limit - [Redmine #52647]
 	*/
 BEGIN
 	DECLARE @_Site VARCHAR(10), @_SiteID INT, @_Currency TINYINT
@@ -289,7 +290,7 @@ BEGIN
 			RETURN
 		END CATCH
 
-		/********************************************* SMA Win Loss Limit : SettingType = 6 ****************************************/
+		/********************************************* SMA Win Loss Limit : SettingType = 6 SMA Loss Limit : SettingType = 12 ****************************************/
 		BEGIN TRY
 			IF EXISTS(SELECT TOP 1 1 FROM [dbo].[CustWinLossLimit_Agent] WITH(NOLOCK) WHERE CustID = @ExistingCustID)
 			INSERT INTO [dbo].[CustWinLossLimit_Agent]
@@ -307,7 +308,7 @@ BEGIN
 						,IsAutoReset
 			FROM [dbo].[CustWinLossLimit_Agent] cs WITH (NOLOCK)
 				INNER JOIN #ProductSettingDetail ps ON ps.BetType = cs.BetType AND ps.SportType = cs.SportType
-			WHERE CustID = @ExistingCustID AND ps.SettingType = 6
+			WHERE CustID = @ExistingCustID AND ps.SettingType IN( 6,12)
 		END TRY
 		BEGIN CATCH
 			SELECT @ErrCode = 6
