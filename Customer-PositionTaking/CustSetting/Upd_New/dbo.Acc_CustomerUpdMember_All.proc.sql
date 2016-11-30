@@ -56,6 +56,11 @@
 	@MaxBetv99MP MONEY,  
 	@MaxPerMatchv99MP MONEY,  
 	
+	--Mix Parlay Mixed Sports  
+	@MinBetv1MP MONEY,  
+	@MaxBetv1MP MONEY,  
+	@MaxPerMatchv1MP MONEY,  
+	
 	--HR Fixed Odds
 	@MinBetv154 MONEY = 0,
 	@MaxBetv154 MONEY = 0,
@@ -78,6 +83,7 @@
 	@UpdateMinMaxBetv99 BIT = 1,  
 
 	@UpdateMinMaxBetv99MP BIT = 1,  
+	@UpdateMinMaxBetv1MP BIT = 1,
 	@UpdateMinMaxBetv154 bit = 1,
 	@UpdateMinMaxBetv161 BIT = 1,  
 
@@ -176,6 +182,7 @@
 	@UpdatePositiontakingv11 BIT = 1,  
 	@UpdatePositiontakingv99 BIT = 1,  
 	@UpdatePositiontakingv99MP BIT = 1,  
+	@UpdatePositiontakingv1MP BIT = 1,  
 	@UpdatePositiontakingv154 BIT = 1,
 	@UpdatePositiontakingv161 BIT = 1,  
 
@@ -225,6 +232,7 @@ Revisions:
  - 20160104@Helen: Disallow SMA changes password or updates account status of members - [Redmine:#49967]  
  - 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
  - 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
+ - 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
 Param's Explanation:  
 • @ErrCode:  
     = 0: Update successfully.  
@@ -486,6 +494,7 @@ BEGIN
 		@UpdateMinMaxBetv11  = 1 or  
 		@UpdateMinMaxBetv99  = 1 or  
 		@UpdateMinMaxBetv99MP = 1 or  
+		@UpdateMinMaxBetv1MP = 1 or  
 		@UpdateMinMaxBetv154  = 1 or  
 		@UpdateMinMaxBetv161 = 1  
 	BEGIN  
@@ -519,6 +528,11 @@ BEGIN
 	  @minbetv99MP = @minbetv99MP,  
 	  @maxbetv99MP = @maxbetv99MP,  
 	  @maxpermatchv99MP = @maxpermatchv99MP,  
+	  
+	  @minbetv1MP = @minbetv1MP,  
+	  @maxbetv1MP = @maxbetv1MP,  
+	  @maxpermatchv1MP = @maxpermatchv1MP,  
+	  
 	  @minbetv154 = @minbetv154,  
 	  @maxbetv154 = @maxbetv154,  
 	  @maxpermatchv154 = @maxpermatchv154,  
@@ -536,6 +550,9 @@ BEGIN
 	  @UpdateMinMaxBetv11 = @UpdateMinMaxBetv11,  
 	  @UpdateMinMaxBetv99 = @UpdateMinMaxBetv99,  
 	  @UpdateMinMaxBetv99MP = @UpdateMinMaxBetv99MP,  
+	  
+	  @UpdateMinMaxBetv1MP = @UpdateMinMaxBetv1MP,  
+	  
 	  @UpdateMinMaxBetv154 = @UpdateMinMaxBetv154,  
 	  @UpdateMinMaxBetv161 = @UpdateMinMaxBetv161,  
 	  @SubAccID = @SubAccID,  
@@ -570,6 +587,9 @@ BEGIN
 	 @UpdatePositiontakingv99   = 1  or  
 
 	 @UpdatePositiontakingv99MP  = 1 or  
+	 
+	 @UpdatePositiontakingv1MP  = 1 or  
+	 
 	 @UpdatePositiontakingv154   = 1  or  
 	 @UpdatePositiontakingv161  = 1  
 	BEGIN  

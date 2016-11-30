@@ -49,6 +49,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     @maxbetv99mp money = 0,
     @maxpermatchv99mp money = 0,
     
+    -- parlay soccer sports
+    @minbetv1mp money = 0,
+    @maxbetv1mp money = 0,
+    @maxpermatchv1mp money = 0,
+    
     --HR Fixed Odds
     @MinBetv154 MONEY = 0,
     @MaxBetv154 MONEY = 0 ,
@@ -158,6 +163,9 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     
     -- new setting
     @UpdateMinMaxBetv99MP bit = 1,
+    
+    @UpdateMinMaxBetv1MP bit = 1,
+    
     @UpdateMinMaxBetv154 bit = 1,
     @UpdateMinMaxBetv161 bit = 1,
 
@@ -431,7 +439,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerUpdMaster_All]
     @ErrCode varchar(300) = '' OUTPUT,
     @ErrMsg nvarchar(4000) = '' OUTPUT
 as
-BEGIN
+
 --@Source Control
 /*
 Created: 20080514@Thien
@@ -466,6 +474,7 @@ Revisions:
 	- 20150904@Helen: commission setting for MO [Redmine #41470]
 	- 20160310@Winnie: Fix bug #53736[Edit SB: Email is cleared when updating without any change in Edit SB page]
 	- 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
 	
 Param's Explanation:
 • @ErrCode:
@@ -474,7 +483,7 @@ Param's Explanation:
   
 • @ErrMsg: Error description.
 */
-
+BEGIN
 	SET NOCOUNT ON
 
 	-- ***Check Downline Belonging***
@@ -715,6 +724,7 @@ Param's Explanation:
 		@UpdateMinMaxBetv11  = 1 or
 		@UpdateMinMaxBetv99  = 1 or
 		@UpdateMinMaxBetv99MP = 1 or
+		@UpdateMinMaxBetv1MP = 1 or
 		@UpdateMinMaxBetv154  = 1 or
 		@UpdateMinMaxBetv161 = 1
 	BEGIN
@@ -751,6 +761,11 @@ Param's Explanation:
 			@maxbetv99mp = @maxbetv99mp,
 			@maxpermatchv99mp = @maxpermatchv99mp,
 	        
+	        --- parlay soccer sports
+			@minbetv1mp = @minbetv1mp,
+			@maxbetv1mp = @maxbetv1mp,
+			@maxpermatchv1mp = @maxpermatchv1mp,
+			
 			@MinBetv154 = @MinBetv154,
 			@MaxBetv154 = @MaxBetv154,
 			@MaxPerMatchv154 = @MaxPerMatchv154,
@@ -773,6 +788,9 @@ Param's Explanation:
 			@UpdateMinMaxBetv99 = @UpdateMinMaxBetv99,
 	        
 			@UpdateMinMaxBetv99MP = @UpdateMinMaxBetv99MP,
+			
+			@UpdateMinMaxBetv1MP = @UpdateMinMaxBetv1MP,
+			
 			@UpdateMinMaxBetv154 = @UpdateMinMaxBetv154,
 			@UpdateMinMaxBetv161 = @UpdateMinMaxBetv161,
 

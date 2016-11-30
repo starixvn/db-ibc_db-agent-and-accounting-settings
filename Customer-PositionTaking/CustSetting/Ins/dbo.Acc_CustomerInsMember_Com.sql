@@ -70,6 +70,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@MaxBetv99MP MONEY,
 	@MaxPerMatchv99MP MONEY,
 	
+	--Mix Parlay soccer sports
+	@MinBetv1MP MONEY = 0,
+	@MaxBetv1MP MONEY = 0,
+	@MaxPerMatchv1MP MONEY = 0,
+	
 	--HR Fixed Odds
 	@MinBetv154 MONEY = 0,
 	@MaxBetv154 MONEY = 0,
@@ -335,7 +340,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Com]
 	@ErrCode INT = 0 OUTPUT,
 	@ErrMsg NVARCHAR(2000) = '' OUTPUT
 AS
-BEGIN
+
 --@Source Control
 /*
 Created: 20090121@Thien
@@ -410,6 +415,8 @@ Revisions:
 	- 20160315@Winnie: Hotfix 51457 write wrong log info
 	- 20160627@Winnie: Out right PT [Redmine #59438]
 	- 20160707@Winnie: #48948 Hide_special_sites_from_unautorized_users
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
+	
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -417,6 +424,7 @@ Param's Explanation:
   
 • @ErrMsg: Error description.
 */
+BEGIN
 	SET NOCOUNT ON
 	
 	DECLARE @tmp TABLE (siteid INT,site NVARCHAR(50), SpecialGroup TINYINT )
@@ -501,6 +509,11 @@ Param's Explanation:
 				@MinBetv99MP = @MinBetv99MP,
 				@MaxBetv99MP = @MaxBetv99MP,
 				@MaxPerMatchv99MP = @MaxPerMatchv99MP,
+				
+				--Mix Parlay Soccer sports
+				@MinBetv1MP = @MinBetv1MP,
+				@MaxBetv1MP = @MaxBetv1MP,
+				@MaxPerMatchv1MP = @MaxPerMatchv1MP,
 				
 				--HR Fixed Odds
 				@MinBetv154 = @MinBetv154,
@@ -844,6 +857,9 @@ Param's Explanation:
 		@MaxPerMatchv11 = @MaxPerMatchv11,
 		@MaxPerMatchv99 = @MaxPerMatchv99,
 		@MaxPerMatchv99MP = @MaxPerMatchv99MP,
+		
+		@MaxPerMatchv1MP = @MaxPerMatchv1MP,
+		
 		@MaxPerMatchv154 = @MaxPerMatchv154,
 		@MaxPerMatchv161 = @MaxPerMatchv161,	
 		@MaxPerBallv161 = @MaxPerBallv161,	
@@ -1141,6 +1157,11 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		--Mix Parlay mix sports
 		@MinBetv99MP = @MinBetv99MP,
 		@MaxBetv99MP = @MaxBetv99MP,		
+		
+		--Mix Parlay Soccer sports
+		@MinBetv1MP = @MinBetv1MP,
+		@MaxBetv1MP = @MaxBetv1MP,		
+		
 		--HR Fixed Odds
 		@MinBetv154 = @MinBetv154,
 		@MaxBetv154 = @MaxBetv154,		
@@ -1798,9 +1819,15 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 	'MinBv99="'+ COALESCE(CAST(@MinBetv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MaxBv99="'+ COALESCE(CAST(@MaxBetv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MPMv99="'+ COALESCE(CAST(@MaxPerMatchv99 AS VARCHAR(50)),SPACE(1)) + '" ' +
+	
 	'MinBv99MP="'+ COALESCE(CAST(@MinBetv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MaxBv99MP="'+ COALESCE(CAST(@MaxBetv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MPMv99MP="'+ COALESCE(CAST(@MaxPerMatchv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	
+	'MinBv1MP="'+ COALESCE(CAST(@MinBetv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'MaxBv1MP="'+ COALESCE(CAST(@MaxBetv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	'MPMv1MP="'+ COALESCE(CAST(@MaxPerMatchv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+	
 	'MinBv154="'+ COALESCE(CAST(@MinBetv154 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MaxBv154="'+ COALESCE(CAST(@MaxBetv154 AS VARCHAR(50)),SPACE(1)) + '" ' +
 	'MPMv154="'+ COALESCE(CAST(@MaxPerMatchv154 AS VARCHAR(50)),SPACE(1)) + '" ' +
@@ -1846,6 +1873,11 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 		'MinBv99MP="'+ COALESCE(CAST(@MinBetv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'MaxBv99MP="'+ COALESCE(CAST(@MaxBetv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'MPMv99MP="'+ COALESCE(CAST(@MaxPerMatchv99MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+		
+		'MinBv1MP="'+ COALESCE(CAST(@MinBetv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'MaxBv1MP="'+ COALESCE(CAST(@MaxBetv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+		'MPMv1MP="'+ COALESCE(CAST(@MaxPerMatchv1MP AS VARCHAR(50)),SPACE(1)) + '" ' +
+		
 		'MinBv154="'+ COALESCE(CAST(@MinBetv154 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'MaxBv154="'+ COALESCE(CAST(@MaxBetv154 AS VARCHAR(50)),SPACE(1)) + '" ' +
 		'MPMv154="'+ COALESCE(CAST(@MaxPerMatchv154 AS VARCHAR(50)),SPACE(1)) + '" ' +

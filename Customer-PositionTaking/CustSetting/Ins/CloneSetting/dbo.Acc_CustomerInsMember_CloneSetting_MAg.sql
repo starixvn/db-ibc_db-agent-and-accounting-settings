@@ -61,6 +61,7 @@ AS
 	- 20151016@Elodie: Add AgentCommRate setting in Acc_CustomerInfo_Execrep_02 [Redmine: #41264, 41470]
 	- 20151030@Billy: Change to new VirtualRate structure [Redmine: #46541]
 	- 20151223@Patrick: Add Max/Loss limit for RnG Casino [Redmine: #49528]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
 	
  Explanation's Param:  
 	• @ErrCode:
@@ -404,6 +405,7 @@ BEGIN
 			,HideColossusBet
 			,DisableColossusBet
 			,DisableSuperLive
+			,MaxPerMatch1MP
 			)
      SELECT
 			@custid
@@ -482,6 +484,7 @@ BEGIN
 			,HideColossusBet
 			,DisableColossusBet
 			,DisableSuperLive
+			,MaxPerMatch1MP
 	FROM dbo.custinfo WITH(NOLOCK)
 	WHERE custid=@ExistingCustid  
         

@@ -692,6 +692,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 	--Mix Parlay mix sports
 	@MinBetv99MP MONEY = 0,
 	@MaxBetv99MP MONEY = 0,		
+	
+	--Mix Parlay soccer sports
+	@MinBetv1MP MONEY = 0,
+	@MaxBetv1MP MONEY = 0,		
+	
 	--HR Fixed Odds
 	@MinBetv154 MONEY = 0,
 	@MaxBetv154 MONEY = 0,		
@@ -869,6 +874,8 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20151015@Dominic: Add logic for new customer setting structure [Redmine #26274]
 			- 20151119@Dominic: Fix bug when inserting setting into DCS structure Redmine Feature #26274
 			- 20160627@Winnie: Out right PT [Redmine #59438]  	
+			- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
+			
 		Parameter's Explanation:
 		
 	*/
@@ -933,7 +940,8 @@ BEGIN
 
 		UNION ALL	SELECT @custid, 4, 1, @apositiontaking_4, @mpositiontaking_4, @spositiontaking_4, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL	SELECT @custid, 6, 1, @apositiontaking_6, @mpositiontaking_6, @spositiontaking_6, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
-		UNION ALL	SELECT @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, @spositiontaking_9, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
+		UNION ALL	SELECT @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, @spositiontaking_9, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBetv1MP, @MaxBetv1MP, 0, 0, 0, 0, 0, 0, 0, 0
+		
 		UNION ALL	SELECT @custid, 10, 1, @apositiontaking_10, @mpositiontaking_10, @spositiontaking_10, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 				
 		UNION ALL	SELECT @custid, 9999, 1, @apositiontaking_9999, @mpositiontaking_9999, @spositiontaking_9999, 0, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
@@ -982,6 +990,7 @@ BEGIN
 		UNION ALL	SELECT @custid, 10, 99, @v99apositiontaking_10, @v99mpositiontaking_10, @v99spositiontaking_10, 0,0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0, 0, 0, 0, 0
 		--Mix Sports Parlay
 		UNION ALL	SELECT @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, @v99spositiontaking_9, 0,0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0, 0, 0, 0, 0
+		
 		--HR Fixed Odds
 		UNION ALL	SELECT @custid, 20, 154, ISNULL(@v154apositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), ISNULL(@v154spositiontaking_20,0), 0, 0, 0, 0, 0, 0, ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, ISNULL(@MinBetv154,0), ISNULL(@MaxBetv154,0), 0, 0, 0, 0, 0, 0, 0, 0
 
@@ -1353,7 +1362,7 @@ BEGIN
 		UNION ALL
 		select @custid, 6, 1, @spositiontaking_6, @mpositiontaking_6, 0, 0, 0, 0, 0, @auto_spositiontaking_6, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbet, @maxbet, 0, 0, @isauto_spositiontaking_6, 0, 0, 0, 0, 0
 		UNION ALL
-		select @custid, 9, 1, @spositiontaking_9, @mpositiontaking_9, 0, 0, 0, 0, 0, @auto_spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbet, @maxbet, 0, 0, @isauto_spositiontaking_9, 0, 0, 0, 0, 0
+		select @custid, 9, 1, @spositiontaking_9, @mpositiontaking_9, 0, 0, 0, 0, 0, @auto_spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @MinBetv1MP, @MaxBetv1MP, 0, 0, @isauto_spositiontaking_9, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 10, 1, @spositiontaking_10, @mpositiontaking_10, 0, 0, 0, 0, 0, @auto_spositiontaking_10, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbet, @maxbet, 0, 0, @isauto_spositiontaking_10, 0, 0, 0, 0, 0
 				
@@ -1443,8 +1452,9 @@ BEGIN
 		-- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99spositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @auto_v99spositiontaking_9, @discountcs, 0, 0, 0, 0, 0, 0, 0, @minbetv99mp, @maxbetv99mp, 0, 0, @isauto_v99spositiontaking_9, 0, 0, 0, 0, 0
+		
 		UNION ALL
-		select @custid, 20, 154, ISNULL(@v154spositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@auto_v154spositiontaking_20,0), ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, ISNULL(@minbetv154,0), ISNULL(@maxbetv154,0), 0, 0, ISNULL(@isauto_v154spositiontaking_20,0), 0, 0, 0, 0, 0
+		SELECT @custid, 20, 154, ISNULL(@v154spositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@auto_v154spositiontaking_20,0), ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, ISNULL(@minbetv154,0), ISNULL(@maxbetv154,0), 0, 0, ISNULL(@isauto_v154spositiontaking_20,0), 0, 0, 0, 0, 0
 
 		if @@Error <> 0
 		BEGIN
@@ -1873,7 +1883,7 @@ BEGIN
 		UNION ALL
 		select @custid, 6, 1, @apositiontaking_6, @mpositiontaking_6, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, @auto_mpositiontaking_6, 0, @isauto_mpositiontaking_6, 0, 0 ,0 ,0 ,0
 		UNION ALL
-		select @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, @auto_mpositiontaking_9, 0, @isauto_mpositiontaking_9, 0, 0 ,0 ,0 ,0
+		select @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv1MP, @MaxBetv1MP, @auto_mpositiontaking_9, 0, @isauto_mpositiontaking_9, 0, 0 ,0 ,0 ,0
 		UNION ALL
 		select @custid, 10, 1, @apositiontaking_10, @mpositiontaking_10, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBet, @MaxBet, @auto_mpositiontaking_10, 0, @isauto_mpositiontaking_10, 0, 0 ,0 ,0 ,0
 				
@@ -1961,6 +1971,7 @@ BEGIN
 		--- mix parlay of mixed sports
 		UNION ALL
 		select @custid, 9, 99, @v99apositiontaking_9, @v99mpositiontaking_9, 0, 0, 0, 0, 0, @discountcs, 0, 0, 0, 0, 0, 0, 0, 0, @MinBetv99mp, @MaxBetv99mp, @auto_v99mpositiontaking_9, 0, @isauto_v99mpositiontaking_9, 0, 0 ,0 ,0 ,0
+		
 		UNION ALL
 		select @custid, 20, 154, ISNULL(@v154apositiontaking_20,0), ISNULL(@v154mpositiontaking_20,0), 0, 0, 0, 0, 0, ISNULL(@discountHRFixedOdds,0), 0, 0, 0, 0, 0, 0, 0, 0, ISNULL(@MinBetv154,0), ISNULL(@MaxBetv154,0), ISNULL(@auto_v154mpositiontaking_20,0), 0, ISNULL(@isauto_v154mpositiontaking_20,0), 0, 0 ,0 ,0 ,0
 
@@ -2403,15 +2414,9 @@ BEGIN
 		UNION ALL
 		select @custid, 6, 1, @apositiontaking_6, @mpositiontaking_6, @spositiontaking_6, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0,@MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
-		select @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, @spositiontaking_9, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0,@MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
+		select @custid, 9, 1, @apositiontaking_9, @mpositiontaking_9, @spositiontaking_9, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0,@MinBetv1MP, @MaxBetv1MP, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 10, 1, @apositiontaking_10, @mpositiontaking_10, @spositiontaking_10, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0,@MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
-		
-		
-		
-		
-		
-		
 		
 		UNION ALL
 		select @custid, 9999, 1, @apositiontaking_9999, @mpositiontaking_9999, @spositiontaking_9999, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0,@MinBet, @MaxBet, 0, 0, 0, 0, 0, 0, 0, 0
@@ -2492,6 +2497,7 @@ BEGIN
 		select @custid, 3, 99, @v99apositiontaking_3, @v99mpositiontaking_3, @v99spositiontaking_3, 0, 0, 0, @playerdiscount, @discount, @adiscount, @sdiscount, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
 		select @custid, 9, 99, @v99apositiontaking_9, isnull(@v99mpositiontaking_9,0), isnull(@v99spositiontaking_9,0), 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99MP, @MaxBetv99MP, 0, 0, 0, 0, 0, 0, 0, 0
+		
 		UNION ALL
 		select @custid, 20, 99, @v99apositiontaking_20, @v99mpositiontaking_20, @v99spositiontaking_20, 0, 0, 0, @playerdiscountcs, @discountcs, @adiscountcs, @sdiscountcs, 0, 0, 0, 0, 0, 0, @MinBetv99, @MaxBetv99, 0, 0, 0, 0, 0, 0, 0, 0
 		UNION ALL
