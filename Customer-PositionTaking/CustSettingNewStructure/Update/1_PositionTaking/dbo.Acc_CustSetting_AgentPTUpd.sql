@@ -20,7 +20,6 @@
 			- 20151103@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
 			- 20160122@Helen: AllBet - always correct PT for Allbet
 			- 20160408@Winnie: VoidBridge - always correct PT for VoidBridge [RedmineID: #55532]
-			- 20161114@Winnie: Change log with productname for settting level=1
 		Parameter's Explanation:
 			@PT = <ROOT>
 					<PT SportType="1" BetType="1" IsLive="0" MasterPT="70" IsAutoMasterPT = "0" AutoMasterPT = "0" AgentPT ="30" MinPT="0" IsUpdAllMems="0" UpdAllMems_Value="0"/>
@@ -162,7 +161,7 @@ BEGIN
                 @userid                         AS '@UserID',
                 @IP                             AS '@IP',
                 (
-					SELECT  @ProductName					AS '@ProductName',
+					SELECT  @ProductID										AS '@ProductID',
                             cs.isLive										AS '@IsLive',
                             CONVERT(DECIMAL(10,2), cs.MasterPT		/100.0)	AS '@MasterPT',
 						    cs.isAutoMasterPT								AS '@IsAutoMasterPT',
@@ -411,7 +410,7 @@ BEGIN
 			    @userid                         AS '@UserID',
                 @IP                             AS '@IP',
                 (
-				    SELECT  @ProductName					AS '@ProductName',
+				    SELECT  @ProductID										AS '@ProductID',
                             cs.isLive										AS '@IsLive',
                             CONVERT(DECIMAL(10,2), cs.MasterPT		/100.0)	AS '@MasterPT',
                             cs.isAutoMasterPT								AS '@IsAutoMasterPT',

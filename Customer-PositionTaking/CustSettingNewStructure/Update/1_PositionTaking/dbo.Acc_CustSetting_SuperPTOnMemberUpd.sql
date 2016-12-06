@@ -17,7 +17,7 @@ AS
 		Revisions:
             - 20151015@Billy: Fix log xml structure and naming
 			- 20151104@Billy: Change log PT value range from [0,90] to [0,0.9] and update log structure - [Redmine: #46781, #46788]
-			- 20161114@Winnie: Change log with productname for settting level=1
+		
 		Parameter's Explanation:
 			@PT =<Root>
 					<PT SportType="1" BetType="1" IsLive="0" SuperPT="50" AutoSuperPT="0" IsAutoSuperPT="0" />
@@ -289,7 +289,7 @@ BEGIN
 						@userid                         AS '@UserID',					
 						@IP                             AS '@IP',				
 						(
-							SELECT  @ProductName					AS '@ProductName',
+							SELECT  @ProductID										AS '@ProductID',
 									cs.isLive										AS '@IsLive',
 									CONVERT(DECIMAL(10,2), cs.SuperPT		/100.0)	AS '@SuperPT',
 									cs.isAutoSuperPT								AS '@IsAutoSuperPT',
@@ -445,7 +445,7 @@ BEGIN
 						@userid                         AS '@UserID',
 						@IP                             AS '@IP',
 						(
-							SELECT  @ProductName					AS '@ProductName',
+							SELECT  @ProductID										AS '@ProductID',
 									cs.isLive										AS '@IsLive',
 									CONVERT(DECIMAL(10,2), cs.SuperPT		/100.0)	AS '@SuperPT',
 									cs.isAutoSuperPT								AS '@IsAutoSuperPT',
@@ -564,7 +564,7 @@ BEGIN
 					@userid                         AS '@UserID',
 					@IP                             AS '@IP',
 					(
-						SELECT  @ProductName					AS '@ProductName',
+						SELECT  @ProductID										AS '@ProductID',
 								cs.isLive										AS '@IsLive',
 								CONVERT(DECIMAL(10,2), cs.SuperPT		/100.0)	AS '@SuperPT',
 								cs.isAutoSuperPT								AS '@IsAutoSuperPT',
