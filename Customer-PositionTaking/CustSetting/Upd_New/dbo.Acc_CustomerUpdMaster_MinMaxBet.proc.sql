@@ -1213,8 +1213,8 @@ BEGIN
 	------------
 	update custsetting with (ROWLOCK, UPDLOCK)
 	set	
-		minbet = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdateMinMaxBetv1MP = 0) or (sporttype=1 and @UpdateMinMaxBet = 0) or (sporttype=2 and @UpdateMinMaxBetv2 = 0) or (sporttype=3 and @UpdateMinMaxBetv3 = 0) or (sporttype=5 and @UpdateMinMaxBetv5 = 0) or (sporttype=8 and @UpdateMinMaxBetv8 = 0) or (sporttype=10 and @UpdateMinMaxBetv10 = 0) or (sporttype=11 and @UpdateMinMaxBetv11 = 0) or (sporttype=99 and @UpdateMinMaxBetv99 = 0 and bettype <> 9) or (sporttype=99 and @UpdateMinMaxBetv99MP = 0 and bettype = 9) or (sporttype=154 and @UpdateMinMaxBetv154 = 0 and bettype = 20)or (sporttype=161 and @UpdateMinMaxBetv161=0)) then minbet else case sporttype when 1 then (case when bettype = 9 then @minbetv1mp else @minbet end)  when 2 then @minbetv2 when 3 then @minbetv3 when 5 then @minbetv5 when 8 then @minbetv8 when 10 then @minbetv10 when 11 then @minbetv11  when 99 then (case when bettype = 9 then @minbetv99mp else @minbetv99 end) when 154 then @minbetv154 else minbet end end,
-		maxbet = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdateMinMaxBetv1MP = 0) or (sporttype=1 and @UpdateMinMaxBet = 0) or (sporttype=2 and @UpdateMinMaxBetv2 = 0) or (sporttype=3 and @UpdateMinMaxBetv3 = 0) or (sporttype=5 and @UpdateMinMaxBetv5 = 0) or (sporttype=8 and @UpdateMinMaxBetv8 = 0) or (sporttype=10 and @UpdateMinMaxBetv10 = 0) or (sporttype=11 and @UpdateMinMaxBetv11 = 0) or (sporttype=99 and @UpdateMinMaxBetv99 = 0 and bettype <> 9) or (sporttype=99 and @UpdateMinMaxBetv99MP = 0 and bettype = 9) or (sporttype=154 and @UpdateMinMaxBetv154 = 0 and bettype = 20)or (sporttype=161 and @UpdateMinMaxBetv161=0)) then maxbet else case sporttype when 1 then (case when bettype = 9 then @maxbetv1mp else @maxbet end)  when 2 then @maxbetv2 when 3 then @maxbetv3 when 5 then @maxbetv5 when 8 then @maxbetv8 when 10 then @maxbetv10 when 11 then @maxbetv11  when 99 then (case when bettype = 9 then @maxbetv99mp else @maxbetv99 end) when 154 then @maxbetv154 else maxbet end end	
+		minbet = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdateMinMaxBetv1MP = 0 AND bettype = 9) or (sporttype=1 and @UpdateMinMaxBet = 0 AND bettype <> 9) or (sporttype=2 and @UpdateMinMaxBetv2 = 0) or (sporttype=3 and @UpdateMinMaxBetv3 = 0) or (sporttype=5 and @UpdateMinMaxBetv5 = 0) or (sporttype=8 and @UpdateMinMaxBetv8 = 0) or (sporttype=10 and @UpdateMinMaxBetv10 = 0) or (sporttype=11 and @UpdateMinMaxBetv11 = 0) or (sporttype=99 and @UpdateMinMaxBetv99 = 0 and bettype <> 9) or (sporttype=99 and @UpdateMinMaxBetv99MP = 0 and bettype = 9) or (sporttype=154 and @UpdateMinMaxBetv154 = 0 and bettype = 20)or (sporttype=161 and @UpdateMinMaxBetv161=0)) then minbet else case sporttype when 1 then (case when bettype = 9 then @minbetv1mp else @minbet end)  when 2 then @minbetv2 when 3 then @minbetv3 when 5 then @minbetv5 when 8 then @minbetv8 when 10 then @minbetv10 when 11 then @minbetv11  when 99 then (case when bettype = 9 then @minbetv99mp else @minbetv99 end) when 154 then @minbetv154 else minbet end end,
+		maxbet = case when @UpdateMultiple = 1 and ((sporttype=1 and @UpdateMinMaxBetv1MP = 0 AND bettype = 9) or (sporttype=1 and @UpdateMinMaxBet = 0 AND bettype <> 9) or (sporttype=2 and @UpdateMinMaxBetv2 = 0) or (sporttype=3 and @UpdateMinMaxBetv3 = 0) or (sporttype=5 and @UpdateMinMaxBetv5 = 0) or (sporttype=8 and @UpdateMinMaxBetv8 = 0) or (sporttype=10 and @UpdateMinMaxBetv10 = 0) or (sporttype=11 and @UpdateMinMaxBetv11 = 0) or (sporttype=99 and @UpdateMinMaxBetv99 = 0 and bettype <> 9) or (sporttype=99 and @UpdateMinMaxBetv99MP = 0 and bettype = 9) or (sporttype=154 and @UpdateMinMaxBetv154 = 0 and bettype = 20)or (sporttype=161 and @UpdateMinMaxBetv161=0)) then maxbet else case sporttype when 1 then (case when bettype = 9 then @maxbetv1mp else @maxbet end)  when 2 then @maxbetv2 when 3 then @maxbetv3 when 5 then @maxbetv5 when 8 then @maxbetv8 when 10 then @maxbetv10 when 11 then @maxbetv11  when 99 then (case when bettype = 9 then @maxbetv99mp else @maxbetv99 end) when 154 then @maxbetv154 else maxbet end end	
 	where custid=@custid
 	if (@@error <> 0)
 	begin
@@ -1304,11 +1304,11 @@ BEGIN
 	----------
 	-- 20150714@Johnson: Write log value from db if not change when update multiple [Redmine: #39555]
 	---------------------------------
-	SELECT @minbet = MAX(CASE WHEN sporttype = 1 THEN 
+	SELECT @minbet = MAX(CASE WHEN sporttype = 1 AND bettype <> 9 THEN 
 										(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 
 												THEN minbet ELSE @minbet END) 
 								ELSE 0 END),
-		@maxbet = MAX(CASE WHEN sporttype = 1 THEN 
+		@maxbet = MAX(CASE WHEN sporttype = 1 AND bettype <> 9 THEN 
 										(CASE WHEN @UpdateMultiple = 1 AND @UpdateMinMaxBet = 0 
 												THEN maxbet ELSE @maxbet END) 
 								ELSE 0 END),

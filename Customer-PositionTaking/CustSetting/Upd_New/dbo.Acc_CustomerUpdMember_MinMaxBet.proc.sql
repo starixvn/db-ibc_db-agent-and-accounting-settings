@@ -1285,7 +1285,7 @@ BEGIN
 	----------
 	UPDATE custsetting WITH (ROWLOCK, UPDLOCK)
 	SET
-		MinBet=CASE WHEN @UpdateMultiple = 1 AND ((@UpdateMinMaxBet = 0 AND sporttype=1)
+		MinBet=CASE WHEN @UpdateMultiple = 1 AND ((@UpdateMinMaxBet = 0 AND sporttype=1 AND bettype <> 9)
 													OR (@UpdateMinMaxBetv2 = 0 AND sporttype=2)
 													OR (@UpdateMinMaxBetv3 = 0 AND sporttype=3)
 													OR (@UpdateMinMaxBetv5 = 0 AND sporttype=5)
@@ -1297,7 +1297,7 @@ BEGIN
 													OR (@UpdateMinMaxBetv1MP = 0 AND sporttype=1 AND bettype=9)
 													OR (@UpdateMinMaxBetv154 = 0 AND sporttype=154)
 													) THEN MinBet ELSE CASE sporttype WHEN 1 THEN (CASE bettype WHEN 9 THEN @MinBetv1MP ELSE @MinBet END)  WHEN 2 THEN @MinBetv2 WHEN 3 THEN @MinBetv3 WHEN 5 THEN @MinBetv5 WHEN 8 THEN @MinBetv8 WHEN 10 THEN @MinBetv10 WHEN 11 THEN @MinBetv11 WHEN 154 THEN @MinBetv154 WHEN 99 THEN (CASE bettype WHEN 9 THEN @MinBetv99MP ELSE @MinBetv99 END) ELSE minbet END END,
-		MaxBet=CASE WHEN @UpdateMultiple = 1 AND ((@UpdateMinMaxBet = 0 AND sporttype=1)
+		MaxBet=CASE WHEN @UpdateMultiple = 1 AND ((@UpdateMinMaxBet = 0 AND sporttype=1 AND bettype <> 9)
 													OR (@UpdateMinMaxBetv2 = 0 AND sporttype=2)
 													OR (@UpdateMinMaxBetv3 = 0 AND sporttype=3)
 													OR (@UpdateMinMaxBetv5 = 0 AND sporttype=5)
