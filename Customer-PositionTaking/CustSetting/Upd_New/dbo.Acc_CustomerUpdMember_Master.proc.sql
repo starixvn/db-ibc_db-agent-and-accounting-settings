@@ -386,6 +386,7 @@ Revisions:
 	- 20150606@Elodie: Separate CustDB to DBCUST server (Move Acc_CustomerSelCheckEnable to DBCUST.CustDB, Use temp table for sports, bettype table)
 	- 20150806@Johnson:  Write log value from db if not change when update multiple [Redmine: #40880]				
 	- 20160627@Helen: Provide dedicated Outright PT for each sport - [Redmine: 59438]  			
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
 Param's Explanation:
 • @ErrCode:
     = 0: Update successfully.
@@ -393,24 +394,24 @@ Param's Explanation:
   
 • @ErrMsg: Error description.
 */
-
-SET NOCOUNT ON
-
-declare @startRun datetime
-declare @endRun datetime
-declare @duration int
-set @startRun = getdate()
-
-/*
-if not exists (select 1 from custinfo with (nolock) where custid = @custid and srecommend in (181940,197461))
 BEGIN
-	declare @ErrMsg varchar(200)
-	Select @ErrMsg = 'Sorry, please try again later.'
-	RaisError (@ErrMsg, 16, 1)
-	return
-END
-*/
------ Elodie @ 01 JUN 2015 -------------------
+	SET NOCOUNT ON
+
+	declare @startRun datetime
+	declare @endRun datetime
+	declare @duration int
+	set @startRun = getdate()
+
+	/*
+	if not exists (select 1 from custinfo with (nolock) where custid = @custid and srecommend in (181940,197461))
+	BEGIN
+		declare @ErrMsg varchar(200)
+		Select @ErrMsg = 'Sorry, please try again later.'
+		RaisError (@ErrMsg, 16, 1)
+		return
+	END
+	*/
+	----- Elodie @ 01 JUN 2015 -------------------
 	DECLARE @tmp_Sports TABLE (SportType TINYINT, SportName NVARCHAR(50))
 	DECLARE @tmp_Bettype TABLE (TypeID INT, TypeNamee NVARCHAR(50))
 	
@@ -8702,7 +8703,7 @@ if	@UpdatePositiontaking   = 1  or
 		END CATCH
 
 	END--UpdatePositiontaking
-
+END
 
 GO
 GRANT EXECUTE ON [dbo].[Acc_CustomerUpdMember_Master] TO [bodbadminNet] AS [dbo]

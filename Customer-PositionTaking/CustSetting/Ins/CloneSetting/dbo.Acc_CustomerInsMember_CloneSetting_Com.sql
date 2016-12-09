@@ -44,6 +44,7 @@ AS
 	- 20151030@Billy: Change to new VirtualRate structure [Redmine: #46541]
 	- 20151223@Patrick: Add Max/Loss limit for RnG Casino [Redmine: #49528]
 	- 20160217@Dominic: Not allow to create a IMBC customer from MBC customer and and vice versa [Redmine: #50028]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
 	
  Explanation's Param:  
 	- @ErrCode:
@@ -320,6 +321,7 @@ BEGIN
 				,HideColossusBet
 				,DisableColossusBet
 				,DisableSuperLive
+				,MaxPerMatch1MP
 				)
 		 SELECT
 				@CustID
@@ -397,6 +399,7 @@ BEGIN
 				,HideColossusBet
 				,DisableColossusBet
 				,DisableSuperLive
+				,MaxPerMatch1MP
 		FROM dbo.custinfo WITH(NOLOCK)
 		WHERE custid=@ExistingCustid  
 	END TRY	

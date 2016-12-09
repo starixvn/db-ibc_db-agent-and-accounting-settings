@@ -56,6 +56,11 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Ag]
 	@MaxBetv99MP MONEY,
 	@MaxPerMatchv99MP MONEY,
 	
+	--Mix Parlay soccer sports
+	@MinBetv1MP MONEY,
+	@MaxBetv1MP MONEY,
+	@MaxPerMatchv1MP MONEY,
+	
 	--HR Fixed Odds
 	@MinBetv154 MONEY = 0,
 	@MaxBetv154 MONEY = 0,
@@ -292,6 +297,8 @@ Revisions:
 	- 20160215@Dominic: Cricket is not showed in log for MBC customers [Redmine: #52158]
 	- 20160222@Dominic: Log initial status is blank [Redmine: #52657]
 	- 20160627@Winnie: Out right PT [Redmine #59438]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
+	
 Param's Explanation:	
 • @ErrCode:
     = 0: add new member successfully.
@@ -544,6 +551,9 @@ BEGIN
 	    @MinMinBetv11 MONEY, @MaxMaxBetv11 MONEY, @MaxMaxPerMatchv11 MONEY,
 	    @MinMinBetv99 MONEY, @MaxMaxBetv99 MONEY, @MaxMaxPerMatchv99 MONEY,	
 	    @MinMinBetv99MP MONEY, @MaxMaxBetv99MP MONEY, @MaxMaxPerMatchv99MP MONEY,	
+	    
+	    @MinMinBetv1MP MONEY, @MaxMaxBetv1MP MONEY, @MaxMaxPerMatchv1MP MONEY,	
+	    
 	    @MinMinBetv154 MONEY, @MaxMaxBetv154 MONEY, @MaxMaxPerMatchv154 MONEY,	
 	    @MinMinBetv161 MONEY, @MaxMaxBetv161 MONEY, @MaxMaxPerMatchv161 MONEY,@MaxMaxPerBallv161 MONEY,	
 	    @MinBetv180 MONEY, @MaxBetv180 MONEY, @MaxPerMatchv180 MONEY,
@@ -1846,6 +1856,10 @@ BEGIN
 	    @MaxBetv99MP = @MaxBetv99MP,
 	    @MaxPerMatchv99MP = @MaxPerMatchv99MP,
     	
+    	@MinBetv1MP = @MinBetv1MP,
+	    @MaxBetv1MP = @MaxBetv1MP,
+	    @MaxPerMatchv1MP = @MaxPerMatchv1MP,
+	    
 	    @MinBetv154=@MinBetv154,
 	    @MaxBetv154=@MaxBetv154,
 	    @MaxPerMatchv154=@MaxPerMatchv154,
@@ -1995,6 +2009,9 @@ BEGIN
 	    UNION ALL	SELECT 11 AS sporttype,0 AS MP, @MinBetv11 AS MinBet, @MaxBetv11 AS MaxBet, @MaxPerMatchv11 AS MaxPerMatch
 	    UNION ALL	SELECT 99 AS sporttype,0 AS MP, @MinBetv99 AS MinBet, @MaxBetv99 AS MaxBet, @MaxPerMatchv99 AS MaxPerMatch	 
 	    UNION ALL	SELECT 99 AS sporttype,1 AS MP, @MinBetv99MP AS MinBet, @MaxBetv99MP AS MaxBet, @MaxPerMatchv99MP AS MaxPerMatch
+	    
+	    UNION ALL	SELECT 1 AS sporttype,1 AS MP, @MinBetv1MP AS MinBet, @MaxBetv1MP AS MaxBet, @MaxPerMatchv1MP AS MaxPerMatch
+	    
 	    UNION ALL	SELECT 154 AS sporttype,0 AS MP, @MinBetv154 AS MinBet, @MaxBetv154 AS MaxBet, @MaxPerMatchv154 AS MaxPerMatch	  
 	    UNION ALL	SELECT 161 AS sporttype,0 AS MP, @MinBetv161 AS MinBet, @MaxBetv161 AS MaxBet, @MaxPerMatchv161 AS MaxPerMatch	 
     ) AS b on sports.sporttype = b.sporttype
@@ -3227,6 +3244,9 @@ BEGIN
 	    @MaxMaxPerMatchv11 = ISNULL(MIN(CASE WHEN cs.MaxPerMatch11 = 0 THEN NULL ELSE cs.MaxPerMatch11 END),0),
 	    @MaxMaxPerMatchv99 = ISNULL(MIN(CASE WHEN cs.MaxPerMatch99 = 0 THEN NULL ELSE cs.MaxPerMatch99 END),0),
 	    @MaxMaxPerMatchv99MP = ISNULL(MIN(CASE WHEN cs.MaxPerMatch99MP = 0 THEN NULL ELSE cs.MaxPerMatch99MP END),0),
+	    
+	    @MaxMaxPerMatchv1MP = ISNULL(MIN(CASE WHEN cs.MaxPerMatch1MP = 0 THEN NULL ELSE cs.MaxPerMatch1MP END),0),
+	    
 	    @MaxMaxPerMatchv154 = ISNULL(MIN(CASE WHEN cs.MaxPerMatch154 = 0 THEN NULL ELSE cs.MaxPerMatch154 END),0),
 	    @MaxMaxPerMatchv161 = ISNULL(MIN(CASE WHEN cs.MaxPerMatch161 = 0 THEN NULL ELSE cs.MaxPerMatch161 END),0),
 	    @MaxMaxPerBallv161 = ISNULL(MIN(CASE WHEN cs.MaxPerBall161 = 0 THEN null ELSE cs.MaxPerBall161 END),0),
@@ -3396,6 +3416,9 @@ BEGIN
 	    UNION ALL	SELECT 11 AS sporttype,0 AS MP, @MaxPerMatchv11 AS MaxPerMatch, @MaxMaxPerMatchv11 AS MaxMaxPerMatch
 	    UNION ALL	SELECT 99 AS sporttype,0 AS MP, @MaxPerMatchv99 AS MaxPerMatch, @MaxMaxPerMatchv99 AS MaxMaxPerMatch	 
 	    UNION ALL	SELECT 99 AS sporttype,1 AS MP, @MaxPerMatchv99MP AS MaxPerMatch, @MaxMaxPerMatchv99MP AS MaxMaxPerMatch	 
+	    
+	    UNION ALL	SELECT 1 AS sporttype,1 AS MP, @MaxPerMatchv1MP AS MaxPerMatch, @MaxMaxPerMatchv1MP AS MaxMaxPerMatch	 
+	    
 	    UNION ALL	SELECT 154 AS sporttype,0 AS MP, @MaxPerMatchv154 AS MaxPerMatch, @MaxMaxPerMatchv154 AS MaxMaxPerMatch	 	
 	    UNION ALL	SELECT 161 AS sporttype,0 AS MP, @MaxPerMatchv161 AS MaxPerMatch, @MaxMaxPerMatchv161 AS MaxMaxPerMatch
     ) AS b on sports.sporttype = b.sporttype
@@ -3437,7 +3460,7 @@ BEGIN
     END
 
     --Insert general data 
-                EXEC dbo.Acc_CustomerInsUserInfo
+        EXEC dbo.Acc_CustomerInsUserInfo
 	    @custid = @custid OUTPUT,
 	    @firstname = @firstname,
 	    @lastname = @lastname,
@@ -3504,6 +3527,9 @@ BEGIN
 	    @MaxPerMatchv11 = @MaxPerMatchv11,
 	    @MaxPerMatchv99 = @MaxPerMatchv99,
 	    @MaxPerMatchv99MP = @MaxPerMatchv99MP,
+	    
+	    @MaxPerMatchv1MP = @MaxPerMatchv1MP,
+	    
 	    @MaxPerMatchv154 = @MaxPerMatchv154,
 	    @MaxPerMatchv161 = @MaxPerMatchv161,
 	    @MaxPerBallv161 = @MaxPerBallv161,
@@ -4039,6 +4065,11 @@ BEGIN
 	    --Mix Parlay mix sports
 	    @MinBetv99MP = @MinBetv99MP,
 	    @MaxBetv99MP = @MaxBetv99MP,		
+	    
+	    --Mix Parlay soccer sports
+	    @MinBetv1MP = @MinBetv1MP,
+	    @MaxBetv1MP = @MaxBetv1MP,		
+	    
 	    --HR Fixed Odds
 	    @MinBetv154 = @MinBetv154,
 	    @MaxBetv154 = @MaxBetv154,		
@@ -5515,6 +5546,11 @@ BEGIN
     'MinBv99MP="'+ COALESCE(CAST(@MinBetv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
     'MaxBv99MP="'+ COALESCE(CAST(@MaxBetv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
     'MPMv99MP="'+ COALESCE(CAST(@MaxPerMatchv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+    
+    'MinBv1MP="'+ COALESCE(CAST(@MinBetv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+    'MaxBv1MP="'+ COALESCE(CAST(@MaxBetv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+    'MPMv1MP="'+ COALESCE(CAST(@MaxPerMatchv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+    
     'MinBv161="'+ COALESCE(CAST(@MinBetv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
     'MaxBv161="'+ COALESCE(CAST(@MaxBetv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
     'MPBv161="'+ COALESCE(CAST(@MaxPerBallv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
@@ -5561,6 +5597,11 @@ BEGIN
 	    'MinBv99MP="'+ COALESCE(CAST(@MinBetv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
 	    'MaxBv99MP="'+ COALESCE(CAST(@MaxBetv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
 	    'MPMv99MP="'+ COALESCE(CAST(@MaxPerMatchv99MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+	    
+	    'MinBv1MP="'+ COALESCE(CAST(@MinBetv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+	    'MaxBv1MP="'+ COALESCE(CAST(@MaxBetv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+	    'MPMv1MP="'+ COALESCE(CAST(@MaxPerMatchv1MP AS VARCHAR(50)), SPACE(1)) + '" ' +
+	    
 	    'MinBv161="'+ COALESCE(CAST(@MinBetv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
 	    'MaxBv161="'+ COALESCE(CAST(@MaxBetv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
 	    'MPBv161="'+ COALESCE(CAST(@MaxPerBallv161 AS VARCHAR(50)), SPACE(1)) + '" ' +
