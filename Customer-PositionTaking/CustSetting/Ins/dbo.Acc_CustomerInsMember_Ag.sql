@@ -170,8 +170,6 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInsMember_Ag]
 	@v161alivepositiontaking_87 SMALLMONEY,
 	@v161alivepositiontaking_89 SMALLMONEY = 0,
 	@v161alivepositiontaking_90 SMALLMONEY = 0,
-	@DisableOutright BIT=NULL,
-    @DisableColossusBet BIT=NULL,	
 	
 	@DisableP2P BIT = 0,
 	@DisableFUNP2P BIT = 0,
@@ -578,7 +576,7 @@ BEGIN
 	    @MaxCredit_Mem MONEY,
 	    @Asuspended BIT,
 	    @UplineClosed BIT,
-	    --@DisableOutright BIT,
+	    @DisableOutright BIT,
 	    @UplineSyncLiveCasino BIT,
 	    @HideVirtualSports  BIT,
 	    @DisableCasinoBonus BIT,
@@ -1685,7 +1683,7 @@ BEGIN
 		@DisableGoldDeluxe BIT = 0,
 		@HideGoldDeluxe BIT = 1,
 		
-		--@DisableColossusBet BIT = 0,
+		@DisableColossusBet BIT = 0,
 		@HideColossusBet BIT = 1,
 		
 		@DisableSuperLive BIT = 0,
@@ -1740,8 +1738,8 @@ BEGIN
          , @DisableFinancial = CASE WHEN DisableFinancial = 1 THEN 1 ELSE @DisableFinancial END
          , @DisableCasino = CASE WHEN DisableCasino = 1 THEN 1 ELSE @DisableCasino END
          , @DisableHRFixedOdds = CASE WHEN DisableHRFixedOdds = 1 THEN 1 ELSE @DisableHRFixedOdds END
-         , @DisableOutright = case when @DisableOutright IS NULL then DisableOutright else @DisableOutright end 
-		 , @DisableColossusBet = case when @DisableColossusBet IS NULL then DisableColossusBet else @DisableColossusBet end 
+         , @DisableOutright = DisableOutright 
+		 , @DisableColossusBet = DisableColossusBet 
          , @DisableBingo = CASE WHEN DisableBingo = 1 THEN 1 ELSE @DisableBingo END
          , @DisableNumber = CASE WHEN DisableNumber = 1 THEN 1 ELSE @DisableNumber END
          , @DisableP2P = CASE WHEN DisableP2P = 1 THEN 1 ELSE @DisableP2P END
@@ -1765,7 +1763,7 @@ BEGIN
 
     IF @isSearchAndCopy = 1
     BEGIN
-        SELECT @DisableEsports = DisableEsports
+        SELECT @DisableEsports = DisableEsports,@DisableOutright = DisableOutright,@DisableColossusBet = DisableColossusBet 
 				--@virtualmultiplier = ISNULL(virtualmultiplier, 1)
           FROM custinfo WITH(NOLOCK)
          WHERE CustID = @copyFromCustID
