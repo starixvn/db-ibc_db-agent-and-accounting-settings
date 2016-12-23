@@ -416,7 +416,7 @@ Revisions:
 	- 20160627@Winnie: Out right PT [Redmine #59438]
 	- 20160707@Winnie: #48948 Hide_special_sites_from_unautorized_users
 	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
-	
+	- 20161223@Winnie: Hot Fix  Show Fishing World logs although this Product is not released to PROD yet [Redmine:69236]
 Param's Explanation:
 • @ErrCode:
     = 0: Create super successfully.
@@ -1692,6 +1692,13 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 
 	DECLARE @LogDataSP2 VARCHAR(4000)
 	
+	SELECT DISTINCT ProductID,SportType,Bettype,SettingType
+	INTO #temSportbettypeSetting
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,4)
+	INSERT INTO #temSportbettypeSetting(ProductID,SportType,Bettype,SettingType)
+	SELECT DISTINCT ProductID,SportType,Bettype,SettingType
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,11)
+	
 	DECLARE @_Site VARCHAR(10)
 	SELECT @_Site = site
 	FROM dbo.customer WITH(NOLOCK)
@@ -1706,6 +1713,7 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 						INNER JOIN	ProductStatusProfile psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype
 																			AND	psd.BetType = psp.Bettype
 																			AND psd.SettingType IN (4,11)		-- Product Status
+						INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND psd.SettingType = t.SettingType
 						INNER JOIN CustProductStatus cps WITH(NOLOCK) ON cps.CustID = @CustID
 					WHERE @_Site = 'IMBC' OR psd.ProductID <> 20 --iCricket
 					GROUP BY psd.ProductID	
@@ -1720,6 +1728,7 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 				(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapIsDisabled, psp.bitmapOrder)) AS custIsDisable
 		FROM		ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	ProductStatusProfile AS psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype 
+			INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND psd.SettingType = t.SettingType
 			CROSS APPLY CustProductStatus WITH(NOLOCK)
 		WHERE CustID = @custid AND (@_Site = 'IMBC' OR psd.ProductID <> 20)--iCricket
 			AND psd.SettingType IN (4,11)-- Product Status, Game Status
