@@ -297,8 +297,8 @@ Revisions:
 	- 20160215@Dominic: Cricket is not showed in log for MBC customers [Redmine: #52158]
 	- 20160222@Dominic: Log initial status is blank [Redmine: #52657]
 	- 20160627@Winnie: Out right PT [Redmine #59438]
-	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
-	- 20161222@Winnie: Hot fix search and copy - [Redmine:68879]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:#66265]
+	- 20161222@Winnie: Copy Outright, ColossusBet, SuperLive status from copied member - [Redmine:#68879]
 	
 Param's Explanation:	
 • @ErrCode:
@@ -1763,7 +1763,10 @@ BEGIN
 
     IF @isSearchAndCopy = 1
     BEGIN
-        SELECT @DisableEsports = DisableEsports,@DisableOutright = DisableOutright,@DisableColossusBet = DisableColossusBet 
+        SELECT	@DisableEsports = DisableEsports,
+				@DisableOutright = DisableOutright,
+				@DisableColossusBet = DisableColossusBet,
+				@DisableSuperLive = DisableSuperLive
 				--@virtualmultiplier = ISNULL(virtualmultiplier, 1)
           FROM custinfo WITH(NOLOCK)
          WHERE CustID = @copyFromCustID
