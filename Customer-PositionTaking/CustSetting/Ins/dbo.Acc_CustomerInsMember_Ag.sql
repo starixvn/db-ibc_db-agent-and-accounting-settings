@@ -297,7 +297,8 @@ Revisions:
 	- 20160215@Dominic: Cricket is not showed in log for MBC customers [Redmine: #52158]
 	- 20160222@Dominic: Log initial status is blank [Redmine: #52657]
 	- 20160627@Winnie: Out right PT [Redmine #59438]
-	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
+	- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:#66265]
+	- 20161222@Winnie: Copy Outright, ColossusBet, SuperLive status from copied member - [Redmine:#68879]
 	
 Param's Explanation:	
 • @ErrCode:
@@ -1737,7 +1738,8 @@ BEGIN
          , @DisableFinancial = CASE WHEN DisableFinancial = 1 THEN 1 ELSE @DisableFinancial END
          , @DisableCasino = CASE WHEN DisableCasino = 1 THEN 1 ELSE @DisableCasino END
          , @DisableHRFixedOdds = CASE WHEN DisableHRFixedOdds = 1 THEN 1 ELSE @DisableHRFixedOdds END
-         , @DisableOutright = DisableOutright
+         , @DisableOutright = DisableOutright 
+		 , @DisableColossusBet = DisableColossusBet 
          , @DisableBingo = CASE WHEN DisableBingo = 1 THEN 1 ELSE @DisableBingo END
          , @DisableNumber = CASE WHEN DisableNumber = 1 THEN 1 ELSE @DisableNumber END
          , @DisableP2P = CASE WHEN DisableP2P = 1 THEN 1 ELSE @DisableP2P END
@@ -1761,7 +1763,10 @@ BEGIN
 
     IF @isSearchAndCopy = 1
     BEGIN
-        SELECT @DisableEsports = DisableEsports
+        SELECT	@DisableEsports = DisableEsports,
+				@DisableOutright = DisableOutright,
+				@DisableColossusBet = DisableColossusBet,
+				@DisableSuperLive = DisableSuperLive
 				--@virtualmultiplier = ISNULL(virtualmultiplier, 1)
           FROM custinfo WITH(NOLOCK)
          WHERE CustID = @copyFromCustID
