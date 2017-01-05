@@ -11,6 +11,7 @@ AS
 
 	Revision: 
 		- 20160801@Elodie: Implement Game status (setting type = 11) - [Redmine: #60809]   
+		- 20170103@Elodie: Unhide all bettype although 1 bettype is enabled - [Redmine: #69679]   
 
 */
 BEGIN
@@ -22,7 +23,7 @@ BEGIN
 	--Check if XML is null or empty
 	IF @IsDisabled_XML IS NULL OR @IsDisabled_XML='' RETURN
 		
-	DECLARE @iDoc INT, @xmlStrDisabled XML, @xmlStrHidden XML
+	DECLARE @iDoc INT, @xmlStrDisabled XML, @xmlStrHidden XML, @ProductID INT
 
 	CREATE TABLE #NewDisableStatTbl(
 				SportType SMALLINT,
@@ -48,8 +49,8 @@ BEGIN
 						SELECT psp.bitmapOrder	AS '@b'
 							, tmp.IsDisabled	AS '@s'
 						FROM ProductStatusProfile psp WITH (NOLOCK)
-							JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
-	
+							INNER JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
+						WHERE tmp.IsDisabled = 1 OR (tmp.IsDisabled = 0 AND tmp.IsDisabledDownline = 0)
 						FOR XML PATH('r')
 							, TYPE
 						)
@@ -57,15 +58,20 @@ BEGIN
 					, TYPE
 				)
 	
-		IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
+		IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabledDownline = 0 AND IsDisabled = 0)
 		BEGIN
+			SELECT TOP 1 @ProductID = ps.ProductID
+			FROM #NewDisableStatTbl dis 
+				INNER JOIN dbo.ProductSettingDetail ps WITH (NOLOCK) ON ps.BetType = dis.BetType AND ps.SportType = dis.SportType
+			WHERE dis.IsDisabled = 0 AND IsDisabledDownline = 0 AND ps.SettingType = 4
+
 			SET @xmlStrHidden = (
 				SELECT (
 						SELECT psp.bitmapOrder	AS '@b'
 							, 0	AS '@s'
 						FROM ProductStatusProfile psp (NOLOCK)
-							JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
-						WHERE tmp.IsDisabled=0	
+							INNER JOIN ProductSettingDetail ps ON PSP.Sporttype = ps.SportType AND psp.Bettype = ps.BetType
+						WHERE ps.ProductID = @ProductID AND ps.SettingType = 4
 						FOR XML PATH('r')
 							, TYPE
 						)
