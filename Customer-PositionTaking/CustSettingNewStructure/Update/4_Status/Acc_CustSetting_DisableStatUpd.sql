@@ -1,4 +1,4 @@
-alter PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd] 
+ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableStatUpd] 
 	  @CustID			INT
 	, @IsDisabled	VARCHAR(MAX)
 	, @SubAccID			INT				= 0
@@ -17,6 +17,7 @@ AS
 	Revisions:
 		- 20151104@Billy: Update log structure - [Redmine: #46788]
 		- 20160808@Helen: Product Status Issue for multiple bettypes [Redmine: 61875]
+		- 20170103@Elodie: Unhide all bettype although 1 bettype is enabled - [Redmine: #69679]   
 	Param's Explanation:
 	• @IsDisabled
 		<ROOT>
@@ -293,25 +294,25 @@ BEGIN
 			FOR XML PATH('root')
 				, TYPE
 			)
-	
 			
 	UPDATE CustProductStatus
 		SET bitmapIsDisabled = (SELECT bitmap FROM dbo.f_GenerateProductStatus_multiple (bitmapIsDisabled, CONVERT(VARCHAR(MAX),@xmlStrDisabled)))	
 	WHERE CustID = @CustID
 	
-	
-	DECLARE @bitmapOrderHidden INT
-	
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
 	BEGIN
-		
+		SELECT TOP 1 @ProductID = ps.ProductID
+		FROM #NewDisableStatTbl dis 
+			INNER JOIN dbo.ProductSettingDetail ps WITH (NOLOCK) ON ps.BetType = dis.BetType AND ps.SportType = dis.SportType
+		WHERE dis.IsDisabled = 0 AND ps.SettingType = 4
+
 		SET @xmlStrHidden = (
 			SELECT (
 					SELECT psp.bitmapOrder	AS '@b'
 						, 0	AS '@s'
 					FROM ProductStatusProfile psp (NOLOCK)
-						JOIN #NewDisableStatTbl tmp ON PSP.Sporttype = tmp.SportType AND psp.Bettype = tmp.BetType
-					WHERE TMP.IsDisabled = 0
+						INNER JOIN ProductSettingDetail ps ON PSP.Sporttype = ps.SportType AND psp.Bettype = ps.BetType
+					WHERE ps.ProductID = @ProductID AND ps.SettingType = 4
 					FOR XML PATH('r')
 						, TYPE
 					)
@@ -336,10 +337,11 @@ BEGIN
 						,IsDisabledDownline AS '@IsDisabledDownline'
 					FROM #NewDisableStatTbl
 					WHERE IsDisabled = 1
-							OR (
-									IsDisabled				= 0
-									AND IsDisabledDownline	= 0
-								)
+						OR EXISTS (	SELECT TOP 1 1
+									FROM #NewDisableStatTbl
+									WHERE IsDisabled = 0
+											AND IsDisabledDownline	= 0
+									)
 					FOR XML PATH('ProductStatus')
 						, TYPE
 					)
