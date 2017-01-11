@@ -10,6 +10,7 @@ AS
   DB: DBTXN/bodb02
     
   Revisions:  
+   -- 20161213@Winnie: RNG - Implement % of Loss Limit for RNG [RedmineID: #68311]
   Parameters Explanation:    
  */
 BEGIN
@@ -40,9 +41,12 @@ BEGIN
 	SELECT MaxWinLimit
 		, @Amount AS Balance
 		, MaxWinLimit * @CreditAmount AS MaxWinCredit
+		, MaxLossLimit AS MaxLossAmount
 		, CASE WHEN @Amount > 0 AND @CreditAmount = 0 AND MaxWinLimit > 0 THEN @Amount * 100
 				WHEN @Amount > 0 AND @CreditAmount > 0 AND MaxWinLimit > 0 THEN @Amount * 100/(MaxWinLimit * @CreditAmount) 
 				ELSE 0 END AS WinPercent
+		, CASE WHEN @Amount < 0 AND MaxLossLimit > 0 THEN @Amount * -100/MaxLossLimit
+				ELSE 0 END AS LossPercent
 	FROM DBCUST.CustDB.dbo.CustWinLimit c WITH(NOLOCK)
 	WHERE CustId = @CustId AND SportType = @SportType AND BetType = @BetType AND @RoleId = 1
 END
