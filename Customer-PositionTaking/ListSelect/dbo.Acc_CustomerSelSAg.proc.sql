@@ -211,7 +211,7 @@ B: 'B%'
 			ci.virtualmultiplier-1 as VirtualMultiplier,
 
 			ci.HideKeno,
-			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
+			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516) then cg.IsDisabled else 1 end) as DisableKeno,
 			ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
 			ISNULL(ci.DisableColossusBet,1) AS DisableColossusBet,
@@ -296,7 +296,7 @@ B: 'B%'
 			) cs on m.custid = cs.custid	
 			LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 			LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513)			
+			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516)			
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 		   LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 
 		   LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 
@@ -414,7 +414,7 @@ B: 'B%'
 			ci.virtualmultiplier-1 as VirtualMultiplier,
 
 			ci.HideKeno,
-			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
+			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516) then cg.IsDisabled else 1 end) as DisableKeno,
 			ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
 			
@@ -474,7 +474,7 @@ B: 'B%'
 			LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid	
 			LEFT JOIN CustSetting3rd as cs3rd with (NOLOCK) on m.custid = cs3rd.custid 
 			LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513)
+			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516)
 			INNER JOIN CustSuper as csuper with (NOLOCK) on m.custid = csuper.custid
 			LEFT JOIN AgentCommRate AC WITH (NOLOCK) ON AC.CustId = CI.custid AND AC.Sporttype = 1 AND AC.Bettype = 301 AND csuper.IsMyanmarOdds = 1
 			LEFT JOIN CustProductStatus cps WITH (NOLOCK) ON cps.CustID = ci.custid 

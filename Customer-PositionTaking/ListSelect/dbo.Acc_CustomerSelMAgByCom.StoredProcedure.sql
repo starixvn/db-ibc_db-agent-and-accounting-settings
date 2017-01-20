@@ -212,7 +212,7 @@ BEGIN
 			ci.DoubleCommLosing,
 
 			ci.HideKeno,
-			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno,
+			min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516) then cg.IsDisabled else 1 end) as DisableKeno,
 
 			ISNULL(ci.DisableGoldDeluxe,1) AS DisableGoldDeluxe,
 			ISNULL(ci.HideGoldDeluxe,1) AS HideGoldDeluxe,
@@ -289,7 +289,7 @@ BEGIN
 			LEFT JOIN CustSetting as cs with (NOLOCK) on m.custid = cs.custid
 			LEFT JOIN custsetting3rd cs3 with(nolock)on m.custid = cs3.custid
 			LEFT JOIN CustGameType cg with(nolock) on m.custid = cg.custid
-			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513)						
+			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516)						
 			INNER JOIN CustMaster cm WITH (NOLOCK) ON m.custid = cm.custid	
 			INNER JOIN CustSuper csuper WITH (NOLOCK) ON csuper.custid = ci.srecommend
 			INNER JOIN (select synccasino, doublecommlosing, custid from custinfo with (nolock)) u on m.srecommend = u.custid

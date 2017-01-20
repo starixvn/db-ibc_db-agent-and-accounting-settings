@@ -272,7 +272,7 @@ BEGIN
 			,max(case when cs3.sporttype = 161 and cs3.bettype = 81 then cs3.playerdiscount else 0 end) as playerdiscountnumber
 			,max(case when cs.sporttype = 154 and cs.bettype = 20 then cs.playerdiscount else 0 end) as playerdiscountHRFixedOdds
 
-			,min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno
+			,min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516) then cg.IsDisabled else 1 end) as DisableKeno
 			,ISNULL(C.playerdiscountMyanmarOdds,0) AS playerdiscountMyanmarOdds
 			,ISNULL(C.playerdiscountCricket,0) AS playerdiscountCricket
 			,ISNULL(C.discountCricket,0) AS discountCricket
@@ -281,7 +281,7 @@ BEGIN
 				on c.custid = cs.custid and ((cs.sporttype = 1 and cs.bettype in (1,4,5)) or (cs.sporttype = 154 and cs.bettype = 20))
 			LEFT JOIN CustSetting3rd cs3 with(nolock) on c.custid = cs3.custid and cs3.sporttype = 161 and cs3.bettype = 81
 			LEFT JOIN CustGameType cg with(nolock) on c.custid = cg.custid
-			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513)
+			LEFT JOIN @tmp_GameType g on cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516)
 		WHERE rn between @rowstart and @rowend
 		GROUP BY c.custid, rn,c.playerdiscountMyanmarOdds,C.playerdiscountCricket,C.discountCricket
 	)
