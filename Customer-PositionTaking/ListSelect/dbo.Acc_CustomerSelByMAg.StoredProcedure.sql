@@ -53,6 +53,7 @@ AS
 		- 20160620@Winnie: #48948 Hide_special_sites_from_unautorized_users
 		- 20160801@Elodie: NG2 Product - [Redmine: #60809]
 		- 20160810@Winnie: #61733 add more bettype VIP Barcarat setting
+		- 20170120@Elodie: Don't offer Massac(1507), Malta(1509) anymore [#70693]
 
 	Explanation's Param:
 		- @DoubleCommLosing:
@@ -377,9 +378,9 @@ BEGIN
 	keno AS
 	(
 		SELECT	cg.CustID
-				,min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513) then cg.IsDisabled else 1 end) as DisableKeno
+				,min(case when g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516) then cg.IsDisabled else 1 end) as DisableKeno
 		FROM dbo.CustGameType cg WITH(NOLOCK) 
-			INNER JOIN @tmp_GameType g ON cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1507,1508,1509,1511,1513)		
+			INNER JOIN @tmp_GameType g ON cg.GameTypeID = g.GameTypeID and g.IBCBetTypeID in (1501,1503,1504,1505,1508,1511,1513,1514,1515,1516)		
 		WHERE CustID IN (SELECT CustID FROM #customer)
 		GROUP BY cg.CustID 
 	)
