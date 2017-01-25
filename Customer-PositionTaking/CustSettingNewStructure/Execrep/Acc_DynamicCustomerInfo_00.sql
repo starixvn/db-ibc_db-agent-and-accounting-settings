@@ -25,6 +25,7 @@ AS
 		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 		- 20160801@Elodie: Implementing GameBetLimit Plugin, GameStatus Plugin - [Redmine #60809]
 		- 20161011@Winnie: Implement for Loss limit setting type - [RedmineID: #65472]
+		- 20160801@Elodie: Implementing NewProductStatus Plugin - [Redmine #70722]
 		- 20170223@Elodie: Fix bug "newly created direct agent does not follow status of dummy master" - [Redmine #71925]
 		- 20170223@Elodie: Change preset PT to max PT - [Redmine: #71883]
 							
@@ -43,13 +44,13 @@ BEGIN
 		DECLARE @xmlStrHidden XML
 		DECLARE @xmlStrSync XML
 
-		/********************************************* Product Status: SettingType = 4 ************************************/
+		/*********************** Product Status: SettingType = 4 & New Product Status: SettingType = 13**************************/
 		--Get sporttype/Bettype for this setting type	
 		SELECT DISTINCT psd.SportType,psd.Bettype,psd.IsLive, psd.SettingType,psd.IsDisabled,psd.IsHidden,psd.IsSync,pbs.bitmapOrder 
 		INTO #SportBettypeFilter4
 		FROM dbo.ProductSettingDetail psd WITH(NOLOCK)  
 			INNER JOIN ProductStatusProfile pbs WITH (NOLOCK) ON pbs.[SportType] = psd.[SportType]	AND pbs.[BetType] = psd.[BetType]
-		WHERE psd.SettingType = 4
+		WHERE psd.SettingType = 4 OR psd.SettingType = 13
 			
 		----Hard code to hide CF if Upline is a dummy Super or Master
 		DECLARE @DirectUplineID INT, @IsDirect BIT = 0
