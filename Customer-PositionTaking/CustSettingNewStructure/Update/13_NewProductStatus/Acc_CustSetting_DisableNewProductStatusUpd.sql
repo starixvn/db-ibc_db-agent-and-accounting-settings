@@ -140,7 +140,7 @@ BEGIN
 
 	
 	--Validate new disabled status
-	EXEC [dbo].[Acc_CustSetting_DisableStatCheck] @IsDisabled = @IsDisabled
+	EXEC [dbo].[Acc_CustSetting_DisableNewProductStatusCheck] @IsDisabled = @IsDisabled
 		, @RoleID	= @RoleID
 		, @AgentID	= @AgentID
 		, @MasterID = @MasterID
