@@ -111,7 +111,7 @@ BEGIN
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 1 OR IsDisabledDownline = 1) AND @SystemID <> 1
 	BEGIN
 	
-		IF @RoleID = 3
+		IF @RoleID = 4
 		BEGIN
 			INSERT INTO #ErrorSportTypeTbl (SportType, BetType, MsgID)
 			SELECT PSP.SportType
@@ -123,7 +123,7 @@ BEGIN
 			WHERE dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder) = 0
 				AND (tmp.IsDisabled	= 1 OR tmp.IsDisabledDownline = 1)
 		END
-		ELSE IF @RoleID = 2
+		ELSE IF @RoleID = 3
 		BEGIN
 			INSERT INTO #ErrorSportTypeTbl (SportType, BetType, MsgID)
 			SELECT PSP.SportType
@@ -138,15 +138,15 @@ BEGIN
 		END
 	END
 
-	--60036: You are not allowed to perform this action.
+	--90012: You are not allowed to perform this action.
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 1 AND IsDisabledDownline = 0)
 	BEGIN
 		INSERT INTO #ErrorSportTypeTbl (SportType, BetType, MsgID)
 		SELECT tmp.SportType
 			, tmp.BetType
-			, 60036 AS MsgID
+			, 90012 AS MsgID
 		FROM #NewDisableStatTbl tmp
-		WHERE tmp.IsDisabled = 1 AND tmp.IsDisabledDownline = 0
+		WHERE tmp.IsDisabled = 1 AND tmp.IsDisabledDownline = 0 AND @RoleID = 2
 	END
 	--IF there's no error data then return
 	IF NOT EXISTS (
@@ -199,16 +199,16 @@ BEGIN
 		
 		RETURN
 	END
-	ELSE IF EXISTS(SELECT TOP 1 1 FROM #ErrorSportTypeTbl WHERE MsgID = 60036)
+	ELSE IF EXISTS(SELECT TOP 1 1 FROM #ErrorSportTypeTbl WHERE MsgID = 90012)
 	BEGIN
 		SET @xml = (
-				SELECT 60036 AS '@MsgID'
+				SELECT 90012 AS '@MsgID'
 					, 'You are not allowed to perform this action.' AS '@Msg'
 					, (
 						SELECT SportType AS '@SportType'
 							, BetType AS '@BetType'
 						FROM #ErrorSportTypeTbl
-						WHERE MsgID = 60036
+						WHERE MsgID = 90012
 						FOR XML PATH('Row')
 							, TYPE
 						)
