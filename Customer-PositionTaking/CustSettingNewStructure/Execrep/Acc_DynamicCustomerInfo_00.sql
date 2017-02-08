@@ -31,12 +31,6 @@ BEGIN
 	SELECT @ErrCode = 0
 	DECLARE @_Site VARCHAR(10), @_SiteID INT, @_Currency TINYINT
 
-	IF @RoleID = 4
-	BEGIN
-		SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
-		SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
-	END
-
 	if (dbo.f_CheckRepTable('CustProductStatus') = 1
 		AND dbo.f_CheckRepTable('ProductSettingDetail') = 1 
 		AND dbo.f_CheckRepTable('ProductStatusProfile') = 1
@@ -77,6 +71,9 @@ BEGIN
 		
 		IF @RoleID = 4
 		BEGIN
+			SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
+			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
+
 			UPDATE main
 			SET main.IsDisabled = stt.IsDisabled, 
 				main.IsHidden = stt.IsHidden
@@ -295,6 +292,9 @@ BEGIN
 
 		IF @RoleID = 4
 		BEGIN
+			SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
+			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
+
 			INSERT INTO #OfferedProductList (ProductID, SportType, BetType, IsHidden)
 			SELECT ProductID, SportType, BetType, IsHidden
 			FROM dbo.ProductSettingDetail WITH (NOLOCK)
