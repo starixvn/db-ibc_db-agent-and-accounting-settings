@@ -25,10 +25,9 @@ AS
 		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 		- 20160801@Elodie: Implementing GameBetLimit Plugin, GameStatus Plugin - [Redmine #60809]
 		- 20161011@Winnie: Implement for Loss limit setting type - [RedmineID: #65472]
-		- 20160801@Elodie: Implementing NewProductStatus Plugin - [Redmine #70722]
+		- 20160801@Elodie: Implementing NewProductStatus Plugin - [Redmine #70722]					
 		- 20170223@Elodie: Fix bug "newly created direct agent does not follow status of dummy master" - [Redmine #71925]
 		- 20170223@Elodie: Change preset PT to max PT - [Redmine: #71883]
-							
 	*/
 BEGIN
 	SELECT @ErrCode = 0
