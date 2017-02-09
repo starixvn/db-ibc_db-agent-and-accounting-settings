@@ -22,10 +22,11 @@ AS
 		- 20160407@Winnie: Group stake level setting - [Redmine: #55532]
 		- 20160711@Winnie: fix bug #60611 [NAP - Copy New Member: a single log is written for both Allbet and Macau Games when copying]
 		- 20160801@Elodie: Implementing BetGameLimit Settings, GameStatus Setting - [Redmine: #60809]
+		- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 	*/
 BEGIN
 	SET NOCOUNT ON
-	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLossLimit XML, @xmlStakeLevel XML,@xmlStakeLevel8 XML
+	DECLARE @xmlPT XML, @xmlBetLimit XML, @xmlDiscount XML, @xmlStatus XML, @xmlWinLossLimit XML, @xmlStakeLevel XML,@xmlStakeLevel8 XML, @xmlLossLimit XML
 	DECLARE @xmlStr VARCHAR(MAX)
 	SELECT @ErrCode = 0		
 	
@@ -732,6 +733,72 @@ BEGIN
 			END
 			DELETE FROM	#TempGameStatus WHERE ProductID = @ProductID11
 		END
+	END
+	
+	/********************************************* SMA Loss Limit : SettingType = 12 ****************************************/
+	IF EXISTS (SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(NULL,12))
+	BEGIN
+		DECLARE @ProductID12 INT
+		CREATE TABLE #TempLLimit (ProductID INT)
+		DECLARE @NewLossLimitTbl TABLE (
+			SportType			SMALLINT
+			, BetType			INT			
+			, MaxLossLimit		MONEY
+			, IsAutoReset		BIT
+			)
+
+		INSERT INTO @NewLossLimitTbl
+		SELECT wl.SportType
+			, wl.BetType			
+			, wl.MaxLossLimit
+			, wl.IsAutoReset
+		FROM dbo.CustWinLossLimit_Member wl WITH (NOLOCK)		
+		WHERE wl.custid = @ExistingCustID
+		
+		INSERT INTO #TempLLimit(ProductID)	
+			SELECT 
+					DISTINCT
+					psd.ProductID				
+			FROM	ProductSettingDetail AS psd WITH(NOLOCK)
+			INNER JOIN	@NewLossLimitTbl AS ts
+					ON	ts.SportType = psd.SportType
+					AND	ts.BetType = psd.BetType
+			WHERE	psd.SettingType =12
+				AND psd.ProductID IS NOT NULL
+				AND	psd.SettingLevel IS NOT NULL
+				
+		WHILE EXISTS(SELECT TOP 1 1 FROM #TempLLimit)
+		BEGIN
+			SELECT TOP 1 @ProductID12=ProductID FROM #TempLLimit
+			SET @xmlLossLimit = (SELECT (
+										SELECT nslt.SportType	AS '@SportType'
+											, nslt.BetType		AS '@BetType'										
+											, nslt.MaxLossLimit	AS '@MaxLossLimit'
+											, nslt.IsAutoReset	AS '@IsAutoReset'
+										FROM @NewLossLimitTbl nslt
+										INNER JOIN ProductSettingDetail AS psd WITH(NOLOCK) ON nslt.BetType=psd.BetType AND nslt.SportType=psd.SportType 
+											WHERE psd.SettingType =12 AND psd.ProductID=@ProductID12
+										FOR XML PATH('Limit')
+											, TYPE
+										)
+								FOR XML PATH('ROOT')
+									, TYPE
+								)
+		
+			SELECT @xmlStr = CONVERT(VARCHAR(MAX),@xmlLossLimit)
+
+			EXEC dbo.Acc_CustSetting_WinLossLimitUpd 
+				  @CustID = @CustID
+				, @Limit = @xmlStr
+				, @SettingType = 12
+				, @SubAccID = @SubAccID
+				, @IP = @IP
+				, @UserID = @UserID
+				, @ErrCode = @ErrCode OUTPUT
+				, @ErrMsg = @ErrMsg OUTPUT
+			DELETE FROM	#TempLLimit WHERE ProductID=@ProductID12
+		END
+			
 	END
 END
 

@@ -1,4 +1,4 @@
-ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
+ALTER PROCEDURE	[dbo].[Acc_CheckAllowedShow]
 					@CustID					INT
 				,	@AllowedFI				BIT = 1		OUTPUT --unused
 				,	@AllowedHR				BIT = 0		OUTPUT
@@ -12,6 +12,8 @@ ALTER PROCEDURE	dbo.Acc_CheckAllowedShow
 				,	@AllowedAllBet			BIT = 0		OUTPUT
 				,	@AllowedVoidBridge		BIT = 0		OUTPUT
 				,	@AllowedNG2				BIT = 0		OUTPUT
+				,	@AllowedFishingWorld	BIT = 0		OUTPUT
+
 AS
 BEGIN
 /*
@@ -31,6 +33,7 @@ Revisions:
 	- 20160407@Winnie: VoidBridge - [Redmine: #55532]
 	- 20160801@Elodie: NG2 Product - [Redmine: #60809]
 	- 20161024@Elodie: Move to DBCUST/CustDB
+	- 20161115@Winnie: Fishing World - [Redmine: #62547]
 */
 
 	SET NOCOUNT ON
@@ -42,10 +45,12 @@ Revisions:
 		,	@IsHideAllBet			INT
 		,	@IsHideVoidBridge		INT
 		,	@IsHideNG2				INT
+		,	@IsHideFishingWorld		INT
 
 	DECLARE	@Cricket				INT = 20
 		,	@AllBet					INT = 21
 		,	@VoidBridge				INT = 22
+		,	@FishingWorld			INT = 24
 		,	@bitOrderVB				INT
 		,	@NG2					INT = 23
 	
@@ -76,6 +81,26 @@ Revisions:
 	BEGIN
 		SET @IsHideVoidBridge = 0
 	END	
+	IF EXISTS( SELECT 1 FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@FishingWorld,4))
+	BEGIN
+		SET @IsHideFishingWorld = 0
+	END
+	SELECT	@AllowedFishingWorld =	CASE	WHEN @RoleID = 4 AND @IsHideFishingWorld = 0 THEN 1
+										WHEN dbo.f_GetProductStatus(cps.bitmapIsHidden, psp.bitmapOrder) = 0
+											AND dbo.f_GetProductStatus(cps.bitmapHasSynced, psp.bitmapOrder) = 1
+											AND @IsHideFishingWorld = 0 
+											THEN 1
+										ELSE 0
+								END
+	FROM	dbo.CustProductStatus AS cps WITH (NOLOCK)
+	CROSS JOIN	dbo.ProductStatusProfile AS psp WITH (NOLOCK)
+	INNER JOIN	dbo.ProductSettingDetail AS psd WITH (NOLOCK)
+			ON	psd.SportType = psp.Sporttype
+			AND	psd.BetType = psp.Bettype
+			AND	psd.SettingType = 4
+	WHERE	cps.CustID = @CustID
+		AND	psd.ProductID = @FishingWorld
+		
 
 	SELECT TOP 1 @bitOrderVB=bitmapOrder FROM ProductStatusProfile(NOLOCK) WHERE Sporttype=212 AND Bettype=4001
 	SET @AllowedVoidBridge = CASE WHEN (SELECT dbo.f_GetProductStatus (bitmapIsHidden,@bitOrderVB) FROM CustProductStatus WITH (NOLOCK) WHERE CustID = @CustID) = 0 

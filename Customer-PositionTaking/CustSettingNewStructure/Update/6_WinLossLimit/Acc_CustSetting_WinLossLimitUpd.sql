@@ -1,3 +1,11 @@
+USE [CustDB]
+GO
+/****** Object:  StoredProcedure [dbo].[Acc_CustSetting_WinLossLimitUpd]    Script Date: 11/14/2016 09:04:08 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/****** Object:  Stored Procedure dbo.Acc_CustSetting_WinLossLimitUpd    Script Date: 10/31/2016 9:54:42 AM ******/
 ALTER PROCEDURE [dbo].[Acc_CustSetting_WinLossLimitUpd] 
 	  @CustID		INT
 	, @Limit		VARCHAR(MAX)
@@ -13,10 +21,9 @@ AS
 	Created: 20160108@Elodie
 	Task : Update Customer's Win Loss Limits
 	DB: DBCUST/CustDB
-	Original:
-
+	Original:	
 	Revisions:
-
+			- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 	Param's Explanation:
 	- @Limit:
 		6: WinLossLimit
@@ -40,7 +47,7 @@ AS
 				/>
 		</ROOT>
 
-		9: LossLimit
+		12: LossLimit
 		<ROOT>
 				<Limit 
 						SportType="1" 
@@ -52,7 +59,7 @@ AS
 
 	- @SettingType: 6: WinLossLimit
 					8: WinLimit
-					9: LossLimit
+					12: LossLimit
 
 	*/
 BEGIN
@@ -178,7 +185,7 @@ BEGIN
 							)
 	END
 
-	IF @SettingType = 9
+	IF @SettingType = 12
 	BEGIN
 		INSERT @NewLimitTbl (SportType, BetType, MaxWinLimit, MaxLossLimit, IsAutoReset)
 		SELECT SportType, BetType, 0 AS MaxWinLimit, MaxLossLimit, IsAutoReset
@@ -192,7 +199,7 @@ BEGIN
 	EXEC sp_xml_removedocument @iDoc
 
 	--Validate new bet settings
-	EXEC [dbo].[Acc_CustSetting_WinLossLimitCheck] 
+				EXEC [dbo].[Acc_CustSetting_WinLossLimitCheck] 
 		@CustID	= @CustID
 		, @RoleID		= @RoleID
 		, @AgentID		= @AgentID
@@ -241,7 +248,7 @@ BEGIN
 			WHERE main.custid = @CustID
 				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 
-		IF @SettingType = 9
+		IF @SettingType = 12
 			--update new settings
 			UPDATE main
 			SET main.MaxLossLimit = tmp.MaxLossLimit
@@ -285,7 +292,7 @@ BEGIN
 			WHERE main.custid = @CustID
 				AND (main.MaxWinLimit <> tmp.MaxWinLimit OR main.IsAutoReset <> tmp.IsAutoReset)
 
-		IF @SettingType = 9
+		IF @SettingType = 12
 			--update new settings
 			UPDATE main
 			SET main.MaxLossLimit = tmp.MaxLossLimit
@@ -297,10 +304,11 @@ BEGIN
 	END
 
 	
-	EXEC dbo.Acc_DynamicCustSetting3rd_00 
+				EXEC dbo.Acc_DynamicCustSetting3rd_00 
 		@CustId = @CustId
 		,@RoleId = @RoleId
 		,@Limit_XML = @Limit
+		,@SettingType=@SettingType
 	
 	--START LOGGING
 
@@ -733,7 +741,7 @@ BEGIN
 		SET @logSpData = REPLACE(CONVERT(VARCHAR(MAX), @xml), '" />', '"/"')
 	END
 
-	IF @SettingType = 9
+	IF @SettingType = 12
 	BEGIN
 			-- Log old data
 		IF @SettingLevel = 1			-- Product setting level
@@ -930,6 +938,29 @@ BEGIN
 	SELECT @endRun = GETDATE()
 		, @duration = DATEDIFF(MILLISECOND, @startRun, @endRun)
 
+	IF(@SettingType=12)
+	BEGIN
+	BEGIN TRY
+		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+						@UserID = @UserID
+						, @CustID			= @CustID
+						, @ActionID			= 851
+						, @TrackingValue	= @logSpData
+						, @TrackingValue2	= @logSpData_Old
+						, @duration			= @duration
+	END TRY
+	BEGIN CATCH
+		EXEC bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
+						@UserID = @UserID
+						, @CustID			= @CustID
+						, @ActionID			= 851
+						, @TrackingValue	= @logSpData
+						, @TrackingValue2	= @logSpData_Old
+						, @duration			= @duration
+	END CATCH
+	END
+	ELSE
+	BEGIN
 	BEGIN TRY
 		EXEC DBLOG.bodb_CustomerLog.dbo.WriteLog_UserLog_RunSP 
 						@UserID = @UserID
@@ -948,6 +979,7 @@ BEGIN
 						, @TrackingValue2	= @logSpData_Old
 						, @duration			= @duration
 	END CATCH
+	END
 END
 
 GO

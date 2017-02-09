@@ -24,17 +24,12 @@ AS
 		- 20160309@Dominic: Support controling default product status by site and by currency - [Redmine: #53604]
 		- 20160406@Winnie: Implementing Group Stake Level Settings - [Redmine: #55532]
 		- 20160801@Elodie: Implementing GameBetLimit Plugin, GameStatus Plugin - [Redmine #60809]
+		- 20161011@Winnie:  Implement for Loss limit setting type RedmineID: #65472
 							
 	*/
 BEGIN
 	SELECT @ErrCode = 0
 	DECLARE @_Site VARCHAR(10), @_SiteID INT, @_Currency TINYINT
-
-	IF @RoleID = 4
-	BEGIN
-		SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
-		SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
-	END
 
 	if (dbo.f_CheckRepTable('CustProductStatus') = 1
 		AND dbo.f_CheckRepTable('ProductSettingDetail') = 1 
@@ -76,6 +71,9 @@ BEGIN
 		
 		IF @RoleID = 4
 		BEGIN
+			SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
+			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
+
 			UPDATE main
 			SET main.IsDisabled = stt.IsDisabled, 
 				main.IsHidden = stt.IsHidden
@@ -294,6 +292,9 @@ BEGIN
 
 		IF @RoleID = 4
 		BEGIN
+			SELECT @_Site = Site, @_Currency = currency FROM dbo.Customer WITH(NOLOCK) WHERE CustID = @CustID
+			SELECT @_SiteID = siteid FROM dbo.Site WITH(NOLOCK) WHERE site = @_Site
+
 			INSERT INTO #OfferedProductList (ProductID, SportType, BetType, IsHidden)
 			SELECT ProductID, SportType, BetType, IsHidden
 			FROM dbo.ProductSettingDetail WITH (NOLOCK)
@@ -1115,8 +1116,12 @@ BEGIN
 		END CATCH
 
 		/********************************************* SMA WinLimit : SettingType = 6 ****************************************/
+		/********************************************* SMA LossLimit : SettingType = 12 ****************************************/
 		SELECT * INTO #SportBettypeFilter6
 		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,6)
+		INSERT INTO #SportBettypeFilter6
+		SELECT * 
+		FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,12)
 		
 		BEGIN TRY
 			IF @RoleID = 4
