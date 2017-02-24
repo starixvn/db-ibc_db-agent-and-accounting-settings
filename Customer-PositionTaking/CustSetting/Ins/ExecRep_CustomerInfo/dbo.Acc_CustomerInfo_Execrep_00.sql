@@ -875,7 +875,7 @@ ALTER PROCEDURE [dbo].[Acc_CustomerInfo_Execrep_00]
 			- 20151119@Dominic: Fix bug when inserting setting into DCS structure Redmine Feature #26274
 			- 20160627@Winnie: Out right PT [Redmine #59438]  	
 			- 20161109@Helen: Separate Bet Setting for Soccer - Parlay - [Redmine:66265]
-			
+			- 20170223@Elodie: Change preset PT to max PT - [Redmine: #71883]
 		Parameter's Explanation:
 		
 	*/
