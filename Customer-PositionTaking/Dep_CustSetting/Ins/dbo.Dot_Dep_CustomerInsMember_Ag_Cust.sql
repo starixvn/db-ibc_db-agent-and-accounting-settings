@@ -147,6 +147,7 @@ Revisions:
  - 20151028@Jim:Implement Muay's Setting for Deposit Customer [Redmine: #45491]
  - 20151124@Winnie:Change for AG Casino Single wallet Feature #43672
  - 20160412@Helen: insert the Setting of Voidbridge of new member into the DCS database after 1st deposit. [Redmine: #55057]
+ - 20170227@Winnie: support Cash out. [Redmine: #72107]
 
 Param's Explanation:    
 ? @CustID: return new 12bet Player Cust ID    
@@ -2074,7 +2075,7 @@ BEGIN
 	select @username = replace(@username, ' ', '')    
 	*/    
 	--20140812: Change rule generate username    
-	IF @UserName NOT LIKE '%BetTrade%' OR @UserName IS NULL  
+	IF (@UserName NOT LIKE '%BetTrade%' AND  @UserName NOT LIKE '%CashOut%') OR @UserName IS NULL  
 	BEGIN  
 	SELECT @UserName = dbo.f_LAS_GenerateUsername(@recommend)    
 	IF @UserName = ''    
