@@ -70,6 +70,35 @@ BEGIN
 			)
 
 	EXEC sp_xml_removedocument @iDoc
+
+	IF @RoleID = 4
+	BEGIN
+		IF EXISTS (SELECT 1
+				FROM custinfo WITH (NOLOCK)
+				WHERE srecommend = @SuperID AND roleid = 3
+				)
+			SET @HasDownlines = 1
+	END
+	ELSE IF @RoleID = 3
+	BEGIN
+		IF EXISTS (SELECT 1
+				FROM custinfo WITH (NOLOCK)
+				WHERE mrecommend = @MasterID AND roleid = 2
+				)
+			SET @HasDownlines = 1
+	END
+	ELSE IF @RoleID = 2
+	BEGIN
+		IF EXISTS (SELECT 1
+					FROM custinfo WITH (NOLOCK)
+					WHERE recommend = @AgentID AND roleid = 1
+					)
+			SET @HasDownlines = 1	
+	END
+	ELSE IF @RoleID = 1
+	BEGIN
+		SET @HasDownlines = 0
+	END
 	--Get error data
 	--60033: Account disabled for this product. Unable to edit downlines.
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 0)
@@ -119,12 +148,6 @@ BEGIN
 	BEGIN
 		IF @RoleID = 3
 		BEGIN
-			IF EXISTS (SELECT 1
-					FROM custinfo WITH (NOLOCK)
-					WHERE mrecommend = @MasterID AND roleid = 2
-					)
-				SET @HasDownlines = 1	
-
 			INSERT INTO #OldDisableStatTbl(SportType, BetType, IsDisabled, IsDisabledDownline)
 			SELECT	ft.SportType,
 					ft.BetType,
@@ -155,13 +178,7 @@ BEGIN
 			WHERE (tmp.IsDisabled = 1 AND Otmp.IsDisabled = 0) OR (tmp.IsDisabledDownline = 1 AND Otmp.IsDisabledDownline = 0 AND @HasDownlines = 1)
 		END
 		ELSE IF @RoleID = 2
-		BEGIN
-			IF EXISTS (SELECT 1
-					FROM custinfo WITH (NOLOCK)
-					WHERE recommend = @AgentID AND roleid = 1
-					)
-				SET @HasDownlines = 1	
-
+		BEGIN			
 			INSERT INTO #OldDisableStatTbl(SportType, BetType, IsDisabled, IsDisabledDownline)
 			SELECT	ft.SportType,
 					ft.BetType,
@@ -194,14 +211,14 @@ BEGIN
 	END
 
 	--90012: You are not allowed to perform this action.
-	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 1 AND IsDisabledDownline = 0)
+	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 1 AND IsDisabledDownline = 0) AND @HasDownlines = 1
 	BEGIN
 		INSERT INTO #ErrorSportTypeTbl (SportType, BetType, MsgID)
 		SELECT tmp.SportType
 			, tmp.BetType
 			, 90012 AS MsgID
 		FROM #NewDisableStatTbl tmp
-		WHERE tmp.IsDisabled = 1 AND tmp.IsDisabledDownline = 0 AND @RoleID = 2
+		WHERE tmp.IsDisabled = 1 AND tmp.IsDisabledDownline = 0
 	END
 	--IF there's no error data then return
 	IF NOT EXISTS (
