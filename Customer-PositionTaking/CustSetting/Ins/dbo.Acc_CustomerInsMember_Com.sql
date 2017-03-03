@@ -1719,7 +1719,7 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 						INNER JOIN	ProductStatusProfile psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype
 																			AND	psd.BetType = psp.Bettype
 																			AND psd.SettingType IN (4,11,13)		-- Product Status
-						INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND (psd.SettingType = t.SettingType OR (psd.ProductID = 24 AND psd.SettingType = 4 AND t.SettingType = 13))
+						INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND psd.SettingType = t.SettingType
 						INNER JOIN CustProductStatus cps WITH(NOLOCK) ON cps.CustID = @CustID
 					WHERE @_Site = 'IMBC' OR psd.ProductID <> 20 --iCricket
 					GROUP BY psd.ProductID	
@@ -1734,7 +1734,7 @@ EXEC dbo.Acc_CustomerWinLimitIns @CustId = @custid
 				(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(bitmapIsDisabled, psp.bitmapOrder)) AS custIsDisable
 		FROM		ProductSettingDetail AS psd WITH(NOLOCK)
 			INNER JOIN	ProductStatusProfile AS psp WITH(NOLOCK) ON	psd.SportType = psp.Sporttype AND psd.BetType = psp.Bettype 
-			INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND (psd.SettingType = t.SettingType OR (psd.ProductID = 24 AND psd.SettingType = 4 AND t.SettingType = 13))
+			INNER JOIN #temSportbettypeSetting t WITH(NOLOCK) ON  psp.SportType = t.SportType	AND psp.BetType = t.BetType AND psd.SettingType = t.SettingType
 			CROSS APPLY CustProductStatus WITH(NOLOCK)
 		WHERE CustID = @custid AND (@_Site = 'IMBC' OR psd.ProductID <> 20)--iCricket
 			AND psd.SettingType IN (4,11,13)-- Product Status, Game Status
