@@ -7,7 +7,7 @@ ALTER PROCEDURE [dbo].[Acc_CustSetting_DisableNewProductStatusUpd]
 	, @SystemID			TINYINT
 	, @ErrCode			INT				= 0		OUTPUT
 	, @MsgType			INT				= 0		OUTPUT
-	, @ErrMsg			NVARCHAR(200)	= ''	OUTPUT
+	, @ErrMsg			NVARCHAR(MAX)	= ''	OUTPUT
 AS
 /*
 	Created: 20170125@Elodie
