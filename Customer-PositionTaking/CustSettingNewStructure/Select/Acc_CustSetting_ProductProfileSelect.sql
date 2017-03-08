@@ -22,7 +22,7 @@ BEGIN
 	FROM dbo.ProductSettingSystemDisplay WITH(NOLOCK)
 	WHERE ProductID = @ProductID AND SystemID = @SystemID
 	
-	SELECT CASE WHEN ProductID = 24 AND SettingType = 4 THEN 13 ELSE SettingType END AS SettingType, SportType, BetType, IsLive, ProductID, MaxPT, MaxDiscount, IsSync, IsHidden, IsDisabled, SettingLevel, DisplayOrder, SettingStatus, IntervalValue
+	SELECT SettingType, SportType, BetType, IsLive, ProductID, MaxPT, MaxDiscount, IsSync, IsHidden, IsDisabled, SettingLevel, DisplayOrder, SettingStatus, IntervalValue
 	INTO #ProductSettingDetail
 	FROM ProductSettingDetail WITH (NOLOCK)
 	WHERE ProductID = @ProductID
