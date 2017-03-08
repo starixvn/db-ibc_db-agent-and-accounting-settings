@@ -146,7 +146,38 @@ BEGIN
 	--60035: You are not allowed to disable for downlines.
 	IF EXISTS (SELECT 1 FROM #NewDisableStatTbl WHERE IsDisabled = 1 OR IsDisabledDownline = 1) AND @SystemID <> 1
 	BEGIN
-		IF @RoleID = 3
+		IF @RoleID = 4
+		BEGIN
+			INSERT INTO #OldDisableStatTbl(SportType, BetType, IsDisabled, IsDisabledDownline)
+			SELECT	ft.SportType,
+					ft.BetType,
+					(SELECT value FROM dbo.f_CustSetting_ProductStatusSel(stt.bitmapIsDisabled, PSP.bitmapOrder)) as isDisabled,
+					CAST(CASE WHEN @HasDownlines = 0 THEN ISNULL(dbo.f_GetProductStatus(stt.bitmapIsDisabled, PSP.bitmapOrder),0)
+								ELSE ISNULL((
+											SELECT TOP 1 1
+											FROM dbo.custInfo ci WITH (NOLOCK)
+												INNER JOIN dbo.CustProductStatus cps_temp ON ci.custid = cps_temp.CustID
+												OUTER APPLY dbo.f_CustSetting_ProductStatusSel(cps_temp.bitmapIsDisabled, PSP.bitmapOrder) AS IsDisabled
+												OUTER APPLY dbo.f_CustSetting_ProductStatusSel(cps_temp.bitmapHasSynced, PSP.bitmapOrder) AS IsSynced
+											WHERE srecommend = @SuperID AND roleid = 3
+												AND IsSynced.value = 1
+												AND IsDisabled.value = 1
+											), 0) END AS BIT) AS IsDisabledDownline
+			FROM #NewDisableStatTbl ft 
+				INNER JOIN ProductStatusProfile psp WITH (NOLOCK) ON PSP.Bettype = ft.BetType AND PSP.Sporttype = ft.SportType															
+				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK)	ON stt.CustID = @SuperID
+
+			INSERT INTO #ErrorSportTypeTbl (SportType, BetType, MsgID)
+			SELECT PSP.SportType
+				, psp.BetType
+				, 60035 AS MsgID
+			FROM #NewDisableStatTbl tmp
+				INNER JOIN #OldDisableStatTbl Otmp ON Otmp.SportType = tmp.SportType AND Otmp.BetType = tmp.BetType
+				INNER JOIN dbo.ProductStatusProfile PSP WITH (NOLOCK) ON PSP.Sporttype = TMP.SportType AND PSP.Bettype = TMP.BetType
+				INNER JOIN dbo.CustProductStatus stt WITH (NOLOCK) ON  stt.CustID	= @SuperID
+			WHERE (tmp.IsDisabled = 1 AND Otmp.IsDisabled = 0) OR (tmp.IsDisabledDownline = 1 AND Otmp.IsDisabledDownline = 0 AND @HasDownlines = 1)
+		END
+		ELSE IF @RoleID = 3
 		BEGIN
 			INSERT INTO #OldDisableStatTbl(SportType, BetType, IsDisabled, IsDisabledDownline)
 			SELECT	ft.SportType,
