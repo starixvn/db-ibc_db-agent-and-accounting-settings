@@ -300,7 +300,7 @@ BEGIN
 			INSERT INTO #OfferedProductList (ProductID, SportType, BetType, IsHidden)
 			SELECT ProductID, SportType, BetType, IsHidden
 			FROM dbo.ProductSettingDetail WITH (NOLOCK)
-			WHERE SettingType IN (4,11)
+			WHERE SettingType IN (4,11,13)
 		
 			UPDATE op
 			SET op.IsHidden = stt.IsHidden
@@ -326,7 +326,7 @@ BEGIN
 				  ,IsLive
 			FROM [dbo].[ProductSettingDetail] ps WITH(NOLOCK)
 				INNER JOIN (SELECT DISTINCT ProductID, IsHidden FROM #OfferedProductList WITH (NOLOCK)) op ON ps.ProductID = op.ProductID
-			WHERE op.IsHidden = 0 AND ps.SettingType NOT IN (4,11)
+			WHERE op.IsHidden = 0 AND ps.SettingType NOT IN (4,11,13)
 		END
 
 		/********************************************* Position Taking: SettingType = 1 ***********************************/
@@ -1533,3 +1533,6 @@ BEGIN
 	END
 	
 END
+GO
+
+
