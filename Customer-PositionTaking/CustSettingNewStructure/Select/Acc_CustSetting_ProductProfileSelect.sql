@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 ALTER PROCEDURE [dbo].[Acc_CustSetting_ProductProfileSelect]   
 	@ProductID	TINYINT = NULL,
 	@SettingType SMALLINT = NULL,
@@ -21,19 +15,25 @@ AS
  */  
 BEGIN   
 	SELECT * INTO #SportBettypeFilter
-	FROM dbo.f_CustSetting_SportBetTypeSettingSelect(@ProductID,@SettingType)
+	FROM dbo.f_CustSetting_SportBetTypeSettingSelect_xpre(@ProductID,@SettingType)
 	
 	SELECT ProductID,SettingType,SystemID,DisplayMode
 	INTO #ProductSettingSiteDisplay
 	FROM dbo.ProductSettingSystemDisplay WITH(NOLOCK)
 	WHERE ProductID = @ProductID AND SystemID = @SystemID
 	
-	SELECT DISTINCT pdt.SettingType, pdt.SettingLevel, pdt.DisplayOrder
+	SELECT SettingType, SportType, BetType, IsLive, ProductID, MaxPT, MaxDiscount, IsSync, IsHidden, IsDisabled, SettingLevel, DisplayOrder, SettingStatus, IntervalValue
+	INTO #ProductSettingDetail
+	FROM ProductSettingDetail WITH (NOLOCK)
+	WHERE ProductID = @ProductID
+
+	SELECT DISTINCT pdt.SettingType, 
+			pdt.SettingLevel, pdt.DisplayOrder
 			--1 - Update
 			--2 - Read Only
 			--3 - Hidden
 			, ISNULL(dpl.DisplayMode,1) DisplayMode
-	FROM dbo.ProductSettingDetail pdt WITH(NOLOCK)
+	FROM #ProductSettingDetail pdt 
 	INNER JOIN #SportBettypeFilter ft 
 				ON pdt.SportType = ft.sporttype
 					AND pdt.BetType = ft.bettype
@@ -44,6 +44,8 @@ BEGIN
 	ORDER BY pdt.DisplayOrder
 	
 	DROP TABLE #SportBettypeFilter
+	DROP TABLE #ProductSettingSiteDisplay
+	DROP TABLE #ProductSettingDetail
 END  
   
 

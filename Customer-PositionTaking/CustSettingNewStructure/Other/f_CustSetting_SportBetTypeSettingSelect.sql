@@ -18,10 +18,11 @@ BEGIN
 	END
 	
 	INSERT @SportBetTypeSetting
-	SELECT DISTINCT ProductID, SportType,Bettype,IsLive, SettingType FROM dbo.ProductSettingDetail WITH(NOLOCK)
-	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) AND (@SettingType IS NULL OR SettingType = @SettingType) 
+	SELECT DISTINCT ProductID, SportType,Bettype,IsLive, SettingType
+	FROM dbo.ProductSettingDetail WITH(NOLOCK)
+	WHERE (@ProductID IS NULL OR ProductID = @ProductID ) 
+			AND (@SettingType IS NULL OR SettingType = @SettingType) 
 			AND SettingStatus <= CASE WHEN @isTest = 1 THEN 1 ELSE 0 END
-	
 	RETURN
 END
 go
