@@ -4,7 +4,7 @@ GO
 ALTER PROCEDURE dbo.Acc_3rdProductUpdSuperStatus @ProductID INT
 	, @CustID INT
 	, @IsEnable BIT
-	, @ApplyToMember BIT = 0
+	, @ApplyToMember BIT = 0	
 	, @UserID INT
 	, @IP VARCHAR(40)
 	, @Langkey VARCHAR(10) = 'en-US'
@@ -29,7 +29,7 @@ BEGIN
 
 	DECLARE @startRun DATETIME, @endRun DATETIME, @duration INT, @LogSPData VARCHAR(MAX)
 		, @TrackingValue2 VARCHAR(MAX), @IsEnabled_Old BIT = 0, @ProductName VARCHAR(50), @CurrRow INT = 1
-		, @RowPerBatch INT = 10000, @RowCount INT = 0
+		, @RowPerBatch INT = 10000, @RowCount INT = 0,@DisableDownlines BIT,@HasDownline BIT = 0 ,@DisableDownlines_Old BIT = 0
 
 	CREATE TABLE #CustList (RowNo INT IDENTITY(1, 1), CustID INT)
 
@@ -50,11 +50,65 @@ BEGIN
 		WHERE CustID = @CustID
 		
 		--check concurrent users
-		IF @IsEnable = @IsEnabled_Old
+		IF (@IsEnabled_Old = @IsEnable AND @ProductID<>25)
 		BEGIN
-			SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'
+			SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'			
 			RETURN
+		RETURN
 		END
+		IF (@ProductID=25)
+		BEGIN
+			IF (@IsEnabled_Old = @IsEnable AND @IsEnable=0) OR  (@IsEnabled_Old = @IsEnable AND @IsEnable=1 AND @ApplyToMember=0) 
+			BEGIN
+				SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'			
+				RETURN
+			RETURN
+			END
+			SELECT top 1 @HasDownline = 1   
+			FROM dbo.CustInfo WITH (NOLOCK)  
+			WHERE (@RoleID = 4 AND srecommend = @CustID and roleid = 3)  
+				OR (@RoleID = 3 AND mrecommend = @CustID and roleid = 2)  
+				OR (@RoleID = 2 AND recommend = @CustID and roleid = 1)
+
+			IF (@IsEnabled_Old = @IsEnable AND @IsEnable=1 AND @ApplyToMember=1)
+			BEGIN
+			IF @HasDownline = 1
+			BEGIN
+					IF @roleid = 4 
+					BEGIN
+						IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo c WITH(NOLOCK) 
+												INNER JOIN Dep_SupperProductSetting d WITH(NOLOCK) ON c.custid=d.CustID
+												 WHERE srecommend = @custid AND d.ProductId=@ProductID AND roleid<>4 AND d.IsEnabled = 0)
+							OR EXISTS (SELECT TOP 1 1 FROM dbo.custInfo c WITH(NOLOCK) 
+												INNER JOIN Dep_CustProductSetting d WITH(NOLOCK) ON c.custid=d.CustID
+												 WHERE srecommend = @custid AND d.ProductId=@ProductID AND roleid<>4 AND d.IsEnabled = 0)
+							SET @DisableDownlines_Old = 1
+					END
+					ELSE IF @roleid = 3
+					BEGIN
+						IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo c WITH(NOLOCK)
+													INNER JOIN Dep_SupperProductSetting d WITH(NOLOCK) ON c.custid=d.CustID
+												 WHERE mrecommend = @custid AND d.ProductId=@ProductID  AND roleid<>3 AND d.IsEnabled = 0)
+							OR EXISTS (SELECT TOP 1 1 FROM dbo.custInfo c WITH(NOLOCK)
+													INNER JOIN Dep_CustProductSetting d WITH(NOLOCK) ON c.custid=d.CustID
+												 WHERE mrecommend = @custid AND d.ProductId=@ProductID  AND roleid<>3 AND d.IsEnabled = 0)
+							SET @DisableDownlines_Old = 1
+					END
+					ELSE IF @roleid = 2
+					BEGIN
+						IF EXISTS (SELECT TOP 1 1 FROM dbo.custInfo c WITH(NOLOCK) 
+													INNER JOIN Dep_CustProductSetting d WITH(NOLOCK) ON c.custid=d.CustID
+													WHERE recommend = @custid AND d.ProductId=@ProductID AND roleid<>2 AND d.IsEnabled = 1)
+							SET @DisableDownlines_Old = 1
+					END
+				END
+					IF @DisableDownlines_Old=0
+					BEGIN
+					SELECT @ErrMsg = 'Invalid data because it has changed by some other people. Please refresh the page.'		
+					RETURN
+					END
+				END
+			END
 
 		--check upline status
 		DECLARE @UplineStatus BIT
