@@ -44,7 +44,7 @@ BEGIN
 	WHERE l.custid=@custid AND logdate BETWEEN @FromDate AND @ToDate 
 	ORDER BY logdate DESC
 END
-IF @ToDate < @__archiveDate
+ELSE IF @ToDate < @__archiveDate
 BEGIN
 	SELECT 
 		logid,

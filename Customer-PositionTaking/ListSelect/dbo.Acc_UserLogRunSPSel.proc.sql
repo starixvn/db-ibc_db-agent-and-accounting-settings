@@ -40,7 +40,7 @@ BEGIN
 	where l.custid=@custid and logdate between @FromDate and @ToDate 
 	order by logid desc,spname
 END
-IF @ToDate < @__archiveDate
+ELSE IF @ToDate < @__archiveDate
 BEGIN
 	Select 
 		logid,
